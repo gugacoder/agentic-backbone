@@ -5,9 +5,9 @@
 
 ## Current Status
 
-**Phase:** Implementing — F-001 done, working through feature list.
-**Features:** 13 total (1 passing, 12 remaining)
-**Build:** Compilando (6 tools existentes + novos tipos KaiAgentEvent)
+**Phase:** Implementing — F-001, F-002 done, working through feature list.
+**Features:** 13 total (2 passing, 11 remaining)
+**Build:** Compilando (7 tools — 6 existentes + ListDir + novos tipos KaiAgentEvent)
 
 ---
 
@@ -32,7 +32,7 @@ milestones/01-better-kay/PRP.md
 ## Features
 
 - [x] F-001: KaiAgentEvent types expansion (priority 1) ✓ 2026-02-16
-- [ ] F-002: T08 — ListDir tool (priority 2)
+- [x] F-002: T08 — ListDir tool (priority 2) ✓ 2026-02-16
 - [ ] F-003: T07 — MultiEdit tool (priority 3)
 - [ ] F-004: T05+T06 — TodoWrite + TodoRead tools (priority 4, depends: F-001)
 - [ ] F-005: T09 — Diagnostics tool (priority 5)
@@ -79,3 +79,17 @@ Session 2 (Coding Agent): F-001 KaiAgentEvent types expansion
 - Verified backward compatibility with backbone consumer (kai.ts uses `as AgentEvent` cast)
 - Build passes cleanly
 - Next priority: F-002 (ListDir tool)
+
+Session 3 (Coding Agent): F-002 ListDir tool
+- Created src/tools/list-dir.ts with listDirTool export
+- Recursive tree builder with tree-drawing connectors (├──, └──, │)
+- Parameters: path (required, z.string()), depth (optional, default 3), ignore (optional, default node_modules/.git/dist/build)
+- Directories sorted first, then files, alphabetically within groups
+- Dirs marked with trailing /
+- Depth limiting: stops recursion at maxDepth
+- Ignore filtering: excludes entries matching names in ignore array
+- 50KB output limit with truncation
+- Registered as ListDir in codingTools (src/tools/index.ts)
+- Functional smoke test passed: tree renders correctly, depth limiting works
+- Build passes cleanly
+- Next priority: F-003 (MultiEdit tool)

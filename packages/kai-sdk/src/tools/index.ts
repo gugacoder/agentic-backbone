@@ -4,6 +4,7 @@ import { editTool } from "./edit.js";
 import { bashTool } from "./bash.js";
 import { globTool } from "./glob.js";
 import { grepTool } from "./grep.js";
+import { listDirTool } from "./list-dir.js";
 
 export const codingTools = {
   Read: readTool,
@@ -12,4 +13,5 @@ export const codingTools = {
   Bash: bashTool,
   Glob: globTool,
   Grep: grepTool,
+  ListDir: listDirTool,
 };

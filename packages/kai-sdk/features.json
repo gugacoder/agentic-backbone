@@ -18,7 +18,8 @@
     "id": "F-002",
     "name": "T08: ListDir tool",
     "description": "Criar src/tools/list-dir.ts — lista arquivos e pastas de um diretorio como arvore indentada. Parametros: path (string, obrigatorio), depth (number, opcional, default 3), ignore (string[], opcional, default ['node_modules', '.git', 'dist', 'build']). Retorna string com arvore de diretorio. Registrar em codingTools.",
-    "status": "failing",
+    "status": "passing",
+    "completed_at": "2026-02-16",
     "priority": 2,
     "tests": [
       "Arquivo src/tools/list-dir.ts existe e exporta listDirTool",
@@ -56,7 +57,7 @@
     "id": "F-004",
     "name": "T05+T06: TodoWrite + TodoRead tools",
     "description": "Criar src/tools/todo.ts com duas ferramentas: TodoWrite (cria/atualiza lista de tarefas) e TodoRead (le lista atual). A lista vive em memoria durante a sessao. TodoWrite emite evento 'todo_update' no AsyncGenerator. Parametros TodoWrite: todos (array de { id, content, status, priority }). TodoRead: sem parametros. Registrar ambas em codingTools.",
-    "status": "blocked",
+    "status": "pending",
     "priority": 4,
     "tests": [
       "Arquivo src/tools/todo.ts existe e exporta todoWriteTool e todoReadTool",
@@ -94,7 +95,7 @@
     "id": "F-006",
     "name": "T01: AskUser tool",
     "description": "Criar src/tools/ask-user.ts — permite ao agente fazer perguntas ao usuario durante execucao. Parametros: question (string, obrigatorio), options (string[], opcional). Emite evento 'ask_user' no AsyncGenerator e aguarda resposta. O mecanismo de callback deve ser injetavel via KaiAgentOptions ou contexto da tool. Registrar em codingTools.",
-    "status": "blocked",
+    "status": "pending",
     "priority": 6,
     "tests": [
       "Arquivo src/tools/ask-user.ts existe e exporta askUserTool (ou factory)",
