@@ -5,9 +5,9 @@
 
 ## Current Status
 
-**Phase:** Implementing — F-001 through F-006 done, working through feature list.
-**Features:** 13 total (6 passing, 7 remaining)
-**Build:** Compilando (12 tools — 6 existentes + ListDir + MultiEdit + TodoWrite + TodoRead + Diagnostics + AskUser + novos tipos KaiAgentEvent)
+**Phase:** Implementing — F-001 through F-007 done, working through feature list.
+**Features:** 13 total (7 passing, 6 remaining)
+**Build:** Compilando (13 tools — 6 existentes + ListDir + MultiEdit + TodoWrite + TodoRead + Diagnostics + AskUser + WebFetch + novos tipos KaiAgentEvent)
 
 ---
 
@@ -37,7 +37,7 @@ milestones/01-better-kay/PRP.md
 - [x] F-004: T05+T06 — TodoWrite + TodoRead tools (priority 4, depends: F-001) ✓ 2026-02-16
 - [x] F-005: T09 — Diagnostics tool (priority 5) ✓ 2026-02-16
 - [x] F-006: T01 — AskUser tool (priority 6, depends: F-001) ✓ 2026-02-16
-- [ ] F-007: T02 — WebFetch tool (priority 7)
+- [x] F-007: T02 — WebFetch tool (priority 7) ✓ 2026-02-16
 - [ ] F-008: T03 — WebSearch tool (priority 8)
 - [ ] F-009: T04 — Task sub-agente tool (priority 9)
 - [ ] F-010: T10 — Batch tool (priority 10)
@@ -139,3 +139,18 @@ Session 7 (Coding Agent): F-006 AskUser tool
 - Registered as AskUser in codingTools (12 tools total)
 - Build passes cleanly
 - Next priority: F-007 (WebFetch tool)
+
+Session 8 (Coding Agent): F-007 WebFetch tool
+- Created src/tools/web-fetch.ts with webFetchTool export
+- Uses native Node.js fetch API (no external dependencies for HTML conversion)
+- Built-in htmlToMarkdown() converter: handles headings, links, lists, code blocks, tables, bold/italic, images
+- Strips script/style/nav/footer/aside/svg/noscript tags and their content
+- Decodes common HTML entities (&amp;, &lt;, &gt;, &quot;, &#39;, &nbsp;, &#NNN;)
+- Parameters: url (required, z.string().url()), prompt (optional, z.string())
+- AbortController-based timeout at 30 seconds
+- Content-type aware: HTML → markdown, JSON → pretty-printed, others → raw text
+- Output truncated at 50KB limit
+- Exported webFetchTool from src/index.ts
+- Registered as WebFetch in codingTools (13 tools total)
+- Build passes cleanly
+- Next priority: F-008 (WebSearch tool)

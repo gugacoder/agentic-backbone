@@ -119,7 +119,8 @@
     "id": "F-007",
     "name": "T02: WebFetch tool",
     "description": "Criar src/tools/web-fetch.ts — busca conteudo de uma URL e retorna como markdown/texto. Parametros: url (string, obrigatorio), prompt (string, opcional). Converte HTML para markdown (adicionar dependencia turndown ou similar). Timeout 30s. Limite 50KB. Registrar em codingTools.",
-    "status": "failing",
+    "status": "passing",
+    "completed_at": "2026-02-16",
     "priority": 7,
     "tests": [
       "Arquivo src/tools/web-fetch.ts existe e exporta webFetchTool",
