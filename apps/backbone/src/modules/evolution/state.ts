@@ -75,6 +75,7 @@ export class EvolutionStateTracker {
           since: now,
           previousState: null,
           owner: raw.instance.owner ?? null,
+          profileName: raw.instance.profileName ?? null,
         };
         this.instances.set(name, entry);
         this.log(`instance discovered: ${name} (${state})`);
@@ -89,8 +90,9 @@ export class EvolutionStateTracker {
         continue;
       }
 
-      // Update owner if changed
+      // Update mutable fields if changed
       existing.owner = raw.instance.owner ?? null;
+      existing.profileName = raw.instance.profileName ?? null;
 
       // Check for state transition
       if (existing.state !== state) {

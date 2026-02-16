@@ -1,7 +1,7 @@
 # Progress — agenticbackbone-03-evolution-hub--cc
 
 ## Current Status
-12/23 features complete. PRP 01 (Module System) completo. PRP 02 (Evolution Module) completo: F-005 a F-012 todos implementados e passing. PRP 03 em andamento: F-013 (hub API layer) ja existe mas hub build falha por componentes de features futuras (F-014+) que referenciam rotas nao registradas.
+15/23 features complete. PRP 01 (Module System) completo. PRP 02 (Evolution Module) completo. PRP 03 em andamento: F-013 (hub API layer), F-014 (sidebar + routing), F-015 (connectivity index page) implementados e passing. Hub build passa sem erros.
 
 ## Specs Path
 D:\sources\codr.studio\cia-prime-care\agentic-backbone\apps\backbone\milestones\03-evolution-hub
@@ -240,3 +240,16 @@ D:\sources\codr.studio\cia-prime-care\agentic-backbone\apps\backbone\milestones\
   - PRP 02 (Evolution Module) completo: 8/8 features (F-005 a F-012)
   - Build passa sem erros
   - Proxima prioridade: F-013 (Hub API layer for Evolution) — inicio do PRP 03
+
+- Session 14: Implementou F-013, F-014, F-015 — Hub API layer, sidebar/routing, connectivity index
+  - F-013: API layer (evolution.ts) ja existia de sessao anterior nao commitada com todos queries/mutations/types
+  - F-014: Registrou 3 rotas no App.tsx (/conectividade, /conectividade/whatsapp, /conectividade/whatsapp/$name)
+  - F-014: Adicionou secao "Conectividade" com icone Cable no sidebar (entre Resources e Admin)
+  - F-014: Item "WhatsApp" com icone MessageCircle linkando para /conectividade/whatsapp
+  - F-014: Search params validados: view (monitor|instances) para whatsapp, tab (status|qr|settings) para instancia
+  - F-014: Rotas protegidas por auth via protectedLayoutRoute (beforeLoad auth guard)
+  - F-015: connectivity.tsx ja existia com PageHeader, card WhatsApp, contagem online/offline, grid responsivo, pt-BR
+  - Corrigiu build do hub que falhava por paginas/componentes de sessoes anteriores referenciando rotas nao registradas
+  - Build de backbone e hub passam sem erros
+  - PRP 03 em andamento: 3/11 features completas (F-013, F-014, F-015)
+  - Proxima prioridade: F-016 (Health and summary cards)

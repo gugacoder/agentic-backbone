@@ -29,6 +29,9 @@ import { AdapterDetailPage } from "@/pages/adapter-detail";
 import { SystemPage } from "@/pages/system";
 import { JobsPage } from "@/pages/jobs";
 import { ChatPage } from "@/pages/chat";
+import { ConnectivityPage } from "@/pages/connectivity";
+import { WhatsAppPage } from "@/pages/whatsapp";
+import { WhatsAppInstancePage } from "@/pages/whatsapp-instance";
 import { NotFoundPage } from "@/pages/not-found";
 import { ErrorPage } from "@/pages/error";
 
@@ -197,6 +200,30 @@ const systemRoute = createRoute({
   component: SystemPage,
 });
 
+const connectivityRoute = createRoute({
+  getParentRoute: () => protectedLayoutRoute,
+  path: "/conectividade",
+  component: ConnectivityPage,
+});
+
+const whatsappRoute = createRoute({
+  getParentRoute: () => protectedLayoutRoute,
+  path: "/conectividade/whatsapp",
+  component: WhatsAppPage,
+  validateSearch: (search: Record<string, unknown>) => ({
+    view: (search.view as string) || "monitor",
+  }),
+});
+
+const whatsappInstanceRoute = createRoute({
+  getParentRoute: () => protectedLayoutRoute,
+  path: "/conectividade/whatsapp/$name",
+  component: WhatsAppInstancePage,
+  validateSearch: (search: Record<string, unknown>) => ({
+    tab: (search.tab as string) || "status",
+  }),
+});
+
 const chatRoute = createRoute({
   getParentRoute: () => protectedLayoutRoute,
   path: "/chat",
@@ -233,6 +260,9 @@ const routeTree = rootRoute.addChildren([
     toolsRoute,
     adaptersRoute,
     adapterDetailRoute,
+    connectivityRoute,
+    whatsappRoute,
+    whatsappInstanceRoute,
     jobsRoute,
     systemRoute,
   ]),

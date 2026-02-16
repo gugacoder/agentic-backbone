@@ -1,0 +1,142 @@
+import { useState, useEffect, useRef } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { QrCode, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
+import { evolutionInstanceQRQuery, evolutionInstanceQuery } from "@/api/evolution";
+
+interface InstanceQRProps {
+  instanceName: string;
+}
+
+type QRState = "idle" | "loading" | "active" | "linked" | "expired" | "exhausted";
+
+export function InstanceQR({ instanceName }: InstanceQRProps) {
+  const [qrState, setQrState] = useState<QRState>("idle");
+  const [countdown, setCountdown] = useState(60);
+  const [attempts, setAttempts] = useState(0);
+  const countdownRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const shouldFetchQR = qrState === "loading";
+  const { data: qrData, isFetching: qrFetching } = useQuery(
+    evolutionInstanceQRQuery(instanceName, shouldFetchQR)
+  );
+
+  // Poll instance state while QR is active
+  const shouldPoll = qrState === "active";
+  const { data: instance } = useQuery({
+    ...evolutionInstanceQuery(instanceName),
+    refetchInterval: shouldPoll ? 2_000 : false,
+  });
+
+  // When QR data arrives, transition to active
+  useEffect(() => {
+    if (qrState === "loading" && qrData && !qrFetching) {
+      setQrState("active");
+      setCountdown(60);
+    }
+  }, [qrData, qrFetching, qrState]);
+
+  // Countdown timer
+  useEffect(() => {
+    if (qrState === "active") {
+      countdownRef.current = setInterval(() => {
+        setCountdown((c) => {
+          if (c <= 1) {
+            setQrState("expired");
+            return 0;
+          }
+          return c - 1;
+        });
+      }, 1_000);
+      return () => {
+        if (countdownRef.current) clearInterval(countdownRef.current);
+      };
+    }
+  }, [qrState]);
+
+  // Detect linking
+  useEffect(() => {
+    if (qrState === "active" && instance?.state === "open") {
+      setQrState("linked");
+      if (countdownRef.current) clearInterval(countdownRef.current);
+    }
+  }, [instance?.state, qrState]);
+
+  function requestQR() {
+    if (attempts >= 5) {
+      setQrState("exhausted");
+      return;
+    }
+    setAttempts((a) => a + 1);
+    setQrState("loading");
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-sm font-medium">QR Code</CardTitle>
+      </CardHeader>
+      <CardContent className="flex flex-col items-center gap-4 py-6">
+        {qrState === "idle" && (
+          <>
+            <QrCode className="h-16 w-16 text-muted-foreground" />
+            <p className="text-sm text-muted-foreground">Gere um QR code para vincular esta instancia ao WhatsApp.</p>
+            <Button onClick={requestQR}>Gerar QR Code</Button>
+          </>
+        )}
+
+        {qrState === "loading" && (
+          <>
+            <Loader2 className="h-16 w-16 animate-spin text-muted-foreground" />
+            <p className="text-sm text-muted-foreground">Gerando QR code...</p>
+          </>
+        )}
+
+        {qrState === "active" && qrData && (
+          <>
+            <div className="border rounded-lg p-4 bg-white">
+              <img
+                src={qrData.base64.startsWith("data:") ? qrData.base64 : `data:image/png;base64,${qrData.base64}`}
+                alt="QR Code WhatsApp"
+                className="w-64 h-64"
+              />
+            </div>
+            <p className="text-sm text-muted-foreground">Escaneie com WhatsApp</p>
+            <p className="text-sm font-medium">Expira em {countdown}s</p>
+          </>
+        )}
+
+        {qrState === "linked" && (
+          <>
+            <CheckCircle2 className="h-16 w-16 text-chart-2" />
+            <p className="text-sm font-medium">Instancia vinculada com sucesso!</p>
+          </>
+        )}
+
+        {qrState === "expired" && (
+          <>
+            <AlertCircle className="h-16 w-16 text-muted-foreground" />
+            <p className="text-sm text-muted-foreground">QR code expirado.</p>
+            {attempts < 5 ? (
+              <Button onClick={requestQR}>Gerar Novo</Button>
+            ) : (
+              <p className="text-sm text-destructive">Limite de tentativas atingido. Recarregue a pagina para tentar novamente.</p>
+            )}
+          </>
+        )}
+
+        {qrState === "exhausted" && (
+          <>
+            <AlertCircle className="h-16 w-16 text-destructive" />
+            <p className="text-sm text-destructive">Limite de tentativas atingido. Recarregue a pagina para tentar novamente.</p>
+          </>
+        )}
+
+        {qrState !== "exhausted" && attempts > 0 && (
+          <p className="text-xs text-muted-foreground">Tentativa {attempts}/5</p>
+        )}
+      </CardContent>
+    </Card>
+  );
+}

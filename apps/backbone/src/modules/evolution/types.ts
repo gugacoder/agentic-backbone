@@ -16,6 +16,7 @@ export interface InstanceState {
   since: number;
   previousState: string | null;
   owner: string | null;
+  profileName: string | null;
 }
 
 // --- Configuration ---

@@ -22,6 +22,8 @@ import {
   Sparkles,
   Wrench,
   Plug,
+  Cable,
+  MessageCircle,
   Settings,
   Activity,
   Terminal,
@@ -44,6 +46,10 @@ const resourceNav = [
   { title: "Skills", href: "/skills", icon: Sparkles },
   { title: "Tools", href: "/tools", icon: Wrench },
   { title: "Adapters", href: "/adapters", icon: Plug },
+];
+
+const connectivityNav = [
+  { title: "WhatsApp", href: "/conectividade/whatsapp", icon: MessageCircle },
 ];
 
 const adminNav = [
@@ -100,6 +106,30 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               {resourceNav.map((item) => (
+                <SidebarMenuItem key={item.href}>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={location.pathname.startsWith(item.href)}
+                    tooltip={item.title}
+                  >
+                    <Link to={item.href}>
+                      <item.icon className="h-4 w-4" />
+                      <span>{item.title}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+        <SidebarGroup>
+          <SidebarGroupLabel>
+            <Cable className="h-3.5 w-3.5 mr-1 inline-block" />
+            Conectividade
+          </SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {connectivityNav.map((item) => (
                 <SidebarMenuItem key={item.href}>
                   <SidebarMenuButton
                     asChild

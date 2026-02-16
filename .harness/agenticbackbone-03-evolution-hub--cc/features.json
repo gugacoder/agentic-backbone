@@ -225,7 +225,8 @@
     "id": "F-013",
     "name": "Hub API layer for Evolution",
     "description": "Criar src/api/evolution.ts no hub com tipos TS, queries (health, instances, instance detail, settings, qr) e mutations (create, delete, reconnect, restart, updateSettings) usando TanStack React Query.",
-    "status": "failing",
+    "status": "passing",
+    "completed_at": "2026-02-16T21:00:00Z",
     "priority": 13,
     "tests": [
       "Arquivo src/api/evolution.ts existe no hub",
@@ -242,7 +243,8 @@
     "id": "F-014",
     "name": "Hub sidebar and routing",
     "description": "Adicionar secao 'Conectividade' no sidebar (entre Resources e Admin) com item 'WhatsApp' (icone MessageCircle). Criar rotas: /conectividade, /conectividade/whatsapp (search param view), /conectividade/whatsapp/$name (search param tab). Paginas stub.",
-    "status": "failing",
+    "status": "passing",
+    "completed_at": "2026-02-16T21:00:00Z",
     "priority": 14,
     "tests": [
       "Secao 'Conectividade' no sidebar com icone Cable entre Resources e Admin",
@@ -260,7 +262,8 @@
     "id": "F-015",
     "name": "Connectivity index page",
     "description": "Implementar src/pages/connectivity.tsx — pagina indice /conectividade com grid de cards por tipo de conectividade. Por ora apenas WhatsApp com icone, status resumido (N online, N offline), link para pagina de gestao.",
-    "status": "failing",
+    "status": "passing",
+    "completed_at": "2026-02-16T21:00:00Z",
     "priority": 15,
     "tests": [
       "Pagina renderiza em /conectividade com PageHeader",
