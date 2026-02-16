@@ -38,7 +38,8 @@
     "id": "F-003",
     "name": "MCP client lifecycle",
     "description": "Implementar criação de MCP clients no início de runKaiAgent() e fechamento no finally block. Usar createMCPClient do @ai-sdk/mcp para cada entry em mcpServers",
-    "status": "failing",
+    "status": "passing",
+    "completed_at": "2026-02-16",
     "priority": 3,
     "tests": [
       "Para cada entry em options.mcpServers, createMCPClient é chamado com o transport configurado",
@@ -57,7 +58,7 @@
     "id": "F-004",
     "name": "Tool merging with priority",
     "description": "Mergear ferramentas MCP com codingTools no streamText(). CodingTools têm prioridade — se um MCP server expõe uma tool com mesmo nome, a codingTool prevalece",
-    "status": "blocked",
+    "status": "failing",
     "priority": 4,
     "tests": [
       "Tools MCP são mergeadas com codingTools e passadas ao streamText()",
@@ -74,7 +75,7 @@
     "id": "F-005",
     "name": "Graceful failure",
     "description": "Se um MCP server não estiver disponível ou falhar ao conectar, emitir warning via console.warn e continuar sem ele. Timeout de conexão de 10 segundos",
-    "status": "blocked",
+    "status": "failing",
     "priority": 5,
     "tests": [
       "Se createMCPClient falha (server indisponível), erro é capturado com try/catch",
@@ -112,7 +113,7 @@
     "id": "F-007",
     "name": "Backbone KAI provider integration",
     "description": "Atualizar o provider KAI no Backbone (providers/kai.ts) para propagar mcpServers das options para runKaiAgent(). Converter formato Record do Backbone para McpServerConfig[] do SDK",
-    "status": "blocked",
+    "status": "failing",
     "priority": 7,
     "tests": [
       "providers/kai.ts passa mcpServers para runKaiAgent() quando disponível nas options",

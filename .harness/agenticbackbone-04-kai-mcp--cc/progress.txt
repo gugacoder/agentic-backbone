@@ -1,7 +1,7 @@
 # Progress — 04-kai-mcp
 
 ## Current Status
-F-002 concluída. McpServerConfig interface + mcpServers em KaiAgentOptions + export no index.ts. 2/8 features complete.
+F-003 concluída. MCP client lifecycle implementado em runKaiAgent(): createMCPClient para cada server, client.tools() para coletar ferramentas, finally block fecha todos os clients. 3/8 features complete.
 
 ## Specs Path
 D:\sources\codr.studio\cia-prime-care\agentic-backbone\packages\kai-sdk\milestones\04-kai-mcp
@@ -18,7 +18,7 @@ D:\sources\codr.studio\cia-prime-care\agentic-backbone\packages\kai-sdk\mileston
 
 - [x] F-001 MCP dependency — Adicionar @ai-sdk/mcp ao package.json
 - [x] F-002 MCP types — McpServerConfig interface + mcpServers em KaiAgentOptions
-- [ ] F-003 MCP client lifecycle — Criar/fechar MCP clients em runKaiAgent()
+- [x] F-003 MCP client lifecycle — Criar/fechar MCP clients em runKaiAgent()
 - [ ] F-004 Tool merging with priority — Mergear MCP tools com codingTools (coding tem prioridade)
 - [ ] F-005 Graceful failure — Falha de conexão emite warning e continua
 - [ ] F-006 mcp_connected event — Novo evento tipado em KaiAgentEvent
@@ -34,19 +34,21 @@ D:\sources\codr.studio\cia-prime-care\agentic-backbone\packages\kai-sdk\mileston
 5. **Sem reconexão automática**: Se um server cair mid-session, tools dele param de funcionar
 6. **Sem OAuth**: Apenas HTTP com headers fixos e stdio
 7. **Sem MCP resources/prompts**: Apenas tools do protocolo MCP
+8. **Transport mapping**: McpServerConfig.transport.type "http" → MCPTransportConfig, "stdio" → Experimental_StdioMCPTransport (custom MCPTransport from @ai-sdk/mcp/mcp-stdio)
 
-## Files to Modify
+## Files Modified
 
 ### packages/kai-sdk/
 - `package.json` — adicionar @ai-sdk/mcp dependency ✅
 - `src/types.ts` — McpServerConfig, mcpServers em KaiAgentOptions ✅
-- `src/agent.ts` — MCP client lifecycle, tool merging, event emission
+- `src/agent.ts` — MCP client lifecycle (createMCPClient, client.tools(), finally close), tool merging, transport mapping ✅
 - `src/index.ts` — exportar McpServerConfig ✅
 
 ### apps/backbone/
-- `src/agent/providers/kai.ts` — propagar mcpServers para runKaiAgent()
+- `src/agent/providers/kai.ts` — propagar mcpServers para runKaiAgent() (pendente F-007)
 
 ## Session Notes
 - Session 1 (Initializer): Harness criado para onda 04-kai-mcp. 8 features, PRP único e bem definido.
 - Session 2 (CC): F-001 implementada. @ai-sdk/mcp@^1.0.21 adicionado.
-- Session 3 (CC): F-002 implementada. McpServerConfig interface com transport union (http|stdio), mcpServers opcional em KaiAgentOptions, tipo exportado no index.ts. Build passa limpo. Próxima: F-003 MCP client lifecycle.
+- Session 3 (CC): F-002 implementada. McpServerConfig interface com transport union (http|stdio), mcpServers opcional em KaiAgentOptions, tipo exportado no index.ts. Build passa limpo.
+- Session 4 (CC): F-003 implementada. MCP client lifecycle em runKaiAgent(): imports createMCPClient + MCPClient de @ai-sdk/mcp e StdioMCPTransport de @ai-sdk/mcp/mcp-stdio. Helper createMcpTransport() mapeia McpServerConfig para transport correto. Loop cria clients, coleta tools via client.tools(). Finally block fecha todos os clients. Tool merge já implementado com spread order (mcpTools primeiro, codingTools sobrescrevem). Build passa limpo (kai-sdk + backbone). Próxima: F-004 Tool merging with priority.
