@@ -97,6 +97,11 @@ class SSEHub {
     eventBus.on("job:status", (evt: JobStatusEvent) => {
       this.broadcast("system", "job:status", evt);
     });
+
+    // Forward all module events to SSE (dynamic keys: module:{name}:{event})
+    eventBus.onAnyModuleEvent((key, payload) => {
+      this.broadcast("system", key, payload);
+    });
   }
 }
 

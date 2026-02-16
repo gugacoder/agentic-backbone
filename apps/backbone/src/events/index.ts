@@ -101,6 +101,46 @@ export class BackboneEventBus {
   ): BackboneEventMap[K] | undefined {
     return this.lastEvents.get(event) as BackboneEventMap[K] | undefined;
   }
+
+  // --- Module event extensions (dynamic keys, untyped payloads) ---
+
+  private moduleListeners: ((key: string, payload: unknown) => void)[] = [];
+
+  /** Subscribe to ALL module events (used by SSE hub). */
+  onAnyModuleEvent(listener: (key: string, payload: unknown) => void): void {
+    this.moduleListeners.push(listener);
+  }
+
+  emitModule(moduleName: string, event: string, payload: unknown): void {
+    const key = `module:${moduleName}:${event}`;
+    this.lastEvents.set(key, payload);
+    this.emitter.emit(key, payload);
+    for (const listener of this.moduleListeners) {
+      listener(key, payload);
+    }
+  }
+
+  onModule(
+    moduleName: string,
+    event: string,
+    listener: (payload: unknown) => void
+  ): void {
+    const key = `module:${moduleName}:${event}`;
+    this.emitter.on(key, listener);
+  }
+
+  offModule(
+    moduleName: string,
+    event: string,
+    listener: (payload: unknown) => void
+  ): void {
+    const key = `module:${moduleName}:${event}`;
+    this.emitter.off(key, listener);
+  }
+
+  getLastModuleEvent(moduleName: string, event: string): unknown {
+    return this.lastEvents.get(`module:${moduleName}:${event}`);
+  }
 }
 
 export const eventBus = new BackboneEventBus();
