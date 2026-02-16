@@ -48,4 +48,8 @@ export interface KaiAgentOptions {
   onCodeSearch?: (query: string) => Promise<Array<{ title: string; url: string; content: string }>>;
   /** MCP servers to connect to. Tools from these servers are merged with codingTools. */
   mcpServers?: McpServerConfig[];
+  /** Extra Vercel AI SDK tools to merge. Useful for in-process tools that aren't MCP servers. */
+  tools?: Record<string, any>;
+  /** Override context window size (tokens) for the model. Takes precedence over the built-in model map. */
+  contextWindow?: number;
 }
