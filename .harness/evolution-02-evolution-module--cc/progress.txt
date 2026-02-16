@@ -1,0 +1,78 @@
+== HARNESS: agenticbackbone-02-evolution-module--cc ==
+
+Current Status: COMPLETE — 13/13 features passing
+
+Specs Path: D:\sources\codr.studio\cia-prime-care\agentic-backbone\apps\backbone\milestones\02-evolution-module
+Related PRP: 01-module-system (prerequisite), 02-evolution-module (main)
+
+Environment:
+  Runtime: Node.js + TypeScript (ES2022, ESM-only)
+  Framework: Hono (HTTP), @anthropic-ai/claude-agent-sdk
+  Database: SQLite (better-sqlite3 + sqlite-vec)
+  Package Manager: npm (workspaces monorepo)
+  Dev Command: npm run dev:backbone (tsx watch with .env)
+  Build Command: npm run build --workspace=apps/backbone
+  Platform: docker compose -f docker-compose.platform.yml -f docker-compose.platform.dev-ports.yml up -d
+  Evolution API: evoapicloud/evolution-api:v2.3.7 (port 8080 internal, EXPORT_EVOLUTION_PORT external)
+
+== FEATURES ==
+
+--- Module System Infrastructure (PRP 01 — prerequisite) ---
+
+[x] F-001  Module System Types — src/modules/types.ts com BackboneModule, ModuleContext, ModuleHealth
+[x] F-002  Module Loader — src/modules/loader.ts com startModules(), stopModules(), getModuleHealth()
+[x] F-003  Event Bus Module Extension — emitModule(), onModule(), offModule() no BackboneEventBus
+[x] F-004  Module System Integration — startup/shutdown integration, /health, src/modules/index.ts
+
+--- Evolution Module (PRP 02 — main) ---
+
+[x] F-005  Evolution Module Types — src/modules/evolution/types.ts
+[x] F-006  Evolution Config Loader — src/modules/evolution/config.ts + context/modules/evolution/CONFIG.yaml
+[x] F-007  Evolution Probe (Pilar 1) — loop autonomo de health check da API com maquina de estados
+[x] F-008  Instance State Tracker (Pilar 2) — rastreamento temporal de estado por instancia
+[x] F-009  Pattern Detection (Pilar 3) — flapping e degradacao prolongada
+[x] F-010  Corrective Actions (Pilar 5) — reconnect/restart com retry policy
+[x] F-011  Evolution HTTP Routes — GET /health, GET /instances, POST reconnect/restart
+[x] F-012  Evolution Module Entry Point — orquestrador que implementa BackboneModule
+[x] F-013  Build Validation — compilacao final sem erros
+
+== ARCHITECTURE DECISIONS ==
+
+1. Module system precede Evolution module — F-001..F-004 criam a infraestrutura de modulos antes do primeiro modulo concreto
+2. Registro explicito de modulos (nao discovery) — ordem de init importa, import esquecido e mais facil de depurar
+3. Falha de modulo NAO derruba backbone — start() envolto em try-catch no loader
+4. Eventos de modulo usam namespace 'module:{name}:{evento}' — dinamicos, sem tipagem em BackboneEventMap
+5. Estado de instancias em memoria (Map) — reconstruido a cada boot, nao persiste em disco
+6. Probe usa fetchInstances (nao /health) — cada probe traz dados uteis para o state tracker
+7. Acoes corretivas NAO sao automaticas — modulo detecta e disponibiliza, operador/agente decide
+8. Config de comportamento em YAML (context/modules/evolution/CONFIG.yaml) — editavel sem rebuild
+9. Env vars (EVOLUTION_API_URL, EVOLUTION_API_KEY) do .env — sem defaults em codigo
+10. Rotas de modulo protegidas por JWT — montadas atras do middleware barrier existente
+
+== SESSION NOTES ==
+
+Session 1 (Initializer): Harness criado para onda agenticbackbone-02-evolution-module--cc
+  - 13 features identificadas (4 infra module system + 8 evolution module + 1 build validation)
+  - Todas as features iniciam como failing
+  - Prerequisito: PRP 01 (module system) nao implementado — features F-001..F-004 cobrem isso
+  - src/modules/ nao existe ainda — precisa ser criado do zero
+  - Evolution API ja configurada no docker-compose.platform.yml (evolution.internal:8080)
+  - Adapter evolution ja existe em context/shared/adapters/evolution/ADAPTER.yaml (passivo)
+
+Session 2 (Previous — multiple runs): Implementacao completa de todas as 13 features
+  - Implementou sistema de modulos (types.ts, loader.ts, index.ts) + extensao do event bus
+  - Implementou modulo evolution completo (types, config, probe, state, patterns, actions, routes, index)
+  - Integrou no backbone: startModules/stopModules no lifecycle, /health com modules, SSE forwarding
+  - Criou CONFIG.yaml com defaults do PRP
+  - Build compila sem erros, sem imports circulares, fronteiras respeitadas
+  - NOTA: harness nao foi atualizado (features ficaram como failing/blocked/in_progress)
+
+Session 3 (Current): Verificacao e finalizacao do milestone
+  - Executou protocolo de startup, detectou que todo o codigo ja existia
+  - Verificou todas as 13 features contra seus criterios de teste individualmente
+  - Build confirmado: `npm run build --workspace=apps/backbone` passa sem erros
+  - Circular dependency check: `npx madge --circular` — nenhuma dependencia circular
+  - Boundary check: evolution module usa apenas `import type` de events (sem runtime coupling)
+  - Boundary check: backbone so importa `evolutionModule` de evolution (via modules/index.ts)
+  - Atualizou features.json (13/13 passing) e progress.txt
+  - Milestone 02-evolution-module COMPLETO

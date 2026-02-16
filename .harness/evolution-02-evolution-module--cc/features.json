@@ -1,0 +1,287 @@
+[
+  {
+    "id": "F-001",
+    "name": "Module System Types",
+    "description": "Criar src/modules/types.ts com interfaces BackboneModule, ModuleContext e ModuleHealth conforme PRP 01",
+    "status": "passing",
+    "priority": 1,
+    "completed_at": "2026-02-16T21:00:00Z",
+    "tests": [
+      "Arquivo src/modules/types.ts existe e exporta BackboneModule, ModuleContext, ModuleHealth",
+      "BackboneModule define name (string), start(ctx), stop(), health(), routes? (Hono)",
+      "ModuleContext define eventBus, dbPath, contextDir, log, env",
+      "ModuleHealth define status ('healthy'|'degraded'|'unhealthy') e details? (Record<string, unknown>)",
+      "npm run build --workspace=apps/backbone compila sem erros"
+    ],
+    "dependencies": [],
+    "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\01-module-system\\PRP.md"
+  },
+  {
+    "id": "F-002",
+    "name": "Module Loader",
+    "description": "Criar src/modules/loader.ts com startModules(), stopModules(), getModuleHealth(). startModules cria ModuleContext, garante contextDir, chama start() com try-catch, monta routes. stopModules chama stop() em ordem inversa.",
+    "status": "passing",
+    "priority": 2,
+    "completed_at": "2026-02-16T21:00:00Z",
+    "tests": [
+      "Arquivo src/modules/loader.ts exporta startModules(), stopModules(), getModuleHealth()",
+      "startModules() itera modulos em ordem, cria ModuleContext, chama start(ctx)",
+      "Se start() falha, modulo fica unhealthy mas backbone nao para",
+      "stopModules() chama stop() em ordem inversa do array",
+      "getModuleHealth() retorna mapa de saude de cada modulo",
+      "Rotas de modulos sao montadas em /api/modules/{name}/ dentro do JWT barrier",
+      "npm run build --workspace=apps/backbone compila sem erros"
+    ],
+    "dependencies": [
+      "F-001"
+    ],
+    "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\01-module-system\\PRP.md"
+  },
+  {
+    "id": "F-003",
+    "name": "Event Bus Module Extension",
+    "description": "Adicionar emitModule(), onModule(), offModule() ao BackboneEventBus para suportar eventos dinamicos de modulos com namespace module:{name}:{evento}. Eventos de modulo devem aparecer em lastEvents e no SSE hub.",
+    "status": "passing",
+    "priority": 3,
+    "completed_at": "2026-02-16T21:00:00Z",
+    "tests": [
+      "BackboneEventBus tem metodos emitModule(moduleName, event, payload), onModule(), offModule()",
+      "emitModule('evolution', 'api-online', payload) emite evento 'module:evolution:api-online'",
+      "Eventos de modulo sao armazenados em lastEvents",
+      "Eventos de modulo aparecem no SSE stream de /system/events",
+      "npm run build --workspace=apps/backbone compila sem erros"
+    ],
+    "dependencies": [
+      "F-001"
+    ],
+    "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\01-module-system\\PRP.md"
+  },
+  {
+    "id": "F-004",
+    "name": "Module System Integration",
+    "description": "Integrar sistema de modulos no backbone: importar e chamar startModules() no startup (apos wireEventBusToHooks), stopModules() no shutdown. Criar src/modules/index.ts com array de modulos. Adicionar secao 'modules' no endpoint /health.",
+    "status": "passing",
+    "priority": 4,
+    "completed_at": "2026-02-16T21:00:00Z",
+    "tests": [
+      "src/modules/index.ts exporta array de modulos registrados",
+      "index.ts chama startModules() apos wireEventBusToHooks()",
+      "onShutdown chama stopModules() antes de process.exit()",
+      "GET /health retorna secao 'modules' com saude de cada modulo",
+      "npm run build --workspace=apps/backbone compila sem erros"
+    ],
+    "dependencies": [
+      "F-002",
+      "F-003"
+    ],
+    "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\01-module-system\\PRP.md"
+  },
+  {
+    "id": "F-005",
+    "name": "Evolution Module Types",
+    "description": "Criar src/modules/evolution/types.ts com tipos internos do modulo: EvolutionConfig, ProbeResult, InstanceState, TransitionEvent, ActionResult, RetryTracker etc.",
+    "status": "passing",
+    "priority": 5,
+    "completed_at": "2026-02-16T21:00:00Z",
+    "tests": [
+      "Arquivo src/modules/evolution/types.ts existe e exporta todos os tipos internos",
+      "EvolutionConfig define probe (intervalMs, timeoutMs), thresholds (flapping, prolongedOfflineMs), actions (maxRetries, cooldownMs)",
+      "ProbeResult define timestamp, status, responseTimeMs, error",
+      "InstanceState define instanceName, instanceId, state, since, previousState, owner",
+      "npm run build --workspace=apps/backbone compila sem erros"
+    ],
+    "dependencies": [
+      "F-001"
+    ],
+    "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\02-evolution-module\\PRP.md"
+  },
+  {
+    "id": "F-006",
+    "name": "Evolution Config Loader",
+    "description": "Criar src/modules/evolution/config.ts para ler e parsear context/modules/evolution/CONFIG.yaml com defaults do PRP. Criar o CONFIG.yaml no context.",
+    "status": "passing",
+    "priority": 6,
+    "completed_at": "2026-02-16T21:00:00Z",
+    "tests": [
+      "Arquivo src/modules/evolution/config.ts exporta funcao para carregar config",
+      "Arquivo context/modules/evolution/CONFIG.yaml existe com valores default do PRP",
+      "Config carregada corretamente com probe.intervalMs=10000, probe.timeoutMs=5000",
+      "Config inclui thresholds.flapping.changes=3, thresholds.flapping.windowMs=300000",
+      "Config inclui thresholds.prolongedOfflineMs=300000, actions.maxRetries=3, actions.cooldownMs=60000",
+      "npm run build --workspace=apps/backbone compila sem erros"
+    ],
+    "dependencies": [
+      "F-005"
+    ],
+    "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\02-evolution-module\\PRP.md"
+  },
+  {
+    "id": "F-007",
+    "name": "Evolution Probe (Pilar 1)",
+    "description": "Criar src/modules/evolution/probe.ts — loop autonomo que consulta GET /instance/fetchInstances da Evolution API em intervalos fixos. Implementa maquina de estados (unknown → online/offline) e emite eventos api-online e api-offline nas transicoes.",
+    "status": "passing",
+    "priority": 7,
+    "completed_at": "2026-02-16T21:00:00Z",
+    "tests": [
+      "Probe inicia no start() e para no stop()",
+      "Consulta GET {EVOLUTION_API_URL}/instance/fetchInstances com header apikey",
+      "Respeita intervalMs e timeoutMs da config",
+      "Transicao unknown→online e silenciosa (sem evento)",
+      "Transicao unknown→offline emite module:evolution:api-offline",
+      "Transicao online→offline emite module:evolution:api-offline",
+      "Transicao offline→online emite module:evolution:api-online",
+      "ProbeResult registrado com timestamp, status, responseTimeMs, error",
+      "Nao quebra se Evolution API esta inacessivel no boot",
+      "npm run build --workspace=apps/backbone compila sem erros"
+    ],
+    "dependencies": [
+      "F-006",
+      "F-003"
+    ],
+    "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\02-evolution-module\\PRP.md"
+  },
+  {
+    "id": "F-008",
+    "name": "Instance State Tracker (Pilar 2)",
+    "description": "Criar src/modules/evolution/state.ts — rastreamento de estado por instancia com registro temporal. Detecta instancias novas (discovered), removidas (removed), e transicoes de estado (connected, disconnected, reconnecting). Calcula durationInPreviousState.",
+    "status": "passing",
+    "priority": 8,
+    "completed_at": "2026-02-16T21:00:00Z",
+    "tests": [
+      "Cada instancia rastreada com instanceName, instanceId, state, since, previousState, owner",
+      "Transicao open→close emite module:evolution:instance-disconnected",
+      "Transicao open→connecting emite module:evolution:instance-reconnecting",
+      "Transicao close→open emite module:evolution:instance-connected",
+      "Transicao connecting→open emite module:evolution:instance-connected",
+      "Transicao connecting→close emite module:evolution:instance-disconnected",
+      "Nova instancia detectada emite module:evolution:instance-discovered",
+      "Instancia removida emite module:evolution:instance-removed",
+      "Payload inclui ts, instanceName, state, previousState, since, durationInPreviousState",
+      "Estado armazenado em memoria (Map), reconstruido a cada boot",
+      "npm run build --workspace=apps/backbone compila sem erros"
+    ],
+    "dependencies": [
+      "F-007"
+    ],
+    "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\02-evolution-module\\PRP.md"
+  },
+  {
+    "id": "F-009",
+    "name": "Pattern Detection (Pilar 3)",
+    "description": "Criar src/modules/evolution/patterns.ts — deteccao de flapping (oscilacao) e degradacao prolongada. Flapping: >= N mudancas em W ms emite instance-unstable. Degradacao: close por > T ms emite instance-prolonged-offline (deduplicado por ocorrencia).",
+    "status": "passing",
+    "priority": 9,
+    "completed_at": "2026-02-16T21:00:00Z",
+    "tests": [
+      "Detecta flapping: >= 3 mudancas em 300000ms emite module:evolution:instance-unstable",
+      "Payload de flapping: ts, instanceName, changeCount, windowMs",
+      "Array circular de timestamps de mudanca por instancia",
+      "Detecta prolonged-offline: close por > 300000ms emite module:evolution:instance-prolonged-offline",
+      "Payload de prolonged-offline: ts, instanceName, offlineSinceMs, durationMs",
+      "Evento prolonged-offline emitido apenas uma vez por ocorrencia de offline",
+      "Se instancia volta e cai de novo, nova ocorrencia pode ser emitida",
+      "Verificacao de prolonged-offline ocorre a cada ciclo do probe",
+      "npm run build --workspace=apps/backbone compila sem erros"
+    ],
+    "dependencies": [
+      "F-008"
+    ],
+    "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\02-evolution-module\\PRP.md"
+  },
+  {
+    "id": "F-010",
+    "name": "Corrective Actions (Pilar 5)",
+    "description": "Criar src/modules/evolution/actions.ts — acoes corretivas reconnect e restart com retry policy. Cooldown de 60s entre tentativas, max 3 retries por ocorrencia. Emite action-success, action-failed, action-exhausted. Contadores resetam quando instancia volta para open.",
+    "status": "passing",
+    "priority": 10,
+    "completed_at": "2026-02-16T21:00:00Z",
+    "tests": [
+      "Acao reconnect chama GET /instance/connect/{name} na Evolution API",
+      "Acao restart chama PUT /instance/restart/{name} na Evolution API",
+      "Cooldown respeitado: rejeita se ultima tentativa < cooldownMs atras",
+      "Max retries respeitado: rejeita se tentativas >= maxRetries para esta ocorrencia",
+      "Sucesso emite module:evolution:action-success e reseta contador",
+      "Falha emite module:evolution:action-failed e incrementa contador",
+      "Contador esgotado emite module:evolution:action-exhausted",
+      "Contadores resetam quando instancia transiciona para open",
+      "npm run build --workspace=apps/backbone compila sem erros"
+    ],
+    "dependencies": [
+      "F-008",
+      "F-006"
+    ],
+    "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\02-evolution-module\\PRP.md"
+  },
+  {
+    "id": "F-011",
+    "name": "Evolution HTTP Routes",
+    "description": "Criar src/modules/evolution/routes.ts com rotas do modulo: GET /health (saude do modulo + estado da API), GET /instances (lista completa), GET /instances/:name (detalhe), POST /instances/:name/reconnect, POST /instances/:name/restart. Respostas de erro: 429 cooldown, 409 retries esgotados, 503 api offline, 404 instancia nao encontrada.",
+    "status": "passing",
+    "priority": 11,
+    "completed_at": "2026-02-16T21:00:00Z",
+    "tests": [
+      "GET /api/modules/evolution/health retorna estado do modulo, status da API, ultimo probe, response time",
+      "GET /api/modules/evolution/instances retorna lista com state, since, previousState, duracao por instancia",
+      "GET /api/modules/evolution/instances/:name retorna detalhe de instancia especifica",
+      "POST /api/modules/evolution/instances/:name/reconnect executa reconnect",
+      "POST /api/modules/evolution/instances/:name/restart executa restart",
+      "Retorna 429 com retryAfterMs se cooldown ativo",
+      "Retorna 409 com attempts e maxRetries se retries esgotados",
+      "Retorna 503 se API offline",
+      "Retorna 404 se instancia nao encontrada",
+      "npm run build --workspace=apps/backbone compila sem erros"
+    ],
+    "dependencies": [
+      "F-008",
+      "F-010"
+    ],
+    "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\02-evolution-module\\PRP.md"
+  },
+  {
+    "id": "F-012",
+    "name": "Evolution Module Entry Point",
+    "description": "Criar src/modules/evolution/index.ts que implementa BackboneModule e orquestra todos os componentes: inicia probe no start(), para no stop(), retorna saude no health(), expoe routes. Registrar no array de modulos em src/modules/index.ts.",
+    "status": "passing",
+    "priority": 12,
+    "completed_at": "2026-02-16T21:00:00Z",
+    "tests": [
+      "src/modules/evolution/index.ts exporta evolutionModule que implementa BackboneModule",
+      "start(ctx) inicia o probe, inicializa state tracker, pattern detector, action handler",
+      "stop() para o probe e limpa recursos",
+      "health() retorna status (healthy/degraded/unhealthy) baseado no estado da API e instancias",
+      "routes expoe a Hono sub-app do modulo",
+      "Modulo registrado no array em src/modules/index.ts",
+      "Todos os eventos aparecem no SSE de /system/events",
+      "/health do backbone inclui saude do modulo evolution",
+      "npm run build --workspace=apps/backbone compila sem erros"
+    ],
+    "dependencies": [
+      "F-004",
+      "F-007",
+      "F-008",
+      "F-009",
+      "F-010",
+      "F-011"
+    ],
+    "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\02-evolution-module\\PRP.md"
+  },
+  {
+    "id": "F-013",
+    "name": "Build Validation",
+    "description": "Validacao final: npm run build --workspace=apps/backbone compila sem erros com todo o sistema de modulos e o modulo Evolution integrados.",
+    "status": "passing",
+    "priority": 13,
+    "completed_at": "2026-02-16T21:00:00Z",
+    "tests": [
+      "npm run build --workspace=apps/backbone executa sem erros",
+      "Nenhum import circular detectado",
+      "Modulo Evolution nao importa internals do backbone (somente ModuleContext)",
+      "Backbone nao importa internals do modulo Evolution (somente BackboneModule)",
+      "Todos os tipos TypeScript compilam corretamente"
+    ],
+    "dependencies": [
+      "F-012"
+    ],
+    "prp_path": null
+  }
+]
