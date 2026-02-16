@@ -5,9 +5,9 @@
 
 ## Current Status
 
-**Phase:** Implementing — F-001, F-002 done, working through feature list.
-**Features:** 13 total (2 passing, 11 remaining)
-**Build:** Compilando (7 tools — 6 existentes + ListDir + novos tipos KaiAgentEvent)
+**Phase:** Implementing — F-001, F-002, F-003 done, working through feature list.
+**Features:** 13 total (3 passing, 10 remaining)
+**Build:** Compilando (8 tools — 6 existentes + ListDir + MultiEdit + novos tipos KaiAgentEvent)
 
 ---
 
@@ -33,7 +33,7 @@ milestones/01-better-kay/PRP.md
 
 - [x] F-001: KaiAgentEvent types expansion (priority 1) ✓ 2026-02-16
 - [x] F-002: T08 — ListDir tool (priority 2) ✓ 2026-02-16
-- [ ] F-003: T07 — MultiEdit tool (priority 3)
+- [x] F-003: T07 — MultiEdit tool (priority 3) ✓ 2026-02-16
 - [ ] F-004: T05+T06 — TodoWrite + TodoRead tools (priority 4, depends: F-001)
 - [ ] F-005: T09 — Diagnostics tool (priority 5)
 - [ ] F-006: T01 — AskUser tool (priority 6, depends: F-001)
@@ -82,14 +82,21 @@ Session 2 (Coding Agent): F-001 KaiAgentEvent types expansion
 
 Session 3 (Coding Agent): F-002 ListDir tool
 - Created src/tools/list-dir.ts with listDirTool export
-- Recursive tree builder with tree-drawing connectors (├──, └──, │)
-- Parameters: path (required, z.string()), depth (optional, default 3), ignore (optional, default node_modules/.git/dist/build)
+- Recursive tree builder with tree-drawing connectors
+- Parameters: path (required), depth (optional, default 3), ignore (optional, default node_modules/.git/dist/build)
 - Directories sorted first, then files, alphabetically within groups
-- Dirs marked with trailing /
-- Depth limiting: stops recursion at maxDepth
-- Ignore filtering: excludes entries matching names in ignore array
-- 50KB output limit with truncation
-- Registered as ListDir in codingTools (src/tools/index.ts)
-- Functional smoke test passed: tree renders correctly, depth limiting works
+- Depth limiting, ignore filtering, 50KB output limit with truncation
+- Registered as ListDir in codingTools
 - Build passes cleanly
 - Next priority: F-003 (MultiEdit tool)
+
+Session 4 (Coding Agent): F-003 MultiEdit tool
+- Created src/tools/multi-edit.ts with multiEditTool export
+- Parameters: file_path (required, z.string()), edits (required, array of { old_string, new_string, replace_all? })
+- Atomicity: edits applied sequentially to in-memory content; if any old_string not found, returns early without writing to disk
+- Uniqueness check: if old_string appears multiple times and replace_all is false, rejects with error
+- Reuses same logic pattern as Edit tool
+- Registered as MultiEdit in codingTools (8 tools total)
+- Functional smoke test passed: sequential edits, atomic rollback on failure, replace_all
+- Build passes cleanly
+- Next priority: F-004 (TodoWrite + TodoRead tools) or F-005 (Diagnostics tool)

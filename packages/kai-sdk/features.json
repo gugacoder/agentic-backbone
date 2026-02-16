@@ -39,7 +39,8 @@
     "id": "F-003",
     "name": "T07: MultiEdit tool",
     "description": "Criar src/tools/multi-edit.ts — aplica multiplas substituicoes num unico arquivo atomicamente. Parametros: file_path (string), edits (array de { old_string, new_string, replace_all? }). Se qualquer edit falhar, nenhum e aplicado. Reutilizar logica do Edit. Registrar em codingTools.",
-    "status": "failing",
+    "status": "passing",
+    "completed_at": "2026-02-16",
     "priority": 3,
     "tests": [
       "Arquivo src/tools/multi-edit.ts existe e exporta multiEditTool",
