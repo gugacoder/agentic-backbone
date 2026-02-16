@@ -1,7 +1,7 @@
 # Agent Harness Progress — agenticbackbone-02-kai-brain--cc
 
 ## Current Status
-F-007 PASSING — 3 system prompt modes integrated in runKaiAgent()
+F-008 PASSING — All 8/8 features complete. Milestone 02-kai-brain DONE.
 
 ## Specs Path
 D:\sources\codr.studio\cia-prime-care\agentic-backbone\packages\kai-sdk\milestones\02-kai-brain
@@ -22,7 +22,7 @@ D:\sources\codr.studio\cia-prime-care\agentic-backbone\packages\kai-sdk\mileston
 [x] F-005 system-option-types — system: string | { append } | undefined, cwd?: string adicionado
 [x] F-006 export-public-api — getSystemPrompt e discoverProjectContext exportados via index.ts
 [x] F-007 agent-integration-3-modes — 3 modos integrados: undefined(auto), {append}(base+ctx+extra), string(override)
-[ ] F-008 build-validation — Validacao final: build, exports, token budget
+[x] F-008 build-validation — Build OK, 10/10 exports resolvable, 811t/2000t budget, no runtime .md reads
 
 ## Architecture Decisions
 
@@ -103,3 +103,12 @@ D:\sources\codr.studio\cia-prime-care\agentic-backbone\packages\kai-sdk\mileston
 - Build passes clean
 - F-008 (build-validation) now unblocked — F-007 dependency satisfied
 - Next priority: F-008 (build-validation)
+
+### Session 2026-02-17T02:00
+- Completed F-008: Final build validation — all 4 acceptance criteria verified
+  - Build: `npm run build --workspace=packages/kai-sdk` compiles without errors
+  - Exports: all 10 public exports (functions + objects) resolvable from dist/index.js
+  - Token budget: system prompt with 6 standard tools = 811 tokens (well within 2000t limit)
+  - Runtime embedding: all .md content embedded as string constants; no fs.readFile for prompt modules
+  - discoverProjectContext uses readFile only for AGENTS.md/CLAUDE.md (allowed exception per PRP)
+- **Milestone 02-kai-brain COMPLETE: 8/8 features passing**
