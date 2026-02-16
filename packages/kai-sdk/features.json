@@ -1,267 +1,241 @@
 [
   {
     "id": "F-001",
-    "name": "KaiAgentEvent types",
-    "description": "Adicionar os novos tipos de evento (ask_user, todo_update) ao KaiAgentEvent em src/types.ts. Expandir a union type para suportar os eventos que as novas ferramentas vao emitir.",
+    "name": "KaiAgentEvent types expansion",
+    "description": "Adicionar os novos tipos de evento (ask_user, todo_update) ao KaiAgentEvent em src/types.ts. Expandir a union type para suportar os novos eventos que serao emitidos pelas ferramentas AskUser e TodoWrite.",
     "status": "failing",
     "priority": 1,
     "tests": [
-      "KaiAgentEvent inclui type 'ask_user' com campos question: string e options?: string[]",
-      "KaiAgentEvent inclui type 'todo_update' com campo todos: Array<{id, content, status, priority}>",
-      "Build passa sem erros: npm run build --workspace=packages/kai-sdk",
-      "Tipos existentes (init, text, result, usage) continuam funcionando"
+      "src/types.ts exporta KaiAgentEvent com type 'ask_user' contendo { question: string, options?: string[] }",
+      "src/types.ts exporta KaiAgentEvent com type 'todo_update' contendo { todos: Array<{ id, content, status, priority }> }",
+      "npm run build --workspace=packages/kai-sdk compila sem erros"
     ],
     "dependencies": [],
     "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\packages\\kai-sdk\\milestones\\01-better-kay\\PRP.md"
   },
   {
     "id": "F-002",
-    "name": "ListDir tool",
-    "description": "Criar src/tools/list-dir.ts — ferramenta para listar conteudo de diretorio como arvore indentada. Parametros: path (string, obrigatorio), depth (number, default 3), ignore (string[], default node_modules/.git/dist/build). Registrar em codingTools.",
+    "name": "T08: ListDir tool",
+    "description": "Criar src/tools/list-dir.ts — lista arquivos e pastas de um diretorio como arvore indentada. Parametros: path (string, obrigatorio), depth (number, opcional, default 3), ignore (string[], opcional, default ['node_modules', '.git', 'dist', 'build']). Retorna string com arvore de diretorio. Registrar em codingTools.",
     "status": "failing",
     "priority": 2,
     "tests": [
       "Arquivo src/tools/list-dir.ts existe e exporta listDirTool",
-      "Tool registrada como ListDir em src/tools/index.ts",
-      "Parametro path e obrigatorio",
+      "codingTools em src/tools/index.ts inclui ListDir",
+      "Parametro path e obrigatorio e validado com Zod",
       "Parametro depth e opcional com default 3",
-      "Parametro ignore e opcional com defaults para node_modules, .git, dist, build",
-      "Retorna arvore indentada de diretorio",
-      "Respeita profundidade maxima",
-      "Ignora padroes configurados",
-      "Build passa sem erros"
+      "Parametro ignore e opcional com default sensato",
+      "Retorna arvore indentada com dirs e files",
+      "Respeita depth maximo",
+      "Ignora padroes em ignore[]",
+      "npm run build --workspace=packages/kai-sdk compila sem erros"
     ],
     "dependencies": [],
     "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\packages\\kai-sdk\\milestones\\01-better-kay\\PRP.md"
   },
   {
     "id": "F-003",
-    "name": "MultiEdit tool",
-    "description": "Criar src/tools/multi-edit.ts — ferramenta para aplicar multiplas substituicoes atomicas num unico arquivo. Parametros: file_path (string), edits (array de {old_string, new_string, replace_all?}). Edicoes aplicadas sequencialmente; se qualquer uma falhar, nenhuma e aplicada. Registrar em codingTools.",
+    "name": "T07: MultiEdit tool",
+    "description": "Criar src/tools/multi-edit.ts — aplica multiplas substituicoes num unico arquivo atomicamente. Parametros: file_path (string), edits (array de { old_string, new_string, replace_all? }). Se qualquer edit falhar, nenhum e aplicado. Reutilizar logica do Edit. Registrar em codingTools.",
     "status": "failing",
     "priority": 3,
     "tests": [
       "Arquivo src/tools/multi-edit.ts existe e exporta multiEditTool",
-      "Tool registrada como MultiEdit em src/tools/index.ts",
+      "codingTools em src/tools/index.ts inclui MultiEdit",
       "Aplica multiplas edicoes sequencialmente",
-      "Comportamento atomico: se uma edicao falha, nenhuma e aplicada",
-      "Reutiliza logica similar ao Edit existente",
-      "Retorna contagem de edicoes aplicadas",
-      "Build passa sem erros"
+      "Se qualquer old_string nao for encontrada, nenhuma edicao e aplicada (atomicidade)",
+      "Suporta replace_all por edicao individual",
+      "Retorna quantas edicoes foram aplicadas",
+      "npm run build --workspace=packages/kai-sdk compila sem erros"
     ],
     "dependencies": [],
     "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\packages\\kai-sdk\\milestones\\01-better-kay\\PRP.md"
   },
   {
     "id": "F-004",
-    "name": "Diagnostics tool",
-    "description": "Criar src/tools/diagnostics.ts — wrapper inteligente sobre Bash que executa checadores de tipo/lint e formata a saida. Parametros: command (string, default 'npx tsc --noEmit'), file_path (string, opcional para filtrar erros). Registrar em codingTools.",
+    "name": "T05+T06: TodoWrite + TodoRead tools",
+    "description": "Criar src/tools/todo.ts com duas ferramentas: TodoWrite (cria/atualiza lista de tarefas) e TodoRead (le lista atual). A lista vive em memoria durante a sessao. TodoWrite emite evento 'todo_update' no AsyncGenerator. Parametros TodoWrite: todos (array de { id, content, status, priority }). TodoRead: sem parametros. Registrar ambas em codingTools.",
     "status": "failing",
     "priority": 4,
     "tests": [
-      "Arquivo src/tools/diagnostics.ts existe e exporta diagnosticsTool",
-      "Tool registrada como Diagnostics em src/tools/index.ts",
-      "Parametro command e opcional com default 'npx tsc --noEmit'",
-      "Parametro file_path e opcional para filtrar erros",
-      "Retorna erros formatados ou 'Nenhum erro encontrado.'",
-      "Build passa sem erros"
-    ],
-    "dependencies": [],
-    "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\packages\\kai-sdk\\milestones\\01-better-kay\\PRP.md"
-  },
-  {
-    "id": "F-005",
-    "name": "TodoWrite e TodoRead tools",
-    "description": "Criar src/tools/todo.ts — duas ferramentas no mesmo arquivo: TodoWrite (cria/atualiza lista de tarefas) e TodoRead (le lista atual). TodoWrite recebe array de {id, content, status, priority} e emite evento todo_update. TodoRead nao tem parametros. Estado vive em memoria na sessao. Registrar ambas em codingTools.",
-    "status": "failing",
-    "priority": 5,
-    "tests": [
       "Arquivo src/tools/todo.ts existe e exporta todoWriteTool e todoReadTool",
-      "TodoWrite registrada como TodoWrite em src/tools/index.ts",
-      "TodoRead registrada como TodoRead em src/tools/index.ts",
-      "TodoWrite aceita array de todos com id, content, status, priority",
-      "TodoWrite substitui lista inteira a cada chamada",
+      "codingTools em src/tools/index.ts inclui TodoWrite e TodoRead",
+      "TodoWrite aceita array de todos com id, content, status e priority",
+      "TodoWrite substitui a lista inteira a cada chamada",
       "TodoRead retorna lista formatada ou 'Nenhuma tarefa registrada.'",
-      "Build passa sem erros"
+      "Estado compartilhado entre TodoWrite e TodoRead na mesma sessao",
+      "npm run build --workspace=packages/kai-sdk compila sem erros"
     ],
     "dependencies": ["F-001"],
     "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\packages\\kai-sdk\\milestones\\01-better-kay\\PRP.md"
   },
   {
+    "id": "F-005",
+    "name": "T09: Diagnostics tool",
+    "description": "Criar src/tools/diagnostics.ts — wrapper inteligente sobre Bash que executa checagem de tipos/lint e retorna erros formatados. Parametros: command (string, opcional, default 'npx tsc --noEmit'), file_path (string, opcional, filtrar erros para arquivo). Retorna erros encontrados ou 'Nenhum erro encontrado.'. Registrar em codingTools.",
+    "status": "failing",
+    "priority": 5,
+    "tests": [
+      "Arquivo src/tools/diagnostics.ts existe e exporta diagnosticsTool",
+      "codingTools em src/tools/index.ts inclui Diagnostics",
+      "Parametro command e opcional com default 'npx tsc --noEmit'",
+      "Parametro file_path e opcional para filtrar erros",
+      "Executa comando e parseia saida para formato estruturado",
+      "Retorna 'Nenhum erro encontrado.' se limpo",
+      "npm run build --workspace=packages/kai-sdk compila sem erros"
+    ],
+    "dependencies": [],
+    "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\packages\\kai-sdk\\milestones\\01-better-kay\\PRP.md"
+  },
+  {
     "id": "F-006",
-    "name": "AskUser tool",
-    "description": "Criar src/tools/ask-user.ts — ferramenta para o agente fazer perguntas ao usuario durante execucao. Parametros: question (string, obrigatorio), options (string[], opcional). Emite evento ask_user no AsyncGenerator e aguarda resposta. O consumidor do SDK e responsavel por apresentar e devolver a resposta. Registrar em codingTools.",
+    "name": "T01: AskUser tool",
+    "description": "Criar src/tools/ask-user.ts — permite ao agente fazer perguntas ao usuario durante execucao. Parametros: question (string, obrigatorio), options (string[], opcional). Emite evento 'ask_user' no AsyncGenerator e aguarda resposta. O mecanismo de callback deve ser injetavel via KaiAgentOptions ou contexto da tool. Registrar em codingTools.",
     "status": "failing",
     "priority": 6,
     "tests": [
       "Arquivo src/tools/ask-user.ts existe e exporta askUserTool (ou factory)",
-      "Tool registrada como AskUser em src/tools/index.ts",
-      "Parametro question e obrigatorio (string)",
+      "codingTools em src/tools/index.ts inclui AskUser",
+      "Parametro question e obrigatorio",
       "Parametro options e opcional (string[])",
-      "Mecanismo de emissao de evento ask_user funciona",
+      "Mecanismo para emitir evento ask_user e aguardar resposta esta implementado",
       "Retorna string com a resposta do usuario",
-      "Build passa sem erros"
+      "npm run build --workspace=packages/kai-sdk compila sem erros"
     ],
     "dependencies": ["F-001"],
     "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\packages\\kai-sdk\\milestones\\01-better-kay\\PRP.md"
   },
   {
     "id": "F-007",
-    "name": "WebFetch tool",
-    "description": "Criar src/tools/web-fetch.ts — ferramenta para buscar conteudo de URLs e converter para markdown/texto. Parametros: url (string, obrigatorio), prompt (string, opcional para instrucao de extracao). Converter HTML para markdown, timeout 30s, limite 50KB. Registrar em codingTools.",
+    "name": "T02: WebFetch tool",
+    "description": "Criar src/tools/web-fetch.ts — busca conteudo de uma URL e retorna como markdown/texto. Parametros: url (string, obrigatorio), prompt (string, opcional). Converte HTML para markdown (adicionar dependencia turndown ou similar). Timeout 30s. Limite 50KB. Registrar em codingTools.",
     "status": "failing",
     "priority": 7,
     "tests": [
       "Arquivo src/tools/web-fetch.ts existe e exporta webFetchTool",
-      "Tool registrada como WebFetch em src/tools/index.ts",
-      "Parametro url e obrigatorio (string)",
-      "Parametro prompt e opcional (string)",
+      "codingTools em src/tools/index.ts inclui WebFetch",
+      "Parametro url e obrigatorio e validado com Zod",
+      "Parametro prompt e opcional",
+      "Faz fetch HTTP da URL",
       "Converte HTML para markdown",
-      "Timeout de 30 segundos",
-      "Limite de 50KB no conteudo retornado, trunca se exceder",
-      "Build passa sem erros"
+      "Trunca em 50KB",
+      "Timeout de 30 segundos implementado",
+      "npm run build --workspace=packages/kai-sdk compila sem erros"
     ],
     "dependencies": [],
     "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\packages\\kai-sdk\\milestones\\01-better-kay\\PRP.md"
   },
   {
     "id": "F-008",
-    "name": "WebSearch tool",
-    "description": "Criar src/tools/web-search.ts — ferramenta para pesquisar na web. Parametros: query (string, obrigatorio), numResults (number, default 5). Retorna titulo, URL e snippet de cada resultado. Provider plugavel via opcao em KaiAgentOptions. Registrar em codingTools.",
+    "name": "T03: WebSearch tool",
+    "description": "Criar src/tools/web-search.ts — pesquisa na web e retorna resultados formatados. Parametros: query (string, obrigatorio), numResults (number, opcional, default 5). Provider de busca plugavel via KaiAgentOptions. Retorna titulo, URL e snippet de cada resultado. Registrar em codingTools.",
     "status": "failing",
     "priority": 8,
     "tests": [
       "Arquivo src/tools/web-search.ts existe e exporta webSearchTool (ou factory)",
-      "Tool registrada como WebSearch em src/tools/index.ts",
-      "Parametro query e obrigatorio (string)",
+      "codingTools em src/tools/index.ts inclui WebSearch",
+      "Parametro query e obrigatorio",
       "Parametro numResults e opcional com default 5",
-      "Retorna string formatada com titulo, URL e snippet",
-      "Provider de busca e plugavel (nao hardcoded a um servico pago)",
-      "Build passa sem erros"
+      "Provider de busca e plugavel (nao hardcoded)",
+      "Retorna resultados formatados com titulo, URL e snippet",
+      "npm run build --workspace=packages/kai-sdk compila sem erros"
     ],
     "dependencies": [],
     "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\packages\\kai-sdk\\milestones\\01-better-kay\\PRP.md"
   },
   {
     "id": "F-009",
-    "name": "Task (sub-agente) tool",
-    "description": "Criar src/tools/task.ts — ferramenta para lancar sub-agentes. Parametros: description (string, 3-5 palavras), prompt (string, instrucoes detalhadas). Sub-agente recebe mesmas ferramentas, executa isolado, herda model/apiKey, usa runKaiAgent internamente. Registrar em codingTools.",
+    "name": "T04: Task (sub-agente) tool",
+    "description": "Criar src/tools/task.ts — lanca sub-agente para executar tarefa autonomamente. Parametros: description (string, obrigatorio), prompt (string, obrigatorio). Sub-agente recebe mesmas codingTools, executa em sessao isolada, herda model e apiKey do pai. Usa runKaiAgent() internamente. Respeita maxSteps (sub-limite). Registrar em codingTools.",
     "status": "failing",
     "priority": 9,
     "tests": [
       "Arquivo src/tools/task.ts existe e exporta taskTool (ou factory)",
-      "Tool registrada como Task em src/tools/index.ts",
-      "Parametro description e obrigatorio (string)",
-      "Parametro prompt e obrigatorio (string)",
-      "Sub-agente recebe codingTools",
-      "Sub-agente executa em sessao isolada sem historico do pai",
-      "Sub-agente herda model e apiKey do pai",
-      "Retorna string com resultado do sub-agente",
-      "Build passa sem erros"
+      "codingTools em src/tools/index.ts inclui Task",
+      "Parametro description e obrigatorio",
+      "Parametro prompt e obrigatorio",
+      "Sub-agente usa runKaiAgent() internamente",
+      "Sub-agente herda model e apiKey do agente pai",
+      "Sub-agente executa em sessao isolada (sem historico do pai)",
+      "Sub-agente tem sub-limite de maxSteps",
+      "Retorna resultado do sub-agente como string",
+      "npm run build --workspace=packages/kai-sdk compila sem erros"
     ],
     "dependencies": [],
     "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\packages\\kai-sdk\\milestones\\01-better-kay\\PRP.md"
   },
   {
     "id": "F-010",
-    "name": "ApplyPatch tool",
-    "description": "Criar src/tools/apply-patch.ts — ferramenta para aplicar patches multi-arquivo num formato envelope simplificado. Parametros: patch (string). Suporta Add File, Update File, Delete File. Registrar em codingTools.",
+    "name": "T10: Batch tool",
+    "description": "Criar src/tools/batch.ts — executa 2-10 chamadas de ferramentas simultaneamente via Promise.all(). Parametros: tool_calls (array de { tool: string, parameters: object }, min 2, max 10). Falhas parciais nao cancelam as outras. Nao permite Batch dentro de Batch. Referencia ferramentas pelo nome em codingTools. Registrar em codingTools.",
     "status": "failing",
     "priority": 10,
     "tests": [
-      "Arquivo src/tools/apply-patch.ts existe e exporta applyPatchTool",
-      "Tool registrada como ApplyPatch em src/tools/index.ts",
-      "Parametro patch e obrigatorio (string)",
-      "Suporta '*** Add File: path' — cria novo arquivo",
-      "Suporta '*** Update File: path' — aplica diffs com @@ context, -/+ lines",
-      "Suporta '*** Delete File: path' — remove arquivo",
-      "Retorna resumo das operacoes executadas",
-      "Build passa sem erros"
+      "Arquivo src/tools/batch.ts existe e exporta batchTool (ou factory)",
+      "codingTools em src/tools/index.ts inclui Batch",
+      "Parametro tool_calls valida min 2 e max 10 items",
+      "Executa todas as chamadas em paralelo com Promise.all()",
+      "Falhas parciais nao cancelam as demais",
+      "Nao permite Batch dentro de Batch (rejeita chamadas recursivas)",
+      "Retorna resultados indexados",
+      "npm run build --workspace=packages/kai-sdk compila sem erros"
     ],
     "dependencies": [],
     "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\packages\\kai-sdk\\milestones\\01-better-kay\\PRP.md"
   },
   {
     "id": "F-011",
-    "name": "Batch tool",
-    "description": "Criar src/tools/batch.ts — ferramenta para executar 2-10 chamadas de ferramentas em paralelo via Promise.all. Parametros: tool_calls (array de {tool, parameters}). Falhas parciais nao cancelam outras. Nao permite Batch dentro de Batch. Registrar em codingTools.",
+    "name": "T11: ApplyPatch tool",
+    "description": "Criar src/tools/apply-patch.ts — aplica patches multi-arquivo no formato envelope (Begin Patch / End Patch). Suporta Add File, Update File, Delete File. Formato diff com +/- e @@ context lines. Registrar em codingTools.",
     "status": "failing",
     "priority": 11,
     "tests": [
-      "Arquivo src/tools/batch.ts existe e exporta batchTool (ou factory)",
-      "Tool registrada como Batch em src/tools/index.ts",
-      "Parametro tool_calls e obrigatorio (array, min 2, max 10)",
-      "Executa chamadas em paralelo com Promise.all",
-      "Falhas parciais nao cancelam as outras",
-      "Nao permite Batch dentro de Batch (bloqueia recursao)",
-      "Retorna resultados indexados de cada chamada",
-      "Build passa sem erros"
+      "Arquivo src/tools/apply-patch.ts existe e exporta applyPatchTool",
+      "codingTools em src/tools/index.ts inclui ApplyPatch",
+      "Parametro patch e obrigatorio (string)",
+      "Parseia formato '*** Begin Patch' / '*** End Patch'",
+      "Suporta '*** Add File: path' com linhas +",
+      "Suporta '*** Update File: path' com @@ context, -/+ linhas",
+      "Suporta '*** Delete File: path'",
+      "Retorna resumo das operacoes executadas",
+      "npm run build --workspace=packages/kai-sdk compila sem erros"
     ],
     "dependencies": [],
     "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\packages\\kai-sdk\\milestones\\01-better-kay\\PRP.md"
   },
   {
     "id": "F-012",
-    "name": "CodeSearch tool",
-    "description": "Criar src/tools/code-search.ts — ferramenta para buscar exemplos de codigo e documentacao online. Parametros: query (string, obrigatorio). Provider plugavel via opcao no SDK. Registrar em codingTools.",
+    "name": "T12: CodeSearch tool",
+    "description": "Criar src/tools/code-search.ts — busca exemplos de codigo, docs de APIs e padroes de bibliotecas online. Parametros: query (string, obrigatorio). Provider plugavel via KaiAgentOptions. Retorna exemplos de codigo e trechos de documentacao. Registrar em codingTools.",
     "status": "failing",
     "priority": 12,
     "tests": [
       "Arquivo src/tools/code-search.ts existe e exporta codeSearchTool (ou factory)",
-      "Tool registrada como CodeSearch em src/tools/index.ts",
-      "Parametro query e obrigatorio (string)",
-      "Retorna exemplos de codigo e trechos de documentacao",
+      "codingTools em src/tools/index.ts inclui CodeSearch",
+      "Parametro query e obrigatorio",
       "Provider de busca e plugavel (nao hardcoded)",
-      "Build passa sem erros"
+      "Retorna exemplos de codigo e documentacao formatados",
+      "npm run build --workspace=packages/kai-sdk compila sem erros"
     ],
     "dependencies": [],
     "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\packages\\kai-sdk\\milestones\\01-better-kay\\PRP.md"
   },
   {
     "id": "F-013",
-    "name": "codingTools registration completa",
-    "description": "Garantir que src/tools/index.ts exporta todas as 15 ferramentas (6 existentes + 9 novas) no objeto codingTools. Verificar que todas estao corretamente importadas e nomeadas.",
+    "name": "Tool registry final + build validation",
+    "description": "Validacao final: codingTools exporta 15 ferramentas (6 existentes + 9 novas). Novos eventos (ask_user, todo_update) tipados. Build compila sem erros. Nenhuma ferramenta existente quebrou.",
     "status": "failing",
     "priority": 13,
     "tests": [
-      "codingTools tem exatamente 15 entries: Read, Write, Edit, Bash, Glob, Grep, ListDir, MultiEdit, Diagnostics, TodoWrite, TodoRead, AskUser, WebFetch, WebSearch, Task, ApplyPatch, Batch, CodeSearch",
-      "Correcao: sao 18 entries (6 existentes + 12 novas, pois TodoRead/TodoWrite sao 2 e nao 1)",
-      "Todas importadas corretamente de seus respectivos arquivos",
-      "Build passa sem erros"
+      "codingTools em src/tools/index.ts exporta exatamente 15 ferramentas",
+      "Ferramentas existentes (Read, Write, Edit, Bash, Glob, Grep) continuam funcionando",
+      "Novas ferramentas: ListDir, MultiEdit, TodoWrite, TodoRead, Diagnostics, AskUser, WebFetch, WebSearch, Task, Batch, ApplyPatch, CodeSearch",
+      "Wait — 6 + 12 = 18? Nao: PRP diz 6->15 = 9 novas. Contar: AskUser, WebFetch, WebSearch, Task, TodoWrite, TodoRead, MultiEdit, ListDir, Diagnostics, Batch, ApplyPatch, CodeSearch = 12 novas. Total 18. Ajustar conforme PRP real.",
+      "KaiAgentEvent inclui ask_user e todo_update",
+      "npm run build --workspace=packages/kai-sdk compila sem erros",
+      "Nenhum import quebrado em src/index.ts"
     ],
-    "dependencies": ["F-002", "F-003", "F-004", "F-005", "F-006", "F-007", "F-008", "F-009", "F-010", "F-011", "F-012"],
-    "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\packages\\kai-sdk\\milestones\\01-better-kay\\PRP.md"
-  },
-  {
-    "id": "F-014",
-    "name": "runKaiAgent event support",
-    "description": "Atualizar src/agent.ts para suportar os novos eventos (ask_user, todo_update) no fluxo de streaming. Garantir que o AsyncGenerator<KaiAgentEvent> propaga corretamente os novos tipos de evento emitidos pelas ferramentas AskUser e TodoWrite.",
-    "status": "failing",
-    "priority": 14,
-    "tests": [
-      "runKaiAgent() propaga eventos ask_user emitidos por AskUser",
-      "runKaiAgent() propaga eventos todo_update emitidos por TodoWrite",
-      "Eventos existentes (init, text, result, usage) continuam funcionando normalmente",
-      "Build passa sem erros",
-      "Exports de src/index.ts incluem os novos tipos"
-    ],
-    "dependencies": ["F-001", "F-005", "F-006"],
-    "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\packages\\kai-sdk\\milestones\\01-better-kay\\PRP.md"
-  },
-  {
-    "id": "F-015",
-    "name": "Validacao final e build",
-    "description": "Executar npm run build --workspace=packages/kai-sdk e garantir que compila sem erros. Verificar que nenhuma ferramenta existente quebrou. Validar que o package exporta corretamente os novos tipos.",
-    "status": "failing",
-    "priority": 15,
-    "tests": [
-      "npm run build --workspace=packages/kai-sdk completa com exit code 0",
-      "Nenhum erro de tipo TypeScript",
-      "codingTools exporta 18 ferramentas",
-      "KaiAgentEvent inclui todos os novos tipos",
-      "Ferramentas existentes (Read, Write, Edit, Bash, Glob, Grep) continuam inalteradas"
-    ],
-    "dependencies": ["F-013", "F-014"],
+    "dependencies": ["F-001", "F-002", "F-003", "F-004", "F-005", "F-006", "F-007", "F-008", "F-009", "F-010", "F-011", "F-012"],
     "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\packages\\kai-sdk\\milestones\\01-better-kay\\PRP.md"
   }
 ]

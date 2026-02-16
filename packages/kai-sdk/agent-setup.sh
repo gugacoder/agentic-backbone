@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # =============================================================================
 # agent-setup.sh — Bootstrap script for KAI SDK development
+# Milestone: 01-better-kay (12 new tools)
 # =============================================================================
 set -euo pipefail
 
@@ -15,6 +16,7 @@ ROOT_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
 echo -e "${CYAN}=======================================${NC}"
 echo -e "${CYAN}  KAI SDK — Agent Setup${NC}"
+echo -e "${CYAN}  Milestone: 01-better-kay${NC}"
 echo -e "${CYAN}=======================================${NC}"
 echo ""
 
@@ -75,9 +77,16 @@ else
     echo -e "${YELLOW}dist/index.d.ts not found (declarations may be missing).${NC}"
 fi
 
-# Count tools in source
-TOOL_COUNT=$(grep -c "Tool\|tool" "$SCRIPT_DIR/src/tools/index.ts" 2>/dev/null | head -1 || echo "?")
-echo -e "${CYAN}Tools index entries (approx): ${TOOL_COUNT}${NC}"
+# Count tools registered in codingTools
+TOOL_KEYS=$(node -e "
+import('$SCRIPT_DIR/dist/tools/index.js')
+  .then(m => {
+    const keys = Object.keys(m.codingTools);
+    console.log(keys.length + ' tools: ' + keys.join(', '));
+  })
+  .catch(() => console.log('(could not inspect tools)'));
+" 2>/dev/null || echo "(could not inspect tools)")
+echo -e "${CYAN}Tools: ${TOOL_KEYS}${NC}"
 echo ""
 
 # Summary
@@ -86,6 +95,8 @@ echo -e "${GREEN}  Setup complete!${NC}"
 echo -e "${GREEN}=======================================${NC}"
 echo ""
 echo -e "  Workspace:  $SCRIPT_DIR"
+echo -e "  Milestone:  01-better-kay"
+echo -e "  Target:     6 existing + 12 new = 18 tools"
 echo -e "  Build:      npm run build"
 echo -e "  Dev:        npm run dev (tsc --watch)"
 echo -e "  Validate:   npm run build --workspace=packages/kai-sdk"
