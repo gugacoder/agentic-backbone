@@ -13,6 +13,7 @@ import { webFetchTool } from "./web-fetch.js";
 import { createWebSearchTool } from "./web-search.js";
 import { createTaskTool } from "./task.js";
 import { createBatchTool } from "./batch.js";
+import { applyPatchTool } from "./apply-patch.js";
 
 export const codingTools = {
   Read: readTool,
@@ -31,4 +32,5 @@ export const codingTools = {
   WebSearch: createWebSearchTool(),
   Task: createTaskTool(),
   Batch: createBatchTool({}),
+  ApplyPatch: applyPatchTool,
 };

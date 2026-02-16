@@ -201,7 +201,8 @@
     "id": "F-011",
     "name": "T11: ApplyPatch tool",
     "description": "Criar src/tools/apply-patch.ts — aplica patches multi-arquivo no formato envelope (Begin Patch / End Patch). Suporta Add File, Update File, Delete File. Formato diff com +/- e @@ context lines. Registrar em codingTools.",
-    "status": "failing",
+    "status": "passing",
+    "completed_at": "2026-02-16",
     "priority": 11,
     "tests": [
       "Arquivo src/tools/apply-patch.ts existe e exporta applyPatchTool",

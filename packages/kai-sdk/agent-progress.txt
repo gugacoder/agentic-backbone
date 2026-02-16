@@ -5,9 +5,9 @@
 
 ## Current Status
 
-**Phase:** Implementing — F-001 through F-010 done, working through feature list.
-**Features:** 13 total (10 passing, 3 remaining)
-**Build:** Compilando (16 tools — 6 existentes + ListDir + MultiEdit + TodoWrite + TodoRead + Diagnostics + AskUser + WebFetch + WebSearch + Task + Batch + novos tipos KaiAgentEvent)
+**Phase:** Implementing — F-001 through F-011 done, working through feature list.
+**Features:** 13 total (11 passing, 2 remaining)
+**Build:** Compilando (17 tools — 6 existentes + ListDir + MultiEdit + TodoWrite + TodoRead + Diagnostics + AskUser + WebFetch + WebSearch + Task + Batch + ApplyPatch + novos tipos KaiAgentEvent)
 
 ---
 
@@ -41,7 +41,7 @@ milestones/01-better-kay/PRP.md
 - [x] F-008: T03 — WebSearch tool (priority 8) ✓ 2026-02-16
 - [x] F-009: T04 — Task sub-agente tool (priority 9) ✓ 2026-02-16
 - [x] F-010: T10 — Batch tool (priority 10) ✓ 2026-02-16
-- [ ] F-011: T11 — ApplyPatch tool (priority 11)
+- [x] F-011: T11 — ApplyPatch tool (priority 11) ✓ 2026-02-16
 - [ ] F-012: T12 — CodeSearch tool (priority 12)
 - [ ] F-013: Tool registry final + build validation (priority 13, depends: all)
 
@@ -201,3 +201,18 @@ Session 11 (Coding Agent): F-010 Batch tool
 - Registered as Batch in codingTools (16 tools total)
 - Build passes cleanly
 - Next priority: F-011 (ApplyPatch tool)
+
+Session 12 (Coding Agent): F-011 ApplyPatch tool
+- Created src/tools/apply-patch.ts with applyPatchTool export
+- Envelope format parser: *** Begin Patch / *** End Patch
+- Three operation types: Add File (creates new files from + lines), Update File (applies diff with @@ context and +/- lines), Delete File (removes files)
+- parsePatch() extracts operations from patch text into structured PatchOperation[]
+- applyUpdate() handles context-based patching: @@ lines sync position, - lines skip original, + lines insert new
+- Add File creates parent directories automatically (like Write tool)
+- Parameters: patch (required, z.string())
+- Returns summary of operations: "Patch applied successfully:\nAdded: ...\nUpdated: ...\nDeleted: ..."
+- Error handling: empty patch returns informative error, file operations wrapped in try/catch
+- Exported applyPatchTool from src/index.ts
+- Registered as ApplyPatch in codingTools (17 tools total)
+- Build passes cleanly
+- Next priority: F-012 (CodeSearch tool)

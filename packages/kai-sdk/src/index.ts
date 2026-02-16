@@ -8,3 +8,4 @@ export type { WebSearchProvider, WebSearchResult } from "./tools/web-search.js";
 export { createTaskTool } from "./tools/task.js";
 export type { TaskConfig } from "./tools/task.js";
 export { createBatchTool } from "./tools/batch.js";
+export { applyPatchTool } from "./tools/apply-patch.js";
