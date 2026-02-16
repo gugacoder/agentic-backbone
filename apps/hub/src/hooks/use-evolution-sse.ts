@@ -1,3 +1,4 @@
+import { useRef, useCallback } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useSSE } from "./use-sse";
 import { toast } from "sonner";
@@ -5,8 +6,9 @@ import { toast } from "sonner";
 /**
  * Subscribes to evolution module SSE events.
  * Invalidates relevant queries and shows toasts for critical events.
+ * Returns alert state for instances (unstable / prolonged-offline).
  */
-const EVOLUTION_SSE_EVENTS = [
+export const EVOLUTION_SSE_EVENTS = [
   "module:evolution:api-online",
   "module:evolution:api-offline",
   "module:evolution:instance-discovered",
@@ -21,8 +23,19 @@ const EVOLUTION_SSE_EVENTS = [
   "module:evolution:action-exhausted",
 ];
 
-export function useEvolutionSSE() {
+export interface InstanceAlerts {
+  unstable: Set<string>;
+  prolongedOffline: Set<string>;
+}
+
+export function useEvolutionSSE(): { alerts: InstanceAlerts } {
   const qc = useQueryClient();
+  const alertsRef = useRef<InstanceAlerts>({
+    unstable: new Set(),
+    prolongedOffline: new Set(),
+  });
+
+  const getAlerts = useCallback(() => alertsRef.current, []);
 
   useSSE({
     url: "/system/events",
@@ -33,6 +46,24 @@ export function useEvolutionSSE() {
       const subtype = type.replace("module:evolution:", "");
       const d = data as Record<string, unknown> | undefined;
       const instanceName = (d?.instanceName ?? d?.name ?? "") as string;
+
+      // Track alert states
+      if (subtype === "instance-unstable" && instanceName) {
+        alertsRef.current.unstable.add(instanceName);
+      }
+      if (subtype === "instance-prolonged-offline" && instanceName) {
+        alertsRef.current.prolongedOffline.add(instanceName);
+      }
+      // Clear alerts when instance reconnects
+      if (subtype === "instance-connected" && instanceName) {
+        alertsRef.current.unstable.delete(instanceName);
+        alertsRef.current.prolongedOffline.delete(instanceName);
+      }
+      // Clear alerts when instance is removed
+      if (subtype === "instance-removed" && instanceName) {
+        alertsRef.current.unstable.delete(instanceName);
+        alertsRef.current.prolongedOffline.delete(instanceName);
+      }
 
       // Invalidate queries based on event type
       if (subtype === "api-online" || subtype === "api-offline") {
@@ -66,4 +97,6 @@ export function useEvolutionSSE() {
       }
     },
   });
+
+  return { alerts: getAlerts() };
 }

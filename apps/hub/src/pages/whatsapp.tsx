@@ -21,7 +21,7 @@ export function WhatsAppPage() {
 
   const { data: instances = [], isLoading } = useQuery(evolutionInstancesQuery);
   const deleteInstance = useDeleteInstance();
-  useEvolutionSSE();
+  const { alerts } = useEvolutionSSE();
 
   const [createOpen, setCreateOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
@@ -75,7 +75,7 @@ export function WhatsAppPage() {
               <p className="text-muted-foreground text-sm">Carregando instancias...</p>
             </div>
           ) : (
-            <InstanceTable instances={instances} variant="monitor" />
+            <InstanceTable instances={instances} variant="monitor" alerts={alerts} />
           )}
         </TabsContent>
 
@@ -88,6 +88,7 @@ export function WhatsAppPage() {
             <InstanceTable
               instances={instances}
               variant="instances"
+              alerts={alerts}
               onDelete={setDeleteTarget}
             />
           )}

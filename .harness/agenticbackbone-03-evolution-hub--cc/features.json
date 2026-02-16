@@ -296,7 +296,8 @@
     "id": "F-017",
     "name": "WhatsApp dashboard — instance table and tabs",
     "description": "Criar instance-table.tsx reutilizavel. Pagina whatsapp.tsx com abas Monitor (tabela por criticidade, duracao, acoes, alertas visuais) e Instancias (tabela CRUD, dropdown). refetchInterval 10s + SSE invalidation.",
-    "status": "failing",
+    "status": "passing",
+    "completed_at": "2026-02-16T23:00:00Z",
     "priority": 17,
     "tests": [
       "Pagina renderiza em /conectividade/whatsapp com PageHeader e botao 'Nova Instancia'",

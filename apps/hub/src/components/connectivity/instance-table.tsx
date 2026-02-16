@@ -22,16 +22,18 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
-import { MoreHorizontal, RefreshCw, RotateCcw, Eye, Trash2, Loader2 } from "lucide-react";
+import { MoreHorizontal, RefreshCw, RotateCcw, Eye, Trash2, Loader2, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { EvolutionInstance } from "@/api/evolution";
 import { useReconnectInstance, useRestartInstance } from "@/api/evolution";
+import type { InstanceAlerts } from "@/hooks/use-evolution-sse";
 import { toast } from "sonner";
 
 interface InstanceTableProps {
   instances: EvolutionInstance[];
   variant: "monitor" | "instances";
   onDelete?: (name: string) => void;
+  alerts?: InstanceAlerts;
 }
 
 const stateOrder: Record<string, number> = { close: 0, connecting: 1, open: 2 };
@@ -60,7 +62,7 @@ function sortByCriticality(instances: EvolutionInstance[]): EvolutionInstance[] 
   });
 }
 
-export function InstanceTable({ instances, variant, onDelete }: InstanceTableProps) {
+export function InstanceTable({ instances, variant, onDelete, alerts }: InstanceTableProps) {
   const [, setTick] = useState(0);
   const reconnect = useReconnectInstance();
   const restart = useRestartInstance();
@@ -111,9 +113,23 @@ export function InstanceTable({ instances, variant, onDelete }: InstanceTablePro
           {sorted.map((inst) => {
             const cfg = stateConfig[inst.state] ?? stateConfig.close;
             const isOnline = inst.state === "open";
+            const isUnstable = alerts?.unstable.has(inst.instanceName);
+            const isProlongedOffline = alerts?.prolongedOffline.has(inst.instanceName);
             return (
               <TableRow key={inst.instanceName}>
-                <TableCell className="font-medium">{inst.instanceName}</TableCell>
+                <TableCell className="font-medium">
+                  <div className="flex items-center gap-1.5">
+                    {inst.instanceName}
+                    {isUnstable && (
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0" />
+                        </TooltipTrigger>
+                        <TooltipContent>Conexao instavel — multiplas reconexoes recentes</TooltipContent>
+                      </Tooltip>
+                    )}
+                  </div>
+                </TableCell>
                 <TableCell className="hidden sm:table-cell text-muted-foreground">
                   {inst.owner ?? "Nao vinculado"}
                 </TableCell>
@@ -122,7 +138,16 @@ export function InstanceTable({ instances, variant, onDelete }: InstanceTablePro
                     {cfg.label}
                   </Badge>
                 </TableCell>
-                <TableCell className="text-muted-foreground">{timeAgo(inst.since)}</TableCell>
+                <TableCell className="text-muted-foreground">
+                  <div className="flex items-center gap-1.5">
+                    {timeAgo(inst.since)}
+                    {isProlongedOffline && (
+                      <Badge variant="secondary" className="bg-red-500/15 text-red-700 dark:text-red-400 text-xs">
+                        Offline prolongado
+                      </Badge>
+                    )}
+                  </div>
+                </TableCell>
                 <TableCell className="text-right">
                   <div className="flex items-center justify-end gap-1">
                     <Tooltip>

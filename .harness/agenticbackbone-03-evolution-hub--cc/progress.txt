@@ -1,7 +1,7 @@
 # Progress — agenticbackbone-03-evolution-hub--cc
 
 ## Current Status
-16/23 features complete. PRP 01 (Module System) completo. PRP 02 (Evolution Module) completo. PRP 03 em andamento: F-013 a F-016 passing. Hub + backbone builds passam sem erros.
+17/23 features complete. PRP 01 (Module System) completo. PRP 02 (Evolution Module) completo. PRP 03 em andamento: F-013 a F-017 passing. Hub + backbone builds passam sem erros.
 
 ## Specs Path
 D:\sources\codr.studio\cia-prime-care\agentic-backbone\apps\backbone\milestones\03-evolution-hub
@@ -59,11 +59,11 @@ D:\sources\codr.studio\cia-prime-care\agentic-backbone\apps\backbone\milestones\
 - [x] F-012 — CRUD and QR backend routes (create, delete, qr, settings — proxy to Evolution API)
 
 ### PRP 03 — Evolution Hub (F-013 to F-023)
-- [ ] F-013 — Hub API layer (src/api/evolution.ts: queries + mutations + types)
-- [ ] F-014 — Sidebar and routing (Conectividade section + /conectividade routes + search params)
-- [ ] F-015 — Connectivity index page (/conectividade: grid of connectivity cards)
+- [x] F-013 — Hub API layer (src/api/evolution.ts: queries + mutations + types)
+- [x] F-014 — Sidebar and routing (Conectividade section + /conectividade routes + search params)
+- [x] F-015 — Connectivity index page (/conectividade: grid of connectivity cards)
 - [x] F-016 — Health and summary cards (api-health-card + instance-summary-cards)
-- [ ] F-017 — Instance table and dashboard tabs (Monitor + Instances tabs, criticality sort)
+- [x] F-017 — Instance table and dashboard tabs (Monitor + Instances tabs, criticality sort, alert indicators)
 - [ ] F-018 — Create instance dialog + delete confirmation
 - [ ] F-019 — Instance detail status tab (state card, corrective actions, event feed)
 - [ ] F-020 — Instance detail QR code tab (QR flow with countdown + poll)
@@ -277,3 +277,19 @@ D:\sources\codr.studio\cia-prime-care\agentic-backbone\apps\backbone\milestones\
   - Grid 3 colunas desktop, stack mobile ja estava implementado (grid-cols-1 sm:grid-cols-3)
   - Hub + backbone builds passam sem erros
   - Proxima prioridade: F-017 (Instance table and dashboard tabs)
+
+- Session 17: Implementou F-017 — Instance table and dashboard tabs
+  - whatsapp.tsx ja tinha estrutura completa: PageHeader, Tabs (Monitor/Instancias), CreateInstanceDialog, ConfirmDialog
+  - instance-table.tsx ja tinha ambos variants (monitor com botoes inline, instances com dropdown menu)
+  - Adicionou InstanceAlerts interface e tracking no useEvolutionSSE (unstable + prolongedOffline Sets)
+  - SSE events instance-unstable e instance-prolonged-offline adicionam ao alert set
+  - SSE events instance-connected e instance-removed limpam alerts
+  - useEvolutionSSE agora retorna { alerts } consumido por WhatsAppPage
+  - instance-table.tsx recebe alerts? prop e exibe:
+    - AlertTriangle + tooltip "Conexao instavel" para instancias com unstable alert
+    - Badge "Offline prolongado" ao lado da duracao para instancias com prolonged-offline alert
+  - Tabela monitor: criticality sort (close > connecting > open), duracao atualizada a cada 10s, botoes disabled para online
+  - Tabela instances: Nome (link), Numero, Estado, Perfil, dropdown (detalhes/reconectar/reiniciar/excluir)
+  - Responsivo: Numero hidden em mobile (sm:), Perfil hidden em mobile/tablet (md:)
+  - Hub + backbone builds passam sem erros
+  - Proxima prioridade: F-018 (Create instance dialog + delete confirmation)
