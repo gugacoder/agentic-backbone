@@ -1,7 +1,7 @@
 # Progress — agenticbackbone-03-evolution-hub--cc
 
 ## Current Status
-22/23 features complete. PRP 01 (Module System) completo. PRP 02 (Evolution Module) completo. PRP 03 em andamento: F-013 a F-022 passing. Hub + backbone builds passam sem erros.
+23/23 features complete. PRP 01 (Module System) completo. PRP 02 (Evolution Module) completo. PRP 03 (Evolution Hub) completo: F-013 a F-023 passing. Hub + backbone builds passam sem erros. MILESTONE COMPLETE.
 
 ## Specs Path
 D:\sources\codr.studio\cia-prime-care\agentic-backbone\apps\backbone\milestones\03-evolution-hub
@@ -337,3 +337,24 @@ D:\sources\codr.studio\cia-prime-care\agentic-backbone\apps\backbone\milestones\
   - Hub + backbone builds passam sem erros
   - PRP 03 em andamento: 22/23 features completas (F-013 a F-022)
   - Proxima prioridade: F-023 (Responsiveness and polish)
+
+- Session 21: Implementou F-023 — Responsiveness and polish
+  - CSS tokens: substituiu todas as cores Tailwind diretas por tokens semanticos em:
+    - instance-table.tsx: stateConfig agora usa bg-chart-2/15, bg-chart-4/15, bg-destructive/15
+    - instance-table.tsx: AlertTriangle agora usa text-chart-4 (era text-amber-500)
+    - instance-table.tsx: Badge "Offline prolongado" agora usa bg-destructive/15 text-destructive
+    - api-health-card.tsx: statusConfig agora usa tokens semanticos
+    - instance-event-feed.tsx: eventConfig agora usa chart-1 (info), chart-2 (success), chart-4 (warning), chart-5 (alert), destructive (error)
+  - Monitor table mobile: substituiu botoes inline por DropdownMenu em mobile (md:hidden)
+    - Desktop (md+): mantem botoes inline com Tooltip (hidden md:flex)
+    - Mobile (<md): dropdown com opcoes Reconectar/Reiniciar
+  - Instance detail mobile: acoes agora aparecem em dois lugares
+    - Desktop (md+): botoes no PageHeader (hidden md:block)
+    - Mobile (<md): botoes abaixo do InstanceStatusCard (md:hidden)
+  - QR code layout: Card centralizado em desktop, full-width em mobile
+    - Wrapper com md:max-w-md md:mx-auto centraliza card em desktop
+    - QR image usa w-full aspect-square md:w-64 md:h-64 (full-width mobile, fixo desktop)
+    - Textos longos com text-center para mobile
+  - Hub + backbone builds passam sem erros
+  - PRP 03 completo: 23/23 features (F-013 a F-023) — MILESTONE COMPLETE
+  - Nenhuma proxima prioridade — todos os 3 PRPs implementados

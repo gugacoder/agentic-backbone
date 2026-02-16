@@ -39,9 +39,9 @@ interface InstanceTableProps {
 const stateOrder: Record<string, number> = { close: 0, connecting: 1, open: 2 };
 
 const stateConfig: Record<string, { label: string; className: string }> = {
-  open: { label: "Online", className: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400" },
-  connecting: { label: "Conectando", className: "bg-amber-500/15 text-amber-700 dark:text-amber-400" },
-  close: { label: "Offline", className: "bg-red-500/15 text-red-700 dark:text-red-400" },
+  open: { label: "Online", className: "bg-chart-2/15 text-chart-2" },
+  connecting: { label: "Conectando", className: "bg-chart-4/15 text-chart-4" },
+  close: { label: "Offline", className: "bg-destructive/15 text-destructive" },
 };
 
 function timeAgo(ts: number | undefined): string {
@@ -103,7 +103,7 @@ export function InstanceTable({ instances, variant, onDelete, alerts }: Instance
         <TableHeader>
           <TableRow>
             <TableHead>Nome</TableHead>
-            <TableHead className="hidden sm:table-cell">Numero</TableHead>
+            <TableHead className="hidden md:table-cell">Numero</TableHead>
             <TableHead>Estado</TableHead>
             <TableHead>Duracao</TableHead>
             <TableHead className="text-right">Acoes</TableHead>
@@ -123,14 +123,14 @@ export function InstanceTable({ instances, variant, onDelete, alerts }: Instance
                     {isUnstable && (
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0" />
+                          <AlertTriangle className="h-4 w-4 text-chart-4 shrink-0" />
                         </TooltipTrigger>
                         <TooltipContent>Conexao instavel — multiplas reconexoes recentes</TooltipContent>
                       </Tooltip>
                     )}
                   </div>
                 </TableCell>
-                <TableCell className="hidden sm:table-cell text-muted-foreground">
+                <TableCell className="hidden md:table-cell text-muted-foreground">
                   {inst.owner ?? "Nao vinculado"}
                 </TableCell>
                 <TableCell>
@@ -142,14 +142,15 @@ export function InstanceTable({ instances, variant, onDelete, alerts }: Instance
                   <div className="flex items-center gap-1.5">
                     {timeAgo(inst.since)}
                     {isProlongedOffline && (
-                      <Badge variant="secondary" className="bg-red-500/15 text-red-700 dark:text-red-400 text-xs">
+                      <Badge variant="secondary" className="bg-destructive/15 text-destructive text-xs">
                         Offline prolongado
                       </Badge>
                     )}
                   </div>
                 </TableCell>
                 <TableCell className="text-right">
-                  <div className="flex items-center justify-end gap-1">
+                  {/* Desktop: inline buttons */}
+                  <div className="hidden md:flex items-center justify-end gap-1">
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <Button
@@ -183,6 +184,32 @@ export function InstanceTable({ instances, variant, onDelete, alerts }: Instance
                       <TooltipContent>Reiniciar</TooltipContent>
                     </Tooltip>
                   </div>
+                  {/* Mobile: dropdown menu */}
+                  <div className="md:hidden">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-8 w-8">
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem
+                          disabled={isOnline}
+                          onClick={() => handleReconnect(inst.instanceName)}
+                        >
+                          <RefreshCw className="h-4 w-4 mr-2" />
+                          Reconectar
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          disabled={isOnline}
+                          onClick={() => handleRestart(inst.instanceName)}
+                        >
+                          <RotateCcw className="h-4 w-4 mr-2" />
+                          Reiniciar
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
                 </TableCell>
               </TableRow>
             );
@@ -198,7 +225,7 @@ export function InstanceTable({ instances, variant, onDelete, alerts }: Instance
       <TableHeader>
         <TableRow>
           <TableHead>Nome</TableHead>
-          <TableHead className="hidden sm:table-cell">Numero</TableHead>
+          <TableHead className="hidden md:table-cell">Numero</TableHead>
           <TableHead>Estado</TableHead>
           <TableHead className="hidden md:table-cell">Perfil</TableHead>
           <TableHead className="text-right">Acoes</TableHead>
@@ -219,7 +246,7 @@ export function InstanceTable({ instances, variant, onDelete, alerts }: Instance
                   {inst.instanceName}
                 </Link>
               </TableCell>
-              <TableCell className="hidden sm:table-cell text-muted-foreground">
+              <TableCell className="hidden md:table-cell text-muted-foreground">
                 {inst.owner ?? "Nao vinculado"}
               </TableCell>
               <TableCell>

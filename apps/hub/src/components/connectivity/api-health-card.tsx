@@ -14,9 +14,9 @@ function timeAgo(ts: number): string {
 }
 
 const statusConfig: Record<string, { label: string; className: string }> = {
-  online: { label: "Online", className: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400" },
-  unknown: { label: "Verificando", className: "bg-amber-500/15 text-amber-700 dark:text-amber-400" },
-  offline: { label: "Indisponivel", className: "bg-red-500/15 text-red-700 dark:text-red-400" },
+  online: { label: "Online", className: "bg-chart-2/15 text-chart-2" },
+  unknown: { label: "Verificando", className: "bg-chart-4/15 text-chart-4" },
+  offline: { label: "Indisponivel", className: "bg-destructive/15 text-destructive" },
 };
 
 export function ApiHealthCard() {

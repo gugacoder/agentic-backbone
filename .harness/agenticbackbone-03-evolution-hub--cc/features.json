@@ -405,7 +405,8 @@
     "id": "F-023",
     "name": "Responsiveness and polish",
     "description": "Garantir responsividade completa: desktop (sidebar, tabelas completas, grid 3 colunas) e mobile (bottom nav, cards stack, tabela simplificada, acoes dropdown, QR full-width). Visual coerente com shadcn e CSS tokens.",
-    "status": "failing",
+    "status": "passing",
+    "completed_at": "2026-02-16T12:00:00Z",
     "priority": 23,
     "tests": [
       "Cards resumo: grid 3 colunas desktop, stack mobile",

@@ -5,9 +5,9 @@ import { cn } from "@/lib/utils";
 import type { EvolutionInstance } from "@/api/evolution";
 
 const stateConfig: Record<string, { label: string; className: string }> = {
-  open: { label: "Online", className: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400" },
-  connecting: { label: "Conectando", className: "bg-amber-500/15 text-amber-700 dark:text-amber-400" },
-  close: { label: "Offline", className: "bg-red-500/15 text-red-700 dark:text-red-400" },
+  open: { label: "Online", className: "bg-chart-2/15 text-chart-2" },
+  connecting: { label: "Conectando", className: "bg-chart-4/15 text-chart-4" },
+  close: { label: "Offline", className: "bg-destructive/15 text-destructive" },
 };
 
 function timeAgo(ts: number | undefined): string {

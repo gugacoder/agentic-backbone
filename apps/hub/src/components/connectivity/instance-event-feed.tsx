@@ -13,16 +13,16 @@ interface EventEntry {
 }
 
 const eventConfig: Record<string, { label: string; className: string }> = {
-  "instance-connected": { label: "Conectou", className: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400" },
-  "instance-disconnected": { label: "Desconectou", className: "bg-red-500/15 text-red-700 dark:text-red-400" },
-  "instance-reconnecting": { label: "Reconectando", className: "bg-amber-500/15 text-amber-700 dark:text-amber-400" },
-  "instance-unstable": { label: "Instavel", className: "bg-orange-500/15 text-orange-700 dark:text-orange-400" },
-  "instance-prolonged-offline": { label: "Offline prolongado", className: "bg-red-500/15 text-red-700 dark:text-red-400" },
-  "instance-discovered": { label: "Descoberta", className: "bg-blue-500/15 text-blue-700 dark:text-blue-400" },
+  "instance-connected": { label: "Conectou", className: "bg-chart-2/15 text-chart-2" },
+  "instance-disconnected": { label: "Desconectou", className: "bg-destructive/15 text-destructive" },
+  "instance-reconnecting": { label: "Reconectando", className: "bg-chart-4/15 text-chart-4" },
+  "instance-unstable": { label: "Instavel", className: "bg-chart-5/15 text-chart-5" },
+  "instance-prolonged-offline": { label: "Offline prolongado", className: "bg-destructive/15 text-destructive" },
+  "instance-discovered": { label: "Descoberta", className: "bg-chart-1/15 text-chart-1" },
   "instance-removed": { label: "Removida", className: "bg-muted text-muted-foreground" },
-  "action-success": { label: "Acao OK", className: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400" },
-  "action-failed": { label: "Acao falhou", className: "bg-red-500/15 text-red-700 dark:text-red-400" },
-  "action-exhausted": { label: "Tentativas esgotadas", className: "bg-red-500/15 text-red-700 dark:text-red-400" },
+  "action-success": { label: "Acao OK", className: "bg-chart-2/15 text-chart-2" },
+  "action-failed": { label: "Acao falhou", className: "bg-destructive/15 text-destructive" },
+  "action-exhausted": { label: "Tentativas esgotadas", className: "bg-destructive/15 text-destructive" },
 };
 
 function timeAgo(date: Date): string {

@@ -132,63 +132,65 @@ export function WhatsAppInstancePage() {
   const reconnectTooltip = getTooltip(reconnectState);
   const restartTooltip = getTooltip(restartState);
 
+  const actionButtons = (
+    <div className="flex items-center gap-2">
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={reconnectDisabled}
+              onClick={handleReconnect}
+            >
+              {reconnect.isPending
+                ? <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                : <RefreshCw className="h-4 w-4 mr-2" />}
+              Reconectar
+            </Button>
+          </span>
+        </TooltipTrigger>
+        {reconnectTooltip && (
+          <TooltipContent>{reconnectTooltip}</TooltipContent>
+        )}
+      </Tooltip>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={restartDisabled}
+              onClick={handleRestart}
+            >
+              {restart.isPending
+                ? <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                : <RotateCcw className="h-4 w-4 mr-2" />}
+              Reiniciar
+            </Button>
+          </span>
+        </TooltipTrigger>
+        {restartTooltip && (
+          <TooltipContent>{restartTooltip}</TooltipContent>
+        )}
+      </Tooltip>
+      <Button
+        variant="destructive"
+        size="sm"
+        onClick={() => setDeleteOpen(true)}
+      >
+        <Trash2 className="h-4 w-4 mr-2" />
+        Excluir
+      </Button>
+    </div>
+  );
+
   return (
     <div className="space-y-6">
       <PageHeader
         title={name}
         description={instance?.owner ?? "Nao vinculado"}
-        actions={
-          <div className="flex items-center gap-2">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <span>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={reconnectDisabled}
-                    onClick={handleReconnect}
-                  >
-                    {reconnect.isPending
-                      ? <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      : <RefreshCw className="h-4 w-4 mr-2" />}
-                    Reconectar
-                  </Button>
-                </span>
-              </TooltipTrigger>
-              {reconnectTooltip && (
-                <TooltipContent>{reconnectTooltip}</TooltipContent>
-              )}
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <span>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={restartDisabled}
-                    onClick={handleRestart}
-                  >
-                    {restart.isPending
-                      ? <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      : <RotateCcw className="h-4 w-4 mr-2" />}
-                    Reiniciar
-                  </Button>
-                </span>
-              </TooltipTrigger>
-              {restartTooltip && (
-                <TooltipContent>{restartTooltip}</TooltipContent>
-              )}
-            </Tooltip>
-            <Button
-              variant="destructive"
-              size="sm"
-              onClick={() => setDeleteOpen(true)}
-            >
-              <Trash2 className="h-4 w-4 mr-2" />
-              Excluir
-            </Button>
-          </div>
-        }
+        actions={<div className="hidden md:block">{actionButtons}</div>}
       />
 
       <Tabs value={activeTab} onValueChange={handleTabChange}>
@@ -206,6 +208,7 @@ export function WhatsAppInstancePage() {
           ) : instance ? (
             <>
               <InstanceStatusCard instance={instance} />
+              <div className="md:hidden">{actionButtons}</div>
               <InstanceEventFeed instanceName={name} />
             </>
           ) : (
