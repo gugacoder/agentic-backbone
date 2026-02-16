@@ -1,0 +1,407 @@
+[
+  {
+    "id": "F-001",
+    "name": "Module system types",
+    "description": "Criar src/modules/types.ts com interfaces BackboneModule, ModuleContext, ModuleHealth. Tipos que definem o contrato entre backbone e modulos.",
+    "status": "passing",
+    "completed_at": "2026-02-16T00:00:00Z",
+    "priority": 1,
+    "tests": [
+      "Arquivo src/modules/types.ts existe e exporta BackboneModule, ModuleContext, ModuleHealth",
+      "BackboneModule tem: name (string), start(ctx: ModuleContext) => Promise<void>, stop() => Promise<void>, health() => ModuleHealth, routes? (Hono)",
+      "ModuleContext tem: eventBus, dbPath, contextDir, log, env",
+      "ModuleHealth tem: status ('healthy' | 'degraded' | 'unhealthy'), details? (Record<string, unknown>)",
+      "npm run build --workspace=apps/backbone passa sem erros"
+    ],
+    "dependencies": [],
+    "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\01-module-system\\PRP.md"
+  },
+  {
+    "id": "F-002",
+    "name": "Module loader",
+    "description": "Criar src/modules/loader.ts com startModules(), stopModules(), getModuleHealth(). Ciclo de vida: start em ordem, stop em ordem inversa, falha de um modulo nao impede os demais. Montar rotas em /api/modules/{name}/.",
+    "status": "passing",
+    "completed_at": "2026-02-16T19:30:00Z",
+    "priority": 2,
+    "tests": [
+      "Arquivo src/modules/loader.ts exporta startModules(), stopModules(), getModuleHealth()",
+      "startModules() cria ModuleContext para cada modulo (eventBus, dbPath, contextDir, log, env)",
+      "startModules() garante que contextDir existe (mkdir -p)",
+      "Se start() de um modulo falha, marca como unhealthy e os demais continuam",
+      "stopModules() chama module.stop() em ordem inversa do array",
+      "getModuleHealth() retorna mapa de nome -> ModuleHealth",
+      "Se modulo tem routes, montadas em /api/modules/{name}/",
+      "npm run build --workspace=apps/backbone passa sem erros"
+    ],
+    "dependencies": ["F-001"],
+    "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\01-module-system\\PRP.md"
+  },
+  {
+    "id": "F-003",
+    "name": "Module registry and event bus extensions",
+    "description": "Criar src/modules/index.ts (array de modulos registrados, inicialmente vazio). Adicionar emitModule(), onModule(), offModule() ao BackboneEventBus em src/events/index.ts — eventos de modulo usam namespace module:{name}:{event}, propagados para SSE e lastEvents.",
+    "status": "passing",
+    "completed_at": "2026-02-16T21:00:00Z",
+    "priority": 3,
+    "tests": [
+      "src/modules/index.ts exporta array de BackboneModule[]",
+      "BackboneEventBus tem emitModule(moduleName, event, payload)",
+      "BackboneEventBus tem onModule(moduleName, event, listener)",
+      "BackboneEventBus tem offModule(moduleName, event, listener)",
+      "Eventos de modulo aparecem em lastEvents e SSE",
+      "npm run build --workspace=apps/backbone passa sem erros"
+    ],
+    "dependencies": ["F-001"],
+    "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\01-module-system\\PRP.md"
+  },
+  {
+    "id": "F-004",
+    "name": "Module lifecycle integration",
+    "description": "Integrar modulos no ciclo de vida do backbone: chamar startModules() no startup (apos wireEventBusToHooks), stopModules() no shutdown. Incluir secao 'modules' no endpoint /health com saude de cada modulo.",
+    "status": "passing",
+    "completed_at": "2026-02-16T22:00:00Z",
+    "priority": 4,
+    "tests": [
+      "src/index.ts chama startModules() apos wireEventBusToHooks()",
+      "src/index.ts chama stopModules() no handler de shutdown (SIGTERM/SIGINT)",
+      "Endpoint /health inclui campo 'modules' com objeto {nome: ModuleHealth}",
+      "Backbone sobe normalmente com array de modulos vazio",
+      "npm run build --workspace=apps/backbone passa sem erros"
+    ],
+    "dependencies": ["F-002", "F-003"],
+    "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\01-module-system\\PRP.md"
+  },
+  {
+    "id": "F-005",
+    "name": "Evolution module types and config",
+    "description": "Criar src/modules/evolution/types.ts com tipos internos (ProbeResult, InstanceState, EvolutionConfig). Criar src/modules/evolution/config.ts para leitura do CONFIG.yaml. Criar context/modules/evolution/CONFIG.yaml com defaults.",
+    "status": "passing",
+    "completed_at": "2026-02-16T23:00:00Z",
+    "priority": 5,
+    "tests": [
+      "types.ts exporta ProbeResult (timestamp, status, responseTimeMs, error)",
+      "types.ts exporta InstanceState (instanceName, instanceId, state, since, previousState, owner)",
+      "types.ts exporta EvolutionConfig com secoes probe, thresholds, actions",
+      "config.ts exporta funcao que le e parseia CONFIG.yaml do contextDir",
+      "CONFIG.yaml existe em context/modules/evolution/ com defaults do PRP",
+      "npm run build --workspace=apps/backbone passa sem erros"
+    ],
+    "dependencies": ["F-001"],
+    "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\02-evolution-module\\PRP.md"
+  },
+  {
+    "id": "F-006",
+    "name": "Evolution probe",
+    "description": "Criar src/modules/evolution/probe.ts — loop autonomo que interroga a Evolution API (GET /instance/fetchInstances) em intervalos fixos. Maquina de estados: unknown -> online/offline. Emite api-online/api-offline nas transicoes.",
+    "status": "passing",
+    "completed_at": "2026-02-16T23:30:00Z",
+    "priority": 6,
+    "tests": [
+      "Probe inicia no start() e para no stop()",
+      "Consulta GET {EVOLUTION_API_URL}/instance/fetchInstances a cada probe.intervalMs",
+      "Timeout de probe.timeoutMs por requisicao",
+      "Transicao unknown->online e silenciosa (sem evento)",
+      "Transicao unknown->offline emite module:evolution:api-offline",
+      "Transicao online->offline emite module:evolution:api-offline",
+      "Transicao offline->online emite module:evolution:api-online",
+      "Probe nao quebra se Evolution API inacessivel no boot",
+      "Cada probe retorna ProbeResult com timestamp, status, responseTimeMs, error"
+    ],
+    "dependencies": ["F-004", "F-005"],
+    "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\02-evolution-module\\PRP.md"
+  },
+  {
+    "id": "F-007",
+    "name": "Evolution instance state tracking",
+    "description": "Criar src/modules/evolution/state.ts — rastreamento de estado por instancia com historico temporal. Map em memoria. Detecta instancias novas/removidas e transicoes de estado. Calcula duracao.",
+    "status": "passing",
+    "completed_at": "2026-02-16T23:45:00Z",
+    "priority": 7,
+    "tests": [
+      "Cada instancia rastreada com instanceName, instanceId, state, since, previousState, owner",
+      "open->close emite instance-disconnected; open->connecting emite instance-reconnecting",
+      "close->open e connecting->open emitem instance-connected",
+      "Nova instancia emite instance-discovered; instancia ausente emite instance-removed",
+      "Payload inclui ts, instanceName, state, previousState, since, durationInPreviousState",
+      "getInstances() retorna lista com estado atual e duracao calculada"
+    ],
+    "dependencies": ["F-006"],
+    "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\02-evolution-module\\PRP.md"
+  },
+  {
+    "id": "F-008",
+    "name": "Evolution pattern detection",
+    "description": "Criar src/modules/evolution/patterns.ts — deteccao de flapping (>= N mudancas em W ms emite instance-unstable) e degradacao prolongada (close > T ms emite instance-prolonged-offline). Deduplicacao por ocorrencia.",
+    "status": "passing",
+    "completed_at": "2026-02-16T17:00:00Z",
+    "priority": 8,
+    "tests": [
+      "Flapping detectado com >= thresholds.flapping.changes mudancas em thresholds.flapping.windowMs",
+      "Emite module:evolution:instance-unstable com payload (ts, instanceName, changeCount, windowMs)",
+      "Prolonged offline apos thresholds.prolongedOfflineMs em state 'close'",
+      "Emite module:evolution:instance-prolonged-offline uma vez por ocorrencia",
+      "Se instancia volta e cai novamente, nova ocorrencia pode ser emitida"
+    ],
+    "dependencies": ["F-007"],
+    "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\02-evolution-module\\PRP.md"
+  },
+  {
+    "id": "F-009",
+    "name": "Evolution corrective actions",
+    "description": "Criar src/modules/evolution/actions.ts — acoes corretivas (reconnect via GET /instance/connect/{name}, restart via PUT /instance/restart/{name}) com retry policy: cooldown, max retries, emissao de action-success/failed/exhausted.",
+    "status": "failing",
+    "priority": 9,
+    "tests": [
+      "reconnect chama GET {EVOLUTION_API_URL}/instance/connect/{name}",
+      "restart chama PUT {EVOLUTION_API_URL}/instance/restart/{name}",
+      "Cooldown: rejeita com erro cooldown_active e retryAfterMs se muito cedo",
+      "Max retries: rejeita com erro retries_exhausted apos maxRetries",
+      "Sucesso emite action-success; falha emite action-failed",
+      "Quando maxRetries atingido emite action-exhausted",
+      "Contadores resetam quando instancia volta para 'open'"
+    ],
+    "dependencies": ["F-007"],
+    "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\02-evolution-module\\PRP.md"
+  },
+  {
+    "id": "F-010",
+    "name": "Evolution HTTP routes (monitoring)",
+    "description": "Criar src/modules/evolution/routes.ts — rotas de monitoramento: GET /health, GET /instances, GET /instances/:name, POST /instances/:name/reconnect, POST /instances/:name/restart. Respostas de erro tipadas (429, 409, 503, 404).",
+    "status": "failing",
+    "priority": 10,
+    "tests": [
+      "GET /health retorna estado da API + ultimo probe + response time",
+      "GET /instances retorna lista com estado, since, previousState, duracao",
+      "GET /instances/:name retorna detalhe de uma instancia",
+      "POST /instances/:name/reconnect executa acao respeitando retry policy",
+      "POST /instances/:name/restart executa acao respeitando retry policy",
+      "429 para cooldown, 409 para retries esgotados, 503 para API offline, 404 para instancia inexistente"
+    ],
+    "dependencies": ["F-007", "F-009"],
+    "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\02-evolution-module\\PRP.md"
+  },
+  {
+    "id": "F-011",
+    "name": "Evolution module entry point and registration",
+    "description": "Criar src/modules/evolution/index.ts implementando BackboneModule (orquestra probe, state, patterns, actions, routes). Registrar no array de src/modules/index.ts. Condicionar ativacao a EVOLUTION_API_URL estar definida.",
+    "status": "failing",
+    "priority": 11,
+    "tests": [
+      "evolutionModule implementa BackboneModule com name='evolution'",
+      "start(ctx) inicializa config, probe, state, patterns, actions",
+      "stop() para probe e libera recursos",
+      "health() retorna status baseado no estado da API e instancias",
+      "routes expoe Hono sub-app com rotas do modulo",
+      "Registrado no array de src/modules/index.ts",
+      "Se EVOLUTION_API_URL nao definida, modulo nao e registrado",
+      "npm run build --workspace=apps/backbone passa sem erros"
+    ],
+    "dependencies": ["F-006", "F-007", "F-008", "F-009", "F-010"],
+    "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\02-evolution-module\\PRP.md"
+  },
+  {
+    "id": "F-012",
+    "name": "Evolution CRUD and QR backend routes",
+    "description": "Estender rotas do modulo Evolution com CRUD e QR (extensao PRP 02 requerida pelo PRP 03): POST /instances (criar), DELETE /instances/:name (remover), GET /instances/:name/qr (QR code), GET /instances/:name/settings, PATCH /instances/:name/settings. Proxy para Evolution API.",
+    "status": "failing",
+    "priority": 12,
+    "tests": [
+      "POST /api/modules/evolution/instances cria instancia via Evolution API",
+      "DELETE /api/modules/evolution/instances/:name remove instancia",
+      "GET /api/modules/evolution/instances/:name/qr retorna QR code (base64)",
+      "GET /api/modules/evolution/instances/:name/settings retorna configuracoes",
+      "PATCH /api/modules/evolution/instances/:name/settings atualiza configuracoes",
+      "Operacoes invalidam cache de estado do modulo",
+      "npm run build --workspace=apps/backbone passa sem erros"
+    ],
+    "dependencies": ["F-011"],
+    "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\03-evolution-hub\\PRP.md"
+  },
+  {
+    "id": "F-013",
+    "name": "Hub API layer for Evolution",
+    "description": "Criar src/api/evolution.ts no hub com tipos TS, queries (health, instances, instance detail, settings, qr) e mutations (create, delete, reconnect, restart, updateSettings) usando TanStack React Query.",
+    "status": "failing",
+    "priority": 13,
+    "tests": [
+      "Arquivo src/api/evolution.ts existe no hub",
+      "Queries: evolutionHealthQuery, evolutionInstancesQuery, evolutionInstanceQuery(name), evolutionSettingsQuery(name), evolutionQrQuery(name)",
+      "Mutations: useCreateInstance, useDeleteInstance, useReconnectInstance, useRestartInstance, useUpdateSettings",
+      "Query keys e invalidacoes conforme PRP 03",
+      "Tipos TS para respostas (EvolutionHealth, EvolutionInstance, EvolutionSettings)",
+      "npm run build --workspace=apps/hub passa sem erros"
+    ],
+    "dependencies": ["F-012"],
+    "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\03-evolution-hub\\PRP.md"
+  },
+  {
+    "id": "F-014",
+    "name": "Hub sidebar and routing",
+    "description": "Adicionar secao 'Conectividade' no sidebar (entre Resources e Admin) com item 'WhatsApp' (icone MessageCircle). Criar rotas: /conectividade, /conectividade/whatsapp (search param view), /conectividade/whatsapp/$name (search param tab). Paginas stub.",
+    "status": "failing",
+    "priority": 14,
+    "tests": [
+      "Secao 'Conectividade' no sidebar com icone Cable entre Resources e Admin",
+      "Item 'WhatsApp' com icone MessageCircle",
+      "Rota /conectividade renderiza ConnectivityPage",
+      "Rota /conectividade/whatsapp com search param view (monitor|instances, default monitor)",
+      "Rota /conectividade/whatsapp/$name com search param tab (status|qr|settings, default status)",
+      "Rotas protegidas por auth",
+      "npm run build --workspace=apps/hub passa sem erros"
+    ],
+    "dependencies": ["F-013"],
+    "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\03-evolution-hub\\PRP.md"
+  },
+  {
+    "id": "F-015",
+    "name": "Connectivity index page",
+    "description": "Implementar src/pages/connectivity.tsx — pagina indice /conectividade com grid de cards por tipo de conectividade. Por ora apenas WhatsApp com icone, status resumido (N online, N offline), link para pagina de gestao.",
+    "status": "failing",
+    "priority": 15,
+    "tests": [
+      "Pagina renderiza em /conectividade com PageHeader",
+      "Card WhatsApp com icone MessageCircle",
+      "Card mostra contagem online/offline de instancias",
+      "Card linka para /conectividade/whatsapp",
+      "Grid em desktop, stack em mobile",
+      "Interface em pt-BR"
+    ],
+    "dependencies": ["F-014"],
+    "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\03-evolution-hub\\PRP.md"
+  },
+  {
+    "id": "F-016",
+    "name": "WhatsApp dashboard — health and summary cards",
+    "description": "Criar api-health-card.tsx e instance-summary-cards.tsx. Health: status badge, response time, ultimo probe. Summary: 3 cards Online/Conectando/Offline com contagens e cores semanticas.",
+    "status": "failing",
+    "priority": 16,
+    "tests": [
+      "Health card: status (healthy=verde, degraded=amarelo, unhealthy=vermelho), response time, ultimo probe relativo",
+      "Health card atualizado via SSE (api-online/api-offline invalidam query)",
+      "3 summary cards: Online (bg-chart-2), Conectando (bg-chart-4), Offline (bg-destructive)",
+      "Grid 3 colunas desktop, stack mobile"
+    ],
+    "dependencies": ["F-013", "F-014"],
+    "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\03-evolution-hub\\PRP.md"
+  },
+  {
+    "id": "F-017",
+    "name": "WhatsApp dashboard — instance table and tabs",
+    "description": "Criar instance-table.tsx reutilizavel. Pagina whatsapp.tsx com abas Monitor (tabela por criticidade, duracao, acoes, alertas visuais) e Instancias (tabela CRUD, dropdown). refetchInterval 10s + SSE invalidation.",
+    "status": "failing",
+    "priority": 17,
+    "tests": [
+      "Pagina renderiza em /conectividade/whatsapp com PageHeader e botao 'Nova Instancia'",
+      "Abas Monitor/Instancias controladas por search param 'view'",
+      "Monitor: tabela ordenada close > connecting > open, duracao atualizada a cada 10s",
+      "Botoes Reconectar/Reiniciar desabilitados para instancias open",
+      "AlertTriangle + tooltip para instancias instaveis",
+      "Badge 'Offline prolongado' para instancias com prolonged-offline",
+      "Instancias: tabela com Nome (link), Numero, Estado, Perfil, dropdown (detalhes/reconectar/reiniciar/excluir)",
+      "Tabela responsiva em mobile (Nome, Estado, Duracao)"
+    ],
+    "dependencies": ["F-016"],
+    "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\03-evolution-hub\\PRP.md"
+  },
+  {
+    "id": "F-018",
+    "name": "Create instance dialog and delete confirmation",
+    "description": "Criar create-instance-dialog.tsx — dialog de criacao (nome: lowercase/numeros/hifens, min 3, max 30). Ao criar: fecha, invalida query, navega para detalhe aba QR. Exclusao: ConfirmDialog com confirmacao por texto.",
+    "status": "failing",
+    "priority": 18,
+    "tests": [
+      "Dialog abre ao clicar 'Nova Instancia'",
+      "Validacao: letras minusculas, numeros, hifens, min 3, max 30",
+      "Sucesso: fecha dialog, invalida query, navega para detalhe ?tab=qr",
+      "Erro: exibe mensagem no dialog",
+      "Exclusao: ConfirmDialog com texto = nome da instancia",
+      "React Hook Form + zod, interface pt-BR"
+    ],
+    "dependencies": ["F-013", "F-014"],
+    "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\03-evolution-hub\\PRP.md"
+  },
+  {
+    "id": "F-019",
+    "name": "Instance detail — status tab",
+    "description": "Criar whatsapp-instance.tsx e instance-status-card.tsx. Aba Status: card de estado (StatusBadge grande, desde, estado anterior, perfil), acoes com feedback (spinner/toast/cooldown/esgotado). Feed de eventos client-side via SSE.",
+    "status": "failing",
+    "priority": 19,
+    "tests": [
+      "Pagina renderiza em /conectividade/whatsapp/$name com 3 abas",
+      "Card: StatusBadge grande, desde (absoluto+relativo), estado anterior+duracao, perfil",
+      "Botoes Reconectar/Reiniciar: spinner, toast sucesso/erro, cooldown tooltip, esgotado disabled",
+      "Feed de eventos: lista cronologica via SSE, timestamp relativo, icone+cor por severidade",
+      "Feed client-side only (nao persiste entre recargas)",
+      "Exclusao: ConfirmDialog + confirmacao por texto"
+    ],
+    "dependencies": ["F-017"],
+    "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\03-evolution-hub\\PRP.md"
+  },
+  {
+    "id": "F-020",
+    "name": "Instance detail — QR code tab",
+    "description": "Criar instance-qr.tsx. Fluxo: botao 'Gerar QR Code' -> GET /qr -> exibe QR (base64) + countdown 60s -> poll estado 2s -> sucesso ou expirado. Max 5 tentativas por sessao.",
+    "status": "failing",
+    "priority": 20,
+    "tests": [
+      "Botao 'Gerar QR Code' chama GET /api/modules/evolution/instances/:name/qr",
+      "QR exibido como imagem base64 + countdown 60s + 'Escaneie com WhatsApp'",
+      "Poll a cada 2s (refetchInterval); se 'open': sucesso + para poll",
+      "Countdown 0: 'QR expirado' + botao 'Gerar Novo'",
+      "Max 5 tentativas; apos: 'Limite atingido. Recarregue a pagina.'",
+      "QR full-width mobile, card centralizado desktop"
+    ],
+    "dependencies": ["F-019"],
+    "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\03-evolution-hub\\PRP.md"
+  },
+  {
+    "id": "F-021",
+    "name": "Instance detail — settings tab",
+    "description": "Criar instance-settings-form.tsx. Formulario React Hook Form + zod: reject_call, msg_call, groups_ignore, always_online, read_messages, read_status. Botao 'Salvar' chama PATCH /settings. Toast sucesso/erro.",
+    "status": "failing",
+    "priority": 21,
+    "tests": [
+      "Formulario carrega dados de GET /settings",
+      "Campos: reject_call (switch), msg_call (input), groups_ignore, always_online, read_messages, read_status (switches)",
+      "Validacao zod; botao 'Salvar' chama PATCH",
+      "Toast sucesso/erro via sonner",
+      "Labels descritivos em pt-BR"
+    ],
+    "dependencies": ["F-019"],
+    "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\03-evolution-hub\\PRP.md"
+  },
+  {
+    "id": "F-022",
+    "name": "SSE integration for Evolution events",
+    "description": "Integrar useSSE() com eventos module:evolution:*. Invalidar queries. Toasts: instance-unstable (warning), instance-prolonged-offline (destructive), action-success/failed/exhausted. Toasts disparam independente da pagina ativa (nivel de layout).",
+    "status": "failing",
+    "priority": 22,
+    "tests": [
+      "api-online/api-offline invalidam ['evolution', 'health']",
+      "instance-* invalidam ['evolution', 'instances']",
+      "Toast warning: 'Instancia {name} com conexao instavel'",
+      "Toast destructive: 'Instancia {name} offline ha mais de 5 minutos'",
+      "Toast sucesso/erro/destructive para action-success/failed/exhausted",
+      "Toasts disparam em qualquer pagina (listener no layout)"
+    ],
+    "dependencies": ["F-013", "F-014"],
+    "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\03-evolution-hub\\PRP.md"
+  },
+  {
+    "id": "F-023",
+    "name": "Responsiveness and polish",
+    "description": "Garantir responsividade completa: desktop (sidebar, tabelas completas, grid 3 colunas) e mobile (bottom nav, cards stack, tabela simplificada, acoes dropdown, QR full-width). Visual coerente com shadcn e CSS tokens.",
+    "status": "failing",
+    "priority": 23,
+    "tests": [
+      "Cards resumo: grid 3 colunas desktop, stack mobile",
+      "Tabela desktop: todas as colunas; mobile: Nome, Estado, Duracao + dropdown",
+      "Detalhe: acoes no PageHeader desktop, abaixo do card mobile",
+      "QR: card centralizado desktop, full-width mobile",
+      "Visual coerente (shadcn, CSS tokens, sem cores Tailwind diretas)",
+      "npm run build --workspace=apps/hub passa sem erros"
+    ],
+    "dependencies": ["F-017", "F-019", "F-020", "F-021"],
+    "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\03-evolution-hub\\PRP.md"
+  }
+]

@@ -1,0 +1,182 @@
+# Progress — agenticbackbone-03-evolution-hub--cc
+
+## Current Status
+8/23 features complete. PRP 01 (Module System) completo. PRP 02 em andamento: F-005 (types + config), F-006 (probe), F-007 (state tracking), F-008 (pattern detection) implementados.
+
+## Specs Path
+D:\sources\codr.studio\cia-prime-care\agentic-backbone\apps\backbone\milestones\03-evolution-hub
+
+### PRPs Cobertos
+- PRP 01: apps/backbone/milestones/01-module-system/PRP.md (Module System — infraestrutura)
+- PRP 02: apps/backbone/milestones/02-evolution-module/PRP.md (Evolution Module — backend)
+- PRP 03: apps/backbone/milestones/03-evolution-hub/PRP.md (Evolution Hub — frontend)
+
+## Environment
+
+### Stack
+- Backend: Node.js + Hono + TypeScript (ESM, ES2022)
+- Frontend: React 19 + Vite 6 + TanStack Router v1 + TanStack React Query v5
+- UI: shadcn + Radix + Tailwind v4 + lucide-react + sonner + framer-motion
+- Forms: react-hook-form + @hookform/resolvers + zod
+- State: Zustand v5 (auth, UI)
+- Real-time: SSE via useSSE() hook
+- DB: SQLite (WAL mode) + sqlite-vec
+
+### Commands
+- Dev backbone: npm run dev:backbone
+- Dev hub: npm run dev:hub
+- Dev all: npm run dev:all
+- Build backbone: npm run build --workspace=apps/backbone
+- Build hub: npm run build --workspace=apps/hub
+- Platform (Docker): npm run platform:up / platform:down
+
+### Key Patterns
+- Async generator streaming (AgentEvent)
+- Prompt assembly via XML sections
+- File-based context repository (context/)
+- Module isolation via ModuleContext
+- Event-driven (EventEmitter + SSE)
+- URL = single source of truth for UI state
+- shadcn + CSS tokens (no Tailwind colors in code)
+- Interface em pt-BR
+
+## Features
+
+### PRP 01 — Module System (F-001 to F-004)
+- [x] F-001 — Module system types (types.ts: BackboneModule, ModuleContext, ModuleHealth)
+- [x] F-002 — Module loader (loader.ts: startModules, stopModules, getModuleHealth)
+- [x] F-003 — Module registry + event bus extensions (index.ts + emitModule/onModule/offModule)
+- [x] F-004 — Module lifecycle integration (index.ts startup/shutdown + /health modules section)
+
+### PRP 02 — Evolution Module (F-005 to F-012)
+- [x] F-005 — Evolution types and config (types.ts + config.ts + CONFIG.yaml)
+- [x] F-006 — Evolution probe (probe.ts: autonomous health check loop)
+- [x] F-007 — Instance state tracking (state.ts: per-instance state with temporal history)
+- [x] F-008 — Pattern detection (patterns.ts: flapping + prolonged offline)
+- [ ] F-009 — Corrective actions (actions.ts: reconnect/restart with retry policy)
+- [ ] F-010 — HTTP routes monitoring (routes.ts: health, instances, reconnect, restart)
+- [ ] F-011 — Module entry point + registration (evolution/index.ts + modules/index.ts)
+- [ ] F-012 — CRUD and QR backend routes (create, delete, qr, settings — proxy to Evolution API)
+
+### PRP 03 — Evolution Hub (F-013 to F-023)
+- [ ] F-013 — Hub API layer (src/api/evolution.ts: queries + mutations + types)
+- [ ] F-014 — Sidebar and routing (Conectividade section + /conectividade routes + search params)
+- [ ] F-015 — Connectivity index page (/conectividade: grid of connectivity cards)
+- [ ] F-016 — Health and summary cards (api-health-card + instance-summary-cards)
+- [ ] F-017 — Instance table and dashboard tabs (Monitor + Instances tabs, criticality sort)
+- [ ] F-018 — Create instance dialog + delete confirmation
+- [ ] F-019 — Instance detail status tab (state card, corrective actions, event feed)
+- [ ] F-020 — Instance detail QR code tab (QR flow with countdown + poll)
+- [ ] F-021 — Instance detail settings tab (form with switches)
+- [ ] F-022 — SSE integration for Evolution events (query invalidation + toasts)
+- [ ] F-023 — Responsiveness and polish (mobile/desktop layouts)
+
+## Architecture Decisions
+
+### From PRP 01 (Module System)
+- Modules registered explicitly in array (no filesystem discovery)
+- Module failure does NOT crash backbone (graceful degradation)
+- Module events use namespace module:{name}:{event} via emitModule()
+- Module routes mounted at /api/modules/{name}/ behind JWT middleware
+- ModuleContext is the only interface between backbone and modules
+
+### From PRP 02 (Evolution Module)
+- Probe uses same endpoint that returns instances (no separate /health)
+- State tracking in memory (Map), rebuilt on boot from first probe
+- Module does NOT auto-execute corrective actions (operator/agent decides)
+- Config from CONFIG.yaml in context dir (not hardcoded)
+- Conditional registration: only if EVOLUTION_API_URL is defined
+
+### From PRP 03 (Evolution Hub)
+- Hub NEVER calls Evolution API directly — all via backbone module
+- Section named "Conectividade" (extensible), item named "WhatsApp" (user-facing)
+- Event feed is client-side only (resets on page reload)
+- QR code displayed as base64 image from Evolution API
+- All navigation bookmarkable (search params for tabs/views)
+- SSE toasts fire regardless of active page (layout-level listener)
+
+## Session Notes
+- Session 1 (Initializer): Harness criado para onda agenticbackbone-03-evolution-hub--cc
+  - 23 features decompostas de 3 PRPs
+  - Dependencia clara: PRP 01 -> PRP 02 -> PRP 03
+  - Backend (F-001 a F-012) deve ser implementado antes do frontend (F-013 a F-023)
+  - Nenhum modulo ou Evolution code existe no projeto ainda — tudo a ser criado
+
+- Session 2: Implementou F-001 — Module system types
+  - Criou src/modules/types.ts com BackboneModule, ModuleContext, ModuleHealth
+  - Exportou BackboneEventBus class em events/index.ts (era privada, necessario para tipagem de ModuleContext)
+  - Build passa sem erros
+  - Proxima prioridade: F-002 (Module loader) ou F-003 (Module registry + event bus extensions)
+
+- Session 3: Implementou F-002 — Module loader
+  - Criou src/modules/loader.ts com startModules(), stopModules(), getModuleHealth()
+  - startModules() recebe array de BackboneModule[] e Hono app
+  - Cria ModuleContext para cada modulo (eventBus, dbPath, contextDir, log, env)
+  - Garante contextDir existe (mkdirSync recursive)
+  - Se start() falha, marca unhealthy e continua
+  - Monta routes em /modules/{name}/ se modulo tem routes
+  - stopModules() chama stop() em ordem inversa
+  - getModuleHealth() retorna Record<string, ModuleHealth>
+  - Build passa sem erros
+  - Proxima prioridade: F-003 (Module registry + event bus extensions)
+
+- Session 4: Implementou F-003 — Module registry + event bus extensions
+  - Criou src/modules/index.ts com array de BackboneModule[] (inicialmente vazio)
+  - Adicionou emitModule(), onModule(), offModule() ao BackboneEventBus em events/index.ts
+  - Adicionou onAnyModuleEvent() para SSE hub consumir eventos de modulo dinamicos
+  - SSE hub (events/sse.ts) agora propaga eventos module:* automaticamente para clientes
+  - Eventos de modulo armazenados em lastEvents e disponiveis via getLastModuleEvent()
+  - Build passa sem erros
+  - Proxima prioridade: F-004 (Module lifecycle integration)
+
+- Session 5: Implementou F-004 — Module lifecycle integration
+  - Importou modules array e startModules/stopModules em src/index.ts
+  - startModules(modules, app) chamado apos wireEventBusToHooks() na sequencia de startup
+  - stopModules() chamado no handler onShutdown() antes de shutdownAllJobs()
+  - onShutdown() agora e async para awaitar stopModules()
+  - /health endpoint inclui campo modules: getModuleHealth() em routes/index.ts
+  - Backbone sobe normalmente com array vazio (0 modulos)
+  - PRP 01 (Module System) totalmente implementado (F-001 a F-004)
+  - Build passa sem erros
+  - Proxima prioridade: F-005 (Evolution types and config) — inicio do PRP 02
+
+- Session 6 (uncommitted): F-005 types.ts e config.ts ja existiam no working tree (criados em sessao anterior nao commitada)
+  - Verificou que CONFIG.yaml ainda nao existia; criou em context/modules/evolution/
+  - Build passava sem erros
+
+- Session 7: Implementou F-006 — Evolution probe
+  - Criou src/modules/evolution/probe.ts com classe EvolutionProbe
+  - Loop autonomo: start() executa tick() imediatamente + setInterval(intervalMs)
+  - Maquina de estados: unknown -> online/offline com emissao de eventos corretos
+  - Timeout via AbortController com config.probe.timeoutMs
+  - Callback onInstances para passar dados de instancias para state tracker
+  - Transicao unknown->online silenciosa, unknown->offline e online->offline emitem api-offline
+  - offline->online emite api-online
+  - Fetch errors capturados graciosamente (nao quebra no boot)
+  - Build passa sem erros
+  - Proxima prioridade: F-007 (Instance state tracking)
+
+- Session 8: Implementou F-007 — Instance state tracking
+  - Criou src/modules/evolution/state.ts com classe EvolutionStateTracker
+  - Map em memoria rastreia estado por instancia (instanceName, instanceId, state, since, previousState, owner)
+  - update() recebe raw instances do probe e detecta: novas (instance-discovered), removidas (instance-removed), transicoes de estado
+  - Transicoes: open->close emite instance-disconnected, open->connecting emite instance-reconnecting
+  - close->open e connecting->open emitem instance-connected, connecting->close emite instance-disconnected
+  - Payload de todos os eventos inclui ts, instanceName, state, previousState, since, durationInPreviousState
+  - getInstances() retorna lista com durationMs calculado (now - since)
+  - getInstance(name) retorna instancia individual com duracao
+  - normalizeState() mapeia status da Evolution API para tipos esperados
+  - Build passa sem erros
+  - Proxima prioridade: F-008 (Pattern detection) ou F-009 (Corrective actions)
+
+- Session 9: Implementou F-008 — Pattern detection
+  - Criou src/modules/evolution/patterns.ts com classe EvolutionPatternDetector
+  - Flapping: recordStateChange() mantem array de timestamps por instancia, prune fora da janela
+  - Quando changeCount >= thresholds.flapping.changes na janela, emite instance-unstable
+  - Prolonged offline: checkProlongedOffline() verifica instancias em state "close" com durationMs > threshold
+  - Deduplicacao por ocorrencia via Set com chave instanceName:since
+  - Se instancia volta e cai novamente, since muda e nova ocorrencia pode ser emitida
+  - Cleanup automatico de entradas stale quando instancia sai de "close"
+  - clearInstance() para limpeza ao remover instancias
+  - Build passa sem erros
+  - Proxima prioridade: F-009 (Corrective actions)
