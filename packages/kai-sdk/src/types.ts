@@ -12,7 +12,8 @@ export type KaiAgentEvent =
   | { type: "result"; content: string }
   | { type: "usage"; usage: KaiUsageData }
   | { type: "ask_user"; question: string; options?: string[] }
-  | { type: "todo_update"; todos: KaiTodoItem[] };
+  | { type: "todo_update"; todos: KaiTodoItem[] }
+  | { type: "context_status"; context: ContextUsage & { compacted: boolean } };
 
 export interface KaiTodoItem {
   id: string;

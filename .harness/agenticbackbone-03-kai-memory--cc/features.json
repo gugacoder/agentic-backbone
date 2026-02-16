@@ -100,7 +100,8 @@
     "id": "F-006",
     "name": "context-status-event",
     "description": "Adicionar evento context_status ao KaiAgentEvent. O evento inclui ContextUsage + campo compacted (boolean). Tipar corretamente em types.ts.",
-    "status": "failing",
+    "status": "passing",
+    "completed_at": "2026-02-16",
     "priority": 6,
     "tests": [
       "KaiAgentEvent inclui variante { type: 'context_status', context: ContextUsage & { compacted: boolean } }",
@@ -117,7 +118,7 @@
     "id": "F-007",
     "name": "agent-integration",
     "description": "Integrar contagem de tokens, compactacao e emissao de context_status no fluxo de runKaiAgent(). Antes de cada streamText: calcular ContextUsage, compactar se necessario, emitir context_status. Respeitar disableCompaction. Persistir mensagens compactadas no JSONL.",
-    "status": "blocked",
+    "status": "failing",
     "priority": 7,
     "tests": [
       "runKaiAgent() emite evento context_status antes de chamar streamText",

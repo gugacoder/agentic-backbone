@@ -1,7 +1,7 @@
 # Agent Harness Progress — agenticbackbone-03-kai-memory--cc
 
 ## Current Status
-Session 4 complete — F-005 (compaction-engine) implemented and passing. 5/8 features complete.
+Session 5 complete — F-006 (context-status-event) implemented and passing. 6/8 features complete.
 
 ## Specs Path
 D:\sources\codr.studio\cia-prime-care\agentic-backbone\packages\kai-sdk\milestones\03-kai-memory
@@ -20,7 +20,7 @@ D:\sources\codr.studio\cia-prime-care\agentic-backbone\packages\kai-sdk\mileston
 - [x] F-003: context-usage-calculator — getContextUsage() com breakdown (2026-02-16)
 - [x] F-004: compaction-options — Novos campos em KaiAgentOptions (2026-02-16)
 - [x] F-005: compaction-engine — compactMessages() com summarização (2026-02-16)
-- [ ] F-006: context-status-event — Evento context_status no KaiAgentEvent
+- [x] F-006: context-status-event — Evento context_status no KaiAgentEvent (2026-02-16)
 - [ ] F-007: agent-integration — Integrar tudo no fluxo de runKaiAgent()
 - [ ] F-008: build-validation — Validacao final de build e backwards compatibility
 
@@ -41,3 +41,4 @@ D:\sources\codr.studio\cia-prime-care\agentic-backbone\packages\kai-sdk\mileston
 - Session 2 (CC): F-001 e F-002 implementadas (tokenizer + model map). Build passa.
 - Session 3 (CC): F-003 e F-004 implementadas. ContextUsage interface + getContextUsage() + compactThreshold/disableCompaction options. Build passa. F-005 e F-006 desbloqueadas.
 - Session 4 (CC): F-005 implementada. compactMessages() em src/context/compaction.ts. Exportada via index.ts com tipos CompactOptions/CompactResult. Build passa. F-006 proxima prioridade.
+- Session 5 (CC): F-006 implementada. Adicionada variante context_status ao KaiAgentEvent union type em types.ts: `{ type: "context_status"; context: ContextUsage & { compacted: boolean } }`. ContextUsage ja estava exportado. Build passa. F-007 proxima prioridade.
