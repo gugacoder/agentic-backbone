@@ -1,7 +1,7 @@
 # Progress — 04-kai-mcp
 
 ## Current Status
-Harness inicializado. 8 features decompostas, todas failing. Pronto para implementação.
+F-001 concluída. @ai-sdk/mcp ^1.0.21 instalado como dependency. 1/8 features complete.
 
 ## Specs Path
 D:\sources\codr.studio\cia-prime-care\agentic-backbone\packages\kai-sdk\milestones\04-kai-mcp
@@ -16,7 +16,7 @@ D:\sources\codr.studio\cia-prime-care\agentic-backbone\packages\kai-sdk\mileston
 
 ## Features
 
-- [ ] F-001 MCP dependency — Adicionar @ai-sdk/mcp ao package.json
+- [x] F-001 MCP dependency — Adicionar @ai-sdk/mcp ao package.json
 - [ ] F-002 MCP types — McpServerConfig interface + mcpServers em KaiAgentOptions
 - [ ] F-003 MCP client lifecycle — Criar/fechar MCP clients em runKaiAgent()
 - [ ] F-004 Tool merging with priority — Mergear MCP tools com codingTools (coding tem prioridade)
@@ -48,3 +48,4 @@ D:\sources\codr.studio\cia-prime-care\agentic-backbone\packages\kai-sdk\mileston
 
 ## Session Notes
 - Session 1 (Initializer): Harness criado para onda 04-kai-mcp. 8 features, PRP único e bem definido.
+- Session 2 (CC): F-001 implementada. @ai-sdk/mcp@^1.0.21 adicionado. Próxima: F-002 MCP types.

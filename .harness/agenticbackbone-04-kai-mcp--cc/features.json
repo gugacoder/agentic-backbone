@@ -3,7 +3,7 @@
     "id": "F-001",
     "name": "MCP dependency",
     "description": "Adicionar @ai-sdk/mcp como dependência no package.json do kai-sdk e verificar que instala corretamente",
-    "status": "failing",
+    "status": "passing",
     "priority": 1,
     "tests": [
       "@ai-sdk/mcp aparece em dependencies no packages/kai-sdk/package.json",
@@ -11,6 +11,7 @@
       "import { createMCPClient } from '@ai-sdk/mcp' resolve sem erros de TypeScript"
     ],
     "dependencies": [],
+    "completed_at": "2026-02-16",
     "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\packages\\kai-sdk\\milestones\\04-kai-mcp\\PRP.md"
   },
   {
@@ -27,14 +28,16 @@
       "McpServerConfig exportado no index.ts do pacote",
       "npm run build --workspace=packages/kai-sdk compila sem erros"
     ],
-    "dependencies": ["F-001"],
+    "dependencies": [
+      "F-001"
+    ],
     "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\packages\\kai-sdk\\milestones\\04-kai-mcp\\PRP.md"
   },
   {
     "id": "F-003",
     "name": "MCP client lifecycle",
     "description": "Implementar criação de MCP clients no início de runKaiAgent() e fechamento no finally block. Usar createMCPClient do @ai-sdk/mcp para cada entry em mcpServers",
-    "status": "failing",
+    "status": "blocked",
     "priority": 3,
     "tests": [
       "Para cada entry em options.mcpServers, createMCPClient é chamado com o transport configurado",
@@ -43,14 +46,17 @@
       "Se mcpServers não é passado ou é array vazio, nenhum client MCP é criado (comportamento idêntico ao atual)",
       "npm run build --workspace=packages/kai-sdk compila sem erros"
     ],
-    "dependencies": ["F-001", "F-002"],
+    "dependencies": [
+      "F-001",
+      "F-002"
+    ],
     "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\packages\\kai-sdk\\milestones\\04-kai-mcp\\PRP.md"
   },
   {
     "id": "F-004",
     "name": "Tool merging with priority",
     "description": "Mergear ferramentas MCP com codingTools no streamText(). CodingTools têm prioridade — se um MCP server expõe uma tool com mesmo nome, a codingTool prevalece",
-    "status": "failing",
+    "status": "blocked",
     "priority": 4,
     "tests": [
       "Tools MCP são mergeadas com codingTools e passadas ao streamText()",
@@ -58,14 +64,16 @@
       "Sem MCP tools, streamText recebe apenas codingTools (comportamento idêntico)",
       "npm run build --workspace=packages/kai-sdk compila sem erros"
     ],
-    "dependencies": ["F-003"],
+    "dependencies": [
+      "F-003"
+    ],
     "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\packages\\kai-sdk\\milestones\\04-kai-mcp\\PRP.md"
   },
   {
     "id": "F-005",
     "name": "Graceful failure",
     "description": "Se um MCP server não estiver disponível ou falhar ao conectar, emitir warning via console.warn e continuar sem ele. Timeout de conexão de 10 segundos",
-    "status": "failing",
+    "status": "blocked",
     "priority": 5,
     "tests": [
       "Se createMCPClient falha (server indisponível), erro é capturado com try/catch",
@@ -74,14 +82,16 @@
       "Se TODOS os servers falharem, agente roda apenas com codingTools (sem crash)",
       "npm run build --workspace=packages/kai-sdk compila sem erros"
     ],
-    "dependencies": ["F-003"],
+    "dependencies": [
+      "F-003"
+    ],
     "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\packages\\kai-sdk\\milestones\\04-kai-mcp\\PRP.md"
   },
   {
     "id": "F-006",
     "name": "mcp_connected event",
     "description": "Adicionar evento mcp_connected em KaiAgentEvent e emiti-lo após todos os MCP clients conectarem, antes do primeiro streamText(). Lista os nomes dos servers conectados com sucesso",
-    "status": "failing",
+    "status": "blocked",
     "priority": 6,
     "tests": [
       "KaiAgentEvent union inclui { type: 'mcp_connected'; servers: string[] }",
@@ -91,14 +101,17 @@
       "Se servers são configurados mas todos falham, evento é emitido com array vazio",
       "npm run build --workspace=packages/kai-sdk compila sem erros"
     ],
-    "dependencies": ["F-003", "F-005"],
+    "dependencies": [
+      "F-003",
+      "F-005"
+    ],
     "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\packages\\kai-sdk\\milestones\\04-kai-mcp\\PRP.md"
   },
   {
     "id": "F-007",
     "name": "Backbone KAI provider integration",
     "description": "Atualizar o provider KAI no Backbone (providers/kai.ts) para propagar mcpServers das options para runKaiAgent(). Converter formato Record do Backbone para McpServerConfig[] do SDK",
-    "status": "failing",
+    "status": "blocked",
     "priority": 7,
     "tests": [
       "providers/kai.ts passa mcpServers para runKaiAgent() quando disponível nas options",
@@ -107,14 +120,17 @@
       "npm run build --workspace=apps/backbone compila sem erros",
       "npm run build --workspace=packages/kai-sdk compila sem erros"
     ],
-    "dependencies": ["F-002", "F-003"],
+    "dependencies": [
+      "F-002",
+      "F-003"
+    ],
     "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\packages\\kai-sdk\\milestones\\04-kai-mcp\\PRP.md"
   },
   {
     "id": "F-008",
     "name": "Build validation",
     "description": "Validação final: build completo do workspace kai-sdk e backbone sem erros. Verificar que exports públicos estão corretos e tipos são acessíveis",
-    "status": "failing",
+    "status": "blocked",
     "priority": 8,
     "tests": [
       "npm run build --workspace=packages/kai-sdk passa sem erros",
@@ -123,7 +139,15 @@
       "KaiAgentOptions inclui mcpServers no tipo exportado",
       "mcp_connected é tipo válido em KaiAgentEvent"
     ],
-    "dependencies": ["F-001", "F-002", "F-003", "F-004", "F-005", "F-006", "F-007"],
+    "dependencies": [
+      "F-001",
+      "F-002",
+      "F-003",
+      "F-004",
+      "F-005",
+      "F-006",
+      "F-007"
+    ],
     "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\packages\\kai-sdk\\milestones\\04-kai-mcp\\PRP.md"
   }
 ]
