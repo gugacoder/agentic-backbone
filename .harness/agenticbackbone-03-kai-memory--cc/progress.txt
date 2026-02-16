@@ -1,7 +1,7 @@
 # Agent Harness Progress — agenticbackbone-03-kai-memory--cc
 
 ## Current Status
-Session 5 complete — F-006 (context-status-event) implemented and passing. 6/8 features complete.
+Session 6 complete — F-007 (agent-integration) implemented and passing. 7/8 features complete.
 
 ## Specs Path
 D:\sources\codr.studio\cia-prime-care\agentic-backbone\packages\kai-sdk\milestones\03-kai-memory
@@ -21,7 +21,7 @@ D:\sources\codr.studio\cia-prime-care\agentic-backbone\packages\kai-sdk\mileston
 - [x] F-004: compaction-options — Novos campos em KaiAgentOptions (2026-02-16)
 - [x] F-005: compaction-engine — compactMessages() com summarização (2026-02-16)
 - [x] F-006: context-status-event — Evento context_status no KaiAgentEvent (2026-02-16)
-- [ ] F-007: agent-integration — Integrar tudo no fluxo de runKaiAgent()
+- [x] F-007: agent-integration — Integrar tudo no fluxo de runKaiAgent() (2026-02-16)
 - [ ] F-008: build-validation — Validacao final de build e backwards compatibility
 
 ## Architecture Decisions
@@ -35,6 +35,7 @@ D:\sources\codr.studio\cia-prime-care\agentic-backbone\packages\kai-sdk\mileston
 7. **Backwards compatible**: Todos os novos campos em KaiAgentOptions sao opcionais.
 8. **getContextUsage**: Arquivo src/context/usage.ts. Conta tokens via countTokens() para system prompt, JSON.stringify dos tool definitions, e conteudo das mensagens (com 4 tokens overhead por mensagem para framing). compactThreshold armazenado como 0-100 no ContextUsage (convertido do 0-1 das options).
 9. **compactMessages**: Arquivo src/context/compaction.ts. Separa mensagens em head/tail via splitMessages(). Tail budget = 30% context window. Head resumida via generateText com mesmo model/apiKey. Summary wrapped in <context_summary>. maxTokens: 2000 para summary. Fallback retorna mensagens originais + warning.
+10. **agent-integration**: Em agent.ts, entre a montagem do systemPrompt e o streamText(). Calcula ContextUsage, compacta se willCompact && !disableCompaction, recalcula usage apos compactacao, emite context_status. Mensagens compactadas sao mutadas in-place no array messages, entao saveSession persiste o estado compactado. Variavel renomeada para ctxUsage para evitar conflito com a variavel usage do Vercel AI SDK.
 
 ## Session Notes
 - Session 1 (Initializer): Harness criado. 8 features, PRP unico.
@@ -42,3 +43,4 @@ D:\sources\codr.studio\cia-prime-care\agentic-backbone\packages\kai-sdk\mileston
 - Session 3 (CC): F-003 e F-004 implementadas. ContextUsage interface + getContextUsage() + compactThreshold/disableCompaction options. Build passa. F-005 e F-006 desbloqueadas.
 - Session 4 (CC): F-005 implementada. compactMessages() em src/context/compaction.ts. Exportada via index.ts com tipos CompactOptions/CompactResult. Build passa. F-006 proxima prioridade.
 - Session 5 (CC): F-006 implementada. Adicionada variante context_status ao KaiAgentEvent union type em types.ts: `{ type: "context_status"; context: ContextUsage & { compacted: boolean } }`. ContextUsage ja estava exportado. Build passa. F-007 proxima prioridade.
+- Session 6 (CC): F-007 implementada. Integrado getContextUsage + compactMessages + context_status no runKaiAgent(). Fluxo: calcular usage → compactar se threshold atingido → recalcular → emitir context_status → streamText. Mensagens compactadas persistidas via saveSession. Build passa. F-008 proxima prioridade.

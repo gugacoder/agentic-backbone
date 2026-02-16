@@ -10,6 +10,8 @@ import { createBatchTool } from "./tools/batch.js";
 import { createCodeSearchTool } from "./tools/code-search.js";
 import { loadSession, saveSession } from "./session.js";
 import { getSystemPrompt, discoverProjectContext } from "./prompts/assembly.js";
+import { getContextUsage } from "./context/usage.js";
+import { compactMessages } from "./context/compaction.js";
 import type { KaiAgentEvent, KaiAgentOptions, McpServerConfig } from "./types.js";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
@@ -145,6 +147,57 @@ export async function* runKaiAgent(
 
       systemPrompt = parts.join("\n\n");
     }
+
+    // --- Context management: usage calculation + compaction ---
+    const toolDefinitions = tools as Record<string, unknown>;
+    let compacted = false;
+
+    // Calculate context usage before potential compaction
+    let ctxUsage = getContextUsage({
+      model: options.model,
+      systemPrompt: systemPrompt ?? "",
+      toolDefinitions,
+      messages,
+      contextWindow: options.contextWindow,
+      compactThreshold: options.compactThreshold,
+    });
+
+    // Compact if threshold exceeded and compaction is enabled
+    if (ctxUsage.willCompact && !options.disableCompaction) {
+      const compactResult = await compactMessages(messages, {
+        model: options.model,
+        apiKey: options.apiKey,
+        contextWindow: options.contextWindow,
+        systemPromptTokens: ctxUsage.systemPrompt,
+        toolDefinitionsTokens: ctxUsage.toolDefinitions,
+      });
+
+      if (compactResult.compacted) {
+        messages.length = 0;
+        messages.push(...compactResult.messages);
+        compacted = true;
+
+        // Recalculate usage after compaction
+        ctxUsage = getContextUsage({
+          model: options.model,
+          systemPrompt: systemPrompt ?? "",
+          toolDefinitions,
+          messages,
+          contextWindow: options.contextWindow,
+          compactThreshold: options.compactThreshold,
+        });
+      }
+
+      if (compactResult.warning) {
+        console.warn(`[kai] ${compactResult.warning}`);
+      }
+    }
+
+    // Emit context_status event before calling streamText
+    yield {
+      type: "context_status",
+      context: { ...ctxUsage, compacted },
+    };
 
     let result;
     try {

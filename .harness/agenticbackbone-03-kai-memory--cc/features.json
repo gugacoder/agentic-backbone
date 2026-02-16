@@ -118,7 +118,8 @@
     "id": "F-007",
     "name": "agent-integration",
     "description": "Integrar contagem de tokens, compactacao e emissao de context_status no fluxo de runKaiAgent(). Antes de cada streamText: calcular ContextUsage, compactar se necessario, emitir context_status. Respeitar disableCompaction. Persistir mensagens compactadas no JSONL.",
-    "status": "failing",
+    "status": "passing",
+    "completed_at": "2026-02-16",
     "priority": 7,
     "tests": [
       "runKaiAgent() emite evento context_status antes de chamar streamText",
@@ -139,7 +140,7 @@
     "id": "F-008",
     "name": "build-validation",
     "description": "Validar que o build completo do workspace passa sem erros. Verificar que todos os novos tipos e funcoes sao exportados corretamente. Garantir que nao ha breaking changes nas APIs existentes.",
-    "status": "blocked",
+    "status": "failing",
     "priority": 8,
     "tests": [
       "npm run build --workspace=packages/kai-sdk passa sem erros",
