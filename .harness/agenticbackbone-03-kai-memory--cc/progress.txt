@@ -1,7 +1,7 @@
 # Agent Harness Progress — agenticbackbone-03-kai-memory--cc
 
 ## Current Status
-Session 6 complete — F-007 (agent-integration) implemented and passing. 7/8 features complete.
+Session 7 complete — F-008 (build-validation) validated and passing. 8/8 features complete. Milestone 03-kai-memory is DONE.
 
 ## Specs Path
 D:\sources\codr.studio\cia-prime-care\agentic-backbone\packages\kai-sdk\milestones\03-kai-memory
@@ -22,7 +22,7 @@ D:\sources\codr.studio\cia-prime-care\agentic-backbone\packages\kai-sdk\mileston
 - [x] F-005: compaction-engine — compactMessages() com summarização (2026-02-16)
 - [x] F-006: context-status-event — Evento context_status no KaiAgentEvent (2026-02-16)
 - [x] F-007: agent-integration — Integrar tudo no fluxo de runKaiAgent() (2026-02-16)
-- [ ] F-008: build-validation — Validacao final de build e backwards compatibility
+- [x] F-008: build-validation — Validação final de build e backwards compatibility (2026-02-16)
 
 ## Architecture Decisions
 
@@ -44,3 +44,4 @@ D:\sources\codr.studio\cia-prime-care\agentic-backbone\packages\kai-sdk\mileston
 - Session 4 (CC): F-005 implementada. compactMessages() em src/context/compaction.ts. Exportada via index.ts com tipos CompactOptions/CompactResult. Build passa. F-006 proxima prioridade.
 - Session 5 (CC): F-006 implementada. Adicionada variante context_status ao KaiAgentEvent union type em types.ts: `{ type: "context_status"; context: ContextUsage & { compacted: boolean } }`. ContextUsage ja estava exportado. Build passa. F-007 proxima prioridade.
 - Session 6 (CC): F-007 implementada. Integrado getContextUsage + compactMessages + context_status no runKaiAgent(). Fluxo: calcular usage → compactar se threshold atingido → recalcular → emitir context_status → streamText. Mensagens compactadas persistidas via saveSession. Build passa. F-008 proxima prioridade.
+- Session 7 (CC): F-008 validada. Build completo passa. Todos os novos tipos (ContextUsage, context_status, CompactOptions, CompactResult, GetContextUsageOptions) exportados em index.ts. KaiAgentOptions backwards compatible — novos campos (contextWindow, compactThreshold, disableCompaction) são opcionais. KaiAgentEvent union type estendida com context_status, sem quebrar variantes existentes. runKaiAgent() aceita opções mínimas (model + apiKey) sem campos de compactação. Milestone 03-kai-memory COMPLETO.

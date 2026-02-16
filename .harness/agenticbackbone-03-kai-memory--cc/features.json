@@ -140,7 +140,8 @@
     "id": "F-008",
     "name": "build-validation",
     "description": "Validar que o build completo do workspace passa sem erros. Verificar que todos os novos tipos e funcoes sao exportados corretamente. Garantir que nao ha breaking changes nas APIs existentes.",
-    "status": "failing",
+    "status": "passing",
+    "completed_at": "2026-02-16",
     "priority": 8,
     "tests": [
       "npm run build --workspace=packages/kai-sdk passa sem erros",
