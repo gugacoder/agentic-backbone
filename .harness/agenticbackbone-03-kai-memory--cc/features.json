@@ -1,0 +1,154 @@
+[
+  {
+    "id": "F-001",
+    "name": "tokenizer-module",
+    "description": "Criar src/context/tokenizer.ts com funcao countTokens(text) usando js-tiktoken (cl100k_base). Deve retornar estimativa de tokens para qualquer string. Modulo leve, sem bloqueio de event loop.",
+    "status": "passing",
+    "completed_at": "2026-02-16",
+    "priority": 1,
+    "tests": [
+      "Arquivo src/context/tokenizer.ts existe",
+      "countTokens('') retorna 0",
+      "countTokens('hello world') retorna numero > 0",
+      "countTokens() para texto de 1000 palavras tem margem de erro < 10% vs tokenizacao real",
+      "js-tiktoken esta no package.json como dependencia",
+      "npm run build --workspace=packages/kai-sdk passa sem erros"
+    ],
+    "dependencies": [],
+    "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\packages\\kai-sdk\\milestones\\03-kai-memory\\PRP.md"
+  },
+  {
+    "id": "F-002",
+    "name": "model-context-window-map",
+    "description": "Criar tabela de context window por modelo (mapa model-id -> tamanho). Incluir modelos comuns (Claude 3.5 Sonnet, GPT-4o, etc). Default de 128000 para modelos desconhecidos. Configuravel via KaiAgentOptions.contextWindow.",
+    "status": "passing",
+    "completed_at": "2026-02-16",
+    "priority": 2,
+    "tests": [
+      "Mapa de modelos inclui pelo menos: anthropic/claude-3.5-sonnet (200000), openai/gpt-4o (128000)",
+      "Modelos nao mapeados retornam 128000 como default",
+      "KaiAgentOptions aceita campo contextWindow opcional do tipo number",
+      "contextWindow em options tem precedencia sobre o mapa",
+      "npm run build --workspace=packages/kai-sdk passa sem erros"
+    ],
+    "dependencies": [],
+    "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\packages\\kai-sdk\\milestones\\03-kai-memory\\PRP.md"
+  },
+  {
+    "id": "F-003",
+    "name": "context-usage-calculator",
+    "description": "Implementar funcao getContextUsage() que calcula o breakdown de uso do contexto: systemPrompt tokens, toolDefinitions tokens, messages tokens, usado, livre, usagePercent, compactThreshold, willCompact. Retorna objeto ContextUsage tipado.",
+    "status": "passing",
+    "completed_at": "2026-02-16",
+    "priority": 3,
+    "tests": [
+      "Interface ContextUsage esta definida em types.ts com todos os campos: model, contextWindow, systemPrompt, toolDefinitions, messages, used, free, usagePercent, compactThreshold, willCompact",
+      "getContextUsage() retorna objeto com todos os campos preenchidos",
+      "used == systemPrompt + toolDefinitions + messages",
+      "free == contextWindow - used",
+      "usagePercent == (used / contextWindow) * 100",
+      "willCompact == usagePercent >= compactThreshold",
+      "npm run build --workspace=packages/kai-sdk passa sem erros"
+    ],
+    "dependencies": [
+      "F-001",
+      "F-002"
+    ],
+    "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\packages\\kai-sdk\\milestones\\03-kai-memory\\PRP.md",
+    "retries": 1
+  },
+  {
+    "id": "F-004",
+    "name": "compaction-options",
+    "description": "Adicionar campos de compactacao em KaiAgentOptions: contextWindow (number, opcional), compactThreshold (number, default 0.65), disableCompaction (boolean, default false). Atualizar types.ts e exportacoes.",
+    "status": "passing",
+    "completed_at": "2026-02-16",
+    "priority": 4,
+    "tests": [
+      "KaiAgentOptions tem campo contextWindow?: number",
+      "KaiAgentOptions tem campo compactThreshold?: number",
+      "KaiAgentOptions tem campo disableCompaction?: boolean",
+      "Tipos sao exportados corretamente via index.ts",
+      "npm run build --workspace=packages/kai-sdk passa sem erros"
+    ],
+    "dependencies": [],
+    "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\packages\\kai-sdk\\milestones\\03-kai-memory\\PRP.md"
+  },
+  {
+    "id": "F-005",
+    "name": "compaction-engine",
+    "description": "Implementar modulo de compactacao automatica. Separa mensagens em cabeca (a resumir) e cauda (manter inteiras — ultimas mensagens que caibam em 30% do context window). Chama generateText com prompt de sumarizacao para resumir a cabeca. Substitui cabeca por mensagem unica com <context_summary>. Usa mesmo model e apiKey do agente.",
+    "status": "failing",
+    "priority": 5,
+    "tests": [
+      "Funcao de compactacao existe e recebe array de CoreMessage + opcoes",
+      "Cabeca e resumida em uma unica mensagem com role 'user' e conteudo dentro de <context_summary>",
+      "Cauda (ultimas mensagens ate 30% do context window) e mantida intacta",
+      "Apos compactacao, usagePercent < 50%",
+      "Se generateText falhar, retorna mensagens originais sem compactar e emite warning",
+      "npm run build --workspace=packages/kai-sdk passa sem erros"
+    ],
+    "dependencies": [
+      "F-001",
+      "F-002",
+      "F-003"
+    ],
+    "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\packages\\kai-sdk\\milestones\\03-kai-memory\\PRP.md"
+  },
+  {
+    "id": "F-006",
+    "name": "context-status-event",
+    "description": "Adicionar evento context_status ao KaiAgentEvent. O evento inclui ContextUsage + campo compacted (boolean). Tipar corretamente em types.ts.",
+    "status": "failing",
+    "priority": 6,
+    "tests": [
+      "KaiAgentEvent inclui variante { type: 'context_status', context: ContextUsage & { compacted: boolean } }",
+      "ContextUsage esta exportado em index.ts",
+      "npm run build --workspace=packages/kai-sdk passa sem erros"
+    ],
+    "dependencies": [
+      "F-003",
+      "F-004"
+    ],
+    "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\packages\\kai-sdk\\milestones\\03-kai-memory\\PRP.md"
+  },
+  {
+    "id": "F-007",
+    "name": "agent-integration",
+    "description": "Integrar contagem de tokens, compactacao e emissao de context_status no fluxo de runKaiAgent(). Antes de cada streamText: calcular ContextUsage, compactar se necessario, emitir context_status. Respeitar disableCompaction. Persistir mensagens compactadas no JSONL.",
+    "status": "blocked",
+    "priority": 7,
+    "tests": [
+      "runKaiAgent() emite evento context_status antes de chamar streamText",
+      "Se usagePercent >= compactThreshold e disableCompaction != true, compactacao e executada",
+      "Apos compactacao, segundo context_status mostra usagePercent reduzido",
+      "context_status.compacted == true quando compactacao ocorreu no step",
+      "disableCompaction = true impede compactacao mesmo com usagePercent alto",
+      "Mensagens compactadas sao persistidas no JSONL (saveSession recebe array compactado)",
+      "npm run build --workspace=packages/kai-sdk passa sem erros"
+    ],
+    "dependencies": [
+      "F-005",
+      "F-006"
+    ],
+    "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\packages\\kai-sdk\\milestones\\03-kai-memory\\PRP.md"
+  },
+  {
+    "id": "F-008",
+    "name": "build-validation",
+    "description": "Validar que o build completo do workspace passa sem erros. Verificar que todos os novos tipos e funcoes sao exportados corretamente. Garantir que nao ha breaking changes nas APIs existentes.",
+    "status": "blocked",
+    "priority": 8,
+    "tests": [
+      "npm run build --workspace=packages/kai-sdk passa sem erros",
+      "Todos os tipos novos (ContextUsage, context_status event) estao exportados em index.ts",
+      "KaiAgentOptions existentes continuam funcionando sem mudancas obrigatorias (novos campos sao opcionais)",
+      "KaiAgentEvent existentes continuam tipados corretamente (union type ampliada, nao substituida)",
+      "runKaiAgent() continua funcionando se nenhuma opcao de compactacao for passada (backwards compatible)"
+    ],
+    "dependencies": [
+      "F-007"
+    ],
+    "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\packages\\kai-sdk\\milestones\\03-kai-memory\\PRP.md"
+  }
+]

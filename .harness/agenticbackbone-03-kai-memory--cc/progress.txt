@@ -1,0 +1,41 @@
+# Agent Harness Progress — agenticbackbone-03-kai-memory--cc
+
+## Current Status
+Session 3 complete — F-003 (context-usage-calculator) and F-004 (compaction-options) implemented and passing. 4/8 features complete.
+
+## Specs Path
+D:\sources\codr.studio\cia-prime-care\agentic-backbone\packages\kai-sdk\milestones\03-kai-memory
+
+## Environment
+- Stack: Node.js, TypeScript (ES2022, ESM), Vercel AI SDK, Hono
+- Package Manager: npm (workspaces monorepo)
+- Dev: npm run dev --workspace=packages/kai-sdk (tsc --watch)
+- Build: npm run build --workspace=packages/kai-sdk
+- No test framework configured
+
+## Features
+
+- [x] F-001: tokenizer-module — countTokens() com js-tiktoken (2026-02-16)
+- [x] F-002: model-context-window-map — Tabela model-id → context window (2026-02-16)
+- [x] F-003: context-usage-calculator — getContextUsage() com breakdown (2026-02-16)
+- [x] F-004: compaction-options — Novos campos em KaiAgentOptions (2026-02-16)
+- [ ] F-005: compaction-engine — Compactacao automatica com sumarizacao
+- [ ] F-006: context-status-event — Evento context_status no KaiAgentEvent
+- [ ] F-007: agent-integration — Integrar tudo no fluxo de runKaiAgent()
+- [ ] F-008: build-validation — Validacao final de build e backwards compatibility
+
+## Architecture Decisions
+
+1. **Tokenizer**: js-tiktoken com encoding gpt-4o (cl100k_base compatible). Estimativa ±5% aceitavel.
+2. **Compactacao**: Sumarizacao via generateText (nao sliding window). Threshold default 65%. Buffer 15% reservado para output.
+3. **Corte cabeca/cauda**: Cauda = ultimas mensagens que caibam em 30% do context window. Cabeca = tudo antes.
+4. **Persistencia**: Resumo substitui mensagens originais no JSONL — nao mantidas em paralelo.
+5. **Fallback**: Se compactacao falhar, SDK continua sem compactar + emite warning.
+6. **Visibilidade**: Evento context_status emitido antes de cada streamText(). Consumidor decide renderizacao.
+7. **Backwards compatible**: Todos os novos campos em KaiAgentOptions sao opcionais.
+8. **getContextUsage**: Arquivo src/context/usage.ts. Conta tokens via countTokens() para system prompt, JSON.stringify dos tool definitions, e conteudo das mensagens (com 4 tokens overhead por mensagem para framing). compactThreshold armazenado como 0-100 no ContextUsage (convertido do 0-1 das options).
+
+## Session Notes
+- Session 1 (Initializer): Harness criado. 8 features, PRP unico.
+- Session 2 (CC): F-001 e F-002 implementadas (tokenizer + model map). Build passa.
+- Session 3 (CC): F-003 e F-004 implementadas. ContextUsage interface + getContextUsage() + compactThreshold/disableCompaction options. Build passa. F-005 e F-006 desbloqueadas.

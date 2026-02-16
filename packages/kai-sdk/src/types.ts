@@ -33,6 +33,19 @@ export interface KaiUsageData {
   stopReason: string;
 }
 
+export interface ContextUsage {
+  model: string;
+  contextWindow: number;
+  systemPrompt: number;
+  toolDefinitions: number;
+  messages: number;
+  used: number;
+  free: number;
+  usagePercent: number;
+  compactThreshold: number;
+  willCompact: boolean;
+}
+
 export interface KaiAgentOptions {
   model: string;
   apiKey: string;
@@ -54,4 +67,8 @@ export interface KaiAgentOptions {
   tools?: Record<string, any>;
   /** Override context window size (tokens) for the model. Takes precedence over the built-in model map. */
   contextWindow?: number;
+  /** Usage percentage (0-1) at which automatic compaction triggers. Default: 0.65 */
+  compactThreshold?: number;
+  /** Disable automatic context compaction. Default: false */
+  disableCompaction?: boolean;
 }
