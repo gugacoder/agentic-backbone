@@ -206,7 +206,8 @@
     "id": "F-012",
     "name": "Evolution CRUD and QR backend routes",
     "description": "Estender rotas do modulo Evolution com CRUD e QR (extensao PRP 02 requerida pelo PRP 03): POST /instances (criar), DELETE /instances/:name (remover), GET /instances/:name/qr (QR code), GET /instances/:name/settings, PATCH /instances/:name/settings. Proxy para Evolution API.",
-    "status": "failing",
+    "status": "passing",
+    "completed_at": "2026-02-16T20:00:00Z",
     "priority": 12,
     "tests": [
       "POST /api/modules/evolution/instances cria instancia via Evolution API",

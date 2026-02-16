@@ -44,6 +44,11 @@ export class EvolutionProbe {
     this.ctx.log("probe stopped");
   }
 
+  /** Force an immediate probe tick (e.g. after CRUD operations). */
+  async forceTick(): Promise<void> {
+    await this.tick();
+  }
+
   private async tick(): Promise<void> {
     const result = await this.fetchInstances();
     this.lastProbe = result;

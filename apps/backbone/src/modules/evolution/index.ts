@@ -62,6 +62,7 @@ export const evolutionModule: BackboneModule = {
       probe,
       state: stateTracker,
       actions,
+      env: ctx.env as Record<string, string | undefined>,
     });
 
     // Start the probe loop

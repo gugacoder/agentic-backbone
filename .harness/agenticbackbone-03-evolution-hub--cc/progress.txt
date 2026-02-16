@@ -1,7 +1,7 @@
 # Progress — agenticbackbone-03-evolution-hub--cc
 
 ## Current Status
-11/23 features complete. PRP 01 (Module System) completo. PRP 02 quase completo: F-005 a F-011 implementados (falta F-012 CRUD/QR routes). Proximo: F-012 (CRUD and QR backend routes).
+12/23 features complete. PRP 01 (Module System) completo. PRP 02 (Evolution Module) completo: F-005 a F-012 todos implementados e passing. PRP 03 em andamento: F-013 (hub API layer) ja existe mas hub build falha por componentes de features futuras (F-014+) que referenciam rotas nao registradas.
 
 ## Specs Path
 D:\sources\codr.studio\cia-prime-care\agentic-backbone\apps\backbone\milestones\03-evolution-hub
@@ -56,7 +56,7 @@ D:\sources\codr.studio\cia-prime-care\agentic-backbone\apps\backbone\milestones\
 - [x] F-009 — Corrective actions (actions.ts: reconnect/restart with retry policy)
 - [x] F-010 — HTTP routes monitoring (routes.ts: health, instances, reconnect, restart)
 - [x] F-011 — Module entry point + registration (evolution/index.ts + modules/index.ts)
-- [ ] F-012 — CRUD and QR backend routes (create, delete, qr, settings — proxy to Evolution API)
+- [x] F-012 — CRUD and QR backend routes (create, delete, qr, settings — proxy to Evolution API)
 
 ### PRP 03 — Evolution Hub (F-013 to F-023)
 - [ ] F-013 — Hub API layer (src/api/evolution.ts: queries + mutations + types)
@@ -224,3 +224,19 @@ D:\sources\codr.studio\cia-prime-care\agentic-backbone\apps\backbone\milestones\
   - PRP 02 (Evolution Module): 7/8 features completas (falta F-012 CRUD/QR)
   - Build passa sem erros
   - Proxima prioridade: F-012 (CRUD and QR backend routes)
+
+- Session 13: Implementou F-012 — Evolution CRUD and QR backend routes
+  - Corrigiu build error pre-existente: env faltando em createEvolutionRoutes() call em index.ts
+  - Rotas CRUD ja existiam em routes.ts (criadas em sessao anterior nao commitada)
+  - POST /instances cria instancia via Evolution API (POST {baseUrl}/instance/create)
+  - DELETE /instances/:name remove instancia (DELETE {baseUrl}/instance/delete/{name})
+  - GET /instances/:name/qr retorna QR code (GET {baseUrl}/instance/connect/{name})
+  - GET /instances/:name/settings retorna configuracoes (GET {baseUrl}/settings/find/{name})
+  - PATCH /instances/:name/settings atualiza configuracoes (POST {baseUrl}/settings/set/{name})
+  - Adicionou forceTick() ao EvolutionProbe para invalidacao imediata do cache de estado
+  - Create e delete chamam forceTick() apos sucesso para atualizar state tracker imediatamente
+  - Todas as rotas proxy verificam apiState e retornam 503 se API offline
+  - Erros de proxy retornam 502 com detalhes
+  - PRP 02 (Evolution Module) completo: 8/8 features (F-005 a F-012)
+  - Build passa sem erros
+  - Proxima prioridade: F-013 (Hub API layer for Evolution) — inicio do PRP 03
