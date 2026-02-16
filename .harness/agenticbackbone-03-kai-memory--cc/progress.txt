@@ -1,7 +1,7 @@
 # Agent Harness Progress — agenticbackbone-03-kai-memory--cc
 
 ## Current Status
-Session 3 complete — F-003 (context-usage-calculator) and F-004 (compaction-options) implemented and passing. 4/8 features complete.
+Session 4 complete — F-005 (compaction-engine) implemented and passing. 5/8 features complete.
 
 ## Specs Path
 D:\sources\codr.studio\cia-prime-care\agentic-backbone\packages\kai-sdk\milestones\03-kai-memory
@@ -19,7 +19,7 @@ D:\sources\codr.studio\cia-prime-care\agentic-backbone\packages\kai-sdk\mileston
 - [x] F-002: model-context-window-map — Tabela model-id → context window (2026-02-16)
 - [x] F-003: context-usage-calculator — getContextUsage() com breakdown (2026-02-16)
 - [x] F-004: compaction-options — Novos campos em KaiAgentOptions (2026-02-16)
-- [ ] F-005: compaction-engine — Compactacao automatica com sumarizacao
+- [x] F-005: compaction-engine — compactMessages() com summarização (2026-02-16)
 - [ ] F-006: context-status-event — Evento context_status no KaiAgentEvent
 - [ ] F-007: agent-integration — Integrar tudo no fluxo de runKaiAgent()
 - [ ] F-008: build-validation — Validacao final de build e backwards compatibility
@@ -34,8 +34,10 @@ D:\sources\codr.studio\cia-prime-care\agentic-backbone\packages\kai-sdk\mileston
 6. **Visibilidade**: Evento context_status emitido antes de cada streamText(). Consumidor decide renderizacao.
 7. **Backwards compatible**: Todos os novos campos em KaiAgentOptions sao opcionais.
 8. **getContextUsage**: Arquivo src/context/usage.ts. Conta tokens via countTokens() para system prompt, JSON.stringify dos tool definitions, e conteudo das mensagens (com 4 tokens overhead por mensagem para framing). compactThreshold armazenado como 0-100 no ContextUsage (convertido do 0-1 das options).
+9. **compactMessages**: Arquivo src/context/compaction.ts. Separa mensagens em head/tail via splitMessages(). Tail budget = 30% context window. Head resumida via generateText com mesmo model/apiKey. Summary wrapped in <context_summary>. maxTokens: 2000 para summary. Fallback retorna mensagens originais + warning.
 
 ## Session Notes
 - Session 1 (Initializer): Harness criado. 8 features, PRP unico.
 - Session 2 (CC): F-001 e F-002 implementadas (tokenizer + model map). Build passa.
 - Session 3 (CC): F-003 e F-004 implementadas. ContextUsage interface + getContextUsage() + compactThreshold/disableCompaction options. Build passa. F-005 e F-006 desbloqueadas.
+- Session 4 (CC): F-005 implementada. compactMessages() em src/context/compaction.ts. Exportada via index.ts com tipos CompactOptions/CompactResult. Build passa. F-006 proxima prioridade.

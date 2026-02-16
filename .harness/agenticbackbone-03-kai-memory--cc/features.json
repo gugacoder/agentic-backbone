@@ -78,7 +78,8 @@
     "id": "F-005",
     "name": "compaction-engine",
     "description": "Implementar modulo de compactacao automatica. Separa mensagens em cabeca (a resumir) e cauda (manter inteiras — ultimas mensagens que caibam em 30% do context window). Chama generateText com prompt de sumarizacao para resumir a cabeca. Substitui cabeca por mensagem unica com <context_summary>. Usa mesmo model e apiKey do agente.",
-    "status": "failing",
+    "status": "passing",
+    "completed_at": "2026-02-16",
     "priority": 5,
     "tests": [
       "Funcao de compactacao existe e recebe array de CoreMessage + opcoes",
