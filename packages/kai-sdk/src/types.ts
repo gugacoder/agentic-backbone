@@ -1,8 +1,16 @@
-export interface KaiAgentEvent {
-  type: "init" | "text" | "result" | "usage";
-  sessionId?: string;
-  content?: string;
-  usage?: KaiUsageData;
+export type KaiAgentEvent =
+  | { type: "init"; sessionId: string }
+  | { type: "text"; content: string }
+  | { type: "result"; content: string }
+  | { type: "usage"; usage: KaiUsageData }
+  | { type: "ask_user"; question: string; options?: string[] }
+  | { type: "todo_update"; todos: KaiTodoItem[] };
+
+export interface KaiTodoItem {
+  id: string;
+  content: string;
+  status: "pending" | "in_progress" | "completed";
+  priority: "high" | "medium" | "low";
 }
 
 export interface KaiUsageData {

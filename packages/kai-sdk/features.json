@@ -3,7 +3,8 @@
     "id": "F-001",
     "name": "KaiAgentEvent types expansion",
     "description": "Adicionar os novos tipos de evento (ask_user, todo_update) ao KaiAgentEvent em src/types.ts. Expandir a union type para suportar os novos eventos que serao emitidos pelas ferramentas AskUser e TodoWrite.",
-    "status": "failing",
+    "status": "passing",
+    "completed_at": "2026-02-16",
     "priority": 1,
     "tests": [
       "src/types.ts exporta KaiAgentEvent com type 'ask_user' contendo { question: string, options?: string[] }",
@@ -55,7 +56,7 @@
     "id": "F-004",
     "name": "T05+T06: TodoWrite + TodoRead tools",
     "description": "Criar src/tools/todo.ts com duas ferramentas: TodoWrite (cria/atualiza lista de tarefas) e TodoRead (le lista atual). A lista vive em memoria durante a sessao. TodoWrite emite evento 'todo_update' no AsyncGenerator. Parametros TodoWrite: todos (array de { id, content, status, priority }). TodoRead: sem parametros. Registrar ambas em codingTools.",
-    "status": "failing",
+    "status": "blocked",
     "priority": 4,
     "tests": [
       "Arquivo src/tools/todo.ts existe e exporta todoWriteTool e todoReadTool",
@@ -66,7 +67,9 @@
       "Estado compartilhado entre TodoWrite e TodoRead na mesma sessao",
       "npm run build --workspace=packages/kai-sdk compila sem erros"
     ],
-    "dependencies": ["F-001"],
+    "dependencies": [
+      "F-001"
+    ],
     "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\packages\\kai-sdk\\milestones\\01-better-kay\\PRP.md"
   },
   {
@@ -91,7 +94,7 @@
     "id": "F-006",
     "name": "T01: AskUser tool",
     "description": "Criar src/tools/ask-user.ts — permite ao agente fazer perguntas ao usuario durante execucao. Parametros: question (string, obrigatorio), options (string[], opcional). Emite evento 'ask_user' no AsyncGenerator e aguarda resposta. O mecanismo de callback deve ser injetavel via KaiAgentOptions ou contexto da tool. Registrar em codingTools.",
-    "status": "failing",
+    "status": "blocked",
     "priority": 6,
     "tests": [
       "Arquivo src/tools/ask-user.ts existe e exporta askUserTool (ou factory)",
@@ -102,7 +105,9 @@
       "Retorna string com a resposta do usuario",
       "npm run build --workspace=packages/kai-sdk compila sem erros"
     ],
-    "dependencies": ["F-001"],
+    "dependencies": [
+      "F-001"
+    ],
     "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\packages\\kai-sdk\\milestones\\01-better-kay\\PRP.md"
   },
   {
@@ -224,7 +229,7 @@
     "id": "F-013",
     "name": "Tool registry final + build validation",
     "description": "Validacao final: codingTools exporta 15 ferramentas (6 existentes + 9 novas). Novos eventos (ask_user, todo_update) tipados. Build compila sem erros. Nenhuma ferramenta existente quebrou.",
-    "status": "failing",
+    "status": "blocked",
     "priority": 13,
     "tests": [
       "codingTools em src/tools/index.ts exporta exatamente 15 ferramentas",
@@ -235,7 +240,20 @@
       "npm run build --workspace=packages/kai-sdk compila sem erros",
       "Nenhum import quebrado em src/index.ts"
     ],
-    "dependencies": ["F-001", "F-002", "F-003", "F-004", "F-005", "F-006", "F-007", "F-008", "F-009", "F-010", "F-011", "F-012"],
+    "dependencies": [
+      "F-001",
+      "F-002",
+      "F-003",
+      "F-004",
+      "F-005",
+      "F-006",
+      "F-007",
+      "F-008",
+      "F-009",
+      "F-010",
+      "F-011",
+      "F-012"
+    ],
     "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\packages\\kai-sdk\\milestones\\01-better-kay\\PRP.md"
   }
 ]

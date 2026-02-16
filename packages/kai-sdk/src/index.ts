@@ -1,2 +1,2 @@
 export { runKaiAgent } from "./agent.js";
-export type { KaiAgentEvent, KaiUsageData, KaiAgentOptions } from "./types.js";
+export type { KaiAgentEvent, KaiUsageData, KaiAgentOptions, KaiTodoItem } from "./types.js";

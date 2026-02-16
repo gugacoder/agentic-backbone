@@ -5,9 +5,9 @@
 
 ## Current Status
 
-**Phase:** Initializing — harness criado, nenhuma feature implementada ainda.
-**Features:** 13 total (0 passing, 13 failing)
-**Build:** Compilando (6 tools existentes funcionando)
+**Phase:** Implementing — F-001 done, working through feature list.
+**Features:** 13 total (1 passing, 12 remaining)
+**Build:** Compilando (6 tools existentes + novos tipos KaiAgentEvent)
 
 ---
 
@@ -31,7 +31,7 @@ milestones/01-better-kay/PRP.md
 
 ## Features
 
-- [ ] F-001: KaiAgentEvent types expansion (priority 1)
+- [x] F-001: KaiAgentEvent types expansion (priority 1) ✓ 2026-02-16
 - [ ] F-002: T08 — ListDir tool (priority 2)
 - [ ] F-003: T07 — MultiEdit tool (priority 3)
 - [ ] F-004: T05+T06 — TodoWrite + TodoRead tools (priority 4, depends: F-001)
@@ -69,3 +69,13 @@ Session 1 (Initializer): Harness criado para milestone 01-better-kay
 - progress.txt criado
 - agent-setup.sh bootstrap script criado
 - PRP decomposed: 12 novas ferramentas + 1 feature de tipos + 1 validacao final = 13 features
+
+Session 2 (Coding Agent): F-001 KaiAgentEvent types expansion
+- Converted KaiAgentEvent from single interface to discriminated union type
+- Added `ask_user` event: `{ type: "ask_user", question: string, options?: string[] }`
+- Added `todo_update` event: `{ type: "todo_update", todos: KaiTodoItem[] }`
+- Created KaiTodoItem interface: `{ id, content, status, priority }`
+- Exported KaiTodoItem from src/index.ts
+- Verified backward compatibility with backbone consumer (kai.ts uses `as AgentEvent` cast)
+- Build passes cleanly
+- Next priority: F-002 (ListDir tool)
