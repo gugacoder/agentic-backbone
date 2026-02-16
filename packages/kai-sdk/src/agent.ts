@@ -66,14 +66,19 @@ export async function* runKaiAgent(
     let mcpTools: Record<string, any> = {};
     if (options.mcpServers && options.mcpServers.length > 0) {
       for (const serverConfig of options.mcpServers) {
-        const transport = createMcpTransport(serverConfig);
-        const client = await createMCPClient({
-          transport,
-          name: serverConfig.name,
-        });
-        mcpClients.push(client);
-        const serverTools = await client.tools();
-        mcpTools = { ...mcpTools, ...serverTools };
+        try {
+          const transport = createMcpTransport(serverConfig);
+          const client = await createMCPClient({
+            transport,
+            name: serverConfig.name,
+          });
+          mcpClients.push(client);
+          const serverTools = await client.tools();
+          mcpTools = { ...mcpTools, ...serverTools };
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : String(err);
+          console.warn(`[kai] MCP server "${serverConfig.name}" failed to connect: ${msg}`);
+        }
       }
     }
 
