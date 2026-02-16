@@ -121,7 +121,7 @@ export async function* runKaiAgent(
         tools,
         maxSteps: options.maxSteps ?? DEFAULT_MAX_STEPS,
         messages,
-        ...(options.system ? { system: options.system } : {}),
+        ...(typeof options.system === "string" ? { system: options.system } : {}),
         onStepFinish: () => {},
       });
     } catch (err) {

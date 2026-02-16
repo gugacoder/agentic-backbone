@@ -1,7 +1,7 @@
 # Agent Harness Progress — agenticbackbone-02-kai-brain--cc
 
 ## Current Status
-F-004 PASSING — discoverProjectContext(cwd) implementado em src/prompts/assembly.ts
+F-005 PASSING + F-006 PASSING — KaiAgentOptions types updated, public API exports added
 
 ## Specs Path
 D:\sources\codr.studio\cia-prime-care\agentic-backbone\packages\kai-sdk\milestones\02-kai-brain
@@ -19,8 +19,8 @@ D:\sources\codr.studio\cia-prime-care\agentic-backbone\packages\kai-sdk\mileston
 [x] F-002 tool-specific-prompts — Criados read.md(57t), write.md(59t), edit.md(67t), bash.md(65t), glob.md(65t), grep.md(58t)
 [x] F-003 assembler-getSystemPrompt — assembly.ts com getSystemPrompt(activeTools), 811 tokens com 6 tools
 [x] F-004 discover-project-context — discoverProjectContext(cwd) walk-up ate .git, coleta AGENTS.md/CLAUDE.md, trunca >4000t
-[ ] F-005 system-option-types — Atualizar KaiAgentOptions: system -> string | { append } | undefined, adicionar cwd
-[ ] F-006 export-public-api — Exportar getSystemPrompt e discoverProjectContext via index.ts
+[x] F-005 system-option-types — system: string | { append } | undefined, cwd?: string adicionado
+[x] F-006 export-public-api — getSystemPrompt e discoverProjectContext exportados via index.ts
 [ ] F-007 agent-integration-3-modes — Integrar 3 modos de system prompt em runKaiAgent()
 [ ] F-008 build-validation — Validacao final: build, exports, token budget
 
@@ -75,3 +75,17 @@ D:\sources\codr.studio\cia-prime-care\agentic-backbone\packages\kai-sdk\mileston
 - Build passes clean
 - F-006 (export-public-api) now unblocked — both F-003 + F-004 dependencies passing
 - Next priority: F-005 (system-option-types)
+
+### Session 2026-02-17T00:10
+- Completed F-005: Updated KaiAgentOptions in types.ts
+  - system field: string | { append: string } | undefined (3 modes per PRP)
+  - Added cwd?: string for project context discovery directory
+  - Fixed agent.ts type narrowing: `typeof options.system === "string"` guard for streamText compatibility
+  - Types already exported via index.ts (KaiAgentOptions re-export)
+- Completed F-006: Added public API exports in src/index.ts
+  - getSystemPrompt exported from ./prompts/assembly.js
+  - discoverProjectContext exported from ./prompts/assembly.js
+  - Verified exports resolvable via node require() on dist/
+- Build passes clean
+- F-007 (agent-integration-3-modes) now unblocked — all dependencies F-003, F-004, F-005, F-006 passing
+- Next priority: F-007 (agent-integration-3-modes)

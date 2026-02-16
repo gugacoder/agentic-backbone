@@ -87,7 +87,8 @@
     "id": "F-005",
     "name": "system-option-types",
     "description": "Atualizar KaiAgentOptions em types.ts: campo system passa de 'string | undefined' para 'string | { append: string } | undefined'. Adicionar campo cwd?: string. Garantir que o tipo e exportado corretamente via index.ts.",
-    "status": "failing",
+    "status": "passing",
+    "completed_at": "2026-02-16T23:55:00Z",
     "priority": 5,
     "tests": [
       "KaiAgentOptions.system aceita string (override total)",
@@ -104,7 +105,8 @@
     "id": "F-006",
     "name": "export-public-api",
     "description": "Exportar getSystemPrompt e discoverProjectContext via src/index.ts como parte da API publica do SDK.",
-    "status": "failing",
+    "status": "passing",
+    "completed_at": "2026-02-16T23:55:00Z",
     "priority": 6,
     "tests": [
       "getSystemPrompt e exportado de src/index.ts",
@@ -121,7 +123,7 @@
     "id": "F-007",
     "name": "agent-integration-3-modes",
     "description": "Modificar runKaiAgent() em agent.ts para implementar os 3 modos de system prompt: (1) omitido -> getSystemPrompt(tools) + discoverProjectContext(cwd), (2) { append } -> base + contexto + append, (3) string -> override total. A descoberta de contexto executa uma vez no inicio. Extrair activeTools dos nomes das tools resolvidas.",
-    "status": "blocked",
+    "status": "failing",
     "priority": 7,
     "tests": [
       "system omitido: agente usa prompt base (getSystemPrompt) + contexto auto-descoberto (discoverProjectContext)",

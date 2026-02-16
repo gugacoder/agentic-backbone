@@ -39,7 +39,9 @@ export interface KaiAgentOptions {
   sessionId?: string;
   sessionDir?: string;
   maxSteps?: number;
-  system?: string;
+  system?: string | { append: string };
+  /** Working directory for project context discovery (AGENTS.md/CLAUDE.md). Defaults to process.cwd(). */
+  cwd?: string;
   /** Callback invoked when the agent uses the AskUser tool. Return the user's answer. */
   onAskUser?: (question: string, options?: string[]) => Promise<string>;
   /** Callback invoked when the agent uses the WebSearch tool. Return search results. */
