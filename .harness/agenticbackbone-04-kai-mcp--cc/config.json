@@ -1,0 +1,15 @@
+{
+  "slug": "agenticbackbone-04-kai-mcp--cc",
+  "project": "agentic-backbone — 04-kai-mcp",
+  "session_name": "agenticbackbone-04-kai-mcp--cc",
+  "specs": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\packages\\kai-sdk\\milestones\\04-kai-mcp",
+  "agent": {
+    "harness": "claude-code",
+    "model": null,
+    "max_turns": 50,
+    "max_iterations": null,
+    "max_retries": 5,
+    "rollback": "stash"
+  },
+  "notifications": []
+}
