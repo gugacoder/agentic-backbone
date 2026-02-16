@@ -1,7 +1,7 @@
 # Agent Harness Progress — agenticbackbone-02-kai-brain--cc
 
 ## Current Status
-F-005 PASSING + F-006 PASSING — KaiAgentOptions types updated, public API exports added
+F-007 PASSING — 3 system prompt modes integrated in runKaiAgent()
 
 ## Specs Path
 D:\sources\codr.studio\cia-prime-care\agentic-backbone\packages\kai-sdk\milestones\02-kai-brain
@@ -21,7 +21,7 @@ D:\sources\codr.studio\cia-prime-care\agentic-backbone\packages\kai-sdk\mileston
 [x] F-004 discover-project-context — discoverProjectContext(cwd) walk-up ate .git, coleta AGENTS.md/CLAUDE.md, trunca >4000t
 [x] F-005 system-option-types — system: string | { append } | undefined, cwd?: string adicionado
 [x] F-006 export-public-api — getSystemPrompt e discoverProjectContext exportados via index.ts
-[ ] F-007 agent-integration-3-modes — Integrar 3 modos de system prompt em runKaiAgent()
+[x] F-007 agent-integration-3-modes — 3 modos integrados: undefined(auto), {append}(base+ctx+extra), string(override)
 [ ] F-008 build-validation — Validacao final: build, exports, token budget
 
 ## Architecture Decisions
@@ -89,3 +89,17 @@ D:\sources\codr.studio\cia-prime-care\agentic-backbone\packages\kai-sdk\mileston
 - Build passes clean
 - F-007 (agent-integration-3-modes) now unblocked — all dependencies F-003, F-004, F-005, F-006 passing
 - Next priority: F-007 (agent-integration-3-modes)
+
+### Session 2026-02-17T01:00
+- Implemented F-007: Modified runKaiAgent() in agent.ts to integrate 3 system prompt modes
+  - Mode 1 (undefined): builds base prompt via getSystemPrompt(Object.keys(tools)) + discoverProjectContext(cwd)
+  - Mode 2 ({ append }): base + project context + consumer's append string
+  - Mode 3 (string): full override — only the consumer's string, no base, no discovery
+  - activeTools extracted from Object.keys(tools) after full tool resolution (includes MCP, coding, AskUser, Task, Batch)
+  - discoverProjectContext called once before streamText (not per step)
+  - cwd defaults to process.cwd() when not provided in options
+  - systemPrompt always passed to streamText (no more conditional spread)
+- All 7 acceptance criteria verified via node validation scripts
+- Build passes clean
+- F-008 (build-validation) now unblocked — F-007 dependency satisfied
+- Next priority: F-008 (build-validation)

@@ -9,6 +9,7 @@ import { createTaskTool } from "./tools/task.js";
 import { createBatchTool } from "./tools/batch.js";
 import { createCodeSearchTool } from "./tools/code-search.js";
 import { loadSession, saveSession } from "./session.js";
+import { getSystemPrompt, discoverProjectContext } from "./prompts/assembly.js";
 import type { KaiAgentEvent, KaiAgentOptions, McpServerConfig } from "./types.js";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
@@ -114,6 +115,37 @@ export async function* runKaiAgent(
       Batch: createBatchTool(tools),
     };
 
+    // Build system prompt based on 3 modes:
+    // 1. undefined  → auto: base prompt (filtered by active tools) + project context
+    // 2. { append } → base prompt + project context + consumer's append text
+    // 3. string     → override: consumer's string only, no base, no discovery
+    let systemPrompt: string | undefined;
+
+    if (typeof options.system === "string") {
+      // Mode 3: full override — consumer replaces everything
+      systemPrompt = options.system;
+    } else {
+      // Mode 1 or 2: build base prompt from active tools
+      const activeTools = Object.keys(tools);
+      const base = getSystemPrompt(activeTools);
+
+      // Discover project context once (AGENTS.md / CLAUDE.md walk-up)
+      const cwd = options.cwd ?? process.cwd();
+      const projectContext = await discoverProjectContext(cwd);
+
+      const parts = [base];
+      if (projectContext) {
+        parts.push(projectContext);
+      }
+
+      // Mode 2: append consumer text after base + context
+      if (options.system && typeof options.system === "object" && "append" in options.system) {
+        parts.push(options.system.append);
+      }
+
+      systemPrompt = parts.join("\n\n");
+    }
+
     let result;
     try {
       result = streamText({
@@ -121,7 +153,7 @@ export async function* runKaiAgent(
         tools,
         maxSteps: options.maxSteps ?? DEFAULT_MAX_STEPS,
         messages,
-        ...(typeof options.system === "string" ? { system: options.system } : {}),
+        system: systemPrompt,
         onStepFinish: () => {},
       });
     } catch (err) {
