@@ -5,9 +5,9 @@
 
 ## Current Status
 
-**Phase:** Implementing — F-001 through F-005 done, working through feature list.
-**Features:** 13 total (5 passing, 8 remaining)
-**Build:** Compilando (11 tools — 6 existentes + ListDir + MultiEdit + TodoWrite + TodoRead + Diagnostics + novos tipos KaiAgentEvent)
+**Phase:** Implementing — F-001 through F-006 done, working through feature list.
+**Features:** 13 total (6 passing, 7 remaining)
+**Build:** Compilando (12 tools — 6 existentes + ListDir + MultiEdit + TodoWrite + TodoRead + Diagnostics + AskUser + novos tipos KaiAgentEvent)
 
 ---
 
@@ -36,7 +36,7 @@ milestones/01-better-kay/PRP.md
 - [x] F-003: T07 — MultiEdit tool (priority 3) ✓ 2026-02-16
 - [x] F-004: T05+T06 — TodoWrite + TodoRead tools (priority 4, depends: F-001) ✓ 2026-02-16
 - [x] F-005: T09 — Diagnostics tool (priority 5) ✓ 2026-02-16
-- [ ] F-006: T01 — AskUser tool (priority 6, depends: F-001)
+- [x] F-006: T01 — AskUser tool (priority 6, depends: F-001) ✓ 2026-02-16
 - [ ] F-007: T02 — WebFetch tool (priority 7)
 - [ ] F-008: T03 — WebSearch tool (priority 8)
 - [ ] F-009: T04 — Task sub-agente tool (priority 9)
@@ -125,3 +125,17 @@ Session 6 (Coding Agent): F-005 Diagnostics tool
 - Registered as Diagnostics in codingTools (11 tools total)
 - Build passes cleanly
 - Next priority: F-006 (AskUser tool)
+
+Session 7 (Coding Agent): F-006 AskUser tool
+- Created src/tools/ask-user.ts with createAskUserTool factory export
+- Factory pattern: accepts optional AskUserCallback, returns configured tool
+- AskUserCallback type: (question: string, options?: string[]) => Promise<string>
+- Parameters: question (required, z.string()), options (optional, z.array(z.string()))
+- When callback not provided, returns informative message about missing configuration
+- When callback provided, calls it with question + options and returns the user's answer
+- Added onAskUser to KaiAgentOptions interface in types.ts
+- runKaiAgent() in agent.ts overrides AskUser tool when onAskUser callback is provided
+- Exported createAskUserTool and AskUserCallback type from src/index.ts
+- Registered as AskUser in codingTools (12 tools total)
+- Build passes cleanly
+- Next priority: F-007 (WebFetch tool)

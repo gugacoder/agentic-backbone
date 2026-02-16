@@ -32,4 +32,6 @@ export interface KaiAgentOptions {
   sessionDir?: string;
   maxSteps?: number;
   system?: string;
+  /** Callback invoked when the agent uses the AskUser tool. Return the user's answer. */
+  onAskUser?: (question: string, options?: string[]) => Promise<string>;
 }

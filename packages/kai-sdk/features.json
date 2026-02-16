@@ -98,7 +98,8 @@
     "id": "F-006",
     "name": "T01: AskUser tool",
     "description": "Criar src/tools/ask-user.ts — permite ao agente fazer perguntas ao usuario durante execucao. Parametros: question (string, obrigatorio), options (string[], opcional). Emite evento 'ask_user' no AsyncGenerator e aguarda resposta. O mecanismo de callback deve ser injetavel via KaiAgentOptions ou contexto da tool. Registrar em codingTools.",
-    "status": "pending",
+    "status": "passing",
+    "completed_at": "2026-02-16",
     "priority": 6,
     "tests": [
       "Arquivo src/tools/ask-user.ts existe e exporta askUserTool (ou factory)",

@@ -1,6 +1,7 @@
 import { streamText, type CoreMessage } from "ai";
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import { codingTools } from "./tools/index.js";
+import { createAskUserTool } from "./tools/ask-user.js";
 import { loadSession, saveSession } from "./session.js";
 import type { KaiAgentEvent, KaiAgentOptions } from "./types.js";
 import { randomUUID } from "node:crypto";
@@ -36,28 +37,45 @@ export async function* runKaiAgent(
 
   yield { type: "init", sessionId };
 
-  const result = streamText({
-    model: openrouter(options.model),
-    tools: codingTools,
-    maxSteps: options.maxSteps ?? DEFAULT_MAX_STEPS,
-    messages,
-    ...(options.system ? { system: options.system } : {}),
-    onStepFinish: ({ toolCalls }) => {
-      if (toolCalls) {
-        for (const tc of toolCalls) {
-          console.log(`[kai:tool] ${tc.toolName}`);
-        }
-      }
-    },
-  });
+  // Override AskUser tool with configured callback if provided
+  const tools = options.onAskUser
+    ? { ...codingTools, AskUser: createAskUserTool(options.onAskUser) }
+    : codingTools;
 
-  // Stream text deltas
+  let result;
+  try {
+    result = streamText({
+      model: openrouter(options.model),
+      tools,
+      maxSteps: options.maxSteps ?? DEFAULT_MAX_STEPS,
+      messages,
+      ...(options.system ? { system: options.system } : {}),
+      onStepFinish: () => {},
+    });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    throw new Error(`OpenRouter request failed: ${msg}`);
+  }
+
+  // Stream text deltas — surface API errors instead of hanging
   let fullText = "";
-  for await (const part of result.fullStream) {
-    if (part.type === "text-delta") {
-      fullText += part.textDelta;
-      yield { type: "text", content: part.textDelta };
+  try {
+    for await (const part of result.fullStream) {
+      if (part.type === "text-delta") {
+        fullText += part.textDelta;
+        yield { type: "text", content: part.textDelta };
+      } else if (part.type === "error") {
+        const errMsg = (part as any).error?.message ?? JSON.stringify((part as any).error ?? part);
+        throw new Error(`OpenRouter API error: ${errMsg}`);
+      }
     }
+  } catch (err) {
+    // Re-throw with context if it's not already our error
+    const msg = err instanceof Error ? err.message : String(err);
+    if (!msg.startsWith("OpenRouter")) {
+      throw new Error(`OpenRouter stream error: ${msg}`);
+    }
+    throw err;
   }
 
   // Persist session
@@ -72,6 +90,25 @@ export async function* runKaiAgent(
   const steps = await result.steps;
   const finishReason = await result.finishReason;
 
+  // Fetch cost from OpenRouter generation endpoint
+  let totalCostUsd = 0;
+  try {
+    const genId = (await result.response).id;
+    if (genId) {
+      // Small delay — OpenRouter may not have the generation ready immediately
+      await new Promise((r) => setTimeout(r, 500));
+      const res = await fetch(`https://openrouter.ai/api/v1/generation?id=${genId}`, {
+        headers: { Authorization: `Bearer ${options.apiKey}` },
+      });
+      if (res.ok) {
+        const gen = (await res.json()) as { data?: { total_cost?: number } };
+        totalCostUsd = gen.data?.total_cost ?? 0;
+      }
+    }
+  } catch {
+    // Non-critical — cost stays 0
+  }
+
   yield { type: "result", content: fullText };
   yield {
     type: "usage",
@@ -80,7 +117,7 @@ export async function* runKaiAgent(
       outputTokens: usage.completionTokens ?? 0,
       cacheReadInputTokens: 0,
       cacheCreationInputTokens: 0,
-      totalCostUsd: 0,
+      totalCostUsd,
       numTurns: steps.length,
       durationMs: Date.now() - startMs,
       durationApiMs: 0,
