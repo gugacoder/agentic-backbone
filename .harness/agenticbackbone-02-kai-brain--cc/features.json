@@ -20,7 +20,8 @@
     "id": "F-002",
     "name": "tool-specific-prompts",
     "description": "Criar os arquivos markdown por ferramenta em src/prompts/tools/: read.md, write.md, edit.md, bash.md, glob.md, grep.md. Cada um segue formato padrao (Use para / NAO use para / Dica) com max 100 tokens.",
-    "status": "failing",
+    "status": "passing",
+    "completed_at": "2026-02-16T22:15:00Z",
     "priority": 2,
     "tests": [
       "Arquivo src/prompts/tools/read.md existe (Use para: ler conteudo, NAO use para: ler diretorios)",
@@ -39,7 +40,7 @@
     "id": "F-003",
     "name": "assembler-getSystemPrompt",
     "description": "Criar src/prompts/assembly.ts com a funcao getSystemPrompt(activeTools: string[]): string. Os .md sao embutidos como strings no build (nao lidos do filesystem em runtime). Monta na ordem: identity -> tool-guide -> tools filtrados -> patterns -> safety. Separacao: uma linha em branco entre modulos.",
-    "status": "blocked",
+    "status": "failing",
     "priority": 3,
     "tests": [
       "Funcao getSystemPrompt existe em src/prompts/assembly.ts",

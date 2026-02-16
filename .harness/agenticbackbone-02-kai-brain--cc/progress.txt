@@ -1,7 +1,7 @@
 # Agent Harness Progress — agenticbackbone-02-kai-brain--cc
 
 ## Current Status
-F-001 PASSING — Modulos markdown base criados em src/prompts/
+F-002 PASSING — Tool-specific prompts criados em src/prompts/tools/
 
 ## Specs Path
 D:\sources\codr.studio\cia-prime-care\agentic-backbone\packages\kai-sdk\milestones\02-kai-brain
@@ -16,7 +16,7 @@ D:\sources\codr.studio\cia-prime-care\agentic-backbone\packages\kai-sdk\mileston
 ## Features
 
 [x] F-001 prompt-modules-md — Criados identity.md (77t), tool-guide.md (152t), patterns.md (128t), safety.md (90t)
-[ ] F-002 tool-specific-prompts — Criar tools/read.md, write.md, edit.md, bash.md, glob.md, grep.md em src/prompts/tools/
+[x] F-002 tool-specific-prompts — Criados read.md(57t), write.md(59t), edit.md(67t), bash.md(65t), glob.md(65t), grep.md(58t)
 [ ] F-003 assembler-getSystemPrompt — Criar assembly.ts com getSystemPrompt(activeTools) usando .md embutidos
 [ ] F-004 discover-project-context — Criar discoverProjectContext(cwd) que sobe arvore procurando AGENTS.md/CLAUDE.md
 [ ] F-005 system-option-types — Atualizar KaiAgentOptions: system -> string | { append } | undefined, adicionar cwd
@@ -41,3 +41,12 @@ D:\sources\codr.studio\cia-prime-care\agentic-backbone\packages\kai-sdk\mileston
 - No cross-references between modules
 - Build passes clean
 - Next priority: F-002 (tool-specific-prompts)
+
+### Session 2026-02-16T22:15
+- Implemented F-002: Created 6 tool-specific markdown files in src/prompts/tools/
+- All files follow standard format: ## Header, **Use para:**, **NAO use para:**, **Dica:**
+- Token counts verified: read(57), write(59), edit(67), bash(65), glob(65), grep(58) — all within 100t limit
+- No cross-references between modules
+- Build passes clean
+- F-003 (assembler-getSystemPrompt) unblocked — dependencies F-001 + F-002 now passing
+- Next priority: F-003 (assembler-getSystemPrompt)
