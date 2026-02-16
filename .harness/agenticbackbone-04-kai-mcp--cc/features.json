@@ -18,7 +18,8 @@
     "id": "F-002",
     "name": "MCP types",
     "description": "Definir McpServerConfig interface e adicionar campo mcpServers opcional em KaiAgentOptions. Exportar os tipos no index.ts",
-    "status": "failing",
+    "status": "passing",
+    "completed_at": "2026-02-16",
     "priority": 2,
     "tests": [
       "McpServerConfig interface existe em types.ts com campos: name (string), transport (union de http e stdio)",
@@ -37,7 +38,7 @@
     "id": "F-003",
     "name": "MCP client lifecycle",
     "description": "Implementar criação de MCP clients no início de runKaiAgent() e fechamento no finally block. Usar createMCPClient do @ai-sdk/mcp para cada entry em mcpServers",
-    "status": "blocked",
+    "status": "failing",
     "priority": 3,
     "tests": [
       "Para cada entry em options.mcpServers, createMCPClient é chamado com o transport configurado",

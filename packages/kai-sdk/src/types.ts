@@ -1,3 +1,10 @@
+export interface McpServerConfig {
+  name: string;
+  transport:
+    | { type: "http"; url: string; headers?: Record<string, string> }
+    | { type: "stdio"; command: string; args?: string[] };
+}
+
 export type KaiAgentEvent =
   | { type: "init"; sessionId: string }
   | { type: "text"; content: string }
@@ -38,4 +45,6 @@ export interface KaiAgentOptions {
   onWebSearch?: (query: string, numResults: number) => Promise<Array<{ title: string; url: string; snippet: string }>>;
   /** Callback invoked when the agent uses the CodeSearch tool. Return code examples and documentation. */
   onCodeSearch?: (query: string) => Promise<Array<{ title: string; url: string; content: string }>>;
+  /** MCP servers to connect to. Tools from these servers are merged with codingTools. */
+  mcpServers?: McpServerConfig[];
 }
