@@ -107,6 +107,8 @@ serve({ fetch: app.fetch, port }, async (info) => {
   wireEventBusToHooks();
 
   await startModules(modules, routes);
+  const moduleNames = modules.map((m) => m.name).join(", ") || "(none)";
+  console.log(`[backbone] modules: ${moduleNames}`);
 
   triggerHook({
     ts: Date.now(),
