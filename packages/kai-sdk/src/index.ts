@@ -5,3 +5,5 @@ export type { AskUserCallback } from "./tools/ask-user.js";
 export { webFetchTool } from "./tools/web-fetch.js";
 export { createWebSearchTool } from "./tools/web-search.js";
 export type { WebSearchProvider, WebSearchResult } from "./tools/web-search.js";
+export { createTaskTool } from "./tools/task.js";
+export type { TaskConfig } from "./tools/task.js";

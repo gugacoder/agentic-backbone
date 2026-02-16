@@ -3,6 +3,7 @@ import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import { codingTools } from "./tools/index.js";
 import { createAskUserTool } from "./tools/ask-user.js";
 import { createWebSearchTool } from "./tools/web-search.js";
+import { createTaskTool } from "./tools/task.js";
 import { loadSession, saveSession } from "./session.js";
 import type { KaiAgentEvent, KaiAgentOptions } from "./types.js";
 import { randomUUID } from "node:crypto";
@@ -46,6 +47,16 @@ export async function* runKaiAgent(
   if (options.onWebSearch) {
     tools = { ...tools, WebSearch: createWebSearchTool(options.onWebSearch) };
   }
+
+  // Always override Task tool with parent's config so sub-agents inherit model/apiKey
+  tools = {
+    ...tools,
+    Task: createTaskTool({
+      model: options.model,
+      apiKey: options.apiKey,
+      maxSubSteps: Math.min(options.maxSteps ?? DEFAULT_MAX_STEPS, 10),
+    }),
+  };
 
   let result;
   try {

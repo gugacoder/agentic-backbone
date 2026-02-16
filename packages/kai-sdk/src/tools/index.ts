@@ -11,6 +11,7 @@ import { diagnosticsTool } from "./diagnostics.js";
 import { createAskUserTool } from "./ask-user.js";
 import { webFetchTool } from "./web-fetch.js";
 import { createWebSearchTool } from "./web-search.js";
+import { createTaskTool } from "./task.js";
 
 export const codingTools = {
   Read: readTool,
@@ -27,4 +28,5 @@ export const codingTools = {
   AskUser: createAskUserTool(),
   WebFetch: webFetchTool,
   WebSearch: createWebSearchTool(),
+  Task: createTaskTool(),
 };

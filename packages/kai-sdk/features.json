@@ -159,7 +159,8 @@
     "id": "F-009",
     "name": "T04: Task (sub-agente) tool",
     "description": "Criar src/tools/task.ts — lanca sub-agente para executar tarefa autonomamente. Parametros: description (string, obrigatorio), prompt (string, obrigatorio). Sub-agente recebe mesmas codingTools, executa em sessao isolada, herda model e apiKey do pai. Usa runKaiAgent() internamente. Respeita maxSteps (sub-limite). Registrar em codingTools.",
-    "status": "failing",
+    "status": "passing",
+    "completed_at": "2026-02-16",
     "priority": 9,
     "tests": [
       "Arquivo src/tools/task.ts existe e exporta taskTool (ou factory)",

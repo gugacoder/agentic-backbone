@@ -5,9 +5,9 @@
 
 ## Current Status
 
-**Phase:** Implementing — F-001 through F-008 done, working through feature list.
-**Features:** 13 total (8 passing, 5 remaining)
-**Build:** Compilando (14 tools — 6 existentes + ListDir + MultiEdit + TodoWrite + TodoRead + Diagnostics + AskUser + WebFetch + WebSearch + novos tipos KaiAgentEvent)
+**Phase:** Implementing — F-001 through F-009 done, working through feature list.
+**Features:** 13 total (9 passing, 4 remaining)
+**Build:** Compilando (15 tools — 6 existentes + ListDir + MultiEdit + TodoWrite + TodoRead + Diagnostics + AskUser + WebFetch + WebSearch + Task + novos tipos KaiAgentEvent)
 
 ---
 
@@ -39,7 +39,7 @@ milestones/01-better-kay/PRP.md
 - [x] F-006: T01 — AskUser tool (priority 6, depends: F-001) ✓ 2026-02-16
 - [x] F-007: T02 — WebFetch tool (priority 7) ✓ 2026-02-16
 - [x] F-008: T03 — WebSearch tool (priority 8) ✓ 2026-02-16
-- [ ] F-009: T04 — Task sub-agente tool (priority 9)
+- [x] F-009: T04 — Task sub-agente tool (priority 9) ✓ 2026-02-16
 - [ ] F-010: T10 — Batch tool (priority 10)
 - [ ] F-011: T11 — ApplyPatch tool (priority 11)
 - [ ] F-012: T12 — CodeSearch tool (priority 12)
@@ -170,3 +170,18 @@ Session 9 (Coding Agent): F-008 WebSearch tool
 - Output truncated at 50KB limit
 - Build passes cleanly
 - Next priority: F-009 (Task sub-agente tool)
+
+Session 10 (Coding Agent): F-009 Task sub-agent tool
+- Created src/tools/task.ts with createTaskTool factory export
+- Factory pattern: accepts optional TaskConfig { model, apiKey, maxSubSteps }
+- Parameters: description (required, z.string()), prompt (required, z.string())
+- Uses dynamic import of runKaiAgent() to avoid circular dependency at module load time
+- Sub-agent runs in isolated session (no sessionId passed = fresh session, no parent history)
+- Sub-agent inherits model and apiKey from parent via TaskConfig
+- maxSubSteps defaults to 10, capped at parent's maxSteps
+- agent.ts always overrides Task tool with parent's config so sub-agents are functional
+- Exported createTaskTool and TaskConfig from src/index.ts
+- Registered as Task in codingTools (15 tools total)
+- Output truncated at 50KB limit
+- Build passes cleanly
+- Next priority: F-010 (Batch tool)
