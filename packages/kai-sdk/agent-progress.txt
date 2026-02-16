@@ -5,9 +5,9 @@
 
 ## Current Status
 
-**Phase:** Implementing — F-001 through F-007 done, working through feature list.
-**Features:** 13 total (7 passing, 6 remaining)
-**Build:** Compilando (13 tools — 6 existentes + ListDir + MultiEdit + TodoWrite + TodoRead + Diagnostics + AskUser + WebFetch + novos tipos KaiAgentEvent)
+**Phase:** Implementing — F-001 through F-008 done, working through feature list.
+**Features:** 13 total (8 passing, 5 remaining)
+**Build:** Compilando (14 tools — 6 existentes + ListDir + MultiEdit + TodoWrite + TodoRead + Diagnostics + AskUser + WebFetch + WebSearch + novos tipos KaiAgentEvent)
 
 ---
 
@@ -38,7 +38,7 @@ milestones/01-better-kay/PRP.md
 - [x] F-005: T09 — Diagnostics tool (priority 5) ✓ 2026-02-16
 - [x] F-006: T01 — AskUser tool (priority 6, depends: F-001) ✓ 2026-02-16
 - [x] F-007: T02 — WebFetch tool (priority 7) ✓ 2026-02-16
-- [ ] F-008: T03 — WebSearch tool (priority 8)
+- [x] F-008: T03 — WebSearch tool (priority 8) ✓ 2026-02-16
 - [ ] F-009: T04 — Task sub-agente tool (priority 9)
 - [ ] F-010: T10 — Batch tool (priority 10)
 - [ ] F-011: T11 — ApplyPatch tool (priority 11)
@@ -154,3 +154,19 @@ Session 8 (Coding Agent): F-007 WebFetch tool
 - Registered as WebFetch in codingTools (13 tools total)
 - Build passes cleanly
 - Next priority: F-008 (WebSearch tool)
+
+Session 9 (Coding Agent): F-008 WebSearch tool
+- Created src/tools/web-search.ts with createWebSearchTool factory export
+- Factory pattern (same as AskUser): accepts optional WebSearchProvider callback
+- WebSearchProvider type: (query: string, numResults: number) => Promise<WebSearchResult[]>
+- WebSearchResult interface: { title: string, url: string, snippet: string }
+- Parameters: query (required, z.string()), numResults (optional, z.number().default(5))
+- When provider not configured, returns informative message about missing configuration
+- When provider configured, calls it and formats results with numbered headings, URLs, and snippets
+- Added onWebSearch to KaiAgentOptions interface in types.ts
+- runKaiAgent() in agent.ts overrides WebSearch tool when onWebSearch callback is provided
+- Exported createWebSearchTool, WebSearchProvider, WebSearchResult from src/index.ts
+- Registered as WebSearch in codingTools (14 tools total)
+- Output truncated at 50KB limit
+- Build passes cleanly
+- Next priority: F-009 (Task sub-agente tool)

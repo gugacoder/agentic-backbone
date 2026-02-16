@@ -1,6 +1,6 @@
 import { tool } from "ai";
 import { z } from "zod";
-import { exec } from "node:child_process";
+import { execFile } from "node:child_process";
 
 const MAX_OUTPUT = 30_000;
 
@@ -26,21 +26,19 @@ export const grepTool = tool({
   execute: async ({ pattern, path, glob: globFilter, output_mode }) => {
     const searchPath = path ?? ".";
 
-    // Build rg command
-    const args: string[] = ["rg"];
+    // Build rg args array (no shell quoting needed with execFile)
+    const args: string[] = [];
 
     if (output_mode === "files_with_matches") args.push("-l");
     else if (output_mode === "count") args.push("-c");
     else args.push("-n"); // content mode: show line numbers
 
-    if (globFilter) args.push("--glob", `"${globFilter}"`);
+    if (globFilter) args.push("--glob", globFilter);
 
-    args.push(`"${pattern}"`, `"${searchPath}"`);
-
-    const cmd = args.join(" ");
+    args.push(pattern, searchPath);
 
     return new Promise<string>((resolve) => {
-      exec(cmd, { timeout: 30_000, maxBuffer: 10 * 1024 * 1024 }, (err, stdout, stderr) => {
+      execFile("rg", args, { timeout: 30_000, maxBuffer: 10 * 1024 * 1024 }, (err, stdout) => {
         if (stdout) {
           const output = stdout.length > MAX_OUTPUT
             ? stdout.slice(0, MAX_OUTPUT) + "\n...[truncated]"
@@ -48,15 +46,15 @@ export const grepTool = tool({
           resolve(output.trim());
         } else if (err) {
           // rg returns exit code 1 for no matches
-          if (err.code === 1) {
+          if ((err as any).code === 1) {
             resolve("No matches found.");
           } else {
             // Try grep fallback
-            const grepArgs = ["grep", "-rn"];
-            if (globFilter) grepArgs.push(`--include="${globFilter}"`);
-            grepArgs.push(`"${pattern}"`, `"${searchPath}"`);
+            const grepArgs = ["-rn"];
+            if (globFilter) grepArgs.push(`--include=${globFilter}`);
+            grepArgs.push(pattern, searchPath);
 
-            exec(grepArgs.join(" "), { timeout: 30_000 }, (gErr, gOut) => {
+            execFile("grep", grepArgs, { timeout: 30_000 }, (gErr, gOut) => {
               if (gOut) resolve(gOut.trim());
               else resolve("No matches found.");
             });

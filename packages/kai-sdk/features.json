@@ -140,7 +140,8 @@
     "id": "F-008",
     "name": "T03: WebSearch tool",
     "description": "Criar src/tools/web-search.ts — pesquisa na web e retorna resultados formatados. Parametros: query (string, obrigatorio), numResults (number, opcional, default 5). Provider de busca plugavel via KaiAgentOptions. Retorna titulo, URL e snippet de cada resultado. Registrar em codingTools.",
-    "status": "failing",
+    "status": "passing",
+    "completed_at": "2026-02-16",
     "priority": 8,
     "tests": [
       "Arquivo src/tools/web-search.ts existe e exporta webSearchTool (ou factory)",

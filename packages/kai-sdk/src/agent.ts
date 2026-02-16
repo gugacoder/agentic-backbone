@@ -2,6 +2,7 @@ import { streamText, type CoreMessage } from "ai";
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import { codingTools } from "./tools/index.js";
 import { createAskUserTool } from "./tools/ask-user.js";
+import { createWebSearchTool } from "./tools/web-search.js";
 import { loadSession, saveSession } from "./session.js";
 import type { KaiAgentEvent, KaiAgentOptions } from "./types.js";
 import { randomUUID } from "node:crypto";
@@ -37,10 +38,14 @@ export async function* runKaiAgent(
 
   yield { type: "init", sessionId };
 
-  // Override AskUser tool with configured callback if provided
-  const tools = options.onAskUser
-    ? { ...codingTools, AskUser: createAskUserTool(options.onAskUser) }
-    : codingTools;
+  // Override pluggable tools with configured callbacks if provided
+  let tools = { ...codingTools };
+  if (options.onAskUser) {
+    tools = { ...tools, AskUser: createAskUserTool(options.onAskUser) };
+  }
+  if (options.onWebSearch) {
+    tools = { ...tools, WebSearch: createWebSearchTool(options.onWebSearch) };
+  }
 
   let result;
   try {
