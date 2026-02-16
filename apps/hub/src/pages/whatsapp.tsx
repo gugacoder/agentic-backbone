@@ -11,6 +11,7 @@ import { InstanceSummaryCards } from "@/components/connectivity/instance-summary
 import { InstanceTable } from "@/components/connectivity/instance-table";
 import { CreateInstanceDialog } from "@/components/connectivity/create-instance-dialog";
 import { evolutionInstancesQuery, useDeleteInstance } from "@/api/evolution";
+import { useEvolutionSSE } from "@/hooks/use-evolution-sse";
 import { toast } from "sonner";
 
 export function WhatsAppPage() {
@@ -20,6 +21,7 @@ export function WhatsAppPage() {
 
   const { data: instances = [], isLoading } = useQuery(evolutionInstancesQuery);
   const deleteInstance = useDeleteInstance();
+  useEvolutionSSE();
 
   const [createOpen, setCreateOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);

@@ -280,7 +280,8 @@
     "id": "F-016",
     "name": "WhatsApp dashboard — health and summary cards",
     "description": "Criar api-health-card.tsx e instance-summary-cards.tsx. Health: status badge, response time, ultimo probe. Summary: 3 cards Online/Conectando/Offline com contagens e cores semanticas.",
-    "status": "failing",
+    "status": "passing",
+    "completed_at": "2026-02-16T22:00:00Z",
     "priority": 16,
     "tests": [
       "Health card: status (healthy=verde, degraded=amarelo, unhealthy=vermelho), response time, ultimo probe relativo",

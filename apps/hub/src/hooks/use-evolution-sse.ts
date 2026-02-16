@@ -6,11 +6,27 @@ import { toast } from "sonner";
  * Subscribes to evolution module SSE events.
  * Invalidates relevant queries and shows toasts for critical events.
  */
+const EVOLUTION_SSE_EVENTS = [
+  "module:evolution:api-online",
+  "module:evolution:api-offline",
+  "module:evolution:instance-discovered",
+  "module:evolution:instance-removed",
+  "module:evolution:instance-connected",
+  "module:evolution:instance-disconnected",
+  "module:evolution:instance-reconnecting",
+  "module:evolution:instance-unstable",
+  "module:evolution:instance-prolonged-offline",
+  "module:evolution:action-success",
+  "module:evolution:action-failed",
+  "module:evolution:action-exhausted",
+];
+
 export function useEvolutionSSE() {
   const qc = useQueryClient();
 
   useSSE({
     url: "/system/events",
+    additionalEventTypes: EVOLUTION_SSE_EVENTS,
     onEvent: (type, data) => {
       if (!type.startsWith("module:evolution:")) return;
 

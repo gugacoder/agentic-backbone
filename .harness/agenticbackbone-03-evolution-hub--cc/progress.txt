@@ -1,7 +1,7 @@
 # Progress — agenticbackbone-03-evolution-hub--cc
 
 ## Current Status
-15/23 features complete. PRP 01 (Module System) completo. PRP 02 (Evolution Module) completo. PRP 03 em andamento: F-013 (hub API layer), F-014 (sidebar + routing), F-015 (connectivity index page) implementados e passing. Hub build passa sem erros.
+16/23 features complete. PRP 01 (Module System) completo. PRP 02 (Evolution Module) completo. PRP 03 em andamento: F-013 a F-016 passing. Hub + backbone builds passam sem erros.
 
 ## Specs Path
 D:\sources\codr.studio\cia-prime-care\agentic-backbone\apps\backbone\milestones\03-evolution-hub
@@ -62,7 +62,7 @@ D:\sources\codr.studio\cia-prime-care\agentic-backbone\apps\backbone\milestones\
 - [ ] F-013 — Hub API layer (src/api/evolution.ts: queries + mutations + types)
 - [ ] F-014 — Sidebar and routing (Conectividade section + /conectividade routes + search params)
 - [ ] F-015 — Connectivity index page (/conectividade: grid of connectivity cards)
-- [ ] F-016 — Health and summary cards (api-health-card + instance-summary-cards)
+- [x] F-016 — Health and summary cards (api-health-card + instance-summary-cards)
 - [ ] F-017 — Instance table and dashboard tabs (Monitor + Instances tabs, criticality sort)
 - [ ] F-018 — Create instance dialog + delete confirmation
 - [ ] F-019 — Instance detail status tab (state card, corrective actions, event feed)
@@ -253,3 +253,27 @@ D:\sources\codr.studio\cia-prime-care\agentic-backbone\apps\backbone\milestones\
   - Build de backbone e hub passam sem erros
   - PRP 03 em andamento: 3/11 features completas (F-013, F-014, F-015)
   - Proxima prioridade: F-016 (Health and summary cards)
+
+- Session 15: Corrigiu tipos F-013 — Hub API types alinhados com backend
+  - EvolutionHealth: renomeou status (healthy/degraded/unhealthy) para apiState (online/offline/unknown) conforme backend /modules/evolution/health
+  - EvolutionHealth: lastProbe agora e objeto EvolutionProbeResult (timestamp, status, responseTimeMs, error), nao string
+  - EvolutionInstance: since agora e number (timestamp ms), nao string
+  - EvolutionInstance: adicionou instanceId, durationMs, profileName (string | null)
+  - EvolutionInstance: owner agora e string | null (nao optional string)
+  - Adicionou profileName a InstanceState no backend (types.ts + state.ts) — dado ja existia no RawInstance mas nao era persistido
+  - Corrigiu api-health-card.tsx: usa apiState e lastProbe.responseTimeMs/timestamp conforme novo tipo
+  - Corrigiu connectivity.tsx: usa evolutionInstancesQuery (nao mais health.instances que nao existia no backend)
+  - Corrigiu instance-status-card.tsx: timeAgo e formatDate aceitam number, removido previousStateDuration inexistente
+  - Corrigiu instance-table.tsx: timeAgo aceita number, sortByCriticality usa since direto (ja e number)
+  - Backbone build e hub build passam sem erros
+  - Proxima prioridade: F-016 (Health and summary cards)
+
+- Session 16: Implementou F-016 — Health and summary cards
+  - api-health-card.tsx ja existia de sessao anterior com status badge (online=verde, unknown=amarelo, offline=vermelho), response time, ultimo probe relativo
+  - instance-summary-cards.tsx ja existia; adicionou cores de fundo semanticas nos cards (bg-chart-2/10 para Online, bg-chart-4/10 para Conectando, bg-destructive/10 para Offline)
+  - Adicionou border colors semanticos (border-chart-2/20, border-chart-4/20, border-destructive/20)
+  - Numeros dos cards agora usam cor semantica (text-chart-2, text-chart-4, text-destructive)
+  - Ativou useEvolutionSSE() no WhatsAppPage para invalidacao de queries via SSE (api-online/api-offline invalidam health query)
+  - Grid 3 colunas desktop, stack mobile ja estava implementado (grid-cols-1 sm:grid-cols-3)
+  - Hub + backbone builds passam sem erros
+  - Proxima prioridade: F-017 (Instance table and dashboard tabs)

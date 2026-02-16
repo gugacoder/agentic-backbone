@@ -5,9 +5,11 @@ interface UseSSEOptions {
   url: string;
   enabled?: boolean;
   onEvent?: (event: string, data: unknown) => void;
+  /** Additional named SSE event types to listen for (beyond the built-in set). */
+  additionalEventTypes?: string[];
 }
 
-export function useSSE({ url, enabled = true, onEvent }: UseSSEOptions) {
+export function useSSE({ url, enabled = true, onEvent, additionalEventTypes = [] }: UseSSEOptions) {
   const [connected, setConnected] = useState(false);
   const [lastEvent, setLastEvent] = useState<unknown>(null);
   const esRef = useRef<EventSource | null>(null);
@@ -47,7 +49,8 @@ export function useSSE({ url, enabled = true, onEvent }: UseSSEOptions) {
     };
 
     // Listen for named events
-    for (const eventType of ["connected", "heartbeat:status", "channel:message", "registry:adapters", "job:status", "ping"]) {
+    const builtInTypes = ["connected", "heartbeat:status", "channel:message", "registry:adapters", "job:status", "ping"];
+    for (const eventType of [...builtInTypes, ...additionalEventTypes]) {
       es.addEventListener(eventType, (evt) => {
         try {
           const data = JSON.parse((evt as MessageEvent).data);
@@ -58,7 +61,7 @@ export function useSSE({ url, enabled = true, onEvent }: UseSSEOptions) {
         }
       });
     }
-  }, [url, enabled]);
+  }, [url, enabled, additionalEventTypes]);
 
   useEffect(() => {
     if (!enabled) return;
