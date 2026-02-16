@@ -6,6 +6,7 @@ import { globTool } from "./glob.js";
 import { grepTool } from "./grep.js";
 import { listDirTool } from "./list-dir.js";
 import { multiEditTool } from "./multi-edit.js";
+import { todoWriteTool, todoReadTool } from "./todo.js";
 
 export const codingTools = {
   Read: readTool,
@@ -16,4 +17,6 @@ export const codingTools = {
   Grep: grepTool,
   ListDir: listDirTool,
   MultiEdit: multiEditTool,
+  TodoWrite: todoWriteTool,
+  TodoRead: todoReadTool,
 };

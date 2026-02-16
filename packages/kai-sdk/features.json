@@ -58,7 +58,8 @@
     "id": "F-004",
     "name": "T05+T06: TodoWrite + TodoRead tools",
     "description": "Criar src/tools/todo.ts com duas ferramentas: TodoWrite (cria/atualiza lista de tarefas) e TodoRead (le lista atual). A lista vive em memoria durante a sessao. TodoWrite emite evento 'todo_update' no AsyncGenerator. Parametros TodoWrite: todos (array de { id, content, status, priority }). TodoRead: sem parametros. Registrar ambas em codingTools.",
-    "status": "pending",
+    "status": "passing",
+    "completed_at": "2026-02-16",
     "priority": 4,
     "tests": [
       "Arquivo src/tools/todo.ts existe e exporta todoWriteTool e todoReadTool",

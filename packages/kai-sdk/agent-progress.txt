@@ -5,9 +5,9 @@
 
 ## Current Status
 
-**Phase:** Implementing — F-001, F-002, F-003 done, working through feature list.
-**Features:** 13 total (3 passing, 10 remaining)
-**Build:** Compilando (8 tools — 6 existentes + ListDir + MultiEdit + novos tipos KaiAgentEvent)
+**Phase:** Implementing — F-001, F-002, F-003, F-004 done, working through feature list.
+**Features:** 13 total (4 passing, 9 remaining)
+**Build:** Compilando (10 tools — 6 existentes + ListDir + MultiEdit + TodoWrite + TodoRead + novos tipos KaiAgentEvent)
 
 ---
 
@@ -34,7 +34,7 @@ milestones/01-better-kay/PRP.md
 - [x] F-001: KaiAgentEvent types expansion (priority 1) ✓ 2026-02-16
 - [x] F-002: T08 — ListDir tool (priority 2) ✓ 2026-02-16
 - [x] F-003: T07 — MultiEdit tool (priority 3) ✓ 2026-02-16
-- [ ] F-004: T05+T06 — TodoWrite + TodoRead tools (priority 4, depends: F-001)
+- [x] F-004: T05+T06 — TodoWrite + TodoRead tools (priority 4, depends: F-001) ✓ 2026-02-16
 - [ ] F-005: T09 — Diagnostics tool (priority 5)
 - [ ] F-006: T01 — AskUser tool (priority 6, depends: F-001)
 - [ ] F-007: T02 — WebFetch tool (priority 7)
@@ -100,3 +100,16 @@ Session 4 (Coding Agent): F-003 MultiEdit tool
 - Functional smoke test passed: sequential edits, atomic rollback on failure, replace_all
 - Build passes cleanly
 - Next priority: F-004 (TodoWrite + TodoRead tools) or F-005 (Diagnostics tool)
+
+Session 5 (Coding Agent): F-004 TodoWrite + TodoRead tools
+- Created src/tools/todo.ts with todoWriteTool and todoReadTool exports
+- Module-level state: `currentTodos: KaiTodoItem[]` shared between both tools
+- TodoWrite: accepts `todos` array with Zod schema (id, content, status enum, priority enum)
+- TodoWrite replaces entire list on each call, returns summary with counts
+- TodoRead: no parameters, returns formatted list with status icons (○/◐/●) and priority tags
+- TodoRead returns "Nenhuma tarefa registrada." when list is empty
+- Helper exports: resetTodoState() for testing, getTodos() for consumers
+- Uses KaiTodoItem type from types.ts (defined in F-001)
+- Registered as TodoWrite and TodoRead in codingTools (10 tools total)
+- Build passes cleanly
+- Next priority: F-005 (Diagnostics tool)
