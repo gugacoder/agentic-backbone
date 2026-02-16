@@ -1,0 +1,84 @@
+# Platform services — internal network only (no exposed ports).
+# Use docker-compose.platform.dev-ports.yml overlay for local dev access.
+
+name: ab-platform-${ENVIRONMENT}
+
+services:
+  init:
+    image: busybox:1.37
+    command: ["sh", "-c", "mkdir -p /data/postgres /data/redis /data/evolution/instances /data/evolution/store && chown -R 999:999 /data/postgres && chown -R 999:999 /data/redis"]
+    volumes:
+      - ./data:/data
+    networks:
+      - internal
+
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    depends_on:
+      init:
+        condition: service_completed_successfully
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${PROJECT}
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${PROJECT}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      internal:
+        aliases:
+          - postgres.internal
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    depends_on:
+      init:
+        condition: service_completed_successfully
+    command: redis-server --appendonly yes
+    volumes:
+      - ./data/redis:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      internal:
+        aliases:
+          - redis.internal
+
+  evolution:
+    image: evoapicloud/evolution-api:v2.3.7
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      SERVER_PORT: 8080
+      DATABASE_PROVIDER: postgresql
+      DATABASE_CONNECTION_URI: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres.internal:5432/${PROJECT}
+      DATABASE_CONNECTION_CLIENT_NAME: evolution
+      CACHE_REDIS_ENABLED: "true"
+      CACHE_REDIS_URI: redis://redis.internal:6379
+      AUTHENTICATION_API_KEY: ${EVOLUTION_API_KEY}
+      AUTHENTICATION_INSTANCE_NAME: ${EVOLUTION_INSTANCE_NAME}
+      AUTHENTICATION_INSTANCE_MODE: container
+    volumes:
+      - ./data/evolution/instances:/evolution/instances
+      - ./data/evolution/store:/evolution/store
+    networks:
+      internal:
+        aliases:
+          - evolution.internal
+
+networks:
+  internal:
+    driver: bridge

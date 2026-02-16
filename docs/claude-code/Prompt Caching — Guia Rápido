@@ -1,0 +1,81 @@
+# Prompt Caching — Guia Rápido
+
+## O que é
+
+A Anthropic guarda no servidor a parte fixa do seu prompt. Na próxima chamada, ao invés de processar tudo de novo, reutiliza o que já foi processado.
+
+- **Escrita no cache (1ª vez):** 1.25x do preço de input
+- **Leitura do cache (próximas vezes):** 0.1x do preço de input (90% de desconto)
+- **TTL:** 5 minutos (renova a cada chamada que usa o cache)
+
+---
+
+## Como usar
+
+Adicione `cache_control` no bloco de conteúdo que quer cachear:
+
+```python
+response = client.messages.create(
+    model="claude-haiku-4-5-20251001",
+    max_tokens=256,
+    system=[
+        {
+            "type": "text",
+            "text": "Seu system prompt grande e fixo aqui...",
+            "cache_control": {"type": "ephemeral"}   # <-- só isso
+        }
+    ],
+    messages=[
+        {"role": "user", "content": "a parte que muda a cada chamada"}
+    ]
+)
+```
+
+---
+
+## Onde posicionar o cache_control
+
+Pode usar em 3 lugares:
+
+```python
+# 1. No system prompt
+system=[
+    {"type": "text", "text": "...", "cache_control": {"type": "ephemeral"}}
+]
+
+# 2. Nas tools (coloca na última tool)
+tools[-1]["cache_control"] = {"type": "ephemeral"}
+
+# 3. Nas messages (ex: documento grande no início da conversa)
+messages=[
+    {"role": "user", "content": [
+        {"type": "text", "text": "documento grande...", "cache_control": {"type": "ephemeral"}},
+        {"type": "text", "text": "pergunta sobre o documento"}
+    ]}
+]
+```
+
+---
+
+## Como saber se funcionou
+
+```python
+usage = response.usage
+
+print(usage.cache_creation_input_tokens)  # tokens escritos no cache (1ª vez)
+print(usage.cache_read_input_tokens)      # tokens lidos do cache (próximas)
+print(usage.input_tokens)                 # tokens não-cacheados
+```
+
+- 1ª chamada: `cache_creation` alto, `cache_read` = 0
+- 2ª em diante: `cache_read` alto, `cache_creation` = 0
+
+---
+
+## Regras
+
+- Mínimo ~1.024 tokens no bloco cacheado
+- Conteúdo tem que ser **idêntico** — 1 caractere diferente = cache miss
+- TTL de 5 min padrão, renova a cada hit
+- TTL de 1 hora disponível: `{"type": "ephemeral", "ttl": "3600"}` (escrita custa 2x)
+- Cache é baseado no **prefixo** — system prompt vem antes, messages depois

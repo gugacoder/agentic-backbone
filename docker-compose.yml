@@ -1,0 +1,31 @@
+name: ab-${ENVIRONMENT}
+
+include:
+  - docker-compose.platform.yml
+
+services:
+  backbone:
+    build:
+      context: .
+      dockerfile: apps/backbone/Dockerfile
+    depends_on:
+      redis:
+        condition: service_healthy
+    ports:
+      - "${BACKBONE_PORT}:${BACKBONE_PORT}"
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - BACKBONE_PORT=${BACKBONE_PORT}
+      - JWT_SECRET=${JWT_SECRET}
+      - SYSUSER=${SYSUSER}
+      - SYSPASS=${SYSPASS}
+    volumes:
+      - backbone-data:/app/apps/backbone/data
+      - ./apps/backbone/context:/app/apps/backbone/context
+    networks:
+      internal:
+        aliases:
+          - backbone.internal
+
+volumes:
+  backbone-data:

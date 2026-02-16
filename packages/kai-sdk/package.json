@@ -1,0 +1,21 @@
+{
+  "name": "@agentic-backbone/kai-sdk",
+  "version": "0.0.1",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch"
+  },
+  "dependencies": {
+    "ai": "^4",
+    "@ai-sdk/openai-compatible": "^0",
+    "zod": "^3",
+    "fast-glob": "^3"
+  },
+  "devDependencies": {
+    "typescript": "^5",
+    "@types/node": "^22"
+  }
+}

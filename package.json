@@ -1,0 +1,36 @@
+{
+  "name": "agentic-backbone",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "printenv": "dotenv -o -e .env -- printenv",
+
+    "dev:all": "concurrently -n hub,backbone -c blue,green \"npm run dev:hub\" \"npm run dev:backbone\"",
+    "dev:backbone": "npm run dev --workspace=apps/backbone",
+    "dev:hub": "npm run dev --workspace=apps/hub",
+
+    "platform:up": "dotenv -o -e .env -- docker compose -f docker-compose.platform.yml -f docker-compose.platform.dev-ports.yml up -d",
+    "platform:down": "dotenv -o -e .env -- docker compose -f docker-compose.platform.yml -f docker-compose.platform.dev-ports.yml down",
+    "platform:ps": "dotenv -o -e .env -- docker compose -f docker-compose.platform.yml -f docker-compose.platform.dev-ports.yml ps",
+    "platform:logs": "dotenv -o -e .env -- docker compose -f docker-compose.platform.yml -f docker-compose.platform.dev-ports.yml logs -f",
+
+    "docker:build": "dotenv -o -e .env -- docker compose build --no-cache",
+    "docker:up": "dotenv -o -e .env -- docker compose up -d",
+    "docker:down": "dotenv -o -e .env -- docker compose down",
+    "docker:ps": "dotenv -o -e .env -- docker compose ps",
+    "docker:logs": "dotenv -o -e .env -- docker compose logs -f",
+
+    "build:hub": "npm run build --workspace=apps/hub",
+
+    "test:e2e": "npx playwright test",
+    "test:e2e:hub": "npx playwright test --project=hub"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.58.2",
+    "concurrently": "^9.2.1",
+    "dotenv-cli": "^11.0.0"
+  }
+}

@@ -1,0 +1,45 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# SQLite databases
+data/
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm
+
+# OS files
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Editor / IDE
+.vscode/
+!.vscode/settings.json
+!.vscode/extensions.json
+.idea/
+*.swp
+*.swo
+*~
+
+# TypeScript incremental
+*.tsbuildinfo
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+.tmp/
+
+# User workspace (private — see CLAUDE.md)
+#.user-folder/
+
+test-results/
+.claude\settings.local.json

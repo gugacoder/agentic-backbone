@@ -1,0 +1,33 @@
+{
+  "name": "@agentic-backbone/backbone",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node --env-file=../../.env --import tsx/esm --watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "@agentic-backbone/kai-sdk": "*",
+    "@anthropic-ai/claude-agent-sdk": "^0",
+    "@hono/node-server": "^1",
+    "better-sqlite3": "^11",
+    "chokidar": "^5.0.0",
+    "croner": "^10.0.1",
+    "hono": "^4",
+    "js-yaml": "^4.1.1",
+    "mysql2": "^3.17.1",
+    "pg": "^8.18.0",
+    "pidusage": "^4.0.1",
+    "sqlite-vec": "^0.1.7-alpha.2"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7",
+    "@types/js-yaml": "^4.0.9",
+    "@types/node": "^22",
+    "@types/pidusage": "^2.0.5",
+    "tsx": "^4",
+    "typescript": "^5"
+  }
+}

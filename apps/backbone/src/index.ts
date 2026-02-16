@@ -1,0 +1,125 @@
+// Allow running inside a Claude Code session (nested session guard bypass)
+delete process.env.CLAUDECODE;
+
+// ── Validate required env vars ─────────────────────────────
+const REQUIRED_ENV = ["JWT_SECRET", "SYSUSER", "SYSPASS", "BACKBONE_PORT"] as const;
+const missing = REQUIRED_ENV.filter((k) => !process.env[k]);
+if (missing.length) {
+  console.error(
+    `[backbone] FATAL: missing required env vars: ${missing.join(", ")}`
+  );
+  process.exit(1);
+}
+
+import { existsSync, readFileSync, statSync } from "node:fs";
+import { join, resolve, extname } from "node:path";
+import { serve } from "@hono/node-server";
+import { Hono } from "hono";
+import { sign } from "hono/jwt";
+import { routes } from "./routes/index.js";
+import { startHeartbeat } from "./heartbeat/index.js";
+import { startCron } from "./cron/index.js";
+import { startWatchers } from "./watchers/index.js";
+import { listAgents } from "./agents/registry.js";
+import { listChannels } from "./channels/registry.js";
+import { initHooks, wireEventBusToHooks, triggerHook } from "./hooks/index.js";
+import { startJobSweeper, shutdownAllJobs } from "./jobs/engine.js";
+
+const app = new Hono();
+
+// API routes — mount under both "/" and "/api" so the frontend works in production
+app.route("/api", routes);
+app.route("/", routes);
+
+// Serve frontend static files when built
+const webDistPath = resolve(process.cwd(), "..", "web", "dist");
+if (existsSync(webDistPath)) {
+  console.log(`[backbone] serving frontend from ${webDistPath}`);
+
+  const mimeTypes: Record<string, string> = {
+    ".html": "text/html",
+    ".js": "application/javascript",
+    ".css": "text/css",
+    ".json": "application/json",
+    ".png": "image/png",
+    ".jpg": "image/jpeg",
+    ".svg": "image/svg+xml",
+    ".ico": "image/x-icon",
+    ".woff": "font/woff",
+    ".woff2": "font/woff2",
+  };
+
+  const indexHtml = readFileSync(join(webDistPath, "index.html"), "utf-8");
+
+  app.get("/*", (c) => {
+    // Try to serve the file directly
+    const urlPath = new URL(c.req.url).pathname;
+    const filePath = join(webDistPath, urlPath);
+
+    try {
+      if (existsSync(filePath) && statSync(filePath).isFile()) {
+        const ext = extname(filePath);
+        const mime = mimeTypes[ext] ?? "application/octet-stream";
+        const content = readFileSync(filePath);
+        return new Response(content, {
+          headers: { "Content-Type": mime },
+        });
+      }
+    } catch {
+      // Fall through to SPA fallback
+    }
+
+    // SPA fallback: serve index.html
+    return c.html(indexHtml);
+  });
+}
+
+const port = Number(process.env.BACKBONE_PORT);
+
+serve({ fetch: app.fetch, port }, async (info) => {
+  console.log(`[backbone] listening on http://localhost:${info.port}`);
+
+  // Generate internal auth token for agent tools (job submission, etc.)
+  const now = Math.floor(Date.now() / 1000);
+  const internalToken = await sign(
+    { sub: "backbone-internal", role: "sysuser", iat: now, exp: now + 60 * 60 * 24 * 365 },
+    process.env.JWT_SECRET!
+  );
+  process.env.AUTH_TOKEN = internalToken;
+
+  const agents = listAgents();
+  const channels = listChannels();
+  console.log(
+    `[backbone] agents: ${agents.map((a) => a.id).join(", ") || "(none)"}`
+  );
+  console.log(
+    `[backbone] channels: ${channels.map((c) => c.slug).join(", ") || "(none)"}`
+  );
+
+  startHeartbeat();
+  startCron();
+  startWatchers();
+  startJobSweeper();
+
+  await initHooks();
+  wireEventBusToHooks();
+
+  triggerHook({
+    ts: Date.now(),
+    hookEvent: "startup",
+    port: info.port,
+    agentCount: agents.length,
+    channelCount: channels.length,
+  }).catch((err) => console.error("[hooks] startup hook failed:", err));
+});
+
+// --- Graceful shutdown ---
+
+function onShutdown(signal: string) {
+  console.log(`[backbone] ${signal} received — shutting down`);
+  shutdownAllJobs();
+  process.exit(0);
+}
+
+process.on("SIGTERM", () => onShutdown("SIGTERM"));
+process.on("SIGINT", () => onShutdown("SIGINT"));

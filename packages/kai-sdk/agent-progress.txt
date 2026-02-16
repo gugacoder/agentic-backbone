@@ -1,0 +1,60 @@
+================================================================================
+  KAI SDK — Better KAY (Milestone 01)
+  Agent Progress
+================================================================================
+
+## Current Status
+
+Harness inicializado. 15 features identificadas, todas failing.
+O SDK possui 6 ferramentas (Read, Write, Edit, Bash, Glob, Grep).
+Objetivo: expandir para 18 ferramentas (6 existentes + 12 novas).
+
+## Specs Path
+
+milestones/01-better-kay/PRP.md
+
+## Environment
+
+- Stack: Node.js ESM, Vercel AI SDK v4, Zod v3, TypeScript 5
+- Provider: OpenRouter (openrouter.ai)
+- Build: npm run build --workspace=packages/kai-sdk (tsc)
+- Dev: npm run dev (tsc --watch)
+- Validation: npm run build --workspace=packages/kai-sdk (exit code 0)
+
+## Features
+
+[ ] F-001: KaiAgentEvent types — novos tipos ask_user, todo_update
+[ ] F-002: ListDir tool — listar diretorio como arvore
+[ ] F-003: MultiEdit tool — multiplas edicoes atomicas
+[ ] F-004: Diagnostics tool — wrapper para tsc/lint
+[ ] F-005: TodoWrite e TodoRead tools — tracking de progresso
+[ ] F-006: AskUser tool — perguntas ao usuario
+[ ] F-007: WebFetch tool — buscar conteudo de URLs
+[ ] F-008: WebSearch tool — pesquisa na web
+[ ] F-009: Task tool — sub-agentes
+[ ] F-010: ApplyPatch tool — patches multi-arquivo
+[ ] F-011: Batch tool — execucao paralela de ferramentas
+[ ] F-012: CodeSearch tool — busca de codigo/docs online
+[ ] F-013: codingTools registration completa — 18 entries no index
+[ ] F-014: runKaiAgent event support — propagar novos eventos
+[ ] F-015: Validacao final e build — build limpo
+
+## Architecture Decisions
+
+1. Pattern: cada tool e um arquivo .ts em src/tools/ exportando tool() do Vercel AI SDK
+2. Registro: codingTools em src/tools/index.ts agrega todas as ferramentas
+3. Eventos: AskUser e TodoWrite emitem eventos via AsyncGenerator<KaiAgentEvent>
+4. Sub-agente (Task): usa runKaiAgent() internamente, fire-and-forget
+5. Providers de busca (WebSearch, CodeSearch): plugaveis via KaiAgentOptions
+6. Estado de todo: em memoria na sessao, sem persistencia
+7. MultiEdit: atomico — falha de qualquer edicao reverte todas
+8. ApplyPatch: formato envelope simplificado (nao unified diff)
+9. Batch: Promise.all, sem recursao (Batch nao pode chamar Batch)
+10. Nenhuma dependencia de servico pago hardcoded
+
+## Session Notes
+
+Session 1 (Initializer): Harness inicializado para milestone 01-better-kay
+- 15 features decompostas do PRP (12 ferramentas + tipos + registro + validacao)
+- Ordem: tipos > ferramentas simples > ferramentas com eventos > integracao > validacao
+- Data: 2026-02-16
