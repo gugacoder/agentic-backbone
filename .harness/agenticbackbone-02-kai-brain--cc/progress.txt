@@ -1,7 +1,7 @@
 # Agent Harness Progress — agenticbackbone-02-kai-brain--cc
 
 ## Current Status
-F-002 PASSING — Tool-specific prompts criados em src/prompts/tools/
+F-003 PASSING — getSystemPrompt() assembler criado em src/prompts/assembly.ts
 
 ## Specs Path
 D:\sources\codr.studio\cia-prime-care\agentic-backbone\packages\kai-sdk\milestones\02-kai-brain
@@ -17,7 +17,7 @@ D:\sources\codr.studio\cia-prime-care\agentic-backbone\packages\kai-sdk\mileston
 
 [x] F-001 prompt-modules-md — Criados identity.md (77t), tool-guide.md (152t), patterns.md (128t), safety.md (90t)
 [x] F-002 tool-specific-prompts — Criados read.md(57t), write.md(59t), edit.md(67t), bash.md(65t), glob.md(65t), grep.md(58t)
-[ ] F-003 assembler-getSystemPrompt — Criar assembly.ts com getSystemPrompt(activeTools) usando .md embutidos
+[x] F-003 assembler-getSystemPrompt — assembly.ts com getSystemPrompt(activeTools), 811 tokens com 6 tools
 [ ] F-004 discover-project-context — Criar discoverProjectContext(cwd) que sobe arvore procurando AGENTS.md/CLAUDE.md
 [ ] F-005 system-option-types — Atualizar KaiAgentOptions: system -> string | { append } | undefined, adicionar cwd
 [ ] F-006 export-public-api — Exportar getSystemPrompt e discoverProjectContext via index.ts
@@ -50,3 +50,15 @@ D:\sources\codr.studio\cia-prime-care\agentic-backbone\packages\kai-sdk\mileston
 - Build passes clean
 - F-003 (assembler-getSystemPrompt) unblocked — dependencies F-001 + F-002 now passing
 - Next priority: F-003 (assembler-getSystemPrompt)
+
+### Session 2026-02-16T23:00
+- Implemented F-003: Created src/prompts/assembly.ts with getSystemPrompt(activeTools)
+- All .md content embedded as string constants (no fs reads at runtime)
+- TOOL_PROMPTS record maps tool names to their prompt strings
+- Assembly order verified: identity → tool-guide → tools (filtered) → patterns → safety
+- Unknown tools in activeTools silently ignored
+- Token counts (tiktoken gpt-4o): base(443), 2-tools(563), 6-tools(811) — well within 2000t budget
+- Separator: double newline between modules, no XML tags
+- Build passes clean
+- F-006 (export-public-api) now unblocked — F-003 dependency satisfied
+- Next priority: F-004 (discover-project-context)

@@ -40,7 +40,8 @@
     "id": "F-003",
     "name": "assembler-getSystemPrompt",
     "description": "Criar src/prompts/assembly.ts com a funcao getSystemPrompt(activeTools: string[]): string. Os .md sao embutidos como strings no build (nao lidos do filesystem em runtime). Monta na ordem: identity -> tool-guide -> tools filtrados -> patterns -> safety. Separacao: uma linha em branco entre modulos.",
-    "status": "failing",
+    "status": "passing",
+    "completed_at": "2026-02-16T23:00:00Z",
     "priority": 3,
     "tests": [
       "Funcao getSystemPrompt existe em src/prompts/assembly.ts",
