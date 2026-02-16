@@ -1,7 +1,7 @@
 # Agent Harness Progress — agenticbackbone-02-kai-brain--cc
 
 ## Current Status
-F-003 PASSING — getSystemPrompt() assembler criado em src/prompts/assembly.ts
+F-004 PASSING — discoverProjectContext(cwd) implementado em src/prompts/assembly.ts
 
 ## Specs Path
 D:\sources\codr.studio\cia-prime-care\agentic-backbone\packages\kai-sdk\milestones\02-kai-brain
@@ -18,7 +18,7 @@ D:\sources\codr.studio\cia-prime-care\agentic-backbone\packages\kai-sdk\mileston
 [x] F-001 prompt-modules-md — Criados identity.md (77t), tool-guide.md (152t), patterns.md (128t), safety.md (90t)
 [x] F-002 tool-specific-prompts — Criados read.md(57t), write.md(59t), edit.md(67t), bash.md(65t), glob.md(65t), grep.md(58t)
 [x] F-003 assembler-getSystemPrompt — assembly.ts com getSystemPrompt(activeTools), 811 tokens com 6 tools
-[ ] F-004 discover-project-context — Criar discoverProjectContext(cwd) que sobe arvore procurando AGENTS.md/CLAUDE.md
+[x] F-004 discover-project-context — discoverProjectContext(cwd) walk-up ate .git, coleta AGENTS.md/CLAUDE.md, trunca >4000t
 [ ] F-005 system-option-types — Atualizar KaiAgentOptions: system -> string | { append } | undefined, adicionar cwd
 [ ] F-006 export-public-api — Exportar getSystemPrompt e discoverProjectContext via index.ts
 [ ] F-007 agent-integration-3-modes — Integrar 3 modos de system prompt em runKaiAgent()
@@ -62,3 +62,16 @@ D:\sources\codr.studio\cia-prime-care\agentic-backbone\packages\kai-sdk\mileston
 - Build passes clean
 - F-006 (export-public-api) now unblocked — F-003 dependency satisfied
 - Next priority: F-004 (discover-project-context)
+
+### Session 2026-02-16T23:45
+- Implemented F-004: Created discoverProjectContext(cwd) in src/prompts/assembly.ts
+- Walks up directory tree from cwd to .git root or filesystem root
+- Collects AGENTS.md and CLAUDE.md in each directory (AGENTS.md first per PRP)
+- Per-directory group collection ensures correct ordering after reversal (root → cwd)
+- Empty files (whitespace-only) are skipped
+- Token budget: 4000 tokens max, truncates most distant files first
+- Uses existing countTokens() from context/tokenizer.ts (js-tiktoken gpt-4o)
+- All 11 acceptance criteria verified via manual tests
+- Build passes clean
+- F-006 (export-public-api) now unblocked — both F-003 + F-004 dependencies passing
+- Next priority: F-005 (system-option-types)

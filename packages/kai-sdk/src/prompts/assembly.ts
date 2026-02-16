@@ -1,5 +1,9 @@
 // System prompt assembler — all .md content embedded as strings (build-time, no fs reads)
 
+import { readFile, access } from "node:fs/promises";
+import { dirname, join, resolve } from "node:path";
+import { countTokens } from "../context/tokenizer.js";
+
 // --- Base modules ---
 
 const IDENTITY = `# Identity
@@ -111,4 +115,114 @@ export function getSystemPrompt(activeTools: string[]): string {
   sections.push(PATTERNS, SAFETY);
 
   return sections.join("\n\n");
+}
+
+// --- Project context discovery ---
+
+const CONTEXT_FILENAMES = ["AGENTS.md", "CLAUDE.md"];
+const MAX_CONTEXT_TOKENS = 4000;
+
+async function fileExists(path: string): Promise<boolean> {
+  try {
+    await access(path);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function isGitRoot(dir: string): Promise<boolean> {
+  return fileExists(join(dir, ".git"));
+}
+
+interface ContextFile {
+  path: string;
+  content: string;
+}
+
+/**
+ * Discovers project context files (AGENTS.md, CLAUDE.md) by walking up the
+ * directory tree from `cwd` to the project root (.git) or filesystem root.
+ *
+ * Files are concatenated in root → cwd order (lowest → highest precedence).
+ * Empty files are skipped. Total context is truncated to 4000 tokens by
+ * removing the most distant files (lowest precedence) first.
+ *
+ * @param cwd - Starting directory for the walk-up search.
+ * @returns Concatenated context string, or empty string if nothing found.
+ */
+export async function discoverProjectContext(cwd: string): Promise<string> {
+  // Collect per-directory groups (cwd → root order)
+  const dirGroups: ContextFile[][] = [];
+  let current = resolve(cwd);
+
+  // Walk up the directory tree collecting context files
+  while (true) {
+    const group: ContextFile[] = [];
+    for (const filename of CONTEXT_FILENAMES) {
+      const filePath = join(current, filename);
+      if (await fileExists(filePath)) {
+        try {
+          const content = await readFile(filePath, "utf-8");
+          if (content.trim().length > 0) {
+            group.push({ path: filePath, content: content.trim() });
+          }
+        } catch {
+          // Skip unreadable files
+        }
+      }
+    }
+    if (group.length > 0) {
+      dirGroups.push(group);
+    }
+
+    // Stop if we've reached a .git root
+    if (await isGitRoot(current)) break;
+
+    // Move to parent directory
+    const parent = dirname(current);
+    // Stop at filesystem root (dirname returns same path)
+    if (parent === current) break;
+    current = parent;
+  }
+
+  if (dirGroups.length === 0) return "";
+
+  // Reverse groups to get root → cwd order, then flatten
+  // Within each group, AGENTS.md comes before CLAUDE.md (as collected)
+  dirGroups.reverse();
+  const collected = dirGroups.flat();
+
+  // Apply token budget — remove most distant (first items = lowest precedence) if over budget
+  let totalTokens = 0;
+  const formatted: string[] = [];
+
+  // Calculate total tokens for all files
+  const entries = collected.map((file) => {
+    const block = `--- project context: ${file.path} ---\n${file.content}`;
+    return { block, tokens: countTokens(block) };
+  });
+
+  // Sum total tokens
+  totalTokens = entries.reduce((sum, e) => sum + e.tokens, 0);
+
+  if (totalTokens <= MAX_CONTEXT_TOKENS) {
+    // Everything fits
+    for (const entry of entries) {
+      formatted.push(entry.block);
+    }
+  } else {
+    // Truncate: remove from the beginning (most distant = lowest precedence)
+    let remaining = totalTokens;
+    let startIndex = 0;
+    while (remaining > MAX_CONTEXT_TOKENS && startIndex < entries.length) {
+      remaining -= entries[startIndex].tokens;
+      startIndex++;
+    }
+    for (let i = startIndex; i < entries.length; i++) {
+      formatted.push(entries[i].block);
+    }
+  }
+
+  return formatted.join("\n\n");
 }

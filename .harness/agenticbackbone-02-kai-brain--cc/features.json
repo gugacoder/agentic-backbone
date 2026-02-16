@@ -64,7 +64,8 @@
     "id": "F-004",
     "name": "discover-project-context",
     "description": "Criar funcao discoverProjectContext(cwd: string): Promise<string> em src/prompts/assembly.ts. Sobe a arvore de diretorios do cwd ate .git ou raiz do filesystem, procurando AGENTS.md e CLAUDE.md. Concatena na ordem raiz -> cwd. Ignora vazios. Trunca se exceder 4000 tokens.",
-    "status": "failing",
+    "status": "passing",
+    "completed_at": "2026-02-16T23:45:00Z",
     "priority": 4,
     "tests": [
       "Funcao discoverProjectContext existe em src/prompts/assembly.ts",
@@ -103,7 +104,7 @@
     "id": "F-006",
     "name": "export-public-api",
     "description": "Exportar getSystemPrompt e discoverProjectContext via src/index.ts como parte da API publica do SDK.",
-    "status": "blocked",
+    "status": "failing",
     "priority": 6,
     "tests": [
       "getSystemPrompt e exportado de src/index.ts",
