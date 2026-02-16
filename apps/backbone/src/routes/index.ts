@@ -16,6 +16,7 @@ import { getHeartbeatStatus } from "../heartbeat/index.js";
 import { listAgents } from "../agents/registry.js";
 import { listChannels } from "../channels/registry.js";
 import { sseHub } from "../events/sse.js";
+import { getModuleHealth } from "../modules/loader.js";
 
 export const routes = new Hono();
 
@@ -34,6 +35,7 @@ routes.get("/health", (c) =>
       type: ch.type,
       listeners: sseHub.getClientCount(ch.slug),
     })),
+    modules: getModuleHealth(),
   })
 );
 

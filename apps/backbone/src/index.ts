@@ -24,6 +24,8 @@ import { listAgents } from "./agents/registry.js";
 import { listChannels } from "./channels/registry.js";
 import { initHooks, wireEventBusToHooks, triggerHook } from "./hooks/index.js";
 import { startJobSweeper, shutdownAllJobs } from "./jobs/engine.js";
+import { modules } from "./modules/index.js";
+import { startModules, stopModules } from "./modules/loader.js";
 
 const app = new Hono();
 
@@ -104,6 +106,8 @@ serve({ fetch: app.fetch, port }, async (info) => {
   await initHooks();
   wireEventBusToHooks();
 
+  await startModules(modules, routes);
+
   triggerHook({
     ts: Date.now(),
     hookEvent: "startup",
@@ -115,8 +119,9 @@ serve({ fetch: app.fetch, port }, async (info) => {
 
 // --- Graceful shutdown ---
 
-function onShutdown(signal: string) {
+async function onShutdown(signal: string) {
   console.log(`[backbone] ${signal} received — shutting down`);
+  await stopModules();
   shutdownAllJobs();
   process.exit(0);
 }
