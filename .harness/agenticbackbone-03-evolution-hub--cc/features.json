@@ -186,7 +186,8 @@
     "id": "F-011",
     "name": "Evolution module entry point and registration",
     "description": "Criar src/modules/evolution/index.ts implementando BackboneModule (orquestra probe, state, patterns, actions, routes). Registrar no array de src/modules/index.ts. Condicionar ativacao a EVOLUTION_API_URL estar definida.",
-    "status": "failing",
+    "status": "passing",
+    "completed_at": "2026-02-16T19:00:00Z",
     "priority": 11,
     "tests": [
       "evolutionModule implementa BackboneModule com name='evolution'",
