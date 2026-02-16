@@ -1,0 +1,43 @@
+# Agent Harness Progress — agenticbackbone-02-kai-brain--cc
+
+## Current Status
+F-001 PASSING — Modulos markdown base criados em src/prompts/
+
+## Specs Path
+D:\sources\codr.studio\cia-prime-care\agentic-backbone\packages\kai-sdk\milestones\02-kai-brain
+
+## Environment
+- Stack: Node.js, TypeScript (ES2022, ESM), npm workspaces monorepo
+- Package: @agentic-backbone/kai-sdk (packages/kai-sdk)
+- Build: npm run build --workspace=packages/kai-sdk (tsc)
+- Dev: npm run dev (tsc --watch) no workspace kai-sdk
+- No test framework configured — validation via build + manual criteria
+
+## Features
+
+[x] F-001 prompt-modules-md — Criados identity.md (77t), tool-guide.md (152t), patterns.md (128t), safety.md (90t)
+[ ] F-002 tool-specific-prompts — Criar tools/read.md, write.md, edit.md, bash.md, glob.md, grep.md em src/prompts/tools/
+[ ] F-003 assembler-getSystemPrompt — Criar assembly.ts com getSystemPrompt(activeTools) usando .md embutidos
+[ ] F-004 discover-project-context — Criar discoverProjectContext(cwd) que sobe arvore procurando AGENTS.md/CLAUDE.md
+[ ] F-005 system-option-types — Atualizar KaiAgentOptions: system -> string | { append } | undefined, adicionar cwd
+[ ] F-006 export-public-api — Exportar getSystemPrompt e discoverProjectContext via index.ts
+[ ] F-007 agent-integration-3-modes — Integrar 3 modos de system prompt em runKaiAgent()
+[ ] F-008 build-validation — Validacao final: build, exports, token budget
+
+## Architecture Decisions
+
+1. **Modular markdown prompts** — Cada modulo (.md) e independente e autonomo. Sem dependencias cruzadas.
+2. **Build-time embedding** — Os .md sao embutidos como strings no bundle (nao lidos do filesystem em runtime). Isso garante que o SDK funciona como pacote npm.
+3. **Tool-filtered assembly** — getSystemPrompt recebe activeTools[] e inclui apenas os tools/*.md correspondentes.
+4. **3 modos de system prompt** — omitido (auto), { append } (adiciona ao base), string (override total). Segue padrao Claude Agent SDK.
+5. **Walk-up context discovery** — discoverProjectContext sobe do cwd ate .git/raiz, coletando AGENTS.md e CLAUDE.md. Executado uma vez no inicio.
+6. **Token budgets** — Base: max 2000 tokens. Contexto projeto: max 4000 tokens. Total: max 6000 tokens.
+
+## Session Notes
+
+### Session 2026-02-16T21:30
+- Implemented F-001: Created 4 markdown modules in src/prompts/
+- Token counts verified: identity(77), tool-guide(152), patterns(128), safety(90) — all within limits
+- No cross-references between modules
+- Build passes clean
+- Next priority: F-002 (tool-specific-prompts)
