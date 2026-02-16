@@ -316,7 +316,8 @@
     "id": "F-018",
     "name": "Create instance dialog and delete confirmation",
     "description": "Criar create-instance-dialog.tsx — dialog de criacao (nome: lowercase/numeros/hifens, min 3, max 30). Ao criar: fecha, invalida query, navega para detalhe aba QR. Exclusao: ConfirmDialog com confirmacao por texto.",
-    "status": "failing",
+    "status": "passing",
+    "completed_at": "2026-02-16T23:30:00Z",
     "priority": 18,
     "tests": [
       "Dialog abre ao clicar 'Nova Instancia'",
@@ -367,7 +368,8 @@
     "id": "F-021",
     "name": "Instance detail — settings tab",
     "description": "Criar instance-settings-form.tsx. Formulario React Hook Form + zod: reject_call, msg_call, groups_ignore, always_online, read_messages, read_status. Botao 'Salvar' chama PATCH /settings. Toast sucesso/erro.",
-    "status": "failing",
+    "status": "passing",
+    "completed_at": "2026-02-16T23:45:00Z",
     "priority": 21,
     "tests": [
       "Formulario carrega dados de GET /settings",

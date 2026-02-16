@@ -27,8 +27,8 @@ export function ConfirmDialog({
   onOpenChange,
   title,
   description,
-  confirmText = "Confirm",
-  cancelText = "Cancel",
+  confirmText = "Confirmar",
+  cancelText = "Cancelar",
   variant = "default",
   typedConfirm,
   onConfirm,
@@ -47,7 +47,7 @@ export function ConfirmDialog({
         {typedConfirm && (
           <div className="py-2">
             <p className="text-sm text-muted-foreground mb-2">
-              Type <span className="font-mono font-semibold">{typedConfirm}</span> to confirm:
+              Digite <span className="font-mono font-semibold">{typedConfirm}</span> para confirmar:
             </p>
             <Input
               value={typed}

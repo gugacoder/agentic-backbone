@@ -1,7 +1,7 @@
 # Progress — agenticbackbone-03-evolution-hub--cc
 
 ## Current Status
-17/23 features complete. PRP 01 (Module System) completo. PRP 02 (Evolution Module) completo. PRP 03 em andamento: F-013 a F-017 passing. Hub + backbone builds passam sem erros.
+18/23 features complete. PRP 01 (Module System) completo. PRP 02 (Evolution Module) completo. PRP 03 em andamento: F-013 a F-018 passing. Hub + backbone builds passam sem erros.
 
 ## Specs Path
 D:\sources\codr.studio\cia-prime-care\agentic-backbone\apps\backbone\milestones\03-evolution-hub
@@ -64,10 +64,10 @@ D:\sources\codr.studio\cia-prime-care\agentic-backbone\apps\backbone\milestones\
 - [x] F-015 — Connectivity index page (/conectividade: grid of connectivity cards)
 - [x] F-016 — Health and summary cards (api-health-card + instance-summary-cards)
 - [x] F-017 — Instance table and dashboard tabs (Monitor + Instances tabs, criticality sort, alert indicators)
-- [ ] F-018 — Create instance dialog + delete confirmation
-- [ ] F-019 — Instance detail status tab (state card, corrective actions, event feed)
-- [ ] F-020 — Instance detail QR code tab (QR flow with countdown + poll)
-- [ ] F-021 — Instance detail settings tab (form with switches)
+- [x] F-018 — Create instance dialog + delete confirmation
+- [x] F-019 — Instance detail status tab (state card, corrective actions, event feed)
+- [x] F-020 — Instance detail QR code tab (QR flow with countdown + poll)
+- [x] F-021 — Instance detail settings tab (form with switches)
 - [ ] F-022 — SSE integration for Evolution events (query invalidation + toasts)
 - [ ] F-023 — Responsiveness and polish (mobile/desktop layouts)
 
@@ -293,3 +293,27 @@ D:\sources\codr.studio\cia-prime-care\agentic-backbone\apps\backbone\milestones\
   - Responsivo: Numero hidden em mobile (sm:), Perfil hidden em mobile/tablet (md:)
   - Hub + backbone builds passam sem erros
   - Proxima prioridade: F-018 (Create instance dialog + delete confirmation)
+
+- Session 18: Validou F-021 — Instance detail settings tab
+  - instance-settings-form.tsx ja existia completo de sessao anterior nao commitada
+  - Formulario React Hook Form + zod com 6 campos: reject_call, msg_call, groups_ignore, always_online, read_messages, read_status
+  - 5 switches (booleans) + 1 input (msg_call) com labels descritivos em pt-BR
+  - Query carrega dados de GET /settings, mutation PATCH /settings com invalidacao
+  - Toast sucesso/erro via sonner
+  - Ja wired no whatsapp-instance.tsx (aba Configuracoes, tab="settings")
+  - Corrigiu bug pre-existente no build: whatsapp.tsx usava versao commitada de useEvolutionSSE que retornava void; working tree ja retornava { alerts }
+  - Hub + backbone builds passam sem erros
+  - F-018, F-019, F-020 tambem ja estavam passing de sessoes anteriores nao commitadas
+  - PRP 03 em andamento: 9/11 features completas (F-013 a F-021)
+  - Proxima prioridade: F-022 (SSE integration for Evolution events)
+
+- Session 19: Validou F-018 — Create instance dialog + delete confirmation
+  - create-instance-dialog.tsx ja existia completo de sessao anterior nao commitada
+  - React Hook Form + zod: nome lowercase/numeros/hifens, min 3, max 30 caracteres
+  - Sucesso: fecha dialog, invalida query, navega para detalhe aba QR (search: { tab: "qr" })
+  - Erro: exibe mensagem via form.setError no dialog
+  - ConfirmDialog com typedConfirm (usuario digita nome da instancia para confirmar exclusao)
+  - Corrigiu ConfirmDialog: textos default e prompt de confirmacao agora em pt-BR ("Confirmar", "Cancelar", "Digite ... para confirmar")
+  - Ambos componentes ja wired em whatsapp.tsx (createOpen state + deleteTarget state)
+  - Hub + backbone builds passam sem erros
+  - Proxima prioridade: F-019 (Instance detail status tab)
