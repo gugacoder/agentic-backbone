@@ -66,7 +66,7 @@ export interface BackboneEventMap {
 
 // --- Typed Event Bus ---
 
-class BackboneEventBus {
+export class BackboneEventBus {
   private emitter = new EventEmitter();
   private lastEvents = new Map<string, unknown>();
 
