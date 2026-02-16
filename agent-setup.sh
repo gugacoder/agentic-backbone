@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # =============================================================================
 # agent-setup.sh — Bootstrap script for KAI SDK development
-# Milestone: 02-kai-brain (System prompt modular embutido no SDK)
+# Milestone: 01-better-kay (Expanded toolset: 6 -> 18 tools)
 # =============================================================================
 set -euo pipefail
 
@@ -16,7 +16,7 @@ SDK_DIR="$SCRIPT_DIR/packages/kai-sdk"
 
 echo -e "${CYAN}=======================================${NC}"
 echo -e "${CYAN}  KAI SDK — Agent Setup${NC}"
-echo -e "${CYAN}  Milestone: 02-kai-brain${NC}"
+echo -e "${CYAN}  Milestone: 01-better-kay${NC}"
 echo -e "${CYAN}=======================================${NC}"
 echo ""
 
@@ -62,7 +62,7 @@ npm run build 2>&1 || {
 echo -e "${GREEN}Build succeeded.${NC}"
 echo ""
 
-# 4. Smoke test — verify build output
+# 4. Smoke test — verify build output and tool count
 echo -e "${CYAN}[4/4] Smoke test...${NC}"
 if [ -f "$SDK_DIR/dist/index.js" ]; then
     echo -e "${GREEN}dist/index.js exists.${NC}"
@@ -77,21 +77,16 @@ else
     echo -e "${YELLOW}dist/index.d.ts not found (declarations may be missing).${NC}"
 fi
 
-# Check for prompts module (02-kai-brain deliverables)
-if [ -d "$SDK_DIR/src/prompts" ]; then
-    PROMPT_FILES=$(ls "$SDK_DIR/src/prompts/"*.md 2>/dev/null | wc -l)
-    TOOL_FILES=$(ls "$SDK_DIR/src/prompts/tools/"*.md 2>/dev/null | wc -l)
-    echo -e "${GREEN}src/prompts/ exists: ${PROMPT_FILES} base modules, ${TOOL_FILES} tool modules.${NC}"
-else
-    echo -e "${YELLOW}src/prompts/ not created yet (F-001/F-002 pending).${NC}"
-fi
-
-if [ -f "$SDK_DIR/dist/prompts/assembly.js" ]; then
-    echo -e "${GREEN}prompts/assembly.js built (assembler ready).${NC}"
-else
-    echo -e "${YELLOW}prompts/assembly.js not built yet (F-003 pending).${NC}"
-fi
-
+# Count tools registered in codingTools
+TOOL_KEYS=$(node -e "
+import('$SDK_DIR/dist/tools/index.js')
+  .then(m => {
+    const keys = Object.keys(m.codingTools);
+    console.log(keys.length + ' tools: ' + keys.join(', '));
+  })
+  .catch(() => console.log('(could not inspect tools)'));
+" 2>/dev/null || echo "(could not inspect tools)")
+echo -e "${CYAN}Tools: ${TOOL_KEYS}${NC}"
 echo ""
 
 # Summary
@@ -100,8 +95,8 @@ echo -e "${GREEN}  Setup complete!${NC}"
 echo -e "${GREEN}=======================================${NC}"
 echo ""
 echo -e "  Workspace:  $SDK_DIR"
-echo -e "  Milestone:  02-kai-brain"
-echo -e "  Goal:       System prompt modular embutido no SDK"
+echo -e "  Milestone:  01-better-kay"
+echo -e "  Goal:       Expand KAI toolset from 6 to 18 tools"
 echo -e "  Build:      npm run build --workspace=packages/kai-sdk"
 echo -e "  Dev:        npm run dev (tsc --watch)"
 echo -e "  Validate:   npm run build --workspace=packages/kai-sdk"
