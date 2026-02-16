@@ -3,7 +3,11 @@ import { useAuthStore } from "./auth.js";
 const BASE = "/api";
 
 class ApiError extends Error {
-  constructor(public status: number, message: string) {
+  constructor(
+    public status: number,
+    message: string,
+    public data?: Record<string, unknown>,
+  ) {
     super(message);
     this.name = "ApiError";
   }
@@ -35,7 +39,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     }
 
     const body = await res.json().catch(() => ({ error: res.statusText }));
-    throw new ApiError(res.status, body.error ?? res.statusText);
+    throw new ApiError(res.status, body.error ?? res.statusText, body);
   }
 
   return res.json();

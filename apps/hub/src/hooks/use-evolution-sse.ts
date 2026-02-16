@@ -1,12 +1,14 @@
-import { useRef, useCallback } from "react";
 import { useQueryClient } from "@tanstack/react-query";
+import { create } from "zustand";
 import { useSSE } from "./use-sse";
 import { toast } from "sonner";
 
 /**
  * Subscribes to evolution module SSE events.
  * Invalidates relevant queries and shows toasts for critical events.
- * Returns alert state for instances (unstable / prolonged-offline).
+ * Alert state (unstable / prolonged-offline) stored in Zustand for global access.
+ *
+ * MUST be called once at the layout level so toasts fire regardless of active page.
  */
 export const EVOLUTION_SSE_EVENTS = [
   "module:evolution:api-online",
@@ -28,14 +30,41 @@ export interface InstanceAlerts {
   prolongedOffline: Set<string>;
 }
 
-export function useEvolutionSSE(): { alerts: InstanceAlerts } {
-  const qc = useQueryClient();
-  const alertsRef = useRef<InstanceAlerts>({
-    unstable: new Set(),
-    prolongedOffline: new Set(),
-  });
+interface EvolutionAlertsState {
+  alerts: InstanceAlerts;
+  addUnstable: (name: string) => void;
+  addProlongedOffline: (name: string) => void;
+  clearAlerts: (name: string) => void;
+}
 
-  const getAlerts = useCallback(() => alertsRef.current, []);
+export const useEvolutionAlertsStore = create<EvolutionAlertsState>((set) => ({
+  alerts: { unstable: new Set<string>(), prolongedOffline: new Set<string>() },
+  addUnstable: (name) =>
+    set((s) => {
+      s.alerts.unstable.add(name);
+      return { alerts: { unstable: new Set(s.alerts.unstable), prolongedOffline: s.alerts.prolongedOffline } };
+    }),
+  addProlongedOffline: (name) =>
+    set((s) => {
+      s.alerts.prolongedOffline.add(name);
+      return { alerts: { unstable: s.alerts.unstable, prolongedOffline: new Set(s.alerts.prolongedOffline) } };
+    }),
+  clearAlerts: (name) =>
+    set((s) => {
+      s.alerts.unstable.delete(name);
+      s.alerts.prolongedOffline.delete(name);
+      return {
+        alerts: {
+          unstable: new Set(s.alerts.unstable),
+          prolongedOffline: new Set(s.alerts.prolongedOffline),
+        },
+      };
+    }),
+}));
+
+export function useEvolutionSSE(): void {
+  const qc = useQueryClient();
+  const { addUnstable, addProlongedOffline, clearAlerts } = useEvolutionAlertsStore();
 
   useSSE({
     url: "/system/events",
@@ -47,22 +76,18 @@ export function useEvolutionSSE(): { alerts: InstanceAlerts } {
       const d = data as Record<string, unknown> | undefined;
       const instanceName = (d?.instanceName ?? d?.name ?? "") as string;
 
-      // Track alert states
+      // Track alert states in Zustand store
       if (subtype === "instance-unstable" && instanceName) {
-        alertsRef.current.unstable.add(instanceName);
+        addUnstable(instanceName);
       }
       if (subtype === "instance-prolonged-offline" && instanceName) {
-        alertsRef.current.prolongedOffline.add(instanceName);
+        addProlongedOffline(instanceName);
       }
-      // Clear alerts when instance reconnects
       if (subtype === "instance-connected" && instanceName) {
-        alertsRef.current.unstable.delete(instanceName);
-        alertsRef.current.prolongedOffline.delete(instanceName);
+        clearAlerts(instanceName);
       }
-      // Clear alerts when instance is removed
       if (subtype === "instance-removed" && instanceName) {
-        alertsRef.current.unstable.delete(instanceName);
-        alertsRef.current.prolongedOffline.delete(instanceName);
+        clearAlerts(instanceName);
       }
 
       // Invalidate queries based on event type
@@ -97,6 +122,4 @@ export function useEvolutionSSE(): { alerts: InstanceAlerts } {
       }
     },
   });
-
-  return { alerts: getAlerts() };
 }

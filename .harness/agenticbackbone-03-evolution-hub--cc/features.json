@@ -334,7 +334,8 @@
     "id": "F-019",
     "name": "Instance detail — status tab",
     "description": "Criar whatsapp-instance.tsx e instance-status-card.tsx. Aba Status: card de estado (StatusBadge grande, desde, estado anterior, perfil), acoes com feedback (spinner/toast/cooldown/esgotado). Feed de eventos client-side via SSE.",
-    "status": "failing",
+    "status": "passing",
+    "completed_at": "2026-02-16T23:55:00Z",
     "priority": 19,
     "tests": [
       "Pagina renderiza em /conectividade/whatsapp/$name com 3 abas",
@@ -351,7 +352,8 @@
     "id": "F-020",
     "name": "Instance detail — QR code tab",
     "description": "Criar instance-qr.tsx. Fluxo: botao 'Gerar QR Code' -> GET /qr -> exibe QR (base64) + countdown 60s -> poll estado 2s -> sucesso ou expirado. Max 5 tentativas por sessao.",
-    "status": "failing",
+    "status": "passing",
+    "completed_at": "2026-02-16T23:55:00Z",
     "priority": 20,
     "tests": [
       "Botao 'Gerar QR Code' chama GET /api/modules/evolution/instances/:name/qr",
@@ -385,7 +387,8 @@
     "id": "F-022",
     "name": "SSE integration for Evolution events",
     "description": "Integrar useSSE() com eventos module:evolution:*. Invalidar queries. Toasts: instance-unstable (warning), instance-prolonged-offline (destructive), action-success/failed/exhausted. Toasts disparam independente da pagina ativa (nivel de layout).",
-    "status": "failing",
+    "status": "passing",
+    "completed_at": "2026-02-16T23:59:00Z",
     "priority": 22,
     "tests": [
       "api-online/api-offline invalidam ['evolution', 'health']",

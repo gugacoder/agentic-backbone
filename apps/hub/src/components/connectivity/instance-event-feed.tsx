@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useSSE } from "@/hooks/use-sse";
+import { EVOLUTION_SSE_EVENTS } from "@/hooks/use-evolution-sse";
 
 interface EventEntry {
   id: string;
@@ -48,19 +49,18 @@ export function InstanceEventFeed({ instanceName }: InstanceEventFeedProps) {
 
   useSSE({
     url: "/system/events",
+    additionalEventTypes: EVOLUTION_SSE_EVENTS,
     onEvent: (type, data) => {
-      // Filter events for this instance
+      if (!type.startsWith("module:evolution:")) return;
+
       const d = data as Record<string, unknown> | undefined;
       if (!d) return;
 
-      // Events from the evolution module have instanceName in data
+      // Filter events for this instance
       const eventInstance = d.instanceName ?? d.name;
       if (eventInstance !== instanceName) return;
 
-      // Extract the event subtype (e.g. "instance-connected" from "module:evolution:instance-connected")
-      const eventType = (d.event as string) ?? type;
-      const subtype = eventType.replace(/^module:evolution:/, "");
-
+      const subtype = type.replace("module:evolution:", "");
       if (!eventConfig[subtype]) return;
 
       const entry: EventEntry = {

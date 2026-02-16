@@ -1,7 +1,7 @@
 # Progress — agenticbackbone-03-evolution-hub--cc
 
 ## Current Status
-18/23 features complete. PRP 01 (Module System) completo. PRP 02 (Evolution Module) completo. PRP 03 em andamento: F-013 a F-018 passing. Hub + backbone builds passam sem erros.
+22/23 features complete. PRP 01 (Module System) completo. PRP 02 (Evolution Module) completo. PRP 03 em andamento: F-013 a F-022 passing. Hub + backbone builds passam sem erros.
 
 ## Specs Path
 D:\sources\codr.studio\cia-prime-care\agentic-backbone\apps\backbone\milestones\03-evolution-hub
@@ -68,7 +68,7 @@ D:\sources\codr.studio\cia-prime-care\agentic-backbone\apps\backbone\milestones\
 - [x] F-019 — Instance detail status tab (state card, corrective actions, event feed)
 - [x] F-020 — Instance detail QR code tab (QR flow with countdown + poll)
 - [x] F-021 — Instance detail settings tab (form with switches)
-- [ ] F-022 — SSE integration for Evolution events (query invalidation + toasts)
+- [x] F-022 — SSE integration for Evolution events (query invalidation + toasts)
 - [ ] F-023 — Responsiveness and polish (mobile/desktop layouts)
 
 ## Architecture Decisions
@@ -317,3 +317,23 @@ D:\sources\codr.studio\cia-prime-care\agentic-backbone\apps\backbone\milestones\
   - Ambos componentes ja wired em whatsapp.tsx (createOpen state + deleteTarget state)
   - Hub + backbone builds passam sem erros
   - Proxima prioridade: F-019 (Instance detail status tab)
+
+- Session 20: Validou F-019, F-020, F-022 — Instance detail + QR + SSE integration
+  - F-019: whatsapp-instance.tsx e instance-status-card.tsx ja existiam completos de sessoes anteriores
+  - F-019: 3 abas (Status/QR Code/Configuracoes), StatusBadge grande, desde absoluto+relativo, estado anterior, perfil
+  - F-019: Botoes Reconectar/Reiniciar com spinner, toast sucesso/erro, disabled quando online
+  - F-019: instance-event-feed.tsx filtra eventos SSE por instanceName, client-side only (useRef)
+  - F-019: ConfirmDialog com typedConfirm para exclusao na pagina de detalhe
+  - F-020: instance-qr.tsx ja existia completo; fluxo idle->loading->active->linked/expired/exhausted
+  - F-020: Countdown 60s, poll estado a cada 2s (refetchInterval), max 5 tentativas
+  - F-020: QR exibido como base64 image, "Escaneie com WhatsApp", sucesso detecta state="open"
+  - F-022: useEvolutionSSE hook ja existia com query invalidation + toasts + Zustand alert store
+  - F-022: FIX — useEvolutionSSE() nao era chamado em nenhum lugar! Adicionado call no ProtectedLayout (App.tsx)
+  - F-022: Agora SSE toasts disparam em qualquer pagina (listener no layout, nao apenas em paginas de conectividade)
+  - F-022: Invalida ['evolution', 'health'] em api-online/api-offline
+  - F-022: Invalida ['evolution', 'instances'] em instance-*/action-*
+  - F-022: Toast warning para instance-unstable, toast.error para instance-prolonged-offline
+  - F-022: Toast success/error para action-success/failed/exhausted
+  - Hub + backbone builds passam sem erros
+  - PRP 03 em andamento: 22/23 features completas (F-013 a F-022)
+  - Proxima prioridade: F-023 (Responsiveness and polish)

@@ -34,6 +34,7 @@ import { WhatsAppPage } from "@/pages/whatsapp";
 import { WhatsAppInstancePage } from "@/pages/whatsapp-instance";
 import { NotFoundPage } from "@/pages/not-found";
 import { ErrorPage } from "@/pages/error";
+import { useEvolutionSSE } from "@/hooks/use-evolution-sse";
 
 // Minimal root — just Outlet + Toaster (no chrome)
 const rootRoute = createRootRoute({
@@ -62,6 +63,7 @@ const loginRoute = createRoute({
 
 function ProtectedLayout() {
   const isMobile = useIsMobile();
+  useEvolutionSSE();
 
   return (
     <SidebarProvider>
