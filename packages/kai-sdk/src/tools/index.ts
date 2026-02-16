@@ -12,6 +12,7 @@ import { createAskUserTool } from "./ask-user.js";
 import { webFetchTool } from "./web-fetch.js";
 import { createWebSearchTool } from "./web-search.js";
 import { createTaskTool } from "./task.js";
+import { createBatchTool } from "./batch.js";
 
 export const codingTools = {
   Read: readTool,
@@ -29,4 +30,5 @@ export const codingTools = {
   WebFetch: webFetchTool,
   WebSearch: createWebSearchTool(),
   Task: createTaskTool(),
+  Batch: createBatchTool({}),
 };

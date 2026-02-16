@@ -4,6 +4,7 @@ import { codingTools } from "./tools/index.js";
 import { createAskUserTool } from "./tools/ask-user.js";
 import { createWebSearchTool } from "./tools/web-search.js";
 import { createTaskTool } from "./tools/task.js";
+import { createBatchTool } from "./tools/batch.js";
 import { loadSession, saveSession } from "./session.js";
 import type { KaiAgentEvent, KaiAgentOptions } from "./types.js";
 import { randomUUID } from "node:crypto";
@@ -56,6 +57,12 @@ export async function* runKaiAgent(
       apiKey: options.apiKey,
       maxSubSteps: Math.min(options.maxSteps ?? DEFAULT_MAX_STEPS, 10),
     }),
+  };
+
+  // Override Batch tool with the fully resolved tool registry
+  tools = {
+    ...tools,
+    Batch: createBatchTool(tools),
   };
 
   let result;

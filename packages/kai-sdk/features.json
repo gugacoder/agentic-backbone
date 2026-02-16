@@ -181,7 +181,8 @@
     "id": "F-010",
     "name": "T10: Batch tool",
     "description": "Criar src/tools/batch.ts — executa 2-10 chamadas de ferramentas simultaneamente via Promise.all(). Parametros: tool_calls (array de { tool: string, parameters: object }, min 2, max 10). Falhas parciais nao cancelam as outras. Nao permite Batch dentro de Batch. Referencia ferramentas pelo nome em codingTools. Registrar em codingTools.",
-    "status": "failing",
+    "status": "passing",
+    "completed_at": "2026-02-16",
     "priority": 10,
     "tests": [
       "Arquivo src/tools/batch.ts existe e exporta batchTool (ou factory)",

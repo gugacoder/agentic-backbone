@@ -5,9 +5,9 @@
 
 ## Current Status
 
-**Phase:** Implementing — F-001 through F-009 done, working through feature list.
-**Features:** 13 total (9 passing, 4 remaining)
-**Build:** Compilando (15 tools — 6 existentes + ListDir + MultiEdit + TodoWrite + TodoRead + Diagnostics + AskUser + WebFetch + WebSearch + Task + novos tipos KaiAgentEvent)
+**Phase:** Implementing — F-001 through F-010 done, working through feature list.
+**Features:** 13 total (10 passing, 3 remaining)
+**Build:** Compilando (16 tools — 6 existentes + ListDir + MultiEdit + TodoWrite + TodoRead + Diagnostics + AskUser + WebFetch + WebSearch + Task + Batch + novos tipos KaiAgentEvent)
 
 ---
 
@@ -40,7 +40,7 @@ milestones/01-better-kay/PRP.md
 - [x] F-007: T02 — WebFetch tool (priority 7) ✓ 2026-02-16
 - [x] F-008: T03 — WebSearch tool (priority 8) ✓ 2026-02-16
 - [x] F-009: T04 — Task sub-agente tool (priority 9) ✓ 2026-02-16
-- [ ] F-010: T10 — Batch tool (priority 10)
+- [x] F-010: T10 — Batch tool (priority 10) ✓ 2026-02-16
 - [ ] F-011: T11 — ApplyPatch tool (priority 11)
 - [ ] F-012: T12 — CodeSearch tool (priority 12)
 - [ ] F-013: Tool registry final + build validation (priority 13, depends: all)
@@ -185,3 +185,19 @@ Session 10 (Coding Agent): F-009 Task sub-agent tool
 - Output truncated at 50KB limit
 - Build passes cleanly
 - Next priority: F-010 (Batch tool)
+
+Session 11 (Coding Agent): F-010 Batch tool
+- Created src/tools/batch.ts with createBatchTool factory export
+- Factory pattern: accepts toolRegistry (Record<string, CoreTool>), returns configured tool
+- Parameters: tool_calls (required, array of { tool: string, parameters: object }, min 2, max 10)
+- Uses Promise.allSettled() for parallel execution — partial failures don't cancel others
+- Validates: no Batch inside Batch (rejects recursive calls before execution)
+- Validates: all tool names exist in registry (returns error for unknowns)
+- Returns indexed results: `### [0] ToolName\n\nresult`
+- agent.ts overrides Batch with resolved tool registry after all other tool overrides
+- createBatchTool filters "Batch" from available tool list to prevent recursion
+- Output truncated at 50KB limit
+- Exported createBatchTool from src/index.ts
+- Registered as Batch in codingTools (16 tools total)
+- Build passes cleanly
+- Next priority: F-011 (ApplyPatch tool)
