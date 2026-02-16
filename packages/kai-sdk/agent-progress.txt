@@ -5,9 +5,9 @@
 
 ## Current Status
 
-**Phase:** Implementing — F-001, F-002, F-003, F-004 done, working through feature list.
-**Features:** 13 total (4 passing, 9 remaining)
-**Build:** Compilando (10 tools — 6 existentes + ListDir + MultiEdit + TodoWrite + TodoRead + novos tipos KaiAgentEvent)
+**Phase:** Implementing — F-001 through F-005 done, working through feature list.
+**Features:** 13 total (5 passing, 8 remaining)
+**Build:** Compilando (11 tools — 6 existentes + ListDir + MultiEdit + TodoWrite + TodoRead + Diagnostics + novos tipos KaiAgentEvent)
 
 ---
 
@@ -35,7 +35,7 @@ milestones/01-better-kay/PRP.md
 - [x] F-002: T08 — ListDir tool (priority 2) ✓ 2026-02-16
 - [x] F-003: T07 — MultiEdit tool (priority 3) ✓ 2026-02-16
 - [x] F-004: T05+T06 — TodoWrite + TodoRead tools (priority 4, depends: F-001) ✓ 2026-02-16
-- [ ] F-005: T09 — Diagnostics tool (priority 5)
+- [x] F-005: T09 — Diagnostics tool (priority 5) ✓ 2026-02-16
 - [ ] F-006: T01 — AskUser tool (priority 6, depends: F-001)
 - [ ] F-007: T02 — WebFetch tool (priority 7)
 - [ ] F-008: T03 — WebSearch tool (priority 8)
@@ -113,3 +113,15 @@ Session 5 (Coding Agent): F-004 TodoWrite + TodoRead tools
 - Registered as TodoWrite and TodoRead in codingTools (10 tools total)
 - Build passes cleanly
 - Next priority: F-005 (Diagnostics tool)
+
+Session 6 (Coding Agent): F-005 Diagnostics tool
+- Created src/tools/diagnostics.ts with diagnosticsTool export
+- Wrapper over child_process.exec that runs diagnostic commands (tsc, eslint, etc.)
+- Parameters: command (optional, default "npx tsc --noEmit"), file_path (optional, filters errors to file)
+- Combines stdout + stderr, normalizes path separators for cross-platform file_path matching
+- Returns "Nenhum erro encontrado." when clean (exit code 0, no output)
+- Handles edge cases: exitCode != 0 with no output, file_path filtering with no matches
+- Output truncated at 50KB limit
+- Registered as Diagnostics in codingTools (11 tools total)
+- Build passes cleanly
+- Next priority: F-006 (AskUser tool)

@@ -79,7 +79,8 @@
     "id": "F-005",
     "name": "T09: Diagnostics tool",
     "description": "Criar src/tools/diagnostics.ts — wrapper inteligente sobre Bash que executa checagem de tipos/lint e retorna erros formatados. Parametros: command (string, opcional, default 'npx tsc --noEmit'), file_path (string, opcional, filtrar erros para arquivo). Retorna erros encontrados ou 'Nenhum erro encontrado.'. Registrar em codingTools.",
-    "status": "failing",
+    "status": "passing",
+    "completed_at": "2026-02-16",
     "priority": 5,
     "tests": [
       "Arquivo src/tools/diagnostics.ts existe e exporta diagnosticsTool",
