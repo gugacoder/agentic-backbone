@@ -36,4 +36,6 @@ export interface KaiAgentOptions {
   onAskUser?: (question: string, options?: string[]) => Promise<string>;
   /** Callback invoked when the agent uses the WebSearch tool. Return search results. */
   onWebSearch?: (query: string, numResults: number) => Promise<Array<{ title: string; url: string; snippet: string }>>;
+  /** Callback invoked when the agent uses the CodeSearch tool. Return code examples and documentation. */
+  onCodeSearch?: (query: string) => Promise<Array<{ title: string; url: string; content: string }>>;
 }

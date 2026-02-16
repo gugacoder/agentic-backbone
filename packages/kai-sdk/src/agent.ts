@@ -5,6 +5,7 @@ import { createAskUserTool } from "./tools/ask-user.js";
 import { createWebSearchTool } from "./tools/web-search.js";
 import { createTaskTool } from "./tools/task.js";
 import { createBatchTool } from "./tools/batch.js";
+import { createCodeSearchTool } from "./tools/code-search.js";
 import { loadSession, saveSession } from "./session.js";
 import type { KaiAgentEvent, KaiAgentOptions } from "./types.js";
 import { randomUUID } from "node:crypto";
@@ -47,6 +48,9 @@ export async function* runKaiAgent(
   }
   if (options.onWebSearch) {
     tools = { ...tools, WebSearch: createWebSearchTool(options.onWebSearch) };
+  }
+  if (options.onCodeSearch) {
+    tools = { ...tools, CodeSearch: createCodeSearchTool(options.onCodeSearch) };
   }
 
   // Always override Task tool with parent's config so sub-agents inherit model/apiKey

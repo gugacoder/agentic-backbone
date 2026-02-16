@@ -14,6 +14,7 @@ import { createWebSearchTool } from "./web-search.js";
 import { createTaskTool } from "./task.js";
 import { createBatchTool } from "./batch.js";
 import { applyPatchTool } from "./apply-patch.js";
+import { createCodeSearchTool } from "./code-search.js";
 
 export const codingTools = {
   Read: readTool,
@@ -33,4 +34,5 @@ export const codingTools = {
   Task: createTaskTool(),
   Batch: createBatchTool({}),
   ApplyPatch: applyPatchTool,
+  CodeSearch: createCodeSearchTool(),
 };

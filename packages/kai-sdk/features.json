@@ -222,7 +222,8 @@
     "id": "F-012",
     "name": "T12: CodeSearch tool",
     "description": "Criar src/tools/code-search.ts — busca exemplos de codigo, docs de APIs e padroes de bibliotecas online. Parametros: query (string, obrigatorio). Provider plugavel via KaiAgentOptions. Retorna exemplos de codigo e trechos de documentacao. Registrar em codingTools.",
-    "status": "failing",
+    "status": "passing",
+    "completed_at": "2026-02-16",
     "priority": 12,
     "tests": [
       "Arquivo src/tools/code-search.ts existe e exporta codeSearchTool (ou factory)",
@@ -239,7 +240,7 @@
     "id": "F-013",
     "name": "Tool registry final + build validation",
     "description": "Validacao final: codingTools exporta 15 ferramentas (6 existentes + 9 novas). Novos eventos (ask_user, todo_update) tipados. Build compila sem erros. Nenhuma ferramenta existente quebrou.",
-    "status": "blocked",
+    "status": "failing",
     "priority": 13,
     "tests": [
       "codingTools em src/tools/index.ts exporta exatamente 15 ferramentas",

@@ -5,9 +5,9 @@
 
 ## Current Status
 
-**Phase:** Implementing — F-001 through F-011 done, working through feature list.
-**Features:** 13 total (11 passing, 2 remaining)
-**Build:** Compilando (17 tools — 6 existentes + ListDir + MultiEdit + TodoWrite + TodoRead + Diagnostics + AskUser + WebFetch + WebSearch + Task + Batch + ApplyPatch + novos tipos KaiAgentEvent)
+**Phase:** Implementing — F-001 through F-012 done, F-013 (final validation) remaining.
+**Features:** 13 total (12 passing, 1 remaining)
+**Build:** Compilando (18 tools — 6 existentes + ListDir + MultiEdit + TodoWrite + TodoRead + Diagnostics + AskUser + WebFetch + WebSearch + Task + Batch + ApplyPatch + CodeSearch + novos tipos KaiAgentEvent)
 
 ---
 
@@ -42,7 +42,7 @@ milestones/01-better-kay/PRP.md
 - [x] F-009: T04 — Task sub-agente tool (priority 9) ✓ 2026-02-16
 - [x] F-010: T10 — Batch tool (priority 10) ✓ 2026-02-16
 - [x] F-011: T11 — ApplyPatch tool (priority 11) ✓ 2026-02-16
-- [ ] F-012: T12 — CodeSearch tool (priority 12)
+- [x] F-012: T12 — CodeSearch tool (priority 12) ✓ 2026-02-16
 - [ ] F-013: Tool registry final + build validation (priority 13, depends: all)
 
 ---
@@ -216,3 +216,19 @@ Session 12 (Coding Agent): F-011 ApplyPatch tool
 - Registered as ApplyPatch in codingTools (17 tools total)
 - Build passes cleanly
 - Next priority: F-012 (CodeSearch tool)
+
+Session 13 (Coding Agent): F-012 CodeSearch tool
+- Created src/tools/code-search.ts with createCodeSearchTool factory export
+- Factory pattern (same as WebSearch): accepts optional CodeSearchProvider callback
+- CodeSearchProvider type: (query: string) => Promise<CodeSearchResult[]>
+- CodeSearchResult interface: { title: string, url: string, content: string }
+- Parameters: query (required, z.string() with descriptive hint)
+- When provider not configured, returns informative message about missing configuration
+- When provider configured, calls it and formats results with numbered headings, source URLs, and content
+- Added onCodeSearch to KaiAgentOptions interface in types.ts
+- runKaiAgent() in agent.ts overrides CodeSearch tool when onCodeSearch callback is provided
+- Exported createCodeSearchTool, CodeSearchProvider, CodeSearchResult from src/index.ts
+- Registered as CodeSearch in codingTools (18 tools total)
+- Output truncated at 50KB limit
+- Build passes cleanly
+- Next priority: F-013 (Tool registry final + build validation)
