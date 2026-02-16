@@ -149,7 +149,8 @@
     "id": "F-009",
     "name": "Evolution corrective actions",
     "description": "Criar src/modules/evolution/actions.ts — acoes corretivas (reconnect via GET /instance/connect/{name}, restart via PUT /instance/restart/{name}) com retry policy: cooldown, max retries, emissao de action-success/failed/exhausted.",
-    "status": "failing",
+    "status": "passing",
+    "completed_at": "2026-02-16T23:55:00Z",
     "priority": 9,
     "tests": [
       "reconnect chama GET {EVOLUTION_API_URL}/instance/connect/{name}",
