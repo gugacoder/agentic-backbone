@@ -1,7 +1,7 @@
 # Progress — agenticbackbone-03-evolution-hub--cc
 
 ## Current Status
-9/23 features complete. PRP 01 (Module System) completo. PRP 02 em andamento: F-005 (types + config), F-006 (probe), F-007 (state tracking), F-008 (pattern detection), F-009 (corrective actions) implementados.
+10/23 features complete. PRP 01 (Module System) completo. PRP 02 em andamento: F-005 (types + config), F-006 (probe), F-007 (state tracking), F-008 (pattern detection), F-009 (corrective actions), F-010 (HTTP routes) implementados.
 
 ## Specs Path
 D:\sources\codr.studio\cia-prime-care\agentic-backbone\apps\backbone\milestones\03-evolution-hub
@@ -53,8 +53,8 @@ D:\sources\codr.studio\cia-prime-care\agentic-backbone\apps\backbone\milestones\
 - [x] F-006 — Evolution probe (probe.ts: autonomous health check loop)
 - [x] F-007 — Instance state tracking (state.ts: per-instance state with temporal history)
 - [x] F-008 — Pattern detection (patterns.ts: flapping + prolonged offline)
-- [ ] F-009 — Corrective actions (actions.ts: reconnect/restart with retry policy)
-- [ ] F-010 — HTTP routes monitoring (routes.ts: health, instances, reconnect, restart)
+- [x] F-009 — Corrective actions (actions.ts: reconnect/restart with retry policy)
+- [x] F-010 — HTTP routes monitoring (routes.ts: health, instances, reconnect, restart)
 - [ ] F-011 — Module entry point + registration (evolution/index.ts + modules/index.ts)
 - [ ] F-012 — CRUD and QR backend routes (create, delete, qr, settings — proxy to Evolution API)
 
@@ -194,3 +194,17 @@ D:\sources\codr.studio\cia-prime-care\agentic-backbone\apps\backbone\milestones\
   - State tracking per-instance per-action via Map com chave instanceName:action
   - Build passa sem erros
   - Proxima prioridade: F-010 (HTTP routes monitoring)
+
+- Session 11: Implementou F-010 — Evolution HTTP routes (monitoring)
+  - Corrigiu bug pre-existente: maxTurns faltando em AgentProviderOptions (src/agent/providers/types.ts)
+  - Criou src/modules/evolution/routes.ts com factory function createEvolutionRoutes(deps)
+  - GET /health retorna apiState + lastProbe (timestamp, status, responseTimeMs, error)
+  - GET /instances retorna lista de instancias com estado, since, previousState, durationMs (503 se API offline)
+  - GET /instances/:name retorna detalhe de uma instancia (404 se nao encontrada)
+  - POST /instances/:name/reconnect executa reconnect via EvolutionActions (retry policy)
+  - POST /instances/:name/restart executa restart via EvolutionActions (retry policy)
+  - Erros tipados: 429 cooldown_active, 409 retries_exhausted, 503 api_offline, 404 instance_not_found
+  - Helper actionResultToResponse() mapeia ActionResult para HTTP status codes
+  - Deps injetadas via RouteDeps interface (probe, state, actions) — wiring acontece no F-011
+  - Build passa sem erros
+  - Proxima prioridade: F-011 (Module entry point + registration)

@@ -6,7 +6,7 @@ interface ActionState {
   lastAttemptAt: number;
 }
 
-interface ActionResult {
+export interface ActionResult {
   ok: boolean;
   error?: string;
   retryAfterMs?: number;

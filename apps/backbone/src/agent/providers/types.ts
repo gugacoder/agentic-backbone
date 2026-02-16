@@ -4,6 +4,7 @@ export interface AgentProviderOptions {
   sdkSessionId?: string;
   role?: string;
   mcpServers?: Record<string, unknown>;
+  maxTurns?: number;
 }
 
 export interface AgentProvider {

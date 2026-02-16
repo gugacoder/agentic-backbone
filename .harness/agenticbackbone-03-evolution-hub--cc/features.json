@@ -168,7 +168,8 @@
     "id": "F-010",
     "name": "Evolution HTTP routes (monitoring)",
     "description": "Criar src/modules/evolution/routes.ts — rotas de monitoramento: GET /health, GET /instances, GET /instances/:name, POST /instances/:name/reconnect, POST /instances/:name/restart. Respostas de erro tipadas (429, 409, 503, 404).",
-    "status": "failing",
+    "status": "passing",
+    "completed_at": "2026-02-16T18:30:00Z",
     "priority": 10,
     "tests": [
       "GET /health retorna estado da API + ultimo probe + response time",
