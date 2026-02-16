@@ -1,0 +1,147 @@
+[
+  {
+    "id": "F-001",
+    "name": "Module type definitions",
+    "description": "Create src/modules/types.ts with BackboneModule, ModuleContext, and ModuleHealth interfaces as specified in the PRP. ModuleContext includes eventBus, dbPath, contextDir, log, env. ModuleHealth includes status ('healthy'|'degraded'|'unhealthy') and optional details.",
+    "status": "failing",
+    "priority": 1,
+    "tests": [
+      "File src/modules/types.ts exists",
+      "Exports BackboneModule interface with name, start(ctx), stop(), health(), and optional routes",
+      "Exports ModuleContext interface with eventBus (BackboneEventBus type), dbPath (string), contextDir (string), log ((msg: string) => void), env (Record<string, string | undefined>)",
+      "Exports ModuleHealth interface with status ('healthy'|'degraded'|'unhealthy') and optional details (Record<string, unknown>)",
+      "Build passes: npm run build --workspace=apps/backbone"
+    ],
+    "dependencies": [],
+    "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\01-module-system\\PRP.md"
+  },
+  {
+    "id": "F-002",
+    "name": "Module registry",
+    "description": "Create src/modules/index.ts that exports an array of registered BackboneModule instances. Initially the array is empty. This is the explicit registration point — no auto-discovery.",
+    "status": "failing",
+    "priority": 2,
+    "tests": [
+      "File src/modules/index.ts exists",
+      "Exports a typed array of BackboneModule (initially empty [])",
+      "Build passes: npm run build --workspace=apps/backbone"
+    ],
+    "dependencies": ["F-001"],
+    "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\01-module-system\\PRP.md"
+  },
+  {
+    "id": "F-003",
+    "name": "Module loader lifecycle",
+    "description": "Create src/modules/loader.ts with startModules(), stopModules(), and getModuleHealth() functions. startModules() iterates the module array in order: creates ModuleContext (eventBus, dbPath as data/modules/{name}.sqlite, contextDir as context/modules/{name}/, prefixed log, process.env), ensures contextDir exists (mkdir -p), calls module.start(ctx). If start() throws, logs error and marks module as unhealthy — does NOT prevent backbone from starting. stopModules() iterates in REVERSE order, calling module.stop() with try-catch. getModuleHealth() collects health() from all modules.",
+    "status": "failing",
+    "priority": 3,
+    "tests": [
+      "File src/modules/loader.ts exists",
+      "Exports startModules() that returns Promise<void>",
+      "Exports stopModules() that returns Promise<void>",
+      "Exports getModuleHealth() that returns Record<string, ModuleHealth>",
+      "startModules() creates contextDir (context/modules/{name}/) if it does not exist",
+      "startModules() wraps each module.start() in try-catch — a failing module does not prevent others from starting",
+      "stopModules() calls stop() in reverse order of the module array",
+      "getModuleHealth() calls health() on each registered module and returns a map of name→ModuleHealth",
+      "Build passes: npm run build --workspace=apps/backbone"
+    ],
+    "dependencies": ["F-001", "F-002"],
+    "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\01-module-system\\PRP.md"
+  },
+  {
+    "id": "F-004",
+    "name": "Event bus module extensions",
+    "description": "Extend BackboneEventBus in src/events/index.ts with emitModule(moduleName, event, payload), onModule(moduleName, event, listener), and offModule(moduleName, event, listener). These compose event names as 'module:{moduleName}:{event}'. emitModule stores in lastEvents and emits via the underlying EventEmitter. Payloads are typed as unknown — modules handle their own typing internally.",
+    "status": "failing",
+    "priority": 4,
+    "tests": [
+      "BackboneEventBus has emitModule(moduleName: string, event: string, payload: unknown): void",
+      "BackboneEventBus has onModule(moduleName: string, event: string, listener: (payload: unknown) => void): void",
+      "BackboneEventBus has offModule(moduleName: string, event: string, listener: (payload: unknown) => void): void",
+      "emitModule('evolution', 'connected', {}) emits as 'module:evolution:connected'",
+      "emitModule stores the event in lastEvents map",
+      "Build passes: npm run build --workspace=apps/backbone"
+    ],
+    "dependencies": [],
+    "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\01-module-system\\PRP.md"
+  },
+  {
+    "id": "F-005",
+    "name": "SSE integration for module events",
+    "description": "Wire module events into the SSE hub so that events emitted via emitModule() automatically appear on the /system/events SSE stream. The SSE hub must listen for module:* events and broadcast them to the 'system' channel.",
+    "status": "failing",
+    "priority": 5,
+    "tests": [
+      "SSE hub in events/sse.ts listens for module events from the event bus",
+      "Module events emitted via emitModule() are broadcast to the 'system' SSE channel",
+      "The SSE event name preserves the 'module:{name}:{event}' format",
+      "Build passes: npm run build --workspace=apps/backbone"
+    ],
+    "dependencies": ["F-004"],
+    "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\01-module-system\\PRP.md"
+  },
+  {
+    "id": "F-006",
+    "name": "Module routes mounting",
+    "description": "In src/routes/index.ts, import registered modules and mount each module's routes (if defined) at /api/modules/{name}/ behind the JWT middleware barrier. If a module has no routes property, skip it.",
+    "status": "failing",
+    "priority": 6,
+    "tests": [
+      "routes/index.ts imports modules from src/modules/index.ts",
+      "For each module with routes, mounts the Hono sub-app at /modules/{name} (within the JWT-protected section)",
+      "Modules without routes are skipped without error",
+      "Build passes: npm run build --workspace=apps/backbone"
+    ],
+    "dependencies": ["F-001", "F-002"],
+    "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\01-module-system\\PRP.md"
+  },
+  {
+    "id": "F-007",
+    "name": "Health endpoint modules section",
+    "description": "Extend the /health endpoint in routes/index.ts to include a 'modules' section with health status of each registered module. Uses getModuleHealth() from the loader.",
+    "status": "failing",
+    "priority": 7,
+    "tests": [
+      "GET /health response includes a 'modules' key",
+      "The 'modules' value is an object mapping module name to {status, details?}",
+      "With no modules registered, 'modules' is an empty object {}",
+      "Build passes: npm run build --workspace=apps/backbone"
+    ],
+    "dependencies": ["F-003"],
+    "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\01-module-system\\PRP.md"
+  },
+  {
+    "id": "F-008",
+    "name": "Startup and shutdown integration",
+    "description": "In src/index.ts, call startModules() after wireEventBusToHooks() during startup. Collect and mount module routes. In the shutdown handler, call stopModules() before process.exit(). Log loaded module names: '[backbone] modules: name1, name2, ...'",
+    "status": "failing",
+    "priority": 8,
+    "tests": [
+      "index.ts imports startModules and stopModules from src/modules/loader.ts",
+      "startModules() is called after wireEventBusToHooks() in the server callback",
+      "stopModules() is called in onShutdown() before process.exit(0)",
+      "Module names are logged: '[backbone] modules: ...'",
+      "With no modules registered, the log shows '[backbone] modules: (none)'",
+      "Build passes: npm run build --workspace=apps/backbone"
+    ],
+    "dependencies": ["F-003", "F-006"],
+    "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\01-module-system\\PRP.md"
+  },
+  {
+    "id": "F-009",
+    "name": "Resilience — failing module does not crash backbone",
+    "description": "Validate that a module whose start() throws an exception does not prevent the backbone from starting. The module is marked as unhealthy via getModuleHealth(), and if it defines routes they should return 503. Other modules continue to start normally.",
+    "status": "failing",
+    "priority": 9,
+    "tests": [
+      "A module with a start() that throws is caught — backbone continues to start",
+      "The failed module's health() returns { status: 'unhealthy' }",
+      "If the failed module has routes, requests to /api/modules/{name}/* return 503",
+      "Other modules in the array start successfully despite the failed one",
+      "Build passes: npm run build --workspace=apps/backbone"
+    ],
+    "dependencies": ["F-003", "F-008"],
+    "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\01-module-system\\PRP.md"
+  }
+]

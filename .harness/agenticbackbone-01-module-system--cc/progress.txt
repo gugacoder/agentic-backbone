@@ -1,0 +1,40 @@
+# Backbone Module System — Progress
+
+## Current Status
+Harness initialized. 9 features identified, all failing. No implementation started.
+
+## Specs Path
+D:\sources\codr.studio\cia-prime-care\agentic-backbone\apps\backbone\milestones\01-module-system
+
+## Environment
+- Stack: Node.js, TypeScript (ES2022/ESNext), Hono, npm workspaces monorepo
+- Dev: npm run dev:backbone (tsx watch)
+- Build: npm run build --workspace=apps/backbone
+- Test: No test framework configured — validation via build + curl
+- Port: BACKBONE_PORT (from .env, convention 7700)
+
+## Features
+
+- [ ] F-001: Module type definitions (types.ts — BackboneModule, ModuleContext, ModuleHealth)
+- [ ] F-002: Module registry (index.ts — explicit module array)
+- [ ] F-003: Module loader lifecycle (loader.ts — startModules, stopModules, getModuleHealth)
+- [ ] F-004: Event bus module extensions (emitModule, onModule, offModule)
+- [ ] F-005: SSE integration for module events (module:* → system SSE channel)
+- [ ] F-006: Module routes mounting (/api/modules/{name}/ behind JWT)
+- [ ] F-007: Health endpoint modules section (/health includes modules)
+- [ ] F-008: Startup and shutdown integration (index.ts wiring)
+- [ ] F-009: Resilience — failing module does not crash backbone
+
+## Architecture Decisions (from PRP)
+1. Explicit registration (not filesystem discovery) — modules are few, order matters
+2. Module failure is non-fatal — start() errors mark module as unhealthy, backbone continues
+3. Module events use dynamic namespace (module:{name}:{event}) — not added to BackboneEventMap
+4. Module routes are JWT-protected by default — no public module routes
+5. Shutdown order is reverse of startup order
+6. Modules access backbone ONLY through ModuleContext — no internal imports allowed
+
+## Session Notes
+- Session 1 (Initializer): Harness created for wave 01-module-system
+- PRP source: apps/backbone/milestones/01-module-system/PRP.md
+- Key files to modify: src/index.ts, src/events/index.ts, src/routes/index.ts
+- Key files to create: src/modules/types.ts, src/modules/loader.ts, src/modules/index.ts

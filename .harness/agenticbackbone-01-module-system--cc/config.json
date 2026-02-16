@@ -1,0 +1,15 @@
+{
+  "slug": "agenticbackbone-01-module-system--cc",
+  "project": "agentic-backbone — 01-module-system",
+  "session_name": "agenticbackbone-01-module-system--cc",
+  "specs": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\01-module-system",
+  "agent": {
+    "harness": "claude-code",
+    "model": null,
+    "max_turns": 50,
+    "max_iterations": null,
+    "max_retries": 5,
+    "rollback": "stash"
+  },
+  "notifications": []
+}

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # =============================================================================
-# agent-setup.sh — Bootstrap script for KAI SDK development
-# Milestone: 01-better-kay (Expanded toolset: 6 -> 18 tools)
+# agent-setup.sh — Bootstrap script for Backbone Module System
+# Milestone: 01-module-system (Modular extension system for the backbone)
 # =============================================================================
 set -euo pipefail
 
@@ -12,11 +12,11 @@ CYAN='\033[0;36m'
 NC='\033[0m'
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-SDK_DIR="$SCRIPT_DIR/packages/kai-sdk"
+BACKBONE_DIR="$SCRIPT_DIR/apps/backbone"
 
 echo -e "${CYAN}=======================================${NC}"
-echo -e "${CYAN}  KAI SDK — Agent Setup${NC}"
-echo -e "${CYAN}  Milestone: 01-better-kay${NC}"
+echo -e "${CYAN}  Backbone — Agent Setup${NC}"
+echo -e "${CYAN}  Milestone: 01-module-system${NC}"
 echo -e "${CYAN}=======================================${NC}"
 echo ""
 
@@ -52,41 +52,32 @@ else
 fi
 echo ""
 
-# 3. Build the SDK
-echo -e "${CYAN}[3/4] Building KAI SDK...${NC}"
-cd "$SDK_DIR"
-npm run build 2>&1 || {
+# 3. Build the backbone
+echo -e "${CYAN}[3/4] Building Backbone...${NC}"
+npm run build --workspace=apps/backbone 2>&1 || {
     echo -e "${RED}Build failed! Check TypeScript errors above.${NC}"
     exit 1
 }
 echo -e "${GREEN}Build succeeded.${NC}"
 echo ""
 
-# 4. Smoke test — verify build output and tool count
+# 4. Smoke test — verify build output and health endpoint
 echo -e "${CYAN}[4/4] Smoke test...${NC}"
-if [ -f "$SDK_DIR/dist/index.js" ]; then
+if [ -f "$BACKBONE_DIR/dist/index.js" ]; then
     echo -e "${GREEN}dist/index.js exists.${NC}"
 else
     echo -e "${RED}dist/index.js not found! Build may have failed.${NC}"
     exit 1
 fi
 
-if [ -f "$SDK_DIR/dist/index.d.ts" ]; then
-    echo -e "${GREEN}dist/index.d.ts exists.${NC}"
+# Check that modules directory exists in source
+if [ -d "$BACKBONE_DIR/src/modules" ]; then
+    MODULE_FILES=$(ls "$BACKBONE_DIR/src/modules/"*.ts 2>/dev/null | wc -l)
+    echo -e "${GREEN}src/modules/ exists with ${MODULE_FILES} TypeScript files.${NC}"
 else
-    echo -e "${YELLOW}dist/index.d.ts not found (declarations may be missing).${NC}"
+    echo -e "${YELLOW}src/modules/ does not exist yet (expected after F-001).${NC}"
 fi
 
-# Count tools registered in codingTools
-TOOL_KEYS=$(node -e "
-import('$SDK_DIR/dist/tools/index.js')
-  .then(m => {
-    const keys = Object.keys(m.codingTools);
-    console.log(keys.length + ' tools: ' + keys.join(', '));
-  })
-  .catch(() => console.log('(could not inspect tools)'));
-" 2>/dev/null || echo "(could not inspect tools)")
-echo -e "${CYAN}Tools: ${TOOL_KEYS}${NC}"
 echo ""
 
 # Summary
@@ -94,10 +85,10 @@ echo -e "${GREEN}=======================================${NC}"
 echo -e "${GREEN}  Setup complete!${NC}"
 echo -e "${GREEN}=======================================${NC}"
 echo ""
-echo -e "  Workspace:  $SDK_DIR"
-echo -e "  Milestone:  01-better-kay"
-echo -e "  Goal:       Expand KAI toolset from 6 to 18 tools"
-echo -e "  Build:      npm run build --workspace=packages/kai-sdk"
-echo -e "  Dev:        npm run dev (tsc --watch)"
-echo -e "  Validate:   npm run build --workspace=packages/kai-sdk"
+echo -e "  Workspace:  $BACKBONE_DIR"
+echo -e "  Milestone:  01-module-system"
+echo -e "  Goal:       Modular extension system for the backbone"
+echo -e "  Build:      npm run build --workspace=apps/backbone"
+echo -e "  Dev:        npm run dev:backbone"
+echo -e "  Validate:   npm run build --workspace=apps/backbone"
 echo ""
