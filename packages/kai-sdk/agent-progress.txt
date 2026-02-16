@@ -5,9 +5,9 @@
 
 ## Current Status
 
-**Phase:** Implementing — F-001 through F-012 done, F-013 (final validation) remaining.
-**Features:** 13 total (12 passing, 1 remaining)
-**Build:** Compilando (18 tools — 6 existentes + ListDir + MultiEdit + TodoWrite + TodoRead + Diagnostics + AskUser + WebFetch + WebSearch + Task + Batch + ApplyPatch + CodeSearch + novos tipos KaiAgentEvent)
+**Phase:** COMPLETE — All 13 features passing.
+**Features:** 13/13 (all passing)
+**Build:** Compilando (18 tools — 6 existentes + 12 novas + KaiAgentEvent types expansion)
 
 ---
 
@@ -43,7 +43,7 @@ milestones/01-better-kay/PRP.md
 - [x] F-010: T10 — Batch tool (priority 10) ✓ 2026-02-16
 - [x] F-011: T11 — ApplyPatch tool (priority 11) ✓ 2026-02-16
 - [x] F-012: T12 — CodeSearch tool (priority 12) ✓ 2026-02-16
-- [ ] F-013: Tool registry final + build validation (priority 13, depends: all)
+- [x] F-013: Tool registry final + build validation (priority 13, depends: all) ✓ 2026-02-16
 
 ---
 
@@ -59,176 +59,41 @@ milestones/01-better-kay/PRP.md
 8. **Batch sem recursao:** Batch dentro de Batch e rejeitado.
 9. **Output limit:** Ferramentas respeitam 50KB max output.
 10. **ESM-only:** Imports com extensao `.js`, sem CommonJS.
+11. **Tool count:** PRP header dizia 6→15=9 novas, mas PRP body detalha 12 ferramentas (T01-T12). Total correto: 18.
 
 ---
 
 ## Session Notes
 
 Session 1 (Initializer): Harness criado para milestone 01-better-kay
-- features.json com 13 features (todas failing)
-- progress.txt criado
-- agent-setup.sh bootstrap script criado
-- PRP decomposed: 12 novas ferramentas + 1 feature de tipos + 1 validacao final = 13 features
-
 Session 2 (Coding Agent): F-001 KaiAgentEvent types expansion
-- Converted KaiAgentEvent from single interface to discriminated union type
-- Added `ask_user` event: `{ type: "ask_user", question: string, options?: string[] }`
-- Added `todo_update` event: `{ type: "todo_update", todos: KaiTodoItem[] }`
-- Created KaiTodoItem interface: `{ id, content, status, priority }`
-- Exported KaiTodoItem from src/index.ts
-- Verified backward compatibility with backbone consumer (kai.ts uses `as AgentEvent` cast)
-- Build passes cleanly
-- Next priority: F-002 (ListDir tool)
-
 Session 3 (Coding Agent): F-002 ListDir tool
-- Created src/tools/list-dir.ts with listDirTool export
-- Recursive tree builder with tree-drawing connectors
-- Parameters: path (required), depth (optional, default 3), ignore (optional, default node_modules/.git/dist/build)
-- Directories sorted first, then files, alphabetically within groups
-- Depth limiting, ignore filtering, 50KB output limit with truncation
-- Registered as ListDir in codingTools
-- Build passes cleanly
-- Next priority: F-003 (MultiEdit tool)
-
 Session 4 (Coding Agent): F-003 MultiEdit tool
-- Created src/tools/multi-edit.ts with multiEditTool export
-- Parameters: file_path (required, z.string()), edits (required, array of { old_string, new_string, replace_all? })
-- Atomicity: edits applied sequentially to in-memory content; if any old_string not found, returns early without writing to disk
-- Uniqueness check: if old_string appears multiple times and replace_all is false, rejects with error
-- Reuses same logic pattern as Edit tool
-- Registered as MultiEdit in codingTools (8 tools total)
-- Functional smoke test passed: sequential edits, atomic rollback on failure, replace_all
-- Build passes cleanly
-- Next priority: F-004 (TodoWrite + TodoRead tools) or F-005 (Diagnostics tool)
-
 Session 5 (Coding Agent): F-004 TodoWrite + TodoRead tools
-- Created src/tools/todo.ts with todoWriteTool and todoReadTool exports
-- Module-level state: `currentTodos: KaiTodoItem[]` shared between both tools
-- TodoWrite: accepts `todos` array with Zod schema (id, content, status enum, priority enum)
-- TodoWrite replaces entire list on each call, returns summary with counts
-- TodoRead: no parameters, returns formatted list with status icons (○/◐/●) and priority tags
-- TodoRead returns "Nenhuma tarefa registrada." when list is empty
-- Helper exports: resetTodoState() for testing, getTodos() for consumers
-- Uses KaiTodoItem type from types.ts (defined in F-001)
-- Registered as TodoWrite and TodoRead in codingTools (10 tools total)
-- Build passes cleanly
-- Next priority: F-005 (Diagnostics tool)
-
 Session 6 (Coding Agent): F-005 Diagnostics tool
-- Created src/tools/diagnostics.ts with diagnosticsTool export
-- Wrapper over child_process.exec that runs diagnostic commands (tsc, eslint, etc.)
-- Parameters: command (optional, default "npx tsc --noEmit"), file_path (optional, filters errors to file)
-- Combines stdout + stderr, normalizes path separators for cross-platform file_path matching
-- Returns "Nenhum erro encontrado." when clean (exit code 0, no output)
-- Handles edge cases: exitCode != 0 with no output, file_path filtering with no matches
-- Output truncated at 50KB limit
-- Registered as Diagnostics in codingTools (11 tools total)
-- Build passes cleanly
-- Next priority: F-006 (AskUser tool)
-
 Session 7 (Coding Agent): F-006 AskUser tool
-- Created src/tools/ask-user.ts with createAskUserTool factory export
-- Factory pattern: accepts optional AskUserCallback, returns configured tool
-- AskUserCallback type: (question: string, options?: string[]) => Promise<string>
-- Parameters: question (required, z.string()), options (optional, z.array(z.string()))
-- When callback not provided, returns informative message about missing configuration
-- When callback provided, calls it with question + options and returns the user's answer
-- Added onAskUser to KaiAgentOptions interface in types.ts
-- runKaiAgent() in agent.ts overrides AskUser tool when onAskUser callback is provided
-- Exported createAskUserTool and AskUserCallback type from src/index.ts
-- Registered as AskUser in codingTools (12 tools total)
-- Build passes cleanly
-- Next priority: F-007 (WebFetch tool)
-
 Session 8 (Coding Agent): F-007 WebFetch tool
-- Created src/tools/web-fetch.ts with webFetchTool export
-- Uses native Node.js fetch API (no external dependencies for HTML conversion)
-- Built-in htmlToMarkdown() converter: handles headings, links, lists, code blocks, tables, bold/italic, images
-- Strips script/style/nav/footer/aside/svg/noscript tags and their content
-- Decodes common HTML entities (&amp;, &lt;, &gt;, &quot;, &#39;, &nbsp;, &#NNN;)
-- Parameters: url (required, z.string().url()), prompt (optional, z.string())
-- AbortController-based timeout at 30 seconds
-- Content-type aware: HTML → markdown, JSON → pretty-printed, others → raw text
-- Output truncated at 50KB limit
-- Exported webFetchTool from src/index.ts
-- Registered as WebFetch in codingTools (13 tools total)
-- Build passes cleanly
-- Next priority: F-008 (WebSearch tool)
-
 Session 9 (Coding Agent): F-008 WebSearch tool
-- Created src/tools/web-search.ts with createWebSearchTool factory export
-- Factory pattern (same as AskUser): accepts optional WebSearchProvider callback
-- WebSearchProvider type: (query: string, numResults: number) => Promise<WebSearchResult[]>
-- WebSearchResult interface: { title: string, url: string, snippet: string }
-- Parameters: query (required, z.string()), numResults (optional, z.number().default(5))
-- When provider not configured, returns informative message about missing configuration
-- When provider configured, calls it and formats results with numbered headings, URLs, and snippets
-- Added onWebSearch to KaiAgentOptions interface in types.ts
-- runKaiAgent() in agent.ts overrides WebSearch tool when onWebSearch callback is provided
-- Exported createWebSearchTool, WebSearchProvider, WebSearchResult from src/index.ts
-- Registered as WebSearch in codingTools (14 tools total)
-- Output truncated at 50KB limit
-- Build passes cleanly
-- Next priority: F-009 (Task sub-agente tool)
-
 Session 10 (Coding Agent): F-009 Task sub-agent tool
-- Created src/tools/task.ts with createTaskTool factory export
-- Factory pattern: accepts optional TaskConfig { model, apiKey, maxSubSteps }
-- Parameters: description (required, z.string()), prompt (required, z.string())
-- Uses dynamic import of runKaiAgent() to avoid circular dependency at module load time
-- Sub-agent runs in isolated session (no sessionId passed = fresh session, no parent history)
-- Sub-agent inherits model and apiKey from parent via TaskConfig
-- maxSubSteps defaults to 10, capped at parent's maxSteps
-- agent.ts always overrides Task tool with parent's config so sub-agents are functional
-- Exported createTaskTool and TaskConfig from src/index.ts
-- Registered as Task in codingTools (15 tools total)
-- Output truncated at 50KB limit
-- Build passes cleanly
-- Next priority: F-010 (Batch tool)
-
 Session 11 (Coding Agent): F-010 Batch tool
-- Created src/tools/batch.ts with createBatchTool factory export
-- Factory pattern: accepts toolRegistry (Record<string, CoreTool>), returns configured tool
-- Parameters: tool_calls (required, array of { tool: string, parameters: object }, min 2, max 10)
-- Uses Promise.allSettled() for parallel execution — partial failures don't cancel others
-- Validates: no Batch inside Batch (rejects recursive calls before execution)
-- Validates: all tool names exist in registry (returns error for unknowns)
-- Returns indexed results: `### [0] ToolName\n\nresult`
-- agent.ts overrides Batch with resolved tool registry after all other tool overrides
-- createBatchTool filters "Batch" from available tool list to prevent recursion
-- Output truncated at 50KB limit
-- Exported createBatchTool from src/index.ts
-- Registered as Batch in codingTools (16 tools total)
-- Build passes cleanly
-- Next priority: F-011 (ApplyPatch tool)
-
 Session 12 (Coding Agent): F-011 ApplyPatch tool
-- Created src/tools/apply-patch.ts with applyPatchTool export
-- Envelope format parser: *** Begin Patch / *** End Patch
-- Three operation types: Add File (creates new files from + lines), Update File (applies diff with @@ context and +/- lines), Delete File (removes files)
-- parsePatch() extracts operations from patch text into structured PatchOperation[]
-- applyUpdate() handles context-based patching: @@ lines sync position, - lines skip original, + lines insert new
-- Add File creates parent directories automatically (like Write tool)
-- Parameters: patch (required, z.string())
-- Returns summary of operations: "Patch applied successfully:\nAdded: ...\nUpdated: ...\nDeleted: ..."
-- Error handling: empty patch returns informative error, file operations wrapped in try/catch
-- Exported applyPatchTool from src/index.ts
-- Registered as ApplyPatch in codingTools (17 tools total)
-- Build passes cleanly
-- Next priority: F-012 (CodeSearch tool)
-
 Session 13 (Coding Agent): F-012 CodeSearch tool
-- Created src/tools/code-search.ts with createCodeSearchTool factory export
-- Factory pattern (same as WebSearch): accepts optional CodeSearchProvider callback
-- CodeSearchProvider type: (query: string) => Promise<CodeSearchResult[]>
-- CodeSearchResult interface: { title: string, url: string, content: string }
-- Parameters: query (required, z.string() with descriptive hint)
-- When provider not configured, returns informative message about missing configuration
-- When provider configured, calls it and formats results with numbered headings, source URLs, and content
-- Added onCodeSearch to KaiAgentOptions interface in types.ts
-- runKaiAgent() in agent.ts overrides CodeSearch tool when onCodeSearch callback is provided
-- Exported createCodeSearchTool, CodeSearchProvider, CodeSearchResult from src/index.ts
-- Registered as CodeSearch in codingTools (18 tools total)
-- Output truncated at 50KB limit
-- Build passes cleanly
-- Next priority: F-013 (Tool registry final + build validation)
+
+Session 14 (Coding Agent): F-013 Tool registry final + build validation
+- Verified codingTools exports exactly 18 tools (6 existing + 12 new)
+- Verified all 6 existing tools (Read, Write, Edit, Bash, Glob, Grep) present and unchanged
+- Verified all 12 new tools present: ListDir, MultiEdit, TodoWrite, TodoRead, Diagnostics, AskUser, WebFetch, WebSearch, Task, Batch, ApplyPatch, CodeSearch
+- Verified KaiAgentEvent includes ask_user and todo_update types
+- Verified all SDK exports from src/index.ts (runKaiAgent, factory functions, types)
+- Verified agent.ts properly overrides pluggable tools (AskUser, WebSearch, CodeSearch, Task, Batch)
+- Build passes: npm run build --workspace=packages/kai-sdk (zero errors)
+- Consumer validation: npm run build --workspace=apps/backbone (zero errors)
+- Programmatic smoke test confirmed all tools load and are structurally valid
+- PRP tool count discrepancy resolved: PRP summary said 15, PRP body defines 12 new (T01-T12), total is 18
+- Milestone 01-better-kay is COMPLETE
+
+---
+
+## Milestone Complete
+
+All 13 features implemented and validated. The KAI SDK now has 18 coding tools covering filesystem operations, web access, user interaction, sub-agents, batch execution, patching, and code search — closing the competitive gap with Claude Code, OpenCode, and Codex CLI.

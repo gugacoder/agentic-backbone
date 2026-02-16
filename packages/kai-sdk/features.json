@@ -239,17 +239,20 @@
   {
     "id": "F-013",
     "name": "Tool registry final + build validation",
-    "description": "Validacao final: codingTools exporta 15 ferramentas (6 existentes + 9 novas). Novos eventos (ask_user, todo_update) tipados. Build compila sem erros. Nenhuma ferramenta existente quebrou.",
-    "status": "failing",
+    "description": "Validacao final: codingTools exporta 18 ferramentas (6 existentes + 12 novas conforme PRP T01-T12). Novos eventos (ask_user, todo_update) tipados. Build compila sem erros. Nenhuma ferramenta existente quebrou. Backbone consumer compila sem erros.",
+    "status": "passing",
+    "completed_at": "2026-02-16",
     "priority": 13,
     "tests": [
-      "codingTools em src/tools/index.ts exporta exatamente 15 ferramentas",
+      "codingTools em src/tools/index.ts exporta exatamente 18 ferramentas (6 existentes + 12 novas: T01-T12 do PRP)",
       "Ferramentas existentes (Read, Write, Edit, Bash, Glob, Grep) continuam funcionando",
       "Novas ferramentas: ListDir, MultiEdit, TodoWrite, TodoRead, Diagnostics, AskUser, WebFetch, WebSearch, Task, Batch, ApplyPatch, CodeSearch",
-      "Wait — 6 + 12 = 18? Nao: PRP diz 6->15 = 9 novas. Contar: AskUser, WebFetch, WebSearch, Task, TodoWrite, TodoRead, MultiEdit, ListDir, Diagnostics, Batch, ApplyPatch, CodeSearch = 12 novas. Total 18. Ajustar conforme PRP real.",
+      "Nota: PRP header dizia 6->15=9 novas, mas o PRP detalha 12 ferramentas (T01-T12). Total correto: 18.",
       "KaiAgentEvent inclui ask_user e todo_update",
       "npm run build --workspace=packages/kai-sdk compila sem erros",
-      "Nenhum import quebrado em src/index.ts"
+      "npm run build --workspace=apps/backbone compila sem erros (consumer validation)",
+      "Nenhum import quebrado em src/index.ts",
+      "Smoke test programatico confirmou 18 tools, 6 existing, 12 new, all exports present"
     ],
     "dependencies": [
       "F-001",
