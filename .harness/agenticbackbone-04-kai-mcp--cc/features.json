@@ -95,7 +95,8 @@
     "id": "F-006",
     "name": "mcp_connected event",
     "description": "Adicionar evento mcp_connected em KaiAgentEvent e emiti-lo após todos os MCP clients conectarem, antes do primeiro streamText(). Lista os nomes dos servers conectados com sucesso",
-    "status": "failing",
+    "status": "passing",
+    "completed_at": "2026-02-16",
     "priority": 6,
     "tests": [
       "KaiAgentEvent union inclui { type: 'mcp_connected'; servers: string[] }",
@@ -135,7 +136,8 @@
     "id": "F-008",
     "name": "Build validation",
     "description": "Validação final: build completo do workspace kai-sdk e backbone sem erros. Verificar que exports públicos estão corretos e tipos são acessíveis",
-    "status": "blocked",
+    "status": "passing",
+    "completed_at": "2026-02-16",
     "priority": 8,
     "tests": [
       "npm run build --workspace=packages/kai-sdk passa sem erros",

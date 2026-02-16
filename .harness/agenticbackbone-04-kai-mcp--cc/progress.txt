@@ -1,7 +1,11 @@
 # Progress — 04-kai-mcp
 
 ## Current Status
-F-004, F-005, F-007 concluídas nesta sessão. 6/8 features complete. F-004 já estava implementada desde F-003 (tool merge com spread order). F-005 adicionou try/catch per-server com console.warn para graceful failure. F-007 adicionou toMcpServerConfigs() no provider KAI para converter Record<string, unknown> → McpServerConfig[].
+ALL 8/8 features complete. Milestone 04-kai-mcp DONE.
+
+F-006 implemented: mcp_connected event type added to KaiAgentEvent union. Event is yielded after MCP connection phase, before streamText(). Contains only names of successfully connected servers. Not emitted when no MCP servers configured. Emitted with empty array when all servers fail.
+
+F-008 validated: Both kai-sdk and backbone builds pass cleanly. All public exports verified (McpServerConfig, KaiAgentOptions.mcpServers, mcp_connected event type).
 
 ## Specs Path
 D:\sources\codr.studio\cia-prime-care\agentic-backbone\packages\kai-sdk\milestones\04-kai-mcp
@@ -21,9 +25,9 @@ D:\sources\codr.studio\cia-prime-care\agentic-backbone\packages\kai-sdk\mileston
 - [x] F-003 MCP client lifecycle — Criar/fechar MCP clients em runKaiAgent()
 - [x] F-004 Tool merging with priority — Mergear MCP tools com codingTools (coding tem prioridade)
 - [x] F-005 Graceful failure — Falha de conexão emite warning e continua
-- [ ] F-006 mcp_connected event — Novo evento tipado em KaiAgentEvent
+- [x] F-006 mcp_connected event — Novo evento tipado em KaiAgentEvent
 - [x] F-007 Backbone KAI provider integration — Propagar mcpServers no provider
-- [ ] F-008 Build validation — Build completo sem erros (kai-sdk + backbone)
+- [x] F-008 Build validation — Build completo sem erros (kai-sdk + backbone)
 
 ## Architecture Decisions
 
@@ -36,13 +40,14 @@ D:\sources\codr.studio\cia-prime-care\agentic-backbone\packages\kai-sdk\mileston
 7. **Sem MCP resources/prompts**: Apenas tools do protocolo MCP
 8. **Transport mapping**: McpServerConfig.transport.type "http" → MCPTransportConfig, "stdio" → Experimental_StdioMCPTransport (custom MCPTransport from @ai-sdk/mcp/mcp-stdio)
 9. **Backbone integration**: toMcpServerConfigs() converte Record<string, unknown> (formato Backbone) para McpServerConfig[] (formato KAI SDK). Apenas entries com transport válido (http/stdio) são incluídas. In-process SDK MCP servers são silenciosamente ignorados.
+10. **mcp_connected event**: Emitido após fase de conexão MCP, antes de streamText(). Contém apenas nomes dos servers que conectaram com sucesso. Não emitido se nenhum MCP server configurado. Emitido com array vazio se todos falharem.
 
 ## Files Modified
 
 ### packages/kai-sdk/
 - `package.json` — adicionar @ai-sdk/mcp dependency ✅
-- `src/types.ts` — McpServerConfig, mcpServers em KaiAgentOptions ✅
-- `src/agent.ts` — MCP client lifecycle, tool merging, graceful failure (try/catch per-server) ✅
+- `src/types.ts` — McpServerConfig, mcpServers em KaiAgentOptions, mcp_connected event ✅
+- `src/agent.ts` — MCP client lifecycle, tool merging, graceful failure, mcp_connected yield ✅
 - `src/index.ts` — exportar McpServerConfig ✅
 
 ### apps/backbone/
@@ -54,3 +59,4 @@ D:\sources\codr.studio\cia-prime-care\agentic-backbone\packages\kai-sdk\mileston
 - Session 3 (CC): F-002 implementada. McpServerConfig interface com transport union (http|stdio), mcpServers opcional em KaiAgentOptions, tipo exportado no index.ts. Build passa limpo.
 - Session 4 (CC): F-003 implementada. MCP client lifecycle em runKaiAgent(): imports createMCPClient + MCPClient de @ai-sdk/mcp e StdioMCPTransport de @ai-sdk/mcp/mcp-stdio. Helper createMcpTransport() mapeia McpServerConfig para transport correto. Loop cria clients, coleta tools via client.tools(). Finally block fecha todos os clients. Tool merge já implementado com spread order (mcpTools primeiro, codingTools sobrescrevem). Build passa limpo (kai-sdk + backbone). Próxima: F-004 Tool merging with priority.
 - Session 5 (CC): F-004 já estava implementada (confirmado todos os testes). F-005 implementada: try/catch per-server no loop de criação de MCP clients, console.warn com nome do server e mensagem de erro. F-007 implementada: toMcpServerConfigs() converte Record<string,unknown> para McpServerConfig[], importa McpServerConfig do SDK, propaga mcpServers para runKaiAgent() com spread condicional. Build limpo (kai-sdk + backbone). Próxima: F-006 mcp_connected event.
+- Session 6 (CC): F-006 implementada: mcp_connected event type adicionado ao KaiAgentEvent union em types.ts. Em agent.ts, connectedServers[] rastreia servers que conectaram com sucesso, yield emite evento após loop de conexão MCP. F-008 validada: builds passam, exports verificados. MILESTONE COMPLETO — 8/8 features.

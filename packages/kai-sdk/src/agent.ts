@@ -65,6 +65,7 @@ export async function* runKaiAgent(
     // Connect to MCP servers and collect their tools
     let mcpTools: Record<string, any> = {};
     if (options.mcpServers && options.mcpServers.length > 0) {
+      const connectedServers: string[] = [];
       for (const serverConfig of options.mcpServers) {
         try {
           const transport = createMcpTransport(serverConfig);
@@ -75,11 +76,13 @@ export async function* runKaiAgent(
           mcpClients.push(client);
           const serverTools = await client.tools();
           mcpTools = { ...mcpTools, ...serverTools };
+          connectedServers.push(serverConfig.name);
         } catch (err) {
           const msg = err instanceof Error ? err.message : String(err);
           console.warn(`[kai] MCP server "${serverConfig.name}" failed to connect: ${msg}`);
         }
       }
+      yield { type: "mcp_connected", servers: connectedServers };
     }
 
     // Override pluggable tools with configured callbacks if provided

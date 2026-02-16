@@ -7,6 +7,7 @@ export interface McpServerConfig {
 
 export type KaiAgentEvent =
   | { type: "init"; sessionId: string }
+  | { type: "mcp_connected"; servers: string[] }
   | { type: "text"; content: string }
   | { type: "result"; content: string }
   | { type: "usage"; usage: KaiUsageData }
