@@ -37,7 +37,8 @@
     "id": "F-003",
     "name": "whatsapp-page-error-state",
     "description": "Adicionar tratamento de erro na WhatsAppPage. Quando evolutionInstancesQuery falha, exibir card de erro com icone AlertTriangle, titulo 'Falha ao carregar instancias', mensagem de erro e botao 'Tentar novamente' (refetch). Nao mascarar erro como lista vazia.",
-    "status": "failing",
+    "status": "passing",
+    "completed_at": "2026-02-17T00:30:00Z",
     "priority": 3,
     "tests": [
       "Com backend rodando: pagina WhatsApp mostra dados normalmente (tabela de instancias)",
