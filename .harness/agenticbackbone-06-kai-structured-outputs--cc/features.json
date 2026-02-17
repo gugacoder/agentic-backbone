@@ -42,7 +42,7 @@
     "id": "F-003",
     "name": "public-exports",
     "description": "Adicionar exports de kaiGenerateObject, kaiStreamObject e KaiObjectOptions no packages/kai-sdk/src/index.ts. Garantir que tipos e funcoes estejam acessiveis aos consumidores do pacote.",
-    "status": "blocked",
+    "status": "passing",
     "priority": 3,
     "tests": [
       "index.ts exporta kaiGenerateObject de ./structured.js",
@@ -55,13 +55,14 @@
       "F-001",
       "F-002"
     ],
-    "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\06-kai-structured-outputs\\PRP.md"
+    "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\06-kai-structured-outputs\\PRP.md",
+    "completed_at": "2026-02-17T19:10:00Z"
   },
   {
     "id": "F-004",
     "name": "compaction-structured-output",
     "description": "Refatorar compactMessages() em context/compaction.ts para usar generateObject() com CompactionSchema Zod (summary, decisions, filesModified, currentState, nextSteps). Montar mensagem de resumo deterministicamente a partir dos campos tipados em vez de texto livre.",
-    "status": "blocked",
+    "status": "pending",
     "priority": 4,
     "tests": [
       "CompactionSchema Zod definido com campos: summary (string), decisions (string[]), filesModified (string[]), currentState (string), nextSteps (string[])",

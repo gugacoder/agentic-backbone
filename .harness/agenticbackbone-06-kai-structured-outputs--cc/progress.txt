@@ -2,7 +2,7 @@
 
 ## Current Status
 
-IN PROGRESS — F-001 e F-002 implementadas e passando. Próxima: F-003 (public-exports).
+IN PROGRESS — F-001, F-002 e F-003 implementadas e passando. Próxima: F-004 (compaction-structured-output).
 
 ## Specs Path
 
@@ -21,7 +21,7 @@ D:\sources\codr.studio\cia-prime-care\agentic-backbone\apps\backbone\milestones\
 
 - [x] F-001 kai-generate-object — kaiGenerateObject() utility em structured.ts
 - [x] F-002 kai-stream-object — kaiStreamObject() com AsyncGenerator de parciais
-- [ ] F-003 public-exports — Exportar novas funcoes e tipos no index.ts
+- [x] F-003 public-exports — Exportar novas funcoes e tipos no index.ts
 - [ ] F-004 compaction-structured-output — Refatorar compaction para usar generateObject() + Zod schema
 - [ ] F-005 compaction-fallback — Fallback para generateText() se generateObject() falhar
 - [ ] F-006 build-verification — Build final sem erros, tipos em dist/
@@ -49,3 +49,8 @@ Session 2 (Claude Code): Implementou F-001 e F-002 em packages/kai-sdk/src/struc
 - kaiStreamObject(): encapsula streamObject() retornando AsyncGenerator<Partial<z.infer<T>>> via partialObjectStream
 - Interface KaiObjectOptions<T> com model, apiKey, schema, system?, prompt, maxTokens?
 - Build limpo sem erros. dist/structured.js e dist/structured.d.ts gerados corretamente.
+
+Session 3 (Claude Code): Implementou F-003 public-exports.
+- Adicionou exports de kaiGenerateObject, kaiStreamObject e KaiObjectOptions em index.ts
+- Build limpo. dist/index.d.ts e dist/index.js contêm as re-exportações corretamente.
+- Todos os 5 testes de F-003 passando.
