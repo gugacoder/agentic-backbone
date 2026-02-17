@@ -279,32 +279,52 @@ export function createEvolutionRoutes(deps: RouteDeps): Hono {
   return app;
 }
 
+// --- Response envelope helpers ---
+
+function ok<T>(c: Context, data: T) {
+  return c.json({ ok: true, data });
+}
+
+function fail(c: Context, error: string, details?: unknown, extra?: Record<string, unknown>) {
+  return c.json({ ok: false, error, details, ...extra });
+}
+
+async function proxyGet<T>(c: Context, url: string, apiKey: string, errorCode: string) {
+  try {
+    const response = await fetch(url, { headers: { apikey: apiKey } });
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({ message: `HTTP ${response.status}` }));
+      return fail(c, errorCode, err);
+    }
+    const data = await response.json() as T;
+    return ok(c, data);
+  } catch (err) {
+    return fail(c, "network_error", String(err));
+  }
+}
+
 /**
- * Maps an ActionResult to the appropriate HTTP response.
+ * Maps an ActionResult to the appropriate HTTP 200 response with envelope.
  *
- * - cooldown_active → 429
- * - retries_exhausted → 409
- * - other errors → 502
- * - success → 200
+ * All scenarios return HTTP 200 — business errors are represented in the body.
  */
 function actionResultToResponse(c: Context, result: ActionResult): Response {
   if (result.ok) {
-    return c.json({ ok: true });
+    return ok(c, { ok: true });
   }
 
   if (result.error === "cooldown_active") {
-    return c.json(
-      { error: "cooldown_active", retryAfterMs: result.retryAfterMs },
-      429,
-    );
+    return fail(c, "cooldown_active", undefined, {
+      retryAfterMs: result.retryAfterMs,
+    });
   }
 
   if (result.error === "retries_exhausted") {
-    return c.json(
-      { error: "retries_exhausted", attempts: result.attempts, maxRetries: result.maxRetries },
-      409,
-    );
+    return fail(c, "retries_exhausted", undefined, {
+      attempts: result.attempts,
+      maxRetries: result.maxRetries,
+    });
   }
 
-  return c.json({ error: result.error }, 502);
+  return fail(c, result.error ?? "action_failed");
 }

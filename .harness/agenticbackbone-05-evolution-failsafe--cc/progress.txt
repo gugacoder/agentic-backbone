@@ -1,0 +1,85 @@
+# Evolution Fail-Safe — Progress
+
+## Current Status
+IN PROGRESS — F-001 completa (1/12). Proxima: F-002 backbone-routes-envelope.
+
+## Specs Path
+D:\sources\codr.studio\cia-prime-care\agentic-backbone\apps\backbone\milestones\05-evolution-failsafe
+
+## Environment
+
+### Stack
+- Runtime: Node.js (ESM, TypeScript ES2022)
+- Backend: Hono framework (apps/backbone)
+- Frontend: React + TanStack Router + TanStack Query (apps/hub)
+- Package manager: npm (workspaces monorepo)
+- Docker: docker-compose.platform.yml (Postgres, Redis, Evolution API)
+
+### Commands
+- Dev (backbone): npm run dev:backbone (from root)
+- Dev (hub): npm run dev:hub (from root)
+- Dev (all): npm run dev:all (from root)
+- Platform up: npm run platform:up (from root)
+- Platform down: npm run platform:down (from root)
+- Build hub: npm run build:hub (from root)
+- E2E tests: npm run test:e2e (from root)
+
+## Features
+
+### Backbone (Response Contract)
+- [x] F-001 backbone-response-helpers — Criar ok(), fail(), proxyGet() helpers
+- [ ] F-002 backbone-routes-envelope — Migrar todas as rotas para HTTP 200 com envelope
+
+### Hub (Types & Infrastructure)
+- [ ] F-003 hub-api-types — ApiResult<T> type + mapa de mensagens amigaveis
+- [ ] F-004 hub-queries-envelope — Refatorar queries para interpretar envelope
+- [ ] F-005 hub-mutations-envelope — Refatorar mutations para retornar ApiResult
+
+### Hub (Component Refactoring)
+- [ ] F-006 hub-create-dialog-separation — Dialog cria instancia -> aba status (nao QR)
+- [ ] F-007 hub-whatsapp-page-no-error-state — Pagina principal sem tela de erro
+- [ ] F-008 hub-instance-page-no-error-card — Pagina instancia sem InstanceErrorCard
+- [ ] F-009 hub-qr-component-resilient — QR resiliente com retry e reset
+- [ ] F-010 hub-settings-form-resilient — Settings form resiliente
+- [ ] F-011 hub-delete-flow-resilient — Delete flow resiliente
+
+### Validation
+- [ ] F-012 smoke-test-end-to-end — Validacao final de todos os cenarios
+
+## Architecture Decisions
+
+1. **HTTP 200 Always**: Todas as rotas do modulo Evolution retornam HTTP 200. Erros de negocio (API offline, instancia nao encontrada, QR indisponivel) sao representados no body com { ok: false, error: "..." }. HTTP 4xx/5xx so ocorre se o backbone estiver genuinamente down.
+
+2. **Separacao Instancia vs Linkagem**: Criar instancia nao navega para QR. A linkagem de telefone eh um processo independente acessado pela aba QR de uma instancia existente.
+
+3. **Nao alterar lib/api.ts**: O ApiError continua existindo para falhas de rede reais (backbone inacessivel). Como o backbone nunca mais retorna 4xx/5xx, ApiError so dispara se o backbone estiver down.
+
+4. **isError = rede, nao negocio**: No React Query, isError indica exclusivamente falha de rede. Erros de negocio sao tratados via result.ok no body da resposta.
+
+5. **Helpers no backbone**: ok(), fail(), proxyGet() padronizam respostas e eliminam repeticao de try/catch em cada rota.
+
+6. **Mensagens amigaveis**: Hub mantem mapa de error codes -> mensagens pt-BR para feedback ao usuario.
+
+## Key Files
+
+### Backbone
+- apps/backbone/src/modules/evolution/routes.ts — Rotas do modulo Evolution (principal alvo)
+
+### Hub
+- apps/hub/src/api/evolution.ts — Types, queries, mutations
+- apps/hub/src/lib/api.ts — HTTP client (NAO ALTERAR)
+- apps/hub/src/pages/whatsapp.tsx — Pagina principal WhatsApp
+- apps/hub/src/pages/whatsapp-instance.tsx — Pagina detalhe instancia
+- apps/hub/src/components/connectivity/create-instance-dialog.tsx — Dialog criacao
+- apps/hub/src/components/connectivity/instance-qr.tsx — Componente QR
+- apps/hub/src/components/connectivity/instance-settings-form.tsx — Form settings
+
+## Session Notes
+Session 1 (Initializer): Harness criado para onda agenticbackbone-05-evolution-failsafe. 12 features decompostas do PRP. Foco em dois eixos: (1) padronizar contrato de resposta no backbone e (2) tornar hub resiliente a erros de negocio.
+
+Session 2: Implementada F-001 backbone-response-helpers.
+- Criados helpers ok(), fail(), proxyGet() em routes.ts
+- Refatorado actionResultToResponse() para usar ok()/fail() — todas as respostas agora HTTP 200
+- Corrigido bug de build em jobs/types.ts (adicionado "killed" ao JobStatus)
+- Build limpo (backbone + hub tsc --noEmit)
+- Proxima: F-002 backbone-routes-envelope (migrar todas as rotas para usar os helpers)

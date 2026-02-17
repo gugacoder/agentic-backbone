@@ -1,4 +1,4 @@
-export type JobStatus = "running" | "completed" | "failed" | "timeout";
+export type JobStatus = "running" | "completed" | "failed" | "timeout" | "killed";
 
 export interface JobSession {
   id: string;
