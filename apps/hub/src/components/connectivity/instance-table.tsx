@@ -25,7 +25,7 @@ import { Badge } from "@/components/ui/badge";
 import { MoreHorizontal, RefreshCw, RotateCcw, Eye, Trash2, Loader2, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { EvolutionInstance } from "@/api/evolution";
-import { useReconnectInstance, useRestartInstance } from "@/api/evolution";
+import { useReconnectInstance, useRestartInstance, friendlyMessage } from "@/api/evolution";
 import type { InstanceAlerts } from "@/hooks/use-evolution-sse";
 import { toast } from "sonner";
 
@@ -77,14 +77,26 @@ export function InstanceTable({ instances, variant, onDelete, alerts }: Instance
 
   function handleReconnect(name: string) {
     reconnect.mutate(name, {
-      onSuccess: () => toast.success(`Reconexao solicitada para ${name}`),
+      onSuccess: (result) => {
+        if (!result.ok) {
+          toast.error(friendlyMessage(result.error ?? ""));
+          return;
+        }
+        toast.success(`Reconexao solicitada para ${name}`);
+      },
       onError: (err) => toast.error(`Falha ao reconectar ${name}: ${err.message}`),
     });
   }
 
   function handleRestart(name: string) {
     restart.mutate(name, {
-      onSuccess: () => toast.success(`Reinicio solicitado para ${name}`),
+      onSuccess: (result) => {
+        if (!result.ok) {
+          toast.error(friendlyMessage(result.error ?? ""));
+          return;
+        }
+        toast.success(`Reinicio solicitado para ${name}`);
+      },
       onError: (err) => toast.error(`Falha ao reiniciar ${name}: ${err.message}`),
     });
   }

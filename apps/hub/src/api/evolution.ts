@@ -127,9 +127,11 @@ export function useCreateInstance() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (data: { instanceName: string }) =>
-      api.post<EvolutionInstance>("/modules/evolution/instances", data),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["evolution", "instances"] });
+      api.post<ApiResult<EvolutionInstance>>("/modules/evolution/instances", data),
+    onSuccess: (result) => {
+      if (result.ok) {
+        qc.invalidateQueries({ queryKey: ["evolution", "instances"] });
+      }
     },
   });
 }
@@ -138,9 +140,11 @@ export function useDeleteInstance() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (name: string) =>
-      api.delete(`/modules/evolution/instances/${name}`),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["evolution", "instances"] });
+      api.delete<ApiResult<unknown>>(`/modules/evolution/instances/${name}`),
+    onSuccess: (result) => {
+      if (result.ok) {
+        qc.invalidateQueries({ queryKey: ["evolution", "instances"] });
+      }
     },
   });
 }
@@ -149,10 +153,12 @@ export function useReconnectInstance() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (name: string) =>
-      api.post(`/modules/evolution/instances/${name}/reconnect`),
-    onSuccess: (_, name) => {
-      qc.invalidateQueries({ queryKey: ["evolution", "instances", name] });
-      qc.invalidateQueries({ queryKey: ["evolution", "instances"] });
+      api.post<ApiResult<unknown>>(`/modules/evolution/instances/${name}/reconnect`),
+    onSuccess: (result, name) => {
+      if (result.ok) {
+        qc.invalidateQueries({ queryKey: ["evolution", "instances", name] });
+        qc.invalidateQueries({ queryKey: ["evolution", "instances"] });
+      }
     },
   });
 }
@@ -161,10 +167,12 @@ export function useRestartInstance() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (name: string) =>
-      api.post(`/modules/evolution/instances/${name}/restart`),
-    onSuccess: (_, name) => {
-      qc.invalidateQueries({ queryKey: ["evolution", "instances", name] });
-      qc.invalidateQueries({ queryKey: ["evolution", "instances"] });
+      api.post<ApiResult<unknown>>(`/modules/evolution/instances/${name}/restart`),
+    onSuccess: (result, name) => {
+      if (result.ok) {
+        qc.invalidateQueries({ queryKey: ["evolution", "instances", name] });
+        qc.invalidateQueries({ queryKey: ["evolution", "instances"] });
+      }
     },
   });
 }
@@ -173,9 +181,11 @@ export function useUpdateInstanceSettings() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ name, settings }: { name: string; settings: Partial<EvolutionInstanceSettings> }) =>
-      api.patch(`/modules/evolution/instances/${name}/settings`, settings),
-    onSuccess: (_, vars) => {
-      qc.invalidateQueries({ queryKey: ["evolution", "instances", vars.name, "settings"] });
+      api.patch<ApiResult<unknown>>(`/modules/evolution/instances/${name}/settings`, settings),
+    onSuccess: (result, vars) => {
+      if (result.ok) {
+        qc.invalidateQueries({ queryKey: ["evolution", "instances", vars.name, "settings"] });
+      }
     },
   });
 }

@@ -16,7 +16,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Loader2 } from "lucide-react";
-import { evolutionInstanceSettingsQuery, useUpdateInstanceSettings } from "@/api/evolution";
+import { evolutionInstanceSettingsQuery, useUpdateInstanceSettings, friendlyMessage } from "@/api/evolution";
 import { toast } from "sonner";
 
 const settingsSchema = z.object({
@@ -60,7 +60,13 @@ export function InstanceSettingsForm({ instanceName }: InstanceSettingsFormProps
     updateSettings.mutate(
       { name: instanceName, settings: values },
       {
-        onSuccess: () => toast.success("Configuracoes salvas"),
+        onSuccess: (result) => {
+          if (!result.ok) {
+            toast.error(friendlyMessage(result.error ?? ""));
+            return;
+          }
+          toast.success("Configuracoes salvas");
+        },
         onError: (err) => toast.error(`Falha ao salvar: ${err.message}`),
       }
     );

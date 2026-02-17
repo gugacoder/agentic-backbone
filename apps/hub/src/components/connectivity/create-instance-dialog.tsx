@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Loader2 } from "lucide-react";
-import { useCreateInstance } from "@/api/evolution";
+import { useCreateInstance, friendlyMessage } from "@/api/evolution";
 import { toast } from "sonner";
 
 const schema = z.object({
@@ -49,7 +49,11 @@ export function CreateInstanceDialog({ open, onOpenChange }: CreateInstanceDialo
 
   async function onSubmit(values: FormValues) {
     create.mutate(values, {
-      onSuccess: () => {
+      onSuccess: (result) => {
+        if (!result.ok) {
+          toast.error(friendlyMessage(result.error ?? ""));
+          return;
+        }
         toast.success(`Instancia "${values.instanceName}" criada`);
         onOpenChange(false);
         form.reset();

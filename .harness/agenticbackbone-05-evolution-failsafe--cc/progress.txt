@@ -1,7 +1,7 @@
 # Evolution Fail-Safe — Progress
 
 ## Current Status
-IN PROGRESS — F-001, F-002, F-003, F-004 completas (4/12). Proxima: F-005 hub-mutations-envelope.
+IN PROGRESS — F-001, F-002, F-003, F-004, F-005 completas (5/12). Proxima: F-006 hub-create-dialog-separation.
 
 ## Specs Path
 D:\sources\codr.studio\cia-prime-care\agentic-backbone\apps\backbone\milestones\05-evolution-failsafe
@@ -33,7 +33,7 @@ D:\sources\codr.studio\cia-prime-care\agentic-backbone\apps\backbone\milestones\
 ### Hub (Types & Infrastructure)
 - [x] F-003 hub-api-types — ApiResult<T> type + mapa de mensagens amigaveis
 - [x] F-004 hub-queries-envelope — Refatorar queries para interpretar envelope
-- [ ] F-005 hub-mutations-envelope — Refatorar mutations para retornar ApiResult
+- [x] F-005 hub-mutations-envelope — Refatorar mutations para retornar ApiResult
 
 ### Hub (Component Refactoring)
 - [ ] F-006 hub-create-dialog-separation — Dialog cria instancia -> aba status (nao QR)
@@ -117,3 +117,19 @@ Session 4: Implementada F-004 hub-queries-envelope.
 - Consumidores ja usam optional chaining e defaults, 0 mudancas necessarias em componentes
 - Build limpo: hub tsc --noEmit + vite build
 - Proxima: F-005 hub-mutations-envelope
+
+Session 5: Implementada F-005 hub-mutations-envelope.
+- Refatoradas TODAS as 5 mutations em api/evolution.ts para retornar ApiResult<T>
+- useCreateInstance: mutationFn retorna ApiResult<EvolutionInstance>
+- useDeleteInstance: mutationFn retorna ApiResult<unknown>
+- useReconnectInstance: mutationFn retorna ApiResult<unknown>
+- useRestartInstance: mutationFn retorna ApiResult<unknown>
+- useUpdateInstanceSettings: mutationFn retorna ApiResult<unknown>
+- Query invalidation condicional: so invalida cache quando result.ok === true
+- Atualizado create-instance-dialog.tsx: onSuccess verifica result.ok, toast amigavel via friendlyMessage()
+- Atualizado whatsapp.tsx: handleDelete verifica result.ok, toast amigavel
+- Atualizado whatsapp-instance.tsx: useActionState refatorado de ApiError(429/409) para ApiResult com cooldown_active/retries_exhausted
+- Atualizado instance-settings-form.tsx: onSuccess verifica result.ok, toast amigavel
+- Atualizado instance-table.tsx: handleReconnect e handleRestart verificam result.ok
+- Build limpo: backbone tsc + hub tsc --noEmit + vite build
+- Proxima: F-006 hub-create-dialog-separation

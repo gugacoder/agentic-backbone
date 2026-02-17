@@ -81,8 +81,9 @@
     "id": "F-005",
     "name": "hub-mutations-envelope",
     "description": "Refatorar todas as mutations em api/evolution.ts para retornar ApiResult<T>. Os handlers onSuccess nos componentes devem verificar result.ok antes de proceder. Erros de negocio mostram toast via friendlyMessage(), sem entrar em onError.",
-    "status": "pending",
+    "status": "passing",
     "priority": 5,
+    "completed_at": "2026-02-17T23:00:00Z",
     "tests": [
       "useCreateInstance retorna ApiResult — onSuccess verifica result.ok",
       "useDeleteInstance retorna ApiResult — onSuccess verifica result.ok",
@@ -100,7 +101,7 @@
     "id": "F-006",
     "name": "hub-create-dialog-separation",
     "description": "Refatorar create-instance-dialog.tsx: ao criar com sucesso, navegar para aba 'status' (nao 'qr'). Quando result.ok === false, mostrar toast com mensagem amigavel e manter dialog aberto.",
-    "status": "blocked",
+    "status": "pending",
     "priority": 6,
     "tests": [
       "Apos criacao com sucesso, navigate vai para tab: 'status' (nao 'qr')",
@@ -117,7 +118,7 @@
     "id": "F-007",
     "name": "hub-whatsapp-page-no-error-state",
     "description": "Refatorar whatsapp.tsx para nunca renderizar tela de erro por erro de negocio. Se instances retornar array vazio (quando ok: false ou dados vazios), mostrar estado vazio na tabela. Remover dependencia de isError para renderizar InstanceTable — a tabela sempre renderiza.",
-    "status": "blocked",
+    "status": "pending",
     "priority": 7,
     "tests": [
       "Quando query retorna array vazio, InstanceTable renderiza normalmente (tabela vazia ou estado vazio)",
@@ -134,7 +135,7 @@
     "id": "F-008",
     "name": "hub-instance-page-no-error-card",
     "description": "Refatorar whatsapp-instance.tsx: remover InstanceErrorCard como componente que substitui a pagina inteira. Erros de negocio (instancia nao encontrada, API offline) devem ser tratados inline. useActionState deve interpretar result.ok ao inves de ApiError status codes (429, 409).",
-    "status": "blocked",
+    "status": "pending",
     "priority": 8,
     "tests": [
       "InstanceErrorCard removida como componente inteiro que substitui a pagina",
@@ -154,7 +155,7 @@
     "id": "F-009",
     "name": "hub-qr-component-resilient",
     "description": "Refatorar instance-qr.tsx: QR falha (ok: false) gera mensagem inline com botao retry (nao tela de erro). Se instancia ja estiver 'open', aba QR mostra 'Instancia ja vinculada' com numero do telefone. Estado 'exhausted' mostra botao 'Recomecar' que reseta tentativas sem recarregar pagina.",
-    "status": "blocked",
+    "status": "pending",
     "priority": 9,
     "tests": [
       "Quando qr query retorna { ok: false, error: 'qr_unavailable' }, exibe mensagem inline com botao retry (nao tela de erro completa)",
@@ -172,7 +173,7 @@
     "id": "F-010",
     "name": "hub-settings-form-resilient",
     "description": "Refatorar instance-settings-form.tsx para interpretar envelope ApiResult. Quando settings query retorna ok: false, mostrar mensagem inline (nao crash). Quando mutation retorna ok: false, mostrar toast com mensagem amigavel.",
-    "status": "blocked",
+    "status": "pending",
     "priority": 10,
     "tests": [
       "Quando settings query retorna null (ok: false), form exibe mensagem 'Configuracoes indisponiveis' ao inves de crash",
@@ -190,7 +191,7 @@
     "id": "F-011",
     "name": "hub-delete-flow-resilient",
     "description": "Refatorar os fluxos de delete em whatsapp.tsx e whatsapp-instance.tsx para interpretar ApiResult. Quando delete retorna ok: false, mostrar toast com mensagem amigavel ao inves de entrar em onError.",
-    "status": "blocked",
+    "status": "pending",
     "priority": 11,
     "tests": [
       "Em whatsapp.tsx, handleDelete verifica result.ok e mostra toast amigavel quando ok: false",

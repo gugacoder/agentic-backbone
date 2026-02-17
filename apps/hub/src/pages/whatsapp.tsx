@@ -11,7 +11,7 @@ import { ApiHealthCard } from "@/components/connectivity/api-health-card";
 import { InstanceSummaryCards } from "@/components/connectivity/instance-summary-cards";
 import { InstanceTable } from "@/components/connectivity/instance-table";
 import { CreateInstanceDialog } from "@/components/connectivity/create-instance-dialog";
-import { evolutionInstancesQuery, useDeleteInstance } from "@/api/evolution";
+import { evolutionInstancesQuery, useDeleteInstance, friendlyMessage } from "@/api/evolution";
 import { useEvolutionAlertsStore } from "@/hooks/use-evolution-sse";
 import { toast } from "sonner";
 
@@ -38,7 +38,12 @@ export function WhatsAppPage() {
   function handleDelete() {
     if (!deleteTarget) return;
     deleteInstance.mutate(deleteTarget, {
-      onSuccess: () => {
+      onSuccess: (result) => {
+        if (!result.ok) {
+          toast.error(friendlyMessage(result.error ?? ""));
+          setDeleteTarget(null);
+          return;
+        }
         toast.success(`Instancia "${deleteTarget}" excluida`);
         setDeleteTarget(null);
       },

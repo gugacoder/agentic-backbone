@@ -21,7 +21,9 @@ import {
   useReconnectInstance,
   useRestartInstance,
   useDeleteInstance,
+  friendlyMessage,
 } from "@/api/evolution";
+import type { ApiResult } from "@/api/evolution";
 import { ApiError } from "@/lib/api";
 import { toast } from "sonner";
 
@@ -36,24 +38,27 @@ function useActionState() {
 
   useEffect(() => () => { if (timerRef.current) clearTimeout(timerRef.current); }, []);
 
-  const handleError = useCallback((err: Error) => {
-    if (err instanceof ApiError) {
-      if (err.status === 429 && err.data?.retryAfterMs) {
-        const ms = err.data.retryAfterMs as number;
-        setState({ cooldownUntil: Date.now() + ms, exhausted: false });
-        timerRef.current = setTimeout(() => {
-          setState((s) => ({ ...s, cooldownUntil: null }));
-        }, ms);
-        toast.error(`Aguarde ${Math.ceil(ms / 60_000)}min antes de tentar novamente`);
-        return;
-      }
-      if (err.status === 409) {
-        setState({ cooldownUntil: null, exhausted: true });
-        toast.error("Tentativas esgotadas");
-        return;
-      }
+  const handleResult = useCallback((result: ApiResult<unknown>) => {
+    if (result.ok) return false;
+
+    if (result.error === "cooldown_active" && result.retryAfterMs) {
+      const ms = result.retryAfterMs;
+      setState({ cooldownUntil: Date.now() + ms, exhausted: false });
+      timerRef.current = setTimeout(() => {
+        setState((s) => ({ ...s, cooldownUntil: null }));
+      }, ms);
+      toast.error(friendlyMessage("cooldown_active"));
+      return true;
     }
-    toast.error(`Falha: ${err.message}`);
+
+    if (result.error === "retries_exhausted") {
+      setState({ cooldownUntil: null, exhausted: true });
+      toast.error(friendlyMessage("retries_exhausted"));
+      return true;
+    }
+
+    toast.error(friendlyMessage(result.error ?? ""));
+    return true;
   }, []);
 
   const remainingSeconds = state.cooldownUntil
@@ -64,7 +69,7 @@ function useActionState() {
     isCooldown: !!state.cooldownUntil && remainingSeconds > 0,
     isExhausted: state.exhausted,
     remainingSeconds,
-    handleError,
+    handleResult,
   };
 }
 
@@ -161,21 +166,31 @@ export function WhatsAppInstancePage() {
 
   function handleReconnect() {
     reconnect.mutate(name, {
-      onSuccess: () => toast.success("Reconexao solicitada"),
-      onError: reconnectState.handleError,
+      onSuccess: (result) => {
+        if (reconnectState.handleResult(result)) return;
+        toast.success("Reconexao solicitada");
+      },
+      onError: (err) => toast.error(`Falha: ${err.message}`),
     });
   }
 
   function handleRestart() {
     restart.mutate(name, {
-      onSuccess: () => toast.success("Reinicio solicitado"),
-      onError: restartState.handleError,
+      onSuccess: (result) => {
+        if (restartState.handleResult(result)) return;
+        toast.success("Reinicio solicitado");
+      },
+      onError: (err) => toast.error(`Falha: ${err.message}`),
     });
   }
 
   function handleDelete() {
     deleteInstance.mutate(name, {
-      onSuccess: () => {
+      onSuccess: (result) => {
+        if (!result.ok) {
+          toast.error(friendlyMessage(result.error ?? ""));
+          return;
+        }
         toast.success(`Instancia "${name}" excluida`);
         navigate({ to: "/conectividade/whatsapp", search: { view: "instances" } });
       },
