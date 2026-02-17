@@ -1,3 +1,5 @@
+import type { LanguageModelV1Middleware } from "ai";
+
 export interface McpServerConfig {
   name: string;
   transport:
@@ -95,4 +97,6 @@ export interface KaiAgentOptions {
   stopWhen?: (event: { type: "step_finish"; step: number; toolCalls: string[]; finishReason: string }) => boolean;
   /** Callback executed before each step. Returns overrides for model, tools, toolChoice. */
   prepareStep?: (context: PrepareStepContext) => PrepareStepResult | undefined;
+  /** Middleware pipeline applied to the model. Executed in array order. */
+  middleware?: LanguageModelV1Middleware[];
 }

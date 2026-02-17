@@ -3,7 +3,8 @@
     "id": "F-001",
     "name": "middleware-type-in-options",
     "description": "Adicionar campo opcional middleware?: LanguageModelV1Middleware[] em KaiAgentOptions (types.ts). Importar o tipo LanguageModelV1Middleware do pacote 'ai'.",
-    "status": "failing",
+    "status": "passing",
+    "completed_at": "2026-02-17T00:00:00Z",
     "priority": 1,
     "tests": [
       "types.ts importa LanguageModelV1Middleware de 'ai'",
@@ -26,7 +27,9 @@
       "O modelo wrapped eh usado no streamText no lugar do modelo base",
       "npm run build --workspace=packages/kai-sdk compila sem erros"
     ],
-    "dependencies": ["F-001"],
+    "dependencies": [
+      "F-001"
+    ],
     "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\08-kai-middleware\\PRP.md"
   },
   {
@@ -42,7 +45,9 @@
       "agent.ts passa options.middleware para compactMessages()",
       "npm run build --workspace=packages/kai-sdk compila sem erros"
     ],
-    "dependencies": ["F-001"],
+    "dependencies": [
+      "F-001"
+    ],
     "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\08-kai-middleware\\PRP.md"
   },
   {
@@ -68,7 +73,7 @@
     "id": "F-005",
     "name": "public-exports",
     "description": "Atualizar index.ts para exportar createLoggingMiddleware de middleware/logging.js e re-exportar o tipo LanguageModelV1Middleware de 'ai' para consumidores.",
-    "status": "failing",
+    "status": "blocked",
     "priority": 5,
     "tests": [
       "index.ts exporta createLoggingMiddleware",
@@ -76,14 +81,16 @@
       "Todos os exports previamente existentes continuam funcionando (sem regressao)",
       "npm run build --workspace=packages/kai-sdk compila sem erros"
     ],
-    "dependencies": ["F-004"],
+    "dependencies": [
+      "F-004"
+    ],
     "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\08-kai-middleware\\PRP.md"
   },
   {
     "id": "F-006",
     "name": "build-verification",
     "description": "Verificacao final end-to-end: build limpo, runKaiAgent sem middleware se comporta identicamente, middleware sao aplicados na ordem do array, nenhuma dependencia nova adicionada.",
-    "status": "failing",
+    "status": "blocked",
     "priority": 6,
     "tests": [
       "npm run build --workspace=packages/kai-sdk compila sem erros nem warnings",
@@ -93,7 +100,13 @@
       "Nenhuma dependencia nova foi adicionada ao package.json (wrapLanguageModel e LanguageModelV1Middleware ja existem no pacote ai)",
       "Nenhum arquivo fora de packages/kai-sdk/src/ foi modificado"
     ],
-    "dependencies": ["F-001", "F-002", "F-003", "F-004", "F-005"],
+    "dependencies": [
+      "F-001",
+      "F-002",
+      "F-003",
+      "F-004",
+      "F-005"
+    ],
     "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\08-kai-middleware\\PRP.md"
   }
 ]
