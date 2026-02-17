@@ -135,7 +135,8 @@
     "id": "F-008",
     "name": "build-verification",
     "description": "Verificação final: build limpo, exports corretos, zero breaking changes nos tipos existentes.",
-    "status": "failing",
+    "status": "passing",
+    "completed_at": "2026-02-17",
     "priority": 8,
     "tests": [
       "npm run build --workspace=packages/kai-sdk compila sem erros",
