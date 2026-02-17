@@ -1,5 +1,5 @@
 import { streamText, wrapLanguageModel, type CoreMessage, type TelemetrySettings } from "ai";
-import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
+import { createKaiProviderRegistry } from "./providers.js";
 import { createMCPClient, type MCPClient } from "@ai-sdk/mcp";
 import { Experimental_StdioMCPTransport as StdioMCPTransport } from "@ai-sdk/mcp/mcp-stdio";
 import { codingTools } from "./tools/index.js";
@@ -68,10 +68,9 @@ export async function* runKaiAgent(
   prompt: string,
   options: KaiAgentOptions
 ): AsyncGenerator<KaiAgentEvent> {
-  const openrouter = createOpenAICompatible({
-    name: "openrouter",
-    baseURL: "https://openrouter.ai/api/v1",
+  const providers = createKaiProviderRegistry({
     apiKey: options.apiKey,
+    aliases: options.modelAliases,
   });
 
   const sessionDir = options.sessionDir ?? DEFAULT_SESSION_DIR;
@@ -254,7 +253,7 @@ export async function* runKaiAgent(
     let stepStartMs = Date.now();
 
     // prepareStep integration — call consumer's callback before streamText to get initial overrides
-    let stepModel = openrouter(options.model);
+    let stepModel = providers.model(options.model);
     let stepActiveTools: string[] | undefined;
     let stepToolChoice: PrepareStepResult["toolChoice"] = undefined;
 
@@ -266,7 +265,7 @@ export async function* runKaiAgent(
       });
       if (overrides) {
         if (overrides.model) {
-          stepModel = openrouter(overrides.model);
+          stepModel = providers.model(overrides.model);
         }
         if (overrides.activeTools) {
           stepActiveTools = overrides.activeTools;

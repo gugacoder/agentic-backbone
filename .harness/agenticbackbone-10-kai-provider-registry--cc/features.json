@@ -38,7 +38,8 @@
     "id": "F-003",
     "name": "agent-integration",
     "description": "Refatorar agent.ts para usar createKaiProviderRegistry() ao invés de createOpenAICompatible() inline. Criar o registry com apiKey e modelAliases do options. Usar providers.model() em todos os pontos que chamam openrouter().",
-    "status": "failing",
+    "status": "passing",
+    "completed_at": "2026-02-17T01:30:00Z",
     "priority": 3,
     "tests": [
       "agent.ts não contém mais createOpenAICompatible import/uso",
@@ -60,7 +61,7 @@
     "id": "F-004",
     "name": "compaction-integration",
     "description": "Refatorar compaction.ts para aceitar providers opcionais via CompactOptions. Se providers for passado, usá-lo ao invés de criar createOpenAICompatible() inline. Se não for passado, criar provider internamente (backward compat). Atualizar agent.ts para passar providers na chamada de compactMessages().",
-    "status": "blocked",
+    "status": "pending",
     "priority": 4,
     "tests": [
       "CompactOptions possui campo providers? do tipo ReturnType<typeof createKaiProviderRegistry>",

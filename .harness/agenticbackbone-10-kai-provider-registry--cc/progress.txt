@@ -1,7 +1,7 @@
 # Progress — agenticbackbone-10-kai-provider-registry
 
 ## Current Status
-F-001 e F-002 implementadas e verificadas. 2/7 features completas.
+F-001, F-002, F-003 implementadas e verificadas. 3/7 features completas.
 
 ## Specs Path
 D:\sources\codr.studio\cia-prime-care\agentic-backbone\apps\backbone\milestones\10-kai-provider-registry
@@ -17,7 +17,7 @@ D:\sources\codr.studio\cia-prime-care\agentic-backbone\apps\backbone\milestones\
 
 - [x] F-001: provider-registry-module — Criar providers.ts com createKaiProviderRegistry()
 - [x] F-002: types-model-aliases — Adicionar modelAliases em KaiAgentOptions
-- [ ] F-003: agent-integration — Refatorar agent.ts para usar registry
+- [x] F-003: agent-integration — Refatorar agent.ts para usar registry
 - [ ] F-004: compaction-integration — Refatorar compaction.ts para aceitar registry
 - [ ] F-005: structured-integration — Refatorar structured.ts para aceitar registry
 - [ ] F-006: exports-index — Exportar registry no index.ts
@@ -35,14 +35,14 @@ D:\sources\codr.studio\cia-prime-care\agentic-backbone\apps\backbone\milestones\
 
 | Arquivo | Linhas | Instância |
 |---|---|---|
-| agent.ts | 71-75 | Principal — cria openrouter para o agente |
-| agent.ts | 257, 269 | openrouter(options.model) — resolução de modelo |
+| ~~agent.ts~~ | ~~71-75~~ | ~~Principal — eliminado via F-003~~ |
+| ~~agent.ts~~ | ~~257, 269~~ | ~~openrouter(options.model) — eliminado via F-003~~ |
 | compaction.ts | 142-146 | Compaction structured (generateObject) |
 | compaction.ts | 199-203 | Compaction fallback (generateText) |
 | structured.ts | 17-21 | kaiGenerateObject |
 | structured.ts | 37-41 | kaiStreamObject |
 
-Total: 5 instâncias de createOpenAICompatible (6 usos de openrouter())
+Total: 3 instâncias de createOpenAICompatible restantes (4 usos de openrouter()) — agent.ts já limpo
 
 ## Session Notes
 
@@ -51,3 +51,5 @@ Session 1 (Initializer): Harness criado para onda 10-kai-provider-registry. 7 fe
 Session 2 (F-001): Implementado providers.ts com createKaiProviderRegistry(). Wrapper simples sobre createOpenAICompatible — não usa experimental_createProviderRegistry do Vercel AI SDK (conforme decisão arquitetural #5). Todos os testes passaram: criação do registry, model() com IDs completos e aliases, custom aliases sobrescrevendo defaults, build sem erros. Próxima: F-002 types-model-aliases.
 
 Session 3 (F-002): Adicionado campo `modelAliases?: Record<string, string>` em KaiAgentOptions (types.ts). Campo opcional — código existente compila sem alterações. Build limpo. Próxima: F-003 agent-integration.
+
+Session 4 (F-003): Refatorado agent.ts para usar createKaiProviderRegistry(). Removido import de @ai-sdk/openai-compatible, substituído por import de ./providers.js. Provider criado com { apiKey, aliases: options.modelAliases }. Todos os openrouter() substituídos por providers.model(). Build limpo, todos os 8 testes passaram. Próxima: F-004 compaction-integration.
