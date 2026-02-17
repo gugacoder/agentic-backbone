@@ -158,8 +158,9 @@
     "id": "F-009",
     "name": "hub-qr-component-resilient",
     "description": "Refatorar instance-qr.tsx: QR falha (ok: false) gera mensagem inline com botao retry (nao tela de erro). Se instancia ja estiver 'open', aba QR mostra 'Instancia ja vinculada' com numero do telefone. Estado 'exhausted' mostra botao 'Recomecar' que reseta tentativas sem recarregar pagina.",
-    "status": "pending",
+    "status": "passing",
     "priority": 9,
+    "completed_at": "2026-02-17T16:00:00Z",
     "tests": [
       "Quando qr query retorna { ok: false, error: 'qr_unavailable' }, exibe mensagem inline com botao retry (nao tela de erro completa)",
       "Se instancia ja estiver state 'open', aba QR mostra 'Instancia ja vinculada' com profileName/owner",

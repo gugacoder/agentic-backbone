@@ -2,8 +2,8 @@ import { useState, useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { QrCode, CheckCircle2, AlertCircle, AlertTriangle, Loader2 } from "lucide-react";
-import { evolutionInstanceQRQuery, evolutionInstanceQuery } from "@/api/evolution";
+import { QrCode, CheckCircle2, AlertCircle, AlertTriangle, Loader2, RotateCcw } from "lucide-react";
+import { evolutionInstanceQRQuery, evolutionInstanceQuery, friendlyMessage } from "@/api/evolution";
 
 interface InstanceQRProps {
   instanceName: string;
@@ -13,12 +13,13 @@ type QRState = "idle" | "loading" | "error" | "active" | "linked" | "expired" | 
 
 export function InstanceQR({ instanceName }: InstanceQRProps) {
   const [qrState, setQrState] = useState<QRState>("idle");
+  const [qrError, setQrError] = useState<string | null>(null);
   const [countdown, setCountdown] = useState(60);
   const [attempts, setAttempts] = useState(0);
   const countdownRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const shouldFetchQR = qrState === "loading";
-  const { data: qrData, isFetching: qrFetching, isError: qrIsError } = useQuery(
+  const { data: qrResult, isFetching: qrFetching } = useQuery(
     evolutionInstanceQRQuery(instanceName, shouldFetchQR)
   );
 
@@ -30,20 +31,27 @@ export function InstanceQR({ instanceName }: InstanceQRProps) {
   });
   const instance = instanceResult?.ok ? instanceResult.data : null;
 
-  // When QR data arrives, transition to active
+  // Detect instance already linked on mount
   useEffect(() => {
-    if (qrState === "loading" && qrData && !qrFetching) {
+    if (qrState === "idle" && instance?.state === "open") {
+      setQrState("linked");
+    }
+  }, [instance?.state, qrState]);
+
+  // When QR result arrives, transition based on ok/error
+  useEffect(() => {
+    if (qrState !== "loading" || qrFetching) return;
+    if (!qrResult) return;
+
+    if (qrResult.ok && qrResult.data) {
       setQrState("active");
       setCountdown(60);
-    }
-  }, [qrData, qrFetching, qrState]);
-
-  // When QR query fails during loading, transition to error
-  useEffect(() => {
-    if (qrState === "loading" && qrIsError && !qrFetching) {
+      setQrError(null);
+    } else if (!qrResult.ok) {
       setQrState("error");
+      setQrError(qrResult.error ?? null);
     }
-  }, [qrState, qrIsError, qrFetching]);
+  }, [qrResult, qrFetching, qrState]);
 
   // Countdown timer
   useEffect(() => {
@@ -63,7 +71,7 @@ export function InstanceQR({ instanceName }: InstanceQRProps) {
     }
   }, [qrState]);
 
-  // Detect linking
+  // Detect linking while QR is active
   useEffect(() => {
     if (qrState === "active" && instance?.state === "open") {
       setQrState("linked");
@@ -77,11 +85,19 @@ export function InstanceQR({ instanceName }: InstanceQRProps) {
       return;
     }
     setAttempts((a) => a + 1);
+    setQrError(null);
     setQrState("loading");
   }
 
   function retryQR() {
+    setQrError(null);
     setQrState("loading");
+  }
+
+  function resetAttempts() {
+    setAttempts(0);
+    setQrError(null);
+    setQrState("idle");
   }
 
   return (
@@ -108,18 +124,18 @@ export function InstanceQR({ instanceName }: InstanceQRProps) {
 
           {qrState === "error" && (
             <>
-              <AlertTriangle className="h-16 w-16 text-destructive" />
-              <p className="text-sm font-medium text-destructive">Falha ao gerar QR code</p>
-              <p className="text-sm text-muted-foreground text-center">Nao foi possivel conectar ao servidor. Verifique se o backbone esta rodando.</p>
-              <Button onClick={retryQR}>Tentar novamente</Button>
+              <AlertTriangle className="h-16 w-16 text-muted-foreground" />
+              <p className="text-sm font-medium">{friendlyMessage(qrError ?? "qr_unavailable")}</p>
+              <p className="text-sm text-muted-foreground text-center">Nao foi possivel gerar o QR code. Tente novamente.</p>
+              <Button variant="outline" onClick={retryQR}>Tentar novamente</Button>
             </>
           )}
 
-          {qrState === "active" && qrData && (
+          {qrState === "active" && qrResult?.ok && qrResult.data && (
             <>
               <div className="border rounded-lg p-4 bg-white w-full md:w-auto">
                 <img
-                  src={qrData.base64.startsWith("data:") ? qrData.base64 : `data:image/png;base64,${qrData.base64}`}
+                  src={qrResult.data.base64.startsWith("data:") ? qrResult.data.base64 : `data:image/png;base64,${qrResult.data.base64}`}
                   alt="QR Code WhatsApp"
                   className="w-full aspect-square md:w-64 md:h-64"
                 />
@@ -132,7 +148,10 @@ export function InstanceQR({ instanceName }: InstanceQRProps) {
           {qrState === "linked" && (
             <>
               <CheckCircle2 className="h-16 w-16 text-chart-2" />
-              <p className="text-sm font-medium">Instancia vinculada com sucesso!</p>
+              <p className="text-sm font-medium">Instancia ja vinculada</p>
+              {(instance?.profileName || instance?.owner) && (
+                <p className="text-sm text-muted-foreground">{instance.profileName ?? instance.owner}</p>
+              )}
             </>
           )}
 
@@ -143,19 +162,29 @@ export function InstanceQR({ instanceName }: InstanceQRProps) {
               {attempts < 5 ? (
                 <Button onClick={requestQR}>Gerar Novo</Button>
               ) : (
-                <p className="text-sm text-destructive text-center">Limite de tentativas atingido. Recarregue a pagina para tentar novamente.</p>
+                <>
+                  <p className="text-sm text-muted-foreground text-center">Limite de tentativas atingido.</p>
+                  <Button variant="outline" onClick={resetAttempts}>
+                    <RotateCcw className="h-4 w-4 mr-2" />
+                    Recomecar
+                  </Button>
+                </>
               )}
             </>
           )}
 
           {qrState === "exhausted" && (
             <>
-              <AlertCircle className="h-16 w-16 text-destructive" />
-              <p className="text-sm text-destructive text-center">Limite de tentativas atingido. Recarregue a pagina para tentar novamente.</p>
+              <AlertCircle className="h-16 w-16 text-muted-foreground" />
+              <p className="text-sm text-muted-foreground text-center">Limite de tentativas atingido.</p>
+              <Button variant="outline" onClick={resetAttempts}>
+                <RotateCcw className="h-4 w-4 mr-2" />
+                Recomecar
+              </Button>
             </>
           )}
 
-          {qrState !== "exhausted" && attempts > 0 && (
+          {qrState !== "exhausted" && qrState !== "linked" && attempts > 0 && (
             <p className="text-xs text-muted-foreground">Tentativa {attempts}/5</p>
           )}
         </CardContent>

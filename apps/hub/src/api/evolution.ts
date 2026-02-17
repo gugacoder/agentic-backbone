@@ -108,11 +108,7 @@ export function evolutionInstanceSettingsQuery(name: string) {
 export function evolutionInstanceQRQuery(name: string, enabled: boolean) {
   return queryOptions({
     queryKey: ["evolution", "instances", name, "qr"],
-    queryFn: async () => {
-      const result = await api.get<ApiResult<EvolutionQR>>(`/modules/evolution/instances/${name}/qr`);
-      if (!result.ok) return null;
-      return result.data!;
-    },
+    queryFn: () => api.get<ApiResult<EvolutionQR>>(`/modules/evolution/instances/${name}/qr`),
     enabled: !!name && enabled,
   });
 }

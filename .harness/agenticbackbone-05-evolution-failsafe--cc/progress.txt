@@ -1,7 +1,7 @@
 # Evolution Fail-Safe — Progress
 
 ## Current Status
-IN PROGRESS — F-001, F-002, F-003, F-004, F-005, F-006, F-007, F-008 completas (8/12). Proxima: F-009 hub-qr-component-resilient.
+IN PROGRESS — F-001, F-002, F-003, F-004, F-005, F-006, F-007, F-008, F-009 completas (9/12). Proxima: F-010 hub-settings-form-resilient.
 
 ## Specs Path
 D:\sources\codr.studio\cia-prime-care\agentic-backbone\apps\backbone\milestones\05-evolution-failsafe
@@ -39,7 +39,7 @@ D:\sources\codr.studio\cia-prime-care\agentic-backbone\apps\backbone\milestones\
 - [x] F-006 hub-create-dialog-separation — Dialog cria instancia -> aba status (nao QR)
 - [x] F-007 hub-whatsapp-page-no-error-state — Pagina principal sem tela de erro
 - [x] F-008 hub-instance-page-no-error-card — Pagina instancia sem InstanceErrorCard
-- [ ] F-009 hub-qr-component-resilient — QR resiliente com retry e reset
+- [x] F-009 hub-qr-component-resilient — QR resiliente com retry e reset
 - [ ] F-010 hub-settings-form-resilient — Settings form resiliente
 - [ ] F-011 hub-delete-flow-resilient — Delete flow resiliente
 
@@ -164,3 +164,17 @@ Session 8: Implementada F-008 hub-instance-page-no-error-card.
 - useActionState inalterado — ja interpretava ApiResult desde F-005
 - Build limpo: backbone tsc + hub tsc --noEmit + vite build
 - Proxima: F-009 hub-qr-component-resilient
+
+Session 9: Implementada F-009 hub-qr-component-resilient.
+- evolutionInstanceQRQuery agora retorna ApiResult<EvolutionQR> completo (nao mais unwrapped)
+- Erro de QR detectado via qrResult.ok === false (nao mais via isError do React Query)
+- Estado "error" exibe friendlyMessage(qrError) inline com botao "Tentar novamente"
+- Adicionada deteccao de instancia ja vinculada: se instance.state === "open" no mount, vai direto para "linked"
+- Estado "linked" mostra "Instancia ja vinculada" com profileName/owner
+- Estado "exhausted" substituido: "Recarregue a pagina" -> botao "Recomecar" com RotateCcw icon
+- Estado "expired" com limite atingido: idem, botao "Recomecar" ao inves de texto de reload
+- resetAttempts() zera attempts para 0 e volta para state "idle"
+- Limite de 5 tentativas mantido
+- Removido isError do React Query — erro vem exclusivamente do body
+- Build limpo: backbone tsc + hub tsc --noEmit + vite build
+- Proxima: F-010 hub-settings-form-resilient
