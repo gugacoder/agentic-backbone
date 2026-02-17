@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-echo "=== Agent Setup: agenticbackbone-06-kai-structured-outputs ==="
+echo "=== Agent Setup: agenticbackbone-07-kai-loop-control ==="
 
 # ── Detect package manager ───────────────────────────────────
 if command -v npm &>/dev/null; then
@@ -42,44 +42,21 @@ npm run build --workspace=packages/kai-sdk || {
   echo "WARN: kai-sdk build failed"
 }
 
-echo "[setup] building backbone..."
-npm run build --workspace=apps/backbone || {
-  echo "WARN: backbone build failed"
-}
-
-echo "[setup] building hub..."
-npm run build --workspace=apps/hub || {
-  echo "WARN: hub build failed"
-}
-
-# ── Start dev server (background) ────────────────────────────
-echo "[setup] starting backbone dev server..."
-npm run dev:backbone &
-BACKBONE_PID=$!
-sleep 3
-
-# ── Smoke test ───────────────────────────────────────────────
-BACKBONE_PORT="${BACKBONE_PORT:-7700}"
-echo "[setup] smoke test: GET http://localhost:$BACKBONE_PORT/health"
-
-if curl -sf "http://localhost:$BACKBONE_PORT/health" > /dev/null 2>&1; then
-  echo "[setup] backbone health: OK"
+# ── Smoke test (build only — no dev server needed for SDK work) ──
+echo "[setup] verifying kai-sdk dist output..."
+if [ -f packages/kai-sdk/dist/index.js ]; then
+  echo "[setup] kai-sdk dist: OK"
 else
-  echo "WARN: backbone health check failed (may still be starting)"
+  echo "WARN: kai-sdk dist/index.js not found"
 fi
-
-# ── Stop dev server ──────────────────────────────────────────
-kill $BACKBONE_PID 2>/dev/null || true
-wait $BACKBONE_PID 2>/dev/null || true
 
 # ── Summary ──────────────────────────────────────────────────
 echo ""
 echo "=== Setup Summary ==="
 echo "Package manager: $PKG"
 echo "Dependencies: installed"
-echo "Backbone build: attempted"
-echo "Hub build: attempted"
-echo "Harness: .harness/agenticbackbone-06-kai-structured-outputs--cc/"
+echo "kai-sdk build: attempted"
+echo "Harness: .harness/agenticbackbone-07-kai-loop-control--cc/"
 echo "Features: 6 (all failing)"
-echo "First feature: F-001 kai-generate-object"
+echo "First feature: F-001 loop-control-types"
 echo "=== Ready for vibe:code ==="

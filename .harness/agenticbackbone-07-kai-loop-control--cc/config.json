@@ -1,0 +1,15 @@
+{
+  "slug": "agenticbackbone-07-kai-loop-control--cc",
+  "project": "agentic-backbone — 07-kai-loop-control",
+  "session_name": "agenticbackbone-07-kai-loop-control--cc",
+  "specs": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\07-kai-loop-control",
+  "agent": {
+    "harness": "claude-code",
+    "model": null,
+    "max_turns": 200,
+    "max_iterations": null,
+    "max_retries": 5,
+    "rollback": "stash"
+  },
+  "notifications": []
+}
