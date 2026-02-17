@@ -1,6 +1,35 @@
 import { queryOptions, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 
+// ── Envelope ─────────────────────────────────────────────────
+
+export interface ApiResult<T> {
+  ok: boolean;
+  data?: T;
+  error?: string;
+  details?: unknown;
+  retryAfterMs?: number;
+  attempts?: number;
+  maxRetries?: number;
+}
+
+const ERROR_MESSAGES: Record<string, string> = {
+  api_offline: "Evolution API esta indisponivel",
+  instance_not_found: "Instancia nao encontrada",
+  create_failed: "Falha ao criar instancia",
+  delete_failed: "Falha ao excluir instancia",
+  qr_unavailable: "QR code indisponivel",
+  cooldown_active: "Aguarde antes de tentar novamente",
+  retries_exhausted: "Tentativas esgotadas",
+  settings_fetch_failed: "Falha ao carregar configuracoes",
+  settings_update_failed: "Falha ao salvar configuracoes",
+  network_error: "Erro de conexao com o servidor",
+};
+
+export function friendlyMessage(errorCode: string): string {
+  return ERROR_MESSAGES[errorCode] ?? "Ocorreu um erro inesperado";
+}
+
 // ── Types ────────────────────────────────────────────────────
 
 export interface EvolutionInstance {
@@ -45,13 +74,11 @@ export interface EvolutionQR {
 export const evolutionHealthQuery = queryOptions({
   queryKey: ["evolution", "health"],
   queryFn: () => api.get<EvolutionHealth>("/modules/evolution/health"),
-  refetchInterval: 10_000,
 });
 
 export const evolutionInstancesQuery = queryOptions({
   queryKey: ["evolution", "instances"],
   queryFn: () => api.get<EvolutionInstance[]>("/modules/evolution/instances"),
-  refetchInterval: 10_000,
 });
 
 export function evolutionInstanceQuery(name: string) {
@@ -59,7 +86,6 @@ export function evolutionInstanceQuery(name: string) {
     queryKey: ["evolution", "instances", name],
     queryFn: () => api.get<EvolutionInstance>(`/modules/evolution/instances/${name}`),
     enabled: !!name,
-    refetchInterval: 10_000,
   });
 }
 
