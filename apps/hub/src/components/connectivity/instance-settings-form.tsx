@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
-import { Loader2 } from "lucide-react";
+import { Loader2, ServerOff } from "lucide-react";
 import { evolutionInstanceSettingsQuery, useUpdateInstanceSettings, friendlyMessage } from "@/api/evolution";
 import { toast } from "sonner";
 
@@ -37,6 +37,7 @@ interface InstanceSettingsFormProps {
 export function InstanceSettingsForm({ instanceName }: InstanceSettingsFormProps) {
   const { data: settings, isLoading } = useQuery(evolutionInstanceSettingsQuery(instanceName));
   const updateSettings = useUpdateInstanceSettings();
+  const queryClient = useQueryClient();
 
   const form = useForm<SettingsValues>({
     resolver: zodResolver(settingsSchema),
@@ -77,6 +78,24 @@ export function InstanceSettingsForm({ instanceName }: InstanceSettingsFormProps
       <Card>
         <CardContent className="py-12 flex items-center justify-center">
           <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!settings) {
+    return (
+      <Card>
+        <CardContent className="py-12 flex flex-col items-center justify-center gap-3 text-muted-foreground">
+          <ServerOff className="h-8 w-8" />
+          <p className="text-sm">Configurações indisponíveis</p>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => queryClient.invalidateQueries({ queryKey: ["evolution", "instances", instanceName, "settings"] })}
+          >
+            Tentar novamente
+          </Button>
         </CardContent>
       </Card>
     );

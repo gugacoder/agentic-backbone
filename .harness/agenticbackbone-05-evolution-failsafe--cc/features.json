@@ -177,8 +177,9 @@
     "id": "F-010",
     "name": "hub-settings-form-resilient",
     "description": "Refatorar instance-settings-form.tsx para interpretar envelope ApiResult. Quando settings query retorna ok: false, mostrar mensagem inline (nao crash). Quando mutation retorna ok: false, mostrar toast com mensagem amigavel.",
-    "status": "pending",
+    "status": "passing",
     "priority": 10,
+    "completed_at": "2026-02-17T15:20:00Z",
     "tests": [
       "Quando settings query retorna null (ok: false), form exibe mensagem 'Configuracoes indisponiveis' ao inves de crash",
       "Quando mutation retorna { ok: false, error: 'settings_update_failed' }, toast exibe 'Falha ao salvar configuracoes'",

@@ -1,7 +1,7 @@
 # Evolution Fail-Safe — Progress
 
 ## Current Status
-IN PROGRESS — F-001, F-002, F-003, F-004, F-005, F-006, F-007, F-008, F-009 completas (9/12). Proxima: F-010 hub-settings-form-resilient.
+IN PROGRESS — F-001, F-002, F-003, F-004, F-005, F-006, F-007, F-008, F-009, F-010 completas (10/12). Proxima: F-011 hub-delete-flow-resilient.
 
 ## Specs Path
 D:\sources\codr.studio\cia-prime-care\agentic-backbone\apps\backbone\milestones\05-evolution-failsafe
@@ -40,7 +40,7 @@ D:\sources\codr.studio\cia-prime-care\agentic-backbone\apps\backbone\milestones\
 - [x] F-007 hub-whatsapp-page-no-error-state — Pagina principal sem tela de erro
 - [x] F-008 hub-instance-page-no-error-card — Pagina instancia sem InstanceErrorCard
 - [x] F-009 hub-qr-component-resilient — QR resiliente com retry e reset
-- [ ] F-010 hub-settings-form-resilient — Settings form resiliente
+- [x] F-010 hub-settings-form-resilient — Settings form resiliente
 - [ ] F-011 hub-delete-flow-resilient — Delete flow resiliente
 
 ### Validation
@@ -178,3 +178,13 @@ Session 9: Implementada F-009 hub-qr-component-resilient.
 - Removido isError do React Query — erro vem exclusivamente do body
 - Build limpo: backbone tsc + hub tsc --noEmit + vite build
 - Proxima: F-010 hub-settings-form-resilient
+
+Session 10: Implementada F-010 hub-settings-form-resilient.
+- Adicionado guard `!settings` apos isLoading: quando query retorna null (ok: false), exibe "Configuracoes indisponiveis" inline com ServerOff icon e botao "Tentar novamente"
+- Botao "Tentar novamente" invalida query cache via queryClient.invalidateQueries()
+- Mutation onSuccess ja verificava result.ok e usava friendlyMessage() desde F-005 — nenhuma mudanca necessaria
+- isError do React Query nao eh utilizado — so falha de rede real gera erro
+- Form so renderiza quando settings != null (dados validos carregados)
+- Consolidados imports de @tanstack/react-query (useQuery + useQueryClient)
+- Build limpo: backbone tsc + hub tsc --noEmit + vite build
+- Proxima: F-011 hub-delete-flow-resilient
