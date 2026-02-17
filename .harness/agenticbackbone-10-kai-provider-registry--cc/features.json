@@ -3,7 +3,8 @@
     "id": "F-001",
     "name": "provider-registry-module",
     "description": "Criar packages/kai-sdk/src/providers.ts com createKaiProviderRegistry() que encapsula createOpenAICompatible para OpenRouter, aceita apiKey e aliases opcionais, retorna objeto com model() e aliases. Incluir DEFAULT_ALIASES (fast, balanced, strong). Exportar tipo KaiProviderConfig.",
-    "status": "failing",
+    "status": "passing",
+    "completed_at": "2026-02-17T23:50:00Z",
     "priority": 1,
     "tests": [
       "Arquivo packages/kai-sdk/src/providers.ts existe",
@@ -36,7 +37,7 @@
     "id": "F-003",
     "name": "agent-integration",
     "description": "Refatorar agent.ts para usar createKaiProviderRegistry() ao invés de createOpenAICompatible() inline. Criar o registry com apiKey e modelAliases do options. Usar providers.model() em todos os pontos que chamam openrouter().",
-    "status": "failing",
+    "status": "blocked",
     "priority": 3,
     "tests": [
       "agent.ts não contém mais createOpenAICompatible import/uso",
@@ -48,14 +49,17 @@
       "runKaiAgent({ model: 'fast', apiKey }) resolve para alias default",
       "npm run build --workspace=packages/kai-sdk compila sem erros"
     ],
-    "dependencies": ["F-001", "F-002"],
+    "dependencies": [
+      "F-001",
+      "F-002"
+    ],
     "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\10-kai-provider-registry\\PRP.md"
   },
   {
     "id": "F-004",
     "name": "compaction-integration",
     "description": "Refatorar compaction.ts para aceitar providers opcionais via CompactOptions. Se providers for passado, usá-lo ao invés de criar createOpenAICompatible() inline. Se não for passado, criar provider internamente (backward compat). Atualizar agent.ts para passar providers na chamada de compactMessages().",
-    "status": "failing",
+    "status": "blocked",
     "priority": 4,
     "tests": [
       "CompactOptions possui campo providers? do tipo ReturnType<typeof createKaiProviderRegistry>",
@@ -65,14 +69,17 @@
       "Compaction funciona como antes quando chamada diretamente sem providers (backward compat)",
       "npm run build --workspace=packages/kai-sdk compila sem erros"
     ],
-    "dependencies": ["F-001", "F-003"],
+    "dependencies": [
+      "F-001",
+      "F-003"
+    ],
     "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\10-kai-provider-registry\\PRP.md"
   },
   {
     "id": "F-005",
     "name": "structured-integration",
     "description": "Refatorar structured.ts (kaiGenerateObject, kaiStreamObject) para aceitar providers opcionais via KaiObjectOptions. Se passado, reutilizar; se não, criar provider internamente (backward compat). Eliminar duplicação de createOpenAICompatible.",
-    "status": "failing",
+    "status": "blocked",
     "priority": 5,
     "tests": [
       "KaiObjectOptions possui campo providers? opcional",
@@ -82,14 +89,16 @@
       "kaiStreamObject sem providers cria provider internamente (backward compat)",
       "npm run build --workspace=packages/kai-sdk compila sem erros"
     ],
-    "dependencies": ["F-001"],
+    "dependencies": [
+      "F-001"
+    ],
     "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\10-kai-provider-registry\\PRP.md"
   },
   {
     "id": "F-006",
     "name": "exports-index",
     "description": "Exportar createKaiProviderRegistry e KaiProviderConfig do packages/kai-sdk/src/index.ts para que consumidores possam importar do pacote.",
-    "status": "failing",
+    "status": "blocked",
     "priority": 6,
     "tests": [
       "index.ts exporta createKaiProviderRegistry de ./providers.js",
@@ -97,14 +106,16 @@
       "npm run build --workspace=packages/kai-sdk compila sem erros",
       "Imports de '@agentic-backbone/kai-sdk' resolvem createKaiProviderRegistry"
     ],
-    "dependencies": ["F-001"],
+    "dependencies": [
+      "F-001"
+    ],
     "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\10-kai-provider-registry\\PRP.md"
   },
   {
     "id": "F-007",
     "name": "build-verification",
     "description": "Verificação final: build completo do workspace kai-sdk sem erros e sem regressões. Garantir que nenhum createOpenAICompatible() inline permanece em agent.ts (os demais mantêm fallback interno).",
-    "status": "failing",
+    "status": "blocked",
     "priority": 7,
     "tests": [
       "npm run build --workspace=packages/kai-sdk compila sem erros",
@@ -114,7 +125,12 @@
       "structured.ts mantém createOpenAICompatible apenas no fallback interno (quando providers não é passado)",
       "Todos os tipos exportados do index.ts estão acessíveis"
     ],
-    "dependencies": ["F-003", "F-004", "F-005", "F-006"],
+    "dependencies": [
+      "F-003",
+      "F-004",
+      "F-005",
+      "F-006"
+    ],
     "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\10-kai-provider-registry\\PRP.md"
   }
 ]
