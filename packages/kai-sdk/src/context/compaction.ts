@@ -1,8 +1,9 @@
-import { generateObject, generateText, wrapLanguageModel, type CoreMessage, type LanguageModelV1Middleware } from "ai";
+import { generateObject, generateText, wrapLanguageModel, type CoreMessage, type LanguageModelV1Middleware, type TelemetrySettings } from "ai";
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import { z } from "zod";
 import { countTokens } from "./tokenizer.js";
 import { getContextWindow } from "./models.js";
+import type { KaiTelemetryOptions } from "../types.js";
 
 const CompactionSchema = z.object({
   summary: z.string().describe("Resumo conciso da conversa"),
@@ -23,6 +24,7 @@ export interface CompactOptions {
   systemPromptTokens: number;
   toolDefinitionsTokens: number;
   middleware?: LanguageModelV1Middleware[];
+  telemetry?: KaiTelemetryOptions;
 }
 
 export interface CompactResult {
@@ -120,6 +122,22 @@ export async function compactMessages(
 
   const conversationText = formatMessagesForSummary(head);
 
+  // Build telemetry config for compaction spans
+  const telemetryConfig: TelemetrySettings | undefined =
+    options.telemetry?.enabled
+      ? {
+          isEnabled: true,
+          functionId: options.telemetry.functionId
+            ? `${options.telemetry.functionId}-compaction`
+            : "kai-compaction",
+          recordInputs: false,
+          recordOutputs: false,
+          metadata: {
+            ...options.telemetry.metadata,
+          },
+        }
+      : undefined;
+
   try {
     const openrouter = createOpenAICompatible({
       name: "openrouter",
@@ -139,6 +157,7 @@ export async function compactMessages(
       system: SUMMARIZATION_PROMPT,
       messages: [{ role: "user", content: conversationText }],
       maxTokens: 2000,
+      ...(telemetryConfig ? { experimental_telemetry: telemetryConfig } : {}),
     });
 
     const obj = result.object;
@@ -194,6 +213,7 @@ export async function compactMessages(
         system: SUMMARIZATION_PROMPT,
         messages: [{ role: "user", content: conversationText }],
         maxTokens: 2000,
+        ...(telemetryConfig ? { experimental_telemetry: telemetryConfig } : {}),
       });
 
       const summary = result.text;

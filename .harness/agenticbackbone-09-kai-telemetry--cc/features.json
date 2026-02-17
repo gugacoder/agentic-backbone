@@ -74,7 +74,8 @@
     "id": "F-005",
     "name": "telemetry-in-compaction",
     "description": "No compaction.ts, propagar telemetry options para generateObject() e generateText() usados na compactação, emitindo spans de compaction.",
-    "status": "failing",
+    "status": "passing",
+    "completed_at": "2026-02-17",
     "priority": 5,
     "tests": [
       "CompactOptions tem campo telemetry?: KaiTelemetryOptions",

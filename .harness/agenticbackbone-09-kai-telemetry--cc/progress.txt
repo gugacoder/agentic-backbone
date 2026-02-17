@@ -1,7 +1,7 @@
 # Progress — agenticbackbone-09-kai-telemetry
 
 ## Current Status
-IN PROGRESS — 4/8 features passing.
+IN PROGRESS — 5/8 features passing.
 
 ## Specs Path
 D:\sources\codr.studio\cia-prime-care\agentic-backbone\apps\backbone\milestones\09-kai-telemetry
@@ -18,7 +18,7 @@ D:\sources\codr.studio\cia-prime-care\agentic-backbone\apps\backbone\milestones\
 - [x] F-002 usage-step-breakdown — timeToFirstTokenMs? e steps? em KaiUsageData (2026-02-17)
 - [x] F-003 peer-dependency-otel — @opentelemetry/api como peerDependency opcional (2026-02-17)
 - [x] F-004 telemetry-in-streamtext — experimental_telemetry no streamText() do agent.ts (2026-02-17)
-- [ ] F-005 telemetry-in-compaction — experimental_telemetry no compaction.ts
+- [x] F-005 telemetry-in-compaction — experimental_telemetry no compaction.ts (2026-02-17)
 - [ ] F-006 session-span — Span pai kai.agent.run com dynamic import de @opentelemetry/api
 - [ ] F-007 step-data-collection — Coletar breakdown por step via onStepFinish
 - [ ] F-008 build-verification — Verificação final de build, exports e backward compat
@@ -48,6 +48,7 @@ D:\sources\codr.studio\cia-prime-care\agentic-backbone\apps\backbone\milestones\
 - Session 2: F-001 telemetry-types implementada — KaiTelemetryOptions interface + campo telemetry? em KaiAgentOptions + export em index.ts. Build limpo.
 - Session 3: F-002 usage-step-breakdown implementada — Adicionados campos opcionais timeToFirstTokenMs? e steps? em KaiUsageData. Build limpo.
 - Session 4: F-003 peer-dependency-otel completada — @opentelemetry/api adicionado como peerDependency opcional com peerDependenciesMeta. F-004 telemetry-in-streamtext implementada — telemetryConfig construído a partir de options.telemetry e passado como experimental_telemetry ao streamText(). Inclui sessionId, model, metadata customizada. recordInputs/recordOutputs desabilitados por segurança. Build limpo.
+- Session 5: F-005 telemetry-in-compaction implementada — CompactOptions recebe telemetry?: KaiTelemetryOptions. telemetryConfig construído com functionId 'kai-compaction' e passado como experimental_telemetry para generateObject() e generateText(). agent.ts passa options.telemetry para compactMessages(). recordInputs/recordOutputs desabilitados. Build limpo.
 
 ## Next Priority
-F-005 telemetry-in-compaction (deps: F-001 ✓, F-004 ✓)
+F-006 session-span (deps: F-003 ✓, F-004 ✓)

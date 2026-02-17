@@ -174,6 +174,7 @@ export async function* runKaiAgent(
         systemPromptTokens: ctxUsage.systemPrompt,
         toolDefinitionsTokens: ctxUsage.toolDefinitions,
         middleware: options.middleware,
+        telemetry: options.telemetry,
       });
 
       if (compactResult.compacted) {
