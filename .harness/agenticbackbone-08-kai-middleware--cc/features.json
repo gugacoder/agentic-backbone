@@ -94,7 +94,8 @@
     "id": "F-006",
     "name": "build-verification",
     "description": "Verificacao final end-to-end: build limpo, runKaiAgent sem middleware se comporta identicamente, middleware sao aplicados na ordem do array, nenhuma dependencia nova adicionada.",
-    "status": "failing",
+    "status": "passing",
+    "completed_at": "2026-02-17T00:00:00Z",
     "priority": 6,
     "tests": [
       "npm run build --workspace=packages/kai-sdk compila sem erros nem warnings",

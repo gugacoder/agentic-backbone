@@ -1,7 +1,7 @@
 # Progress — agenticbackbone-08-kai-middleware
 
 ## Current Status
-F-001, F-002, F-003, F-004, F-005 passing. 5/6 features complete. Próxima: F-006 (build-verification).
+ALL FEATURES COMPLETE. 6/6 features passing. Milestone 08-kai-middleware is done.
 
 ## Specs Path
 D:\sources\codr.studio\cia-prime-care\agentic-backbone\apps\backbone\milestones\08-kai-middleware
@@ -20,7 +20,7 @@ D:\sources\codr.studio\cia-prime-care\agentic-backbone\apps\backbone\milestones\
 - [x] F-003 middleware-in-compaction — Passar middleware para compactMessages/generateText
 - [x] F-004 logging-middleware — Criar createLoggingMiddleware() em src/middleware/logging.ts
 - [x] F-005 public-exports — Exportar createLoggingMiddleware e re-exportar LanguageModelV1Middleware
-- [ ] F-006 build-verification — Verificação final: build limpo, sem regressão, sem dependências novas
+- [x] F-006 build-verification — Verificação final: build limpo, sem regressão, sem dependências novas
 
 ## Architecture Decisions
 
@@ -30,15 +30,15 @@ D:\sources\codr.studio\cia-prime-care\agentic-backbone\apps\backbone\milestones\
 4. **Logging como exemplo** — Apenas createLoggingMiddleware embutido. Caching, guardrails, RAG ficam para o consumidor.
 5. **Sem dependências novas** — wrapLanguageModel e LanguageModelV1Middleware já existem no pacote 'ai' ^4.
 
-## Files to Modify
+## Files Modified
 
 | File | Change |
 |---|---|
-| packages/kai-sdk/src/types.ts | Adicionar middleware? em KaiAgentOptions |
-| packages/kai-sdk/src/agent.ts | Importar wrapLanguageModel, aplicar middleware |
-| packages/kai-sdk/src/context/compaction.ts | Aceitar middleware em CompactOptions, aplicar wrapLanguageModel |
-| packages/kai-sdk/src/middleware/logging.ts | NOVO — createLoggingMiddleware() |
-| packages/kai-sdk/src/index.ts | Exportar createLoggingMiddleware e LanguageModelV1Middleware |
+| packages/kai-sdk/src/types.ts | Adicionado middleware? em KaiAgentOptions |
+| packages/kai-sdk/src/agent.ts | Importado wrapLanguageModel, aplicado middleware via effectiveModel |
+| packages/kai-sdk/src/context/compaction.ts | Aceita middleware em CompactOptions, aplica wrapLanguageModel em generateObject e generateText |
+| packages/kai-sdk/src/middleware/logging.ts | NOVO — createLoggingMiddleware() com transformParams, wrapGenerate, wrapStream |
+| packages/kai-sdk/src/index.ts | Exporta createLoggingMiddleware e re-exporta LanguageModelV1Middleware |
 
 ## Session Notes
 
@@ -53,3 +53,5 @@ Session 4 (CC): Implementado F-003 middleware-in-compaction. Adicionado campo mi
 Session 5 (CC): Implementado F-004 logging-middleware. Criado packages/kai-sdk/src/middleware/logging.ts com createLoggingMiddleware(). transformParams loga quantidade de tools (via params.mode.tools) e messages (via params.prompt.length). wrapGenerate loga durationMs, finishReason e usage. wrapStream loga durationMs do início do stream. Logger padrão é console.log, customizável via parâmetro. Nota: LanguageModelV1CallOptions não tem modelId — tools estão em params.mode.tools (quando mode.type === "regular"). Build limpo sem erros.
 
 Session 6 (CC): Implementado F-005 public-exports. Adicionado export { createLoggingMiddleware } from "./middleware/logging.js" e export type { LanguageModelV1Middleware } from "ai" ao index.ts. Todos os exports anteriores preservados (sem regressão). Verificado em runtime via dynamic import — createLoggingMiddleware aparece como function e todos os 15 exports existentes presentes. Build limpo sem erros.
+
+Session 7 (CC): Verificação final F-006 build-verification. Clean rebuild (rm -rf dist + tsc) sem erros nem warnings. Runtime validation: todos os 15 exports presentes e funcionais. createLoggingMiddleware retorna middleware válido com transformParams/wrapGenerate/wrapStream. Sem middleware, modelo base passa direto ao streamText. Middleware aplicado via wrapLanguageModel em ambos streamText e compaction. Nenhuma dependência nova no package.json. Nenhum arquivo fora de packages/kai-sdk/src/ modificado. MILESTONE COMPLETO.
