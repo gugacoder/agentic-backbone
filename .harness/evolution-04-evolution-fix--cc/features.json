@@ -55,7 +55,8 @@
     "id": "F-004",
     "name": "whatsapp-instance-error-state",
     "description": "Diferenciar erros na WhatsAppInstancePage: 404 mostra 'Instancia nao encontrada', 503 mostra 'Evolution API indisponivel', outros erros mostram 'Falha ao carregar instancia' com error.message e botao retry. Nunca confundir erro de rede com instancia inexistente.",
-    "status": "failing",
+    "status": "passing",
+    "completed_at": "2026-02-17T02:00:00Z",
     "priority": 4,
     "tests": [
       "Com backend rodando e instancia existente: exibe card de status normal",

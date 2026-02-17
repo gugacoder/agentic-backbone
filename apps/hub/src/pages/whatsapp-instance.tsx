@@ -1,8 +1,9 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useParams, useSearch, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { RefreshCw, RotateCcw, Trash2, Loader2 } from "lucide-react";
+import { RefreshCw, RotateCcw, Trash2, Loader2, AlertTriangle, ArrowLeft, ServerOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Tooltip,
@@ -67,13 +68,79 @@ function useActionState() {
   };
 }
 
+function InstanceErrorCard({
+  error,
+  refetch,
+  name,
+}: {
+  error: Error | null;
+  refetch: () => void;
+  name: string;
+}) {
+  const status = error instanceof ApiError ? error.status : 0;
+  const navigate = useNavigate();
+
+  if (status === 404 || !error) {
+    return (
+      <Card>
+        <CardContent className="flex flex-col items-center justify-center py-10 gap-3">
+          <AlertTriangle className="h-10 w-10 text-destructive" />
+          <h3 className="text-lg font-semibold">Instancia nao encontrada</h3>
+          <p className="text-sm text-muted-foreground text-center max-w-md">
+            A instancia &quot;{name}&quot; nao existe ou foi removida.
+          </p>
+          <Button
+            variant="outline"
+            onClick={() => navigate({ to: "/conectividade/whatsapp", search: { view: "instances" } })}
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Voltar para instancias
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (status === 503) {
+    return (
+      <Card>
+        <CardContent className="flex flex-col items-center justify-center py-10 gap-3">
+          <ServerOff className="h-10 w-10 text-destructive" />
+          <h3 className="text-lg font-semibold">Evolution API indisponivel</h3>
+          <p className="text-sm text-muted-foreground text-center max-w-md">
+            O backbone nao conseguiu consultar a Evolution API. Verifique se o servico esta ativo.
+          </p>
+          <Button variant="outline" onClick={() => refetch()}>
+            Tentar novamente
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card>
+      <CardContent className="flex flex-col items-center justify-center py-10 gap-3">
+        <AlertTriangle className="h-10 w-10 text-destructive" />
+        <h3 className="text-lg font-semibold">Falha ao carregar instancia</h3>
+        <p className="text-sm text-muted-foreground text-center max-w-md">
+          {error.message || "Erro desconhecido ao consultar o backbone"}
+        </p>
+        <Button variant="outline" onClick={() => refetch()}>
+          Tentar novamente
+        </Button>
+      </CardContent>
+    </Card>
+  );
+}
+
 export function WhatsAppInstancePage() {
   const { name } = useParams({ strict: false }) as { name: string };
   const { tab } = useSearch({ strict: false }) as { tab: string };
   const navigate = useNavigate();
   const activeTab = ["status", "qr", "settings"].includes(tab) ? tab : "status";
 
-  const { data: instance, isLoading } = useQuery(evolutionInstanceQuery(name));
+  const { data: instance, isLoading, isError, error, refetch } = useQuery(evolutionInstanceQuery(name));
   const reconnect = useReconnectInstance();
   const restart = useRestartInstance();
   const deleteInstance = useDeleteInstance();
@@ -205,6 +272,8 @@ export function WhatsAppInstancePage() {
             <div className="h-32 flex items-center justify-center">
               <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
             </div>
+          ) : isError ? (
+            <InstanceErrorCard error={error} refetch={refetch} name={name} />
           ) : instance ? (
             <>
               <InstanceStatusCard instance={instance} />
@@ -212,7 +281,7 @@ export function WhatsAppInstancePage() {
               <InstanceEventFeed instanceName={name} />
             </>
           ) : (
-            <p className="text-muted-foreground">Instancia nao encontrada.</p>
+            <InstanceErrorCard error={null} refetch={refetch} name={name} />
           )}
         </TabsContent>
 

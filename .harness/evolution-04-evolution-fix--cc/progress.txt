@@ -2,7 +2,7 @@
 
 ## Current Status
 
-F-001, F-002 e F-003 implementadas e validadas. 3/8 features complete.
+F-001, F-002, F-003 e F-004 implementadas e validadas. 4/8 features complete.
 
 ## Specs Path
 
@@ -24,7 +24,7 @@ D:\sources\codr.studio\cia-prime-care\agentic-backbone\apps\backbone\milestones\
 - [x] F-001 route-mounting-fix — Reestruturar index.ts: startModules() antes de app.route()
 - [x] F-002 api-health-card-error-state — ApiHealthCard com tratamento de isError
 - [x] F-003 whatsapp-page-error-state — WhatsAppPage com card de erro e retry
-- [ ] F-004 whatsapp-instance-error-state — WhatsAppInstancePage diferenciando 404/503/outros
+- [x] F-004 whatsapp-instance-error-state — WhatsAppInstancePage diferenciando 404/503/outros
 - [ ] F-005 instance-qr-error-state — InstanceQR com estado 'error' na maquina de estados
 - [ ] F-006 remove-polling-queries — Confirmar remocao de refetchInterval das queries
 - [ ] F-007 claude-md-anti-polling-rule — Regra anti-polling no CLAUDE.md
@@ -84,3 +84,16 @@ Session 4 (CC): F-003 whatsapp-page-error-state implementada.
 - Nenhuma tela em branco em cenario de falha
 - Build hub passa limpo (tsc --noEmit + vite build)
 - Proxima prioridade: F-004 whatsapp-instance-error-state
+
+Session 5 (CC): F-004 whatsapp-instance-error-state implementada.
+- Adicionados `isError`, `error`, `refetch` ao destructuring do useQuery em WhatsAppInstancePage
+- Criado componente local `InstanceErrorCard` que diferencia erros por HTTP status code
+- 404: "Instancia nao encontrada" com link "Voltar para instancias" (ArrowLeft + navigate)
+- 503: "Evolution API indisponivel" com icone ServerOff e botao "Tentar novamente" (refetch)
+- Outros erros: "Falha ao carregar instancia" com error.message e botao "Tentar novamente"
+- Importados AlertTriangle, ArrowLeft, ServerOff (lucide-react) e Card/CardContent (shadcn)
+- ApiError.status usado para diferenciar codigo HTTP (instanceof ApiError)
+- Caso `!instance && !isError` tambem tratado (fallback para "nao encontrada")
+- Nenhum spinner infinito em cenario de falha
+- Build hub passa limpo (tsc --noEmit + vite build)
+- Proxima prioridade: F-005 instance-qr-error-state
