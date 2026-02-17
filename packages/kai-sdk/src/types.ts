@@ -13,7 +13,8 @@ export type KaiAgentEvent =
   | { type: "usage"; usage: KaiUsageData }
   | { type: "ask_user"; question: string; options?: string[] }
   | { type: "todo_update"; todos: KaiTodoItem[] }
-  | { type: "context_status"; context: ContextUsage & { compacted: boolean } };
+  | { type: "context_status"; context: ContextUsage & { compacted: boolean } }
+  | { type: "step_finish"; step: number; toolCalls: string[]; finishReason: string };
 
 export interface KaiTodoItem {
   id: string;
@@ -47,6 +48,24 @@ export interface ContextUsage {
   willCompact: boolean;
 }
 
+export interface PrepareStepContext {
+  /** Current step number (0-indexed) */
+  stepNumber: number;
+  /** Total number of steps executed so far */
+  stepCount: number;
+  /** Tool calls from the previous step (empty on first step) */
+  previousToolCalls: string[];
+}
+
+export interface PrepareStepResult {
+  /** Switch model for this step */
+  model?: string;
+  /** Filter available tools for this step (tool names) */
+  activeTools?: string[];
+  /** Force tool choice: "auto" | "required" | "none" | specific tool */
+  toolChoice?: "auto" | "required" | "none" | { type: "tool"; toolName: string };
+}
+
 export interface KaiAgentOptions {
   model: string;
   apiKey: string;
@@ -72,4 +91,8 @@ export interface KaiAgentOptions {
   compactThreshold?: number;
   /** Disable automatic context compaction. Default: false */
   disableCompaction?: boolean;
+  /** Custom stop condition. Complements maxSteps — whichever triggers first. */
+  stopWhen?: (event: { type: "step_finish"; step: number; toolCalls: string[]; finishReason: string }) => boolean;
+  /** Callback executed before each step. Returns overrides for model, tools, toolChoice. */
+  prepareStep?: (context: PrepareStepContext) => PrepareStepResult | undefined;
 }

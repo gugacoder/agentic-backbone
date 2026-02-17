@@ -3,7 +3,8 @@
     "id": "F-001",
     "name": "loop-control-types",
     "description": "Adicionar os novos tipos PrepareStepContext, PrepareStepResult e o novo evento step_finish em types.ts. Adicionar campos stopWhen e prepareStep em KaiAgentOptions.",
-    "status": "failing",
+    "status": "passing",
+    "completed_at": "2026-02-17",
     "priority": 1,
     "tests": [
       "types.ts exporta PrepareStepContext com campos: stepNumber (number), stepCount (number), previousToolCalls (string[])",
@@ -29,7 +30,9 @@
       "runKaiAgent() sem prepareStep/stopWhen emite step_finish normalmente",
       "npm run build --workspace=packages/kai-sdk compila sem erros"
     ],
-    "dependencies": ["F-001"],
+    "dependencies": [
+      "F-001"
+    ],
     "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\07-kai-loop-control\\PRP.md"
   },
   {
@@ -47,14 +50,16 @@
       "previousToolCalls no contexto contem os nomes das tools chamadas no step anterior",
       "npm run build --workspace=packages/kai-sdk compila sem erros"
     ],
-    "dependencies": ["F-001"],
+    "dependencies": [
+      "F-001"
+    ],
     "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\07-kai-loop-control\\PRP.md"
   },
   {
     "id": "F-004",
     "name": "stop-when-integration",
     "description": "Implementar stopWhen como condicao de parada customizada. Usar onStepFinish para avaliar a condicao e abortar o stream quando retornar true. Manter maxSteps como limite superior.",
-    "status": "failing",
+    "status": "blocked",
     "priority": 4,
     "tests": [
       "Quando stopWhen NAO eh fornecido, loop usa apenas maxSteps como limite (comportamento identico ao antes)",
@@ -64,7 +69,9 @@
       "maxSteps continua funcionando como limite superior mesmo com stopWhen",
       "npm run build --workspace=packages/kai-sdk compila sem erros"
     ],
-    "dependencies": ["F-002"],
+    "dependencies": [
+      "F-002"
+    ],
     "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\07-kai-loop-control\\PRP.md"
   },
   {
@@ -79,14 +86,16 @@
       "Todos os tipos previamente exportados continuam exportados (sem regressao)",
       "npm run build --workspace=packages/kai-sdk compila sem erros"
     ],
-    "dependencies": ["F-001"],
+    "dependencies": [
+      "F-001"
+    ],
     "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\07-kai-loop-control\\PRP.md"
   },
   {
     "id": "F-006",
     "name": "build-verification",
     "description": "Verificacao final: build limpo do kai-sdk e validacao de que o comportamento default (sem prepareStep/stopWhen) nao foi alterado.",
-    "status": "failing",
+    "status": "blocked",
     "priority": 6,
     "tests": [
       "npm run build --workspace=packages/kai-sdk compila sem erros nem warnings",
@@ -94,7 +103,13 @@
       "Nenhuma dependencia nova foi adicionada ao package.json",
       "Nenhum arquivo fora de packages/kai-sdk/src/ foi modificado (types.ts, agent.ts, index.ts apenas)"
     ],
-    "dependencies": ["F-001", "F-002", "F-003", "F-004", "F-005"],
+    "dependencies": [
+      "F-001",
+      "F-002",
+      "F-003",
+      "F-004",
+      "F-005"
+    ],
     "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\07-kai-loop-control\\PRP.md"
   }
 ]
