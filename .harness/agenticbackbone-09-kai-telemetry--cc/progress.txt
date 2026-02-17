@@ -1,7 +1,7 @@
 # Progress — agenticbackbone-09-kai-telemetry
 
 ## Current Status
-IN PROGRESS — 2/8 features passing.
+IN PROGRESS — 4/8 features passing.
 
 ## Specs Path
 D:\sources\codr.studio\cia-prime-care\agentic-backbone\apps\backbone\milestones\09-kai-telemetry
@@ -16,8 +16,8 @@ D:\sources\codr.studio\cia-prime-care\agentic-backbone\apps\backbone\milestones\
 
 - [x] F-001 telemetry-types — KaiTelemetryOptions + campo em KaiAgentOptions (2026-02-17)
 - [x] F-002 usage-step-breakdown — timeToFirstTokenMs? e steps? em KaiUsageData (2026-02-17)
-- [ ] F-003 peer-dependency-otel — @opentelemetry/api como peerDependency opcional
-- [ ] F-004 telemetry-in-streamtext — experimental_telemetry no streamText() do agent.ts
+- [x] F-003 peer-dependency-otel — @opentelemetry/api como peerDependency opcional (2026-02-17)
+- [x] F-004 telemetry-in-streamtext — experimental_telemetry no streamText() do agent.ts (2026-02-17)
 - [ ] F-005 telemetry-in-compaction — experimental_telemetry no compaction.ts
 - [ ] F-006 session-span — Span pai kai.agent.run com dynamic import de @opentelemetry/api
 - [ ] F-007 step-data-collection — Coletar breakdown por step via onStepFinish
@@ -31,6 +31,7 @@ D:\sources\codr.studio\cia-prime-care\agentic-backbone\apps\backbone\milestones\
 4. **Campos opcionais em KaiUsageData** — steps[] e timeToFirstTokenMs são opcionais (?:) para não quebrar consumidores existentes.
 5. **Span pai kai.agent.run** — Engloba toda a execução do agente. Criado via tracer do OTel API quando disponível.
 6. **Telemetry na compaction** — generateObject/generateText na compaction também recebem experimental_telemetry com functionId 'kai-compaction'.
+7. **recordInputs/recordOutputs = false** — Conforme PRP, não logar dados sensíveis (prompts, respostas) nos spans. Apenas metadata e métricas.
 
 ## Arquivos Afetados
 
@@ -46,6 +47,7 @@ D:\sources\codr.studio\cia-prime-care\agentic-backbone\apps\backbone\milestones\
 - Session 1 (Initializer): Harness inicializado para onda 09-kai-telemetry com 8 features (todas failing)
 - Session 2: F-001 telemetry-types implementada — KaiTelemetryOptions interface + campo telemetry? em KaiAgentOptions + export em index.ts. Build limpo.
 - Session 3: F-002 usage-step-breakdown implementada — Adicionados campos opcionais timeToFirstTokenMs? e steps? em KaiUsageData. Build limpo.
+- Session 4: F-003 peer-dependency-otel completada — @opentelemetry/api adicionado como peerDependency opcional com peerDependenciesMeta. F-004 telemetry-in-streamtext implementada — telemetryConfig construído a partir de options.telemetry e passado como experimental_telemetry ao streamText(). Inclui sessionId, model, metadata customizada. recordInputs/recordOutputs desabilitados por segurança. Build limpo.
 
 ## Next Priority
-F-003 peer-dependency-otel (sem deps) ou F-004 telemetry-in-streamtext (depende de F-001 ✓)
+F-005 telemetry-in-compaction (deps: F-001 ✓, F-004 ✓)

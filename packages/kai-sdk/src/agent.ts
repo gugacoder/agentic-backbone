@@ -1,4 +1,4 @@
-import { streamText, wrapLanguageModel, type CoreMessage } from "ai";
+import { streamText, wrapLanguageModel, type CoreMessage, type TelemetrySettings } from "ai";
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import { createMCPClient, type MCPClient } from "@ai-sdk/mcp";
 import { Experimental_StdioMCPTransport as StdioMCPTransport } from "@ai-sdk/mcp/mcp-stdio";
@@ -238,6 +238,22 @@ export async function* runKaiAgent(
         ? wrapLanguageModel({ model: stepModel, middleware: options.middleware })
         : stepModel;
 
+    // Build telemetry config for Vercel AI SDK when enabled
+    const telemetryConfig: TelemetrySettings | undefined =
+      options.telemetry?.enabled
+        ? {
+            isEnabled: true,
+            functionId: options.telemetry.functionId ?? "kai-agent",
+            recordInputs: false,
+            recordOutputs: false,
+            metadata: {
+              sessionId,
+              model: options.model,
+              ...options.telemetry.metadata,
+            },
+          }
+        : undefined;
+
     // stopWhen integration — AbortController to cancel the stream when condition is met
     const abortController = options.stopWhen ? new AbortController() : undefined;
     let stoppedByStopWhen = false;
@@ -250,6 +266,7 @@ export async function* runKaiAgent(
         maxSteps: options.maxSteps ?? DEFAULT_MAX_STEPS,
         messages,
         system: systemPrompt,
+        ...(telemetryConfig ? { experimental_telemetry: telemetryConfig } : {}),
         ...(stepActiveTools ? { experimental_activeTools: stepActiveTools as any } : {}),
         ...(stepToolChoice ? { toolChoice: stepToolChoice as any } : {}),
         ...(abortController ? { abortSignal: abortController.signal } : {}),

@@ -16,6 +16,14 @@
     "js-tiktoken": "^1.0.21",
     "zod": "^3"
   },
+  "peerDependencies": {
+    "@opentelemetry/api": "^1"
+  },
+  "peerDependenciesMeta": {
+    "@opentelemetry/api": {
+      "optional": true
+    }
+  },
   "devDependencies": {
     "@types/node": "^22",
     "typescript": "^5"
