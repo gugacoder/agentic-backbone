@@ -228,6 +228,10 @@ export async function* runKaiAgent(
       }
     }
 
+    // stopWhen integration — AbortController to cancel the stream when condition is met
+    const abortController = options.stopWhen ? new AbortController() : undefined;
+    let stoppedByStopWhen = false;
+
     let result;
     try {
       result = streamText({
@@ -238,18 +242,26 @@ export async function* runKaiAgent(
         system: systemPrompt,
         ...(stepActiveTools ? { experimental_activeTools: stepActiveTools as any } : {}),
         ...(stepToolChoice ? { toolChoice: stepToolChoice as any } : {}),
+        ...(abortController ? { abortSignal: abortController.signal } : {}),
         onStepFinish: (stepResult) => {
           const toolNames = (stepResult.toolCalls ?? []).map(
             (tc: { toolName: string }) => tc.toolName
           );
-          pendingStepEvents.push({
-            type: "step_finish",
+          const stepEvent = {
+            type: "step_finish" as const,
             step: stepCounter,
             toolCalls: toolNames,
             finishReason: stepResult.finishReason ?? "unknown",
-          });
+          };
+          pendingStepEvents.push(stepEvent);
           previousToolCalls = toolNames;
           stepCounter++;
+
+          // Evaluate stopWhen condition after recording the step event
+          if (options.stopWhen && options.stopWhen(stepEvent)) {
+            stoppedByStopWhen = true;
+            abortController!.abort();
+          }
         },
       });
     } catch (err) {
@@ -275,12 +287,17 @@ export async function* runKaiAgent(
         }
       }
     } catch (err) {
-      // Re-throw with context if it's not already our error
-      const msg = err instanceof Error ? err.message : String(err);
-      if (!msg.startsWith("OpenRouter")) {
-        throw new Error(`OpenRouter stream error: ${msg}`);
+      // If stopWhen triggered the abort, this is expected — continue normally
+      if (stoppedByStopWhen && err instanceof Error && err.name === "AbortError") {
+        // Expected abort — fall through to drain remaining events and finalize
+      } else {
+        // Re-throw with context if it's not already our error
+        const msg = err instanceof Error ? err.message : String(err);
+        if (!msg.startsWith("OpenRouter")) {
+          throw new Error(`OpenRouter stream error: ${msg}`);
+        }
+        throw err;
       }
-      throw err;
     }
 
     // Drain any remaining step events not yet emitted (edge case: stream ends without step-finish)
@@ -288,22 +305,25 @@ export async function* runKaiAgent(
       yield pendingStepEvents.shift()!;
     }
 
-    // Persist session
-    const response = await result.response;
-    await saveSession(sessionDir, sessionId, [
-      ...messages,
-      ...response.messages as CoreMessage[],
-    ]);
-
-    // Final result + usage
-    const usage = await result.usage;
-    const steps = await result.steps;
-    const finishReason = await result.finishReason;
-
-    // Fetch cost from OpenRouter generation endpoint
+    // Persist session and collect usage — may fail if stream was aborted by stopWhen
+    let usage = { promptTokens: 0, completionTokens: 0 };
+    let steps: unknown[] = [];
+    let finishReason: string = stoppedByStopWhen ? "stop_when" : "unknown";
     let totalCostUsd = 0;
+
     try {
-      const genId = (await result.response).id;
+      const response = await result.response;
+      await saveSession(sessionDir, sessionId, [
+        ...messages,
+        ...response.messages as CoreMessage[],
+      ]);
+
+      usage = await result.usage;
+      steps = await result.steps;
+      finishReason = stoppedByStopWhen ? "stop_when" : (await result.finishReason ?? "unknown");
+
+      // Fetch cost from OpenRouter generation endpoint
+      const genId = response.id;
       if (genId) {
         // Small delay — OpenRouter may not have the generation ready immediately
         await new Promise((r) => setTimeout(r, 500));
@@ -316,7 +336,7 @@ export async function* runKaiAgent(
         }
       }
     } catch {
-      // Non-critical — cost stays 0
+      // If stopWhen aborted the stream, response/usage promises may reject — use defaults
     }
 
     yield { type: "result", content: fullText };
@@ -331,7 +351,7 @@ export async function* runKaiAgent(
         numTurns: steps.length,
         durationMs: Date.now() - startMs,
         durationApiMs: 0,
-        stopReason: finishReason ?? "unknown",
+        stopReason: finishReason,
       },
     };
   } finally {

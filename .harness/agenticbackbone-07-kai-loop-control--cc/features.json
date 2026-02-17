@@ -61,7 +61,8 @@
     "id": "F-004",
     "name": "stop-when-integration",
     "description": "Implementar stopWhen como condicao de parada customizada. Usar onStepFinish para avaliar a condicao e abortar o stream quando retornar true. Manter maxSteps como limite superior.",
-    "status": "failing",
+    "status": "passing",
+    "completed_at": "2026-02-17",
     "priority": 4,
     "tests": [
       "Quando stopWhen NAO eh fornecido, loop usa apenas maxSteps como limite (comportamento identico ao antes)",
@@ -80,7 +81,8 @@
     "id": "F-005",
     "name": "public-exports",
     "description": "Atualizar index.ts para exportar os novos tipos: PrepareStepContext, PrepareStepResult, e o tipo do evento step_finish (ja incluido em KaiAgentEvent).",
-    "status": "failing",
+    "status": "passing",
+    "completed_at": "2026-02-17",
     "priority": 5,
     "tests": [
       "index.ts exporta PrepareStepContext",
@@ -97,7 +99,8 @@
     "id": "F-006",
     "name": "build-verification",
     "description": "Verificacao final: build limpo do kai-sdk e validacao de que o comportamento default (sem prepareStep/stopWhen) nao foi alterado.",
-    "status": "blocked",
+    "status": "passing",
+    "completed_at": "2026-02-17",
     "priority": 6,
     "tests": [
       "npm run build --workspace=packages/kai-sdk compila sem erros nem warnings",
