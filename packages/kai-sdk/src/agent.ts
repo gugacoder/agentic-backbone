@@ -1,4 +1,4 @@
-import { streamText, type CoreMessage } from "ai";
+import { streamText, wrapLanguageModel, type CoreMessage } from "ai";
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import { createMCPClient, type MCPClient } from "@ai-sdk/mcp";
 import { Experimental_StdioMCPTransport as StdioMCPTransport } from "@ai-sdk/mcp/mcp-stdio";
@@ -91,6 +91,9 @@ export async function* runKaiAgent(
     // Override pluggable tools with configured callbacks if provided
     // codingTools have priority over MCP tools (spread order: MCP first, coding on top)
     let tools = { ...mcpTools, ...codingTools };
+    if (options.tools) {
+      tools = { ...tools, ...options.tools };
+    }
     if (options.onAskUser) {
       tools = { ...tools, AskUser: createAskUserTool(options.onAskUser) };
     }
@@ -228,6 +231,12 @@ export async function* runKaiAgent(
       }
     }
 
+    // Apply middleware pipeline to the model if provided
+    const effectiveModel =
+      options.middleware && options.middleware.length > 0
+        ? wrapLanguageModel({ model: stepModel, middleware: options.middleware })
+        : stepModel;
+
     // stopWhen integration — AbortController to cancel the stream when condition is met
     const abortController = options.stopWhen ? new AbortController() : undefined;
     let stoppedByStopWhen = false;
@@ -235,7 +244,7 @@ export async function* runKaiAgent(
     let result;
     try {
       result = streamText({
-        model: stepModel,
+        model: effectiveModel,
         tools,
         maxSteps: options.maxSteps ?? DEFAULT_MAX_STEPS,
         messages,

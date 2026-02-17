@@ -18,7 +18,8 @@
     "id": "F-002",
     "name": "apply-middleware-in-agent",
     "description": "No agent.ts, aplicar wrapLanguageModel() ao modelo base quando options.middleware tiver elementos. Importar wrapLanguageModel de 'ai'. Sem middleware, comportamento identico ao atual.",
-    "status": "failing",
+    "status": "passing",
+    "completed_at": "2026-02-17T00:00:00Z",
     "priority": 2,
     "tests": [
       "agent.ts importa wrapLanguageModel de 'ai'",
