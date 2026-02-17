@@ -119,8 +119,9 @@
     "id": "F-007",
     "name": "hub-whatsapp-page-no-error-state",
     "description": "Refatorar whatsapp.tsx para nunca renderizar tela de erro por erro de negocio. Se instances retornar array vazio (quando ok: false ou dados vazios), mostrar estado vazio na tabela. Remover dependencia de isError para renderizar InstanceTable — a tabela sempre renderiza.",
-    "status": "pending",
+    "status": "passing",
     "priority": 7,
+    "completed_at": "2026-02-17T23:45:00Z",
     "tests": [
       "Quando query retorna array vazio, InstanceTable renderiza normalmente (tabela vazia ou estado vazio)",
       "isError nao controla mais a renderizacao da tabela — Card de erro com AlertTriangle removido",

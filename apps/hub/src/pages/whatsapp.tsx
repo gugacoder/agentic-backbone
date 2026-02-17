@@ -1,9 +1,8 @@
 import { useState } from "react";
 import { useNavigate, useSearch } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { Plus, AlertTriangle } from "lucide-react";
+import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PageHeader } from "@/components/shared/page-header";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
@@ -20,7 +19,7 @@ export function WhatsAppPage() {
   const { view } = useSearch({ strict: false }) as { view: string };
   const activeTab = view === "instances" ? "instances" : "monitor";
 
-  const { data: instances = [], isLoading, isError, error, refetch } = useQuery(evolutionInstancesQuery);
+  const { data: instances = [], isLoading } = useQuery(evolutionInstancesQuery);
   const deleteInstance = useDeleteInstance();
   const { alerts } = useEvolutionAlertsStore();
 
@@ -75,24 +74,11 @@ export function WhatsAppPage() {
 
         <TabsContent value="monitor" className="space-y-6">
           <ApiHealthCard />
-          <InstanceSummaryCards instances={isError ? [] : instances} />
+          <InstanceSummaryCards instances={instances} />
           {isLoading ? (
             <div className="h-32 flex items-center justify-center">
               <p className="text-muted-foreground text-sm">Carregando instancias...</p>
             </div>
-          ) : isError ? (
-            <Card>
-              <CardContent className="flex flex-col items-center justify-center py-10 gap-3">
-                <AlertTriangle className="h-10 w-10 text-destructive" />
-                <h3 className="text-lg font-semibold">Falha ao carregar instancias</h3>
-                <p className="text-sm text-muted-foreground text-center max-w-md">
-                  {error?.message || "Erro desconhecido ao consultar o backbone"}
-                </p>
-                <Button variant="outline" onClick={() => refetch()}>
-                  Tentar novamente
-                </Button>
-              </CardContent>
-            </Card>
           ) : (
             <InstanceTable instances={instances} variant="monitor" alerts={alerts} />
           )}
@@ -103,19 +89,6 @@ export function WhatsAppPage() {
             <div className="h-32 flex items-center justify-center">
               <p className="text-muted-foreground text-sm">Carregando instancias...</p>
             </div>
-          ) : isError ? (
-            <Card>
-              <CardContent className="flex flex-col items-center justify-center py-10 gap-3">
-                <AlertTriangle className="h-10 w-10 text-destructive" />
-                <h3 className="text-lg font-semibold">Falha ao carregar instancias</h3>
-                <p className="text-sm text-muted-foreground text-center max-w-md">
-                  {error?.message || "Erro desconhecido ao consultar o backbone"}
-                </p>
-                <Button variant="outline" onClick={() => refetch()}>
-                  Tentar novamente
-                </Button>
-              </CardContent>
-            </Card>
           ) : (
             <InstanceTable
               instances={instances}
