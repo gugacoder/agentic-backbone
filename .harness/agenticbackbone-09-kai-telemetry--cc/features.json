@@ -19,7 +19,8 @@
     "id": "F-002",
     "name": "usage-step-breakdown",
     "description": "Estender KaiUsageData com campos opcionais timeToFirstTokenMs e steps[] para breakdown por step",
-    "status": "failing",
+    "status": "passing",
+    "completed_at": "2026-02-17",
     "priority": 2,
     "tests": [
       "KaiUsageData tem campo timeToFirstTokenMs?: number",

@@ -35,6 +35,16 @@ export interface KaiUsageData {
   durationMs: number;
   durationApiMs: number;
   stopReason: string;
+  /** Latencia ate o primeiro token (ms). Disponivel apenas com telemetria. */
+  timeToFirstTokenMs?: number;
+  /** Breakdown de uso por step. Disponivel apenas com telemetria. */
+  steps?: Array<{
+    stepNumber: number;
+    toolCalls: string[];
+    inputTokens: number;
+    outputTokens: number;
+    durationMs: number;
+  }>;
 }
 
 export interface ContextUsage {

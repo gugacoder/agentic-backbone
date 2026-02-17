@@ -1,7 +1,7 @@
 # Progress — agenticbackbone-09-kai-telemetry
 
 ## Current Status
-IN PROGRESS — 1/8 features passing.
+IN PROGRESS — 2/8 features passing.
 
 ## Specs Path
 D:\sources\codr.studio\cia-prime-care\agentic-backbone\apps\backbone\milestones\09-kai-telemetry
@@ -15,7 +15,7 @@ D:\sources\codr.studio\cia-prime-care\agentic-backbone\apps\backbone\milestones\
 ## Features
 
 - [x] F-001 telemetry-types — KaiTelemetryOptions + campo em KaiAgentOptions (2026-02-17)
-- [ ] F-002 usage-step-breakdown — KaiUsageData com timeToFirstTokenMs e steps[]
+- [x] F-002 usage-step-breakdown — timeToFirstTokenMs? e steps? em KaiUsageData (2026-02-17)
 - [ ] F-003 peer-dependency-otel — @opentelemetry/api como peerDependency opcional
 - [ ] F-004 telemetry-in-streamtext — experimental_telemetry no streamText() do agent.ts
 - [ ] F-005 telemetry-in-compaction — experimental_telemetry no compaction.ts
@@ -45,6 +45,7 @@ D:\sources\codr.studio\cia-prime-care\agentic-backbone\apps\backbone\milestones\
 ## Session Notes
 - Session 1 (Initializer): Harness inicializado para onda 09-kai-telemetry com 8 features (todas failing)
 - Session 2: F-001 telemetry-types implementada — KaiTelemetryOptions interface + campo telemetry? em KaiAgentOptions + export em index.ts. Build limpo.
+- Session 3: F-002 usage-step-breakdown implementada — Adicionados campos opcionais timeToFirstTokenMs? e steps? em KaiUsageData. Build limpo.
 
 ## Next Priority
-F-002 usage-step-breakdown (depende de F-001 ✓) ou F-003 peer-dependency-otel (sem deps)
+F-003 peer-dependency-otel (sem deps) ou F-004 telemetry-in-streamtext (depende de F-001 ✓)
