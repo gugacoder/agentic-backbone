@@ -1,7 +1,7 @@
 # Progress — agenticbackbone-08-kai-middleware
 
 ## Current Status
-F-001, F-002 passing. 2/6 features complete. Próxima: F-003 (middleware-in-compaction).
+F-001, F-002, F-003 passing. 3/6 features complete. Próxima: F-004 (logging-middleware).
 
 ## Specs Path
 D:\sources\codr.studio\cia-prime-care\agentic-backbone\apps\backbone\milestones\08-kai-middleware
@@ -17,7 +17,7 @@ D:\sources\codr.studio\cia-prime-care\agentic-backbone\apps\backbone\milestones\
 
 - [x] F-001 middleware-type-in-options — Adicionar middleware?: LanguageModelV1Middleware[] em KaiAgentOptions
 - [x] F-002 apply-middleware-in-agent — Aplicar wrapLanguageModel no agent.ts antes de streamText
-- [ ] F-003 middleware-in-compaction — Passar middleware para compactMessages/generateText
+- [x] F-003 middleware-in-compaction — Passar middleware para compactMessages/generateText
 - [ ] F-004 logging-middleware — Criar createLoggingMiddleware() em src/middleware/logging.ts
 - [ ] F-005 public-exports — Exportar createLoggingMiddleware e re-exportar LanguageModelV1Middleware
 - [ ] F-006 build-verification — Verificação final: build limpo, sem regressão, sem dependências novas
@@ -47,3 +47,5 @@ Session 1 (Initializer): Harness criado para onda agenticbackbone-08-kai-middlew
 Session 2 (CC): Implementado F-001 middleware-type-in-options. Adicionado import type { LanguageModelV1Middleware } from "ai" e campo middleware?: LanguageModelV1Middleware[] em KaiAgentOptions. Build limpo. Nota: LanguageModelV1Middleware existe em ai@4.3.19 no dist/index.d.ts (não em arquivos .d.ts na raiz). Sessões anteriores falharam repetidamente — provavelmente por não localizar o tipo correto.
 
 Session 3 (CC): Implementado F-002 apply-middleware-in-agent. Importado wrapLanguageModel de "ai" no agent.ts. Criado effectiveModel que aplica wrapLanguageModel quando options.middleware tem elementos, e usa stepModel diretamente quando vazio/undefined. effectiveModel é passado ao streamText no lugar de stepModel. Build limpo sem erros.
+
+Session 4 (CC): Implementado F-003 middleware-in-compaction. Adicionado campo middleware?: LanguageModelV1Middleware[] em CompactOptions. Importado wrapLanguageModel e LanguageModelV1Middleware em compaction.ts. Aplicado wrapLanguageModel em ambos os paths (generateObject e generateText fallback) quando middleware fornecido. No agent.ts, passado options.middleware para compactMessages(). Build limpo sem erros.

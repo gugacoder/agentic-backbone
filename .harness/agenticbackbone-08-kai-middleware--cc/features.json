@@ -37,7 +37,8 @@
     "id": "F-003",
     "name": "middleware-in-compaction",
     "description": "Refatorar CompactOptions em context/compaction.ts para aceitar middleware?: LanguageModelV1Middleware[]. Aplicar wrapLanguageModel na chamada generateText() da compaction. No agent.ts, passar options.middleware para compactMessages().",
-    "status": "failing",
+    "status": "passing",
+    "completed_at": "2026-02-17T00:00:00Z",
     "priority": 3,
     "tests": [
       "CompactOptions em compaction.ts possui campo opcional middleware do tipo LanguageModelV1Middleware[]",

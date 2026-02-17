@@ -1,4 +1,4 @@
-import { generateObject, generateText, type CoreMessage } from "ai";
+import { generateObject, generateText, wrapLanguageModel, type CoreMessage, type LanguageModelV1Middleware } from "ai";
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import { z } from "zod";
 import { countTokens } from "./tokenizer.js";
@@ -22,6 +22,7 @@ export interface CompactOptions {
   contextWindow?: number;
   systemPromptTokens: number;
   toolDefinitionsTokens: number;
+  middleware?: LanguageModelV1Middleware[];
 }
 
 export interface CompactResult {
@@ -126,8 +127,14 @@ export async function compactMessages(
       apiKey: options.apiKey,
     });
 
+    const baseModel = openrouter(options.model);
+    const model =
+      options.middleware && options.middleware.length > 0
+        ? wrapLanguageModel({ model: baseModel, middleware: options.middleware })
+        : baseModel;
+
     const result = await generateObject({
-      model: openrouter(options.model),
+      model,
       schema: CompactionSchema,
       system: SUMMARIZATION_PROMPT,
       messages: [{ role: "user", content: conversationText }],
@@ -176,8 +183,14 @@ export async function compactMessages(
         apiKey: options.apiKey,
       });
 
+      const fallbackBaseModel = openrouter(options.model);
+      const fallbackModel =
+        options.middleware && options.middleware.length > 0
+          ? wrapLanguageModel({ model: fallbackBaseModel, middleware: options.middleware })
+          : fallbackBaseModel;
+
       const result = await generateText({
-        model: openrouter(options.model),
+        model: fallbackModel,
         system: SUMMARIZATION_PROMPT,
         messages: [{ role: "user", content: conversationText }],
         maxTokens: 2000,
