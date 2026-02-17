@@ -2,7 +2,7 @@
 
 ## Current Status
 
-IN PROGRESS — F-001, F-002, F-003 e F-004 implementadas e passando. Próxima: F-005 (compaction-fallback).
+IN PROGRESS — F-001, F-002, F-003, F-004 e F-005 implementadas e passando. Próxima: F-006 (build-verification).
 
 ## Specs Path
 
@@ -23,7 +23,7 @@ D:\sources\codr.studio\cia-prime-care\agentic-backbone\apps\backbone\milestones\
 - [x] F-002 kai-stream-object — kaiStreamObject() com AsyncGenerator de parciais
 - [x] F-003 public-exports — Exportar novas funcoes e tipos no index.ts
 - [x] F-004 compaction-structured-output — Refatorar compaction para usar generateObject() + Zod schema
-- [ ] F-005 compaction-fallback — Fallback para generateText() se generateObject() falhar
+- [x] F-005 compaction-fallback — Fallback para generateText() se generateObject() falhar
 - [ ] F-006 build-verification — Build final sem erros, tipos em dist/
 
 ## Architecture Decisions
@@ -62,3 +62,11 @@ Session 4 (Claude Code): Implementou F-004 compaction-structured-output.
 - Interface CompactResult preservada inalterada (messages, compacted, warning)
 - Build limpo. dist/context/compaction.js e .d.ts atualizados corretamente.
 - Todos os 5 testes de F-004 passando.
+
+Session 5 (Claude Code): Implementou F-005 compaction-fallback.
+- Adicionou generateText de volta ao import em compaction.ts
+- Catch de generateObject() agora tenta generateText() com SUMMARIZATION_PROMPT como fallback
+- Se fallback funcionar: compacted=true, warning inclui erro do structured + "used text fallback"
+- Se fallback falhar: compacted=false, warning inclui ambos erros (structured + fallback)
+- Nenhum erro não-tratado escapa de compactMessages()
+- Build limpo (kai-sdk + backbone). Todos os 5 testes de F-005 passando.

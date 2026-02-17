@@ -81,7 +81,7 @@
     "id": "F-005",
     "name": "compaction-fallback",
     "description": "Manter fallback na compaction: se generateObject() falhar (provider nao suporta structured outputs, erro de rede, etc.), cair no generateText() atual. O fallback deve ser transparente — mesmo contrato de retorno CompactResult.",
-    "status": "failing",
+    "status": "passing",
     "priority": 5,
     "tests": [
       "Se generateObject() lancar erro, compactMessages() tenta generateText() como fallback",
@@ -93,13 +93,14 @@
     "dependencies": [
       "F-004"
     ],
-    "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\06-kai-structured-outputs\\PRP.md"
+    "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\06-kai-structured-outputs\\PRP.md",
+    "completed_at": "2026-02-17T21:00:00Z"
   },
   {
     "id": "F-006",
     "name": "build-verification",
     "description": "Verificacao final: npm run build --workspace=packages/kai-sdk compila sem erros. Todos os tipos exportados corretamente em dist/. Nenhuma dependencia nova alem de ai e zod (ambas ja existem).",
-    "status": "blocked",
+    "status": "failing",
     "priority": 6,
     "tests": [
       "npm run build --workspace=packages/kai-sdk exit code 0",

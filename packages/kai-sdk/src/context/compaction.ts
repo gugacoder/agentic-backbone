@@ -1,4 +1,4 @@
-import { generateObject, type CoreMessage } from "ai";
+import { generateObject, generateText, type CoreMessage } from "ai";
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import { z } from "zod";
 import { countTokens } from "./tokenizer.js";
@@ -167,12 +167,50 @@ export async function compactMessages(
       messages: [summaryMessage, ...tail],
       compacted: true,
     };
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err);
-    return {
-      messages,
-      compacted: false,
-      warning: `Compaction failed: ${msg} — continuing with original messages`,
-    };
+  } catch (structuredErr) {
+    // Fallback: generateObject() failed — try generateText() with free-text summarization
+    try {
+      const openrouter = createOpenAICompatible({
+        name: "openrouter",
+        baseURL: "https://openrouter.ai/api/v1",
+        apiKey: options.apiKey,
+      });
+
+      const result = await generateText({
+        model: openrouter(options.model),
+        system: SUMMARIZATION_PROMPT,
+        messages: [{ role: "user", content: conversationText }],
+        maxTokens: 2000,
+      });
+
+      const summary = result.text;
+      if (!summary || summary.trim().length === 0) {
+        return {
+          messages,
+          compacted: false,
+          warning: "Compaction fallback produced empty summary — keeping original messages",
+        };
+      }
+
+      const summaryMessage: CoreMessage = {
+        role: "user",
+        content: `<context_summary>\n${summary}\n</context_summary>`,
+      };
+
+      const structuredMsg = structuredErr instanceof Error ? structuredErr.message : String(structuredErr);
+      return {
+        messages: [summaryMessage, ...tail],
+        compacted: true,
+        warning: `Structured compaction failed (${structuredMsg}) — used text fallback`,
+      };
+    } catch (fallbackErr) {
+      const structuredMsg = structuredErr instanceof Error ? structuredErr.message : String(structuredErr);
+      const fallbackMsg = fallbackErr instanceof Error ? fallbackErr.message : String(fallbackErr);
+      return {
+        messages,
+        compacted: false,
+        warning: `Compaction failed: structured (${structuredMsg}), fallback (${fallbackMsg}) — keeping original messages`,
+      };
+    }
   }
 }
