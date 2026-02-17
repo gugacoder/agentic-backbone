@@ -1,7 +1,7 @@
 # Evolution Fail-Safe — Progress
 
 ## Current Status
-IN PROGRESS — F-001, F-002, F-003, F-004, F-005, F-006, F-007 completas (7/12). Proxima: F-008 hub-instance-page-no-error-card.
+IN PROGRESS — F-001, F-002, F-003, F-004, F-005, F-006, F-007, F-008 completas (8/12). Proxima: F-009 hub-qr-component-resilient.
 
 ## Specs Path
 D:\sources\codr.studio\cia-prime-care\agentic-backbone\apps\backbone\milestones\05-evolution-failsafe
@@ -38,7 +38,7 @@ D:\sources\codr.studio\cia-prime-care\agentic-backbone\apps\backbone\milestones\
 ### Hub (Component Refactoring)
 - [x] F-006 hub-create-dialog-separation — Dialog cria instancia -> aba status (nao QR)
 - [x] F-007 hub-whatsapp-page-no-error-state — Pagina principal sem tela de erro
-- [ ] F-008 hub-instance-page-no-error-card — Pagina instancia sem InstanceErrorCard
+- [x] F-008 hub-instance-page-no-error-card — Pagina instancia sem InstanceErrorCard
 - [ ] F-009 hub-qr-component-resilient — QR resiliente com retry e reset
 - [ ] F-010 hub-settings-form-resilient — Settings form resiliente
 - [ ] F-011 hub-delete-flow-resilient — Delete flow resiliente
@@ -150,3 +150,17 @@ Session 7: Implementada F-007 hub-whatsapp-page-no-error-state.
 - Logica simplificada: isLoading ? loading : table (sem branch de erro)
 - Build limpo: hub tsc --noEmit + vite build
 - Proxima: F-008 hub-instance-page-no-error-card
+
+Session 8: Implementada F-008 hub-instance-page-no-error-card.
+- Removido componente InstanceErrorCard inteiro de whatsapp-instance.tsx
+- Removido import de ApiError (nao mais necessario — backbone sempre retorna HTTP 200)
+- Removido import de Card, CardContent (nao mais usados)
+- evolutionInstanceQuery agora retorna ApiResult<EvolutionInstance> completo (nao unwrapped)
+- Componente acessa result.ok e result.error para diferenciar cenarios inline
+- Quando api_offline: mensagem inline com ServerOff icon e botao "Tentar novamente"
+- Quando instance_not_found (ou qualquer outro erro): mensagem inline com AlertTriangle e link "Voltar para instancias"
+- Tabs (status, qr, settings) sempre renderizam — erro so afeta conteudo da aba Status
+- Atualizado instance-qr.tsx para consumir novo retorno (instanceResult?.ok ? instanceResult.data : null)
+- useActionState inalterado — ja interpretava ApiResult desde F-005
+- Build limpo: backbone tsc + hub tsc --noEmit + vite build
+- Proxima: F-009 hub-qr-component-resilient

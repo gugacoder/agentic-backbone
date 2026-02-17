@@ -24,10 +24,11 @@ export function InstanceQR({ instanceName }: InstanceQRProps) {
 
   // Poll instance state while QR is active
   const shouldPoll = qrState === "active";
-  const { data: instance } = useQuery({
+  const { data: instanceResult } = useQuery({
     ...evolutionInstanceQuery(instanceName),
     refetchInterval: shouldPoll ? 2_000 : false,
   });
+  const instance = instanceResult?.ok ? instanceResult.data : null;
 
   // When QR data arrives, transition to active
   useEffect(() => {

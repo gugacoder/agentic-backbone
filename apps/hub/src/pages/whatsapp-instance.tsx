@@ -3,7 +3,6 @@ import { useParams, useSearch, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { RefreshCw, RotateCcw, Trash2, Loader2, AlertTriangle, ArrowLeft, ServerOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Tooltip,
@@ -24,7 +23,6 @@ import {
   friendlyMessage,
 } from "@/api/evolution";
 import type { ApiResult } from "@/api/evolution";
-import { ApiError } from "@/lib/api";
 import { toast } from "sonner";
 
 interface ActionState {
@@ -73,79 +71,14 @@ function useActionState() {
   };
 }
 
-function InstanceErrorCard({
-  error,
-  refetch,
-  name,
-}: {
-  error: Error | null;
-  refetch: () => void;
-  name: string;
-}) {
-  const status = error instanceof ApiError ? error.status : 0;
-  const navigate = useNavigate();
-
-  if (status === 404 || !error) {
-    return (
-      <Card>
-        <CardContent className="flex flex-col items-center justify-center py-10 gap-3">
-          <AlertTriangle className="h-10 w-10 text-destructive" />
-          <h3 className="text-lg font-semibold">Instancia nao encontrada</h3>
-          <p className="text-sm text-muted-foreground text-center max-w-md">
-            A instancia &quot;{name}&quot; nao existe ou foi removida.
-          </p>
-          <Button
-            variant="outline"
-            onClick={() => navigate({ to: "/conectividade/whatsapp", search: { view: "instances" } })}
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Voltar para instancias
-          </Button>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (status === 503) {
-    return (
-      <Card>
-        <CardContent className="flex flex-col items-center justify-center py-10 gap-3">
-          <ServerOff className="h-10 w-10 text-destructive" />
-          <h3 className="text-lg font-semibold">Evolution API indisponivel</h3>
-          <p className="text-sm text-muted-foreground text-center max-w-md">
-            O backbone nao conseguiu consultar a Evolution API. Verifique se o servico esta ativo.
-          </p>
-          <Button variant="outline" onClick={() => refetch()}>
-            Tentar novamente
-          </Button>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  return (
-    <Card>
-      <CardContent className="flex flex-col items-center justify-center py-10 gap-3">
-        <AlertTriangle className="h-10 w-10 text-destructive" />
-        <h3 className="text-lg font-semibold">Falha ao carregar instancia</h3>
-        <p className="text-sm text-muted-foreground text-center max-w-md">
-          {error.message || "Erro desconhecido ao consultar o backbone"}
-        </p>
-        <Button variant="outline" onClick={() => refetch()}>
-          Tentar novamente
-        </Button>
-      </CardContent>
-    </Card>
-  );
-}
-
 export function WhatsAppInstancePage() {
   const { name } = useParams({ strict: false }) as { name: string };
   const { tab } = useSearch({ strict: false }) as { tab: string };
   const navigate = useNavigate();
   const activeTab = ["status", "qr", "settings"].includes(tab) ? tab : "status";
 
-  const { data: instance, isLoading, isError, error, refetch } = useQuery(evolutionInstanceQuery(name));
+  const { data: result, isLoading, refetch } = useQuery(evolutionInstanceQuery(name));
+  const instance = result?.ok ? result.data : undefined;
   const reconnect = useReconnectInstance();
   const restart = useRestartInstance();
   const deleteInstance = useDeleteInstance();
@@ -287,16 +220,39 @@ export function WhatsAppInstancePage() {
             <div className="h-32 flex items-center justify-center">
               <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
             </div>
-          ) : isError ? (
-            <InstanceErrorCard error={error} refetch={refetch} name={name} />
           ) : instance ? (
             <>
               <InstanceStatusCard instance={instance} />
               <div className="md:hidden">{actionButtons}</div>
               <InstanceEventFeed instanceName={name} />
             </>
+          ) : result?.error === "api_offline" ? (
+            <div className="flex flex-col items-center justify-center py-10 gap-3">
+              <ServerOff className="h-10 w-10 text-muted-foreground" />
+              <p className="text-sm font-medium">Evolution API indisponivel</p>
+              <p className="text-sm text-muted-foreground text-center max-w-md">
+                O backbone nao conseguiu consultar a Evolution API. Verifique se o servico esta ativo.
+              </p>
+              <Button variant="outline" size="sm" onClick={() => refetch()}>
+                Tentar novamente
+              </Button>
+            </div>
           ) : (
-            <InstanceErrorCard error={null} refetch={refetch} name={name} />
+            <div className="flex flex-col items-center justify-center py-10 gap-3">
+              <AlertTriangle className="h-10 w-10 text-muted-foreground" />
+              <p className="text-sm font-medium">Instancia nao encontrada</p>
+              <p className="text-sm text-muted-foreground text-center max-w-md">
+                A instancia &quot;{name}&quot; nao existe ou foi removida.
+              </p>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate({ to: "/conectividade/whatsapp", search: { view: "instances" } })}
+              >
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Voltar para instancias
+              </Button>
+            </div>
           )}
         </TabsContent>
 

@@ -137,8 +137,9 @@
     "id": "F-008",
     "name": "hub-instance-page-no-error-card",
     "description": "Refatorar whatsapp-instance.tsx: remover InstanceErrorCard como componente que substitui a pagina inteira. Erros de negocio (instancia nao encontrada, API offline) devem ser tratados inline. useActionState deve interpretar result.ok ao inves de ApiError status codes (429, 409).",
-    "status": "pending",
+    "status": "passing",
     "priority": 8,
+    "completed_at": "2026-02-17T15:30:00Z",
     "tests": [
       "InstanceErrorCard removida como componente inteiro que substitui a pagina",
       "Quando instancia nao encontrada (ok: false, error: 'instance_not_found'), exibe mensagem inline com link para voltar",

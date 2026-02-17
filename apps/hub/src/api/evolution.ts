@@ -88,11 +88,7 @@ export const evolutionInstancesQuery = queryOptions({
 export function evolutionInstanceQuery(name: string) {
   return queryOptions({
     queryKey: ["evolution", "instances", name],
-    queryFn: async () => {
-      const result = await api.get<ApiResult<EvolutionInstance>>(`/modules/evolution/instances/${name}`);
-      if (!result.ok) return null;
-      return result.data!;
-    },
+    queryFn: () => api.get<ApiResult<EvolutionInstance>>(`/modules/evolution/instances/${name}`),
     enabled: !!name,
   });
 }
