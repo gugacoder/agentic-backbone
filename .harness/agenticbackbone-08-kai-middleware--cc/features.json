@@ -56,7 +56,8 @@
     "id": "F-004",
     "name": "logging-middleware",
     "description": "Criar packages/kai-sdk/src/middleware/logging.ts com createLoggingMiddleware(). O middleware intercepta transformParams, wrapGenerate e wrapStream com timing e metadata. Logger customizavel via parametro.",
-    "status": "failing",
+    "status": "passing",
+    "completed_at": "2026-02-17T00:00:00Z",
     "priority": 4,
     "tests": [
       "Arquivo packages/kai-sdk/src/middleware/logging.ts existe",
@@ -75,7 +76,7 @@
     "id": "F-005",
     "name": "public-exports",
     "description": "Atualizar index.ts para exportar createLoggingMiddleware de middleware/logging.js e re-exportar o tipo LanguageModelV1Middleware de 'ai' para consumidores.",
-    "status": "blocked",
+    "status": "failing",
     "priority": 5,
     "tests": [
       "index.ts exporta createLoggingMiddleware",

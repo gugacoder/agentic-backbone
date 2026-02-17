@@ -1,7 +1,7 @@
 # Progress — agenticbackbone-08-kai-middleware
 
 ## Current Status
-F-001, F-002, F-003 passing. 3/6 features complete. Próxima: F-004 (logging-middleware).
+F-001, F-002, F-003, F-004 passing. 4/6 features complete. Próxima: F-005 (public-exports).
 
 ## Specs Path
 D:\sources\codr.studio\cia-prime-care\agentic-backbone\apps\backbone\milestones\08-kai-middleware
@@ -18,7 +18,7 @@ D:\sources\codr.studio\cia-prime-care\agentic-backbone\apps\backbone\milestones\
 - [x] F-001 middleware-type-in-options — Adicionar middleware?: LanguageModelV1Middleware[] em KaiAgentOptions
 - [x] F-002 apply-middleware-in-agent — Aplicar wrapLanguageModel no agent.ts antes de streamText
 - [x] F-003 middleware-in-compaction — Passar middleware para compactMessages/generateText
-- [ ] F-004 logging-middleware — Criar createLoggingMiddleware() em src/middleware/logging.ts
+- [x] F-004 logging-middleware — Criar createLoggingMiddleware() em src/middleware/logging.ts
 - [ ] F-005 public-exports — Exportar createLoggingMiddleware e re-exportar LanguageModelV1Middleware
 - [ ] F-006 build-verification — Verificação final: build limpo, sem regressão, sem dependências novas
 
@@ -49,3 +49,5 @@ Session 2 (CC): Implementado F-001 middleware-type-in-options. Adicionado import
 Session 3 (CC): Implementado F-002 apply-middleware-in-agent. Importado wrapLanguageModel de "ai" no agent.ts. Criado effectiveModel que aplica wrapLanguageModel quando options.middleware tem elementos, e usa stepModel diretamente quando vazio/undefined. effectiveModel é passado ao streamText no lugar de stepModel. Build limpo sem erros.
 
 Session 4 (CC): Implementado F-003 middleware-in-compaction. Adicionado campo middleware?: LanguageModelV1Middleware[] em CompactOptions. Importado wrapLanguageModel e LanguageModelV1Middleware em compaction.ts. Aplicado wrapLanguageModel em ambos os paths (generateObject e generateText fallback) quando middleware fornecido. No agent.ts, passado options.middleware para compactMessages(). Build limpo sem erros.
+
+Session 5 (CC): Implementado F-004 logging-middleware. Criado packages/kai-sdk/src/middleware/logging.ts com createLoggingMiddleware(). transformParams loga quantidade de tools (via params.mode.tools) e messages (via params.prompt.length). wrapGenerate loga durationMs, finishReason e usage. wrapStream loga durationMs do início do stream. Logger padrão é console.log, customizável via parâmetro. Nota: LanguageModelV1CallOptions não tem modelId — tools estão em params.mode.tools (quando mode.type === "regular"). Build limpo sem erros.
