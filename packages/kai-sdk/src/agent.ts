@@ -12,7 +12,7 @@ import { loadSession, saveSession } from "./session.js";
 import { getSystemPrompt, discoverProjectContext } from "./prompts/assembly.js";
 import { getContextUsage } from "./context/usage.js";
 import { compactMessages } from "./context/compaction.js";
-import type { KaiAgentEvent, KaiAgentOptions, McpServerConfig } from "./types.js";
+import type { KaiAgentEvent, KaiAgentOptions, McpServerConfig, PrepareStepResult } from "./types.js";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 
@@ -202,15 +202,42 @@ export async function* runKaiAgent(
     // Step event tracking — onStepFinish pushes events, fullStream loop yields them
     const pendingStepEvents: KaiAgentEvent[] = [];
     let stepCounter = 0;
+    let previousToolCalls: string[] = [];
+
+    // prepareStep integration — call consumer's callback before streamText to get initial overrides
+    let stepModel = openrouter(options.model);
+    let stepActiveTools: string[] | undefined;
+    let stepToolChoice: PrepareStepResult["toolChoice"] = undefined;
+
+    if (options.prepareStep) {
+      const overrides = options.prepareStep({
+        stepNumber: 0,
+        stepCount: 0,
+        previousToolCalls: [],
+      });
+      if (overrides) {
+        if (overrides.model) {
+          stepModel = openrouter(overrides.model);
+        }
+        if (overrides.activeTools) {
+          stepActiveTools = overrides.activeTools;
+        }
+        if (overrides.toolChoice) {
+          stepToolChoice = overrides.toolChoice;
+        }
+      }
+    }
 
     let result;
     try {
       result = streamText({
-        model: openrouter(options.model),
+        model: stepModel,
         tools,
         maxSteps: options.maxSteps ?? DEFAULT_MAX_STEPS,
         messages,
         system: systemPrompt,
+        ...(stepActiveTools ? { experimental_activeTools: stepActiveTools as any } : {}),
+        ...(stepToolChoice ? { toolChoice: stepToolChoice as any } : {}),
         onStepFinish: (stepResult) => {
           const toolNames = (stepResult.toolCalls ?? []).map(
             (tc: { toolName: string }) => tc.toolName
@@ -221,6 +248,7 @@ export async function* runKaiAgent(
             toolCalls: toolNames,
             finishReason: stepResult.finishReason ?? "unknown",
           });
+          previousToolCalls = toolNames;
           stepCounter++;
         },
       });

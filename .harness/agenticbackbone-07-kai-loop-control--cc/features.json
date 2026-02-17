@@ -40,7 +40,8 @@
     "id": "F-003",
     "name": "prepare-step-integration",
     "description": "Integrar o callback prepareStep no streamText. Quando options.prepareStep eh fornecido, mapear para o prepareStep do Vercel AI SDK, traduzindo model (via openrouter()), activeTools e toolChoice.",
-    "status": "failing",
+    "status": "passing",
+    "completed_at": "2026-02-17",
     "priority": 3,
     "tests": [
       "Quando prepareStep NAO eh fornecido, streamText eh chamado sem prepareStep (comportamento identico ao antes)",
