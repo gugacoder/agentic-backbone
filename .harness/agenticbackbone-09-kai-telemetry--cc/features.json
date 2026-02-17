@@ -3,7 +3,8 @@
     "id": "F-001",
     "name": "telemetry-types",
     "description": "Criar KaiTelemetryOptions interface e adicionar campo telemetry? em KaiAgentOptions em types.ts",
-    "status": "failing",
+    "status": "passing",
+    "completed_at": "2026-02-17",
     "priority": 1,
     "tests": [
       "KaiTelemetryOptions existe em types.ts com campos: enabled (boolean), functionId? (string), metadata? (Record<string,string>)",
@@ -26,7 +27,9 @@
       "Campos são opcionais (não quebram consumidores existentes)",
       "npm run build --workspace=packages/kai-sdk compila sem erros"
     ],
-    "dependencies": ["F-001"],
+    "dependencies": [
+      "F-001"
+    ],
     "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\09-kai-telemetry\\PRP.md"
   },
   {
@@ -59,14 +62,16 @@
       "Quando telemetry não é fornecido ou enabled é false, experimental_telemetry é undefined",
       "npm run build --workspace=packages/kai-sdk compila sem erros"
     ],
-    "dependencies": ["F-001"],
+    "dependencies": [
+      "F-001"
+    ],
     "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\09-kai-telemetry\\PRP.md"
   },
   {
     "id": "F-005",
     "name": "telemetry-in-compaction",
     "description": "No compaction.ts, propagar telemetry options para generateObject() e generateText() usados na compactação, emitindo spans de compaction.",
-    "status": "failing",
+    "status": "blocked",
     "priority": 5,
     "tests": [
       "CompactOptions tem campo telemetry?: KaiTelemetryOptions",
@@ -75,14 +80,17 @@
       "Quando telemetry não é fornecido, compactação funciona identicamente ao atual",
       "npm run build --workspace=packages/kai-sdk compila sem erros"
     ],
-    "dependencies": ["F-001", "F-004"],
+    "dependencies": [
+      "F-001",
+      "F-004"
+    ],
     "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\09-kai-telemetry\\PRP.md"
   },
   {
     "id": "F-006",
     "name": "session-span",
     "description": "Criar span pai 'kai.agent.run' que engloba toda a execução de runKaiAgent(), com atributos session_id, model, max_steps. Emitir warning se @opentelemetry/api não estiver disponível.",
-    "status": "failing",
+    "status": "blocked",
     "priority": 6,
     "tests": [
       "Quando telemetry.enabled é true e @opentelemetry/api está disponível, um span 'kai.agent.run' é criado com tracer 'kai-sdk'",
@@ -92,14 +100,17 @@
       "Quando telemetry não está habilitado, nenhum span é criado (zero overhead)",
       "npm run build --workspace=packages/kai-sdk compila sem erros"
     ],
-    "dependencies": ["F-003", "F-004"],
+    "dependencies": [
+      "F-003",
+      "F-004"
+    ],
     "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\09-kai-telemetry\\PRP.md"
   },
   {
     "id": "F-007",
     "name": "step-data-collection",
     "description": "Coletar dados de steps (toolCalls, tokens, duração) via onStepFinish e popular KaiUsageData.steps no evento usage final.",
-    "status": "failing",
+    "status": "blocked",
     "priority": 7,
     "tests": [
       "onStepFinish registra dados por step: stepNumber, toolCalls, durationMs",
@@ -108,14 +119,17 @@
       "Sem telemetria, steps é undefined no usage event (backward compatible)",
       "npm run build --workspace=packages/kai-sdk compila sem erros"
     ],
-    "dependencies": ["F-002", "F-004"],
+    "dependencies": [
+      "F-002",
+      "F-004"
+    ],
     "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\09-kai-telemetry\\PRP.md"
   },
   {
     "id": "F-008",
     "name": "build-verification",
     "description": "Verificação final: build limpo, exports corretos, zero breaking changes nos tipos existentes.",
-    "status": "failing",
+    "status": "blocked",
     "priority": 8,
     "tests": [
       "npm run build --workspace=packages/kai-sdk compila sem erros",
@@ -125,6 +139,14 @@
       "Sem @opentelemetry/api instalado, build compila normalmente",
       "Nenhum import direto de @opentelemetry/api no nível top-level (apenas dynamic import)"
     ],
-    "dependencies": ["F-001", "F-002", "F-003", "F-004", "F-005", "F-006", "F-007"]
+    "dependencies": [
+      "F-001",
+      "F-002",
+      "F-003",
+      "F-004",
+      "F-005",
+      "F-006",
+      "F-007"
+    ]
   }
 ]

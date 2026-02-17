@@ -68,6 +68,15 @@ export interface PrepareStepResult {
   toolChoice?: "auto" | "required" | "none" | { type: "tool"; toolName: string };
 }
 
+export interface KaiTelemetryOptions {
+  /** Habilita tracing OpenTelemetry. Default: false */
+  enabled: boolean;
+  /** Identificador da funcao nos spans (ex: "kai-agent", "heartbeat") */
+  functionId?: string;
+  /** Metadata adicional propagada nos spans */
+  metadata?: Record<string, string>;
+}
+
 export interface KaiAgentOptions {
   model: string;
   apiKey: string;
@@ -99,4 +108,6 @@ export interface KaiAgentOptions {
   prepareStep?: (context: PrepareStepContext) => PrepareStepResult | undefined;
   /** Middleware pipeline applied to the model. Executed in array order. */
   middleware?: LanguageModelV1Middleware[];
+  /** Configuracao de telemetria OpenTelemetry */
+  telemetry?: KaiTelemetryOptions;
 }

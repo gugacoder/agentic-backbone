@@ -1,5 +1,5 @@
 export { runKaiAgent } from "./agent.js";
-export type { KaiAgentEvent, KaiUsageData, KaiAgentOptions, KaiTodoItem, McpServerConfig, ContextUsage, PrepareStepContext, PrepareStepResult } from "./types.js";
+export type { KaiAgentEvent, KaiUsageData, KaiAgentOptions, KaiTodoItem, McpServerConfig, ContextUsage, PrepareStepContext, PrepareStepResult, KaiTelemetryOptions } from "./types.js";
 export { getContextUsage } from "./context/usage.js";
 export type { GetContextUsageOptions } from "./context/usage.js";
 export { compactMessages } from "./context/compaction.js";
