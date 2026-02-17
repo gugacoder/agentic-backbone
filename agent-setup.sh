@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-echo "=== Agent Setup: evolution-04-evolution-fix ==="
+echo "=== Agent Setup: agenticbackbone-05-evolution-failsafe ==="
 
 # ── Detect package manager ───────────────────────────────────
 if command -v npm &>/dev/null; then
@@ -74,7 +74,7 @@ echo "Package manager: $PKG"
 echo "Dependencies: installed"
 echo "Backbone build: attempted"
 echo "Hub build: attempted"
-echo "Harness: .harness/evolution-04-evolution-fix--cc/"
-echo "Features: 8 (all failing)"
-echo "First feature: F-001 route-mounting-fix"
+echo "Harness: .harness/agenticbackbone-05-evolution-failsafe--cc/"
+echo "Features: 12 (all failing)"
+echo "First feature: F-001 backbone-response-helpers"
 echo "=== Ready for vibe:code ==="
