@@ -78,13 +78,21 @@ export const evolutionHealthQuery = queryOptions({
 
 export const evolutionInstancesQuery = queryOptions({
   queryKey: ["evolution", "instances"],
-  queryFn: () => api.get<EvolutionInstance[]>("/modules/evolution/instances"),
+  queryFn: async () => {
+    const result = await api.get<ApiResult<EvolutionInstance[]>>("/modules/evolution/instances");
+    if (!result.ok) return [];
+    return result.data!;
+  },
 });
 
 export function evolutionInstanceQuery(name: string) {
   return queryOptions({
     queryKey: ["evolution", "instances", name],
-    queryFn: () => api.get<EvolutionInstance>(`/modules/evolution/instances/${name}`),
+    queryFn: async () => {
+      const result = await api.get<ApiResult<EvolutionInstance>>(`/modules/evolution/instances/${name}`);
+      if (!result.ok) return null;
+      return result.data!;
+    },
     enabled: !!name,
   });
 }
@@ -92,7 +100,11 @@ export function evolutionInstanceQuery(name: string) {
 export function evolutionInstanceSettingsQuery(name: string) {
   return queryOptions({
     queryKey: ["evolution", "instances", name, "settings"],
-    queryFn: () => api.get<EvolutionInstanceSettings>(`/modules/evolution/instances/${name}/settings`),
+    queryFn: async () => {
+      const result = await api.get<ApiResult<EvolutionInstanceSettings>>(`/modules/evolution/instances/${name}/settings`);
+      if (!result.ok) return null;
+      return result.data!;
+    },
     enabled: !!name,
   });
 }
@@ -100,7 +112,11 @@ export function evolutionInstanceSettingsQuery(name: string) {
 export function evolutionInstanceQRQuery(name: string, enabled: boolean) {
   return queryOptions({
     queryKey: ["evolution", "instances", name, "qr"],
-    queryFn: () => api.get<EvolutionQR>(`/modules/evolution/instances/${name}/qr`),
+    queryFn: async () => {
+      const result = await api.get<ApiResult<EvolutionQR>>(`/modules/evolution/instances/${name}/qr`);
+      if (!result.ok) return null;
+      return result.data!;
+    },
     enabled: !!name && enabled,
   });
 }

@@ -45,8 +45,9 @@
     "id": "F-003",
     "name": "hub-api-types",
     "description": "Adicionar tipo ApiResult<T> em api/evolution.ts (interface com ok, data?, error?, details?, retryAfterMs?, attempts?, maxRetries?). Adicionar mapa de mensagens amigaveis (error code -> mensagem pt-BR) e helper friendlyMessage().",
-    "status": "failing",
+    "status": "passing",
     "priority": 3,
+    "completed_at": "2026-02-17T18:15:00Z",
     "tests": [
       "Interface ApiResult<T> exportada de api/evolution.ts com campos ok, data?, error?, details?, retryAfterMs?, attempts?, maxRetries?",
       "Mapa de mensagens amigaveis cobre todos os error codes: api_offline, instance_not_found, create_failed, delete_failed, qr_unavailable, cooldown_active, retries_exhausted, settings_fetch_failed, settings_update_failed, network_error",
@@ -60,8 +61,9 @@
     "id": "F-004",
     "name": "hub-queries-envelope",
     "description": "Refatorar todas as queryFn em api/evolution.ts para interpretar o envelope ApiResult<T>. Queries devem extrair data quando ok=true, retornar valor vazio/default quando ok=false (sem lancar erro). isError do React Query deve indicar apenas falha de rede (backbone inacessivel).",
-    "status": "blocked",
+    "status": "passing",
     "priority": 4,
+    "completed_at": "2026-02-17T21:00:00Z",
     "tests": [
       "evolutionInstancesQuery retorna array vazio quando resultado eh { ok: false }",
       "evolutionInstanceQuery retorna null/undefined quando resultado eh { ok: false }",
@@ -79,7 +81,7 @@
     "id": "F-005",
     "name": "hub-mutations-envelope",
     "description": "Refatorar todas as mutations em api/evolution.ts para retornar ApiResult<T>. Os handlers onSuccess nos componentes devem verificar result.ok antes de proceder. Erros de negocio mostram toast via friendlyMessage(), sem entrar em onError.",
-    "status": "blocked",
+    "status": "pending",
     "priority": 5,
     "tests": [
       "useCreateInstance retorna ApiResult — onSuccess verifica result.ok",

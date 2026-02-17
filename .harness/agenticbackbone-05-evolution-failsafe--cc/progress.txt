@@ -1,7 +1,7 @@
 # Evolution Fail-Safe — Progress
 
 ## Current Status
-IN PROGRESS — F-001, F-002 completas (2/12). Proxima: F-003 hub-api-types.
+IN PROGRESS — F-001, F-002, F-003, F-004 completas (4/12). Proxima: F-005 hub-mutations-envelope.
 
 ## Specs Path
 D:\sources\codr.studio\cia-prime-care\agentic-backbone\apps\backbone\milestones\05-evolution-failsafe
@@ -31,8 +31,8 @@ D:\sources\codr.studio\cia-prime-care\agentic-backbone\apps\backbone\milestones\
 - [x] F-002 backbone-routes-envelope — Migrar todas as rotas para HTTP 200 com envelope
 
 ### Hub (Types & Infrastructure)
-- [ ] F-003 hub-api-types — ApiResult<T> type + mapa de mensagens amigaveis
-- [ ] F-004 hub-queries-envelope — Refatorar queries para interpretar envelope
+- [x] F-003 hub-api-types — ApiResult<T> type + mapa de mensagens amigaveis
+- [x] F-004 hub-queries-envelope — Refatorar queries para interpretar envelope
 - [ ] F-005 hub-mutations-envelope — Refatorar mutations para retornar ApiResult
 
 ### Hub (Component Refactoring)
@@ -98,3 +98,22 @@ Session 3: Implementada F-002 backbone-routes-envelope.
 - Smoke test via curl: todas as 10 rotas confirmadas retornando HTTP 200 com envelope correto
 - Build limpo: backbone tsc + hub tsc --noEmit
 - Proxima: F-003 hub-api-types
+
+Session 3 (cont): Implementada F-003 hub-api-types.
+- Adicionada interface ApiResult<T> com campos ok, data?, error?, details?, retryAfterMs?, attempts?, maxRetries?
+- Adicionado mapa ERROR_MESSAGES com 10 error codes mapeados para mensagens pt-BR
+- Adicionada funcao friendlyMessage() com fallback generico
+- Build limpo: hub tsc --noEmit
+- Proxima: F-004 hub-queries-envelope
+
+Session 4: Implementada F-004 hub-queries-envelope.
+- Refatoradas todas as queryFn em api/evolution.ts para interpretar envelope ApiResult<T>
+- evolutionInstancesQuery: unwraps data ou retorna [] quando ok=false
+- evolutionInstanceQuery: unwraps data ou retorna null quando ok=false
+- evolutionInstanceSettingsQuery: unwraps data ou retorna null quando ok=false
+- evolutionInstanceQRQuery: unwraps data ou retorna null quando ok=false
+- evolutionHealthQuery: inalterada (rota /health nao usa envelope)
+- Nenhuma queryFn lanca erro por erro de negocio — isError so dispara por falha de rede
+- Consumidores ja usam optional chaining e defaults, 0 mudancas necessarias em componentes
+- Build limpo: hub tsc --noEmit + vite build
+- Proxima: F-005 hub-mutations-envelope
