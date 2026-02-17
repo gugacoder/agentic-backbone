@@ -23,7 +23,8 @@
     "id": "F-002",
     "name": "types-model-aliases",
     "description": "Adicionar campo modelAliases?: Record<string, string> em KaiAgentOptions (packages/kai-sdk/src/types.ts). Campo opcional que permite ao consumidor definir aliases de modelo.",
-    "status": "failing",
+    "status": "passing",
+    "completed_at": "2026-02-18T00:10:00Z",
     "priority": 2,
     "tests": [
       "KaiAgentOptions possui campo modelAliases?: Record<string, string>",
@@ -37,7 +38,7 @@
     "id": "F-003",
     "name": "agent-integration",
     "description": "Refatorar agent.ts para usar createKaiProviderRegistry() ao invés de createOpenAICompatible() inline. Criar o registry com apiKey e modelAliases do options. Usar providers.model() em todos os pontos que chamam openrouter().",
-    "status": "blocked",
+    "status": "failing",
     "priority": 3,
     "tests": [
       "agent.ts não contém mais createOpenAICompatible import/uso",
@@ -79,7 +80,7 @@
     "id": "F-005",
     "name": "structured-integration",
     "description": "Refatorar structured.ts (kaiGenerateObject, kaiStreamObject) para aceitar providers opcionais via KaiObjectOptions. Se passado, reutilizar; se não, criar provider internamente (backward compat). Eliminar duplicação de createOpenAICompatible.",
-    "status": "blocked",
+    "status": "pending",
     "priority": 5,
     "tests": [
       "KaiObjectOptions possui campo providers? opcional",
@@ -98,7 +99,7 @@
     "id": "F-006",
     "name": "exports-index",
     "description": "Exportar createKaiProviderRegistry e KaiProviderConfig do packages/kai-sdk/src/index.ts para que consumidores possam importar do pacote.",
-    "status": "blocked",
+    "status": "pending",
     "priority": 6,
     "tests": [
       "index.ts exporta createKaiProviderRegistry de ./providers.js",

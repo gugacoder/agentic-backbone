@@ -120,4 +120,6 @@ export interface KaiAgentOptions {
   middleware?: LanguageModelV1Middleware[];
   /** Configuracao de telemetria OpenTelemetry */
   telemetry?: KaiTelemetryOptions;
+  /** Aliases de modelo customizados: nome amigavel → model ID completo (ex: { fast: "anthropic/claude-haiku-4.5" }) */
+  modelAliases?: Record<string, string>;
 }
