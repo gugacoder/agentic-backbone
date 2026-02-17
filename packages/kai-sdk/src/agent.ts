@@ -19,6 +19,36 @@ import { join } from "node:path";
 const DEFAULT_SESSION_DIR = join(process.cwd(), "data", "kai-sessions");
 const DEFAULT_MAX_STEPS = 30;
 
+/**
+ * Attempt to create an OTel span for the agent run.
+ * Uses dynamic import so the build doesn't break when @opentelemetry/api isn't installed.
+ * Returns a Span-like object with .end(), or undefined when unavailable/disabled.
+ */
+async function tryStartSessionSpan(
+  options: KaiAgentOptions,
+  sessionId: string
+): Promise<{ end: () => void } | undefined> {
+  if (!options.telemetry?.enabled) return undefined;
+
+  try {
+    const otel = await import("@opentelemetry/api");
+    const tracer = otel.trace.getTracer("kai-sdk");
+    return tracer.startSpan("kai.agent.run", {
+      attributes: {
+        "kai.session_id": sessionId,
+        "kai.model": options.model,
+        "kai.max_steps": options.maxSteps ?? DEFAULT_MAX_STEPS,
+      },
+    });
+  } catch {
+    console.warn(
+      "[kai] telemetry.enabled is true but @opentelemetry/api is not installed. " +
+        "Install it as a dependency to enable custom spans. Continuing without session span."
+    );
+    return undefined;
+  }
+}
+
 function createMcpTransport(config: McpServerConfig) {
   if (config.transport.type === "stdio") {
     return new StdioMCPTransport({
@@ -60,6 +90,9 @@ export async function* runKaiAgent(
   ];
 
   yield { type: "init", sessionId };
+
+  // Session-level OTel span (F-006): wraps the entire agent run
+  const sessionSpan = await tryStartSessionSpan(options, sessionId);
 
   // MCP client lifecycle: create clients, collect tools, close on exit
   const mcpClients: MCPClient[] = [];
@@ -383,6 +416,9 @@ export async function* runKaiAgent(
       },
     };
   } finally {
+    // End session span before cleanup (F-006)
+    sessionSpan?.end();
+
     // Close all MCP clients to avoid leaked connections/processes
     for (const client of mcpClients) {
       await client.close().catch(() => {});

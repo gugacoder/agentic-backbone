@@ -94,7 +94,8 @@
     "id": "F-006",
     "name": "session-span",
     "description": "Criar span pai 'kai.agent.run' que engloba toda a execução de runKaiAgent(), com atributos session_id, model, max_steps. Emitir warning se @opentelemetry/api não estiver disponível.",
-    "status": "failing",
+    "status": "passing",
+    "completed_at": "2026-02-17",
     "priority": 6,
     "tests": [
       "Quando telemetry.enabled é true e @opentelemetry/api está disponível, um span 'kai.agent.run' é criado com tracer 'kai-sdk'",
