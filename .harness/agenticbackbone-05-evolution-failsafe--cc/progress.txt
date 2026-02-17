@@ -1,7 +1,7 @@
 # Evolution Fail-Safe — Progress
 
 ## Current Status
-IN PROGRESS — F-001, F-002, F-003, F-004, F-005 completas (5/12). Proxima: F-006 hub-create-dialog-separation.
+IN PROGRESS — F-001, F-002, F-003, F-004, F-005, F-006 completas (6/12). Proxima: F-007 hub-whatsapp-page-no-error-state.
 
 ## Specs Path
 D:\sources\codr.studio\cia-prime-care\agentic-backbone\apps\backbone\milestones\05-evolution-failsafe
@@ -36,7 +36,7 @@ D:\sources\codr.studio\cia-prime-care\agentic-backbone\apps\backbone\milestones\
 - [x] F-005 hub-mutations-envelope — Refatorar mutations para retornar ApiResult
 
 ### Hub (Component Refactoring)
-- [ ] F-006 hub-create-dialog-separation — Dialog cria instancia -> aba status (nao QR)
+- [x] F-006 hub-create-dialog-separation — Dialog cria instancia -> aba status (nao QR)
 - [ ] F-007 hub-whatsapp-page-no-error-state — Pagina principal sem tela de erro
 - [ ] F-008 hub-instance-page-no-error-card — Pagina instancia sem InstanceErrorCard
 - [ ] F-009 hub-qr-component-resilient — QR resiliente com retry e reset
@@ -133,3 +133,10 @@ Session 5: Implementada F-005 hub-mutations-envelope.
 - Atualizado instance-table.tsx: handleReconnect e handleRestart verificam result.ok
 - Build limpo: backbone tsc + hub tsc --noEmit + vite build
 - Proxima: F-006 hub-create-dialog-separation
+
+Session 6: Implementada F-006 hub-create-dialog-separation.
+- Alterado navigate em create-instance-dialog.tsx: search.tab de "qr" para "status"
+- Separacao de concerns: criacao de instancia nao assume linkagem imediata
+- Comportamento de falha ja estava correto (dialog aberto, toast amigavel, form nao resetado) desde F-005
+- Build limpo: hub tsc --noEmit + vite build
+- Proxima: F-007 hub-whatsapp-page-no-error-state

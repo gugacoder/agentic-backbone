@@ -101,8 +101,9 @@
     "id": "F-006",
     "name": "hub-create-dialog-separation",
     "description": "Refatorar create-instance-dialog.tsx: ao criar com sucesso, navegar para aba 'status' (nao 'qr'). Quando result.ok === false, mostrar toast com mensagem amigavel e manter dialog aberto.",
-    "status": "pending",
+    "status": "passing",
     "priority": 6,
+    "completed_at": "2026-02-17T23:30:00Z",
     "tests": [
       "Apos criacao com sucesso, navigate vai para tab: 'status' (nao 'qr')",
       "Quando result.ok === false, dialog permanece aberto",

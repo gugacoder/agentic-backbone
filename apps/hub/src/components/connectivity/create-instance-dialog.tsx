@@ -60,7 +60,7 @@ export function CreateInstanceDialog({ open, onOpenChange }: CreateInstanceDialo
         navigate({
           to: "/conectividade/whatsapp/$name",
           params: { name: values.instanceName },
-          search: { tab: "qr" },
+          search: { tab: "status" },
         });
       },
       onError: (err) => {
