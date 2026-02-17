@@ -242,6 +242,17 @@ export async function* runKaiAgent(
     let stepCounter = 0;
     let previousToolCalls: string[] = [];
 
+    // Step data collection for telemetry (F-007)
+    const telemetryEnabled = options.telemetry?.enabled === true;
+    const collectedSteps: Array<{
+      stepNumber: number;
+      toolCalls: string[];
+      inputTokens: number;
+      outputTokens: number;
+      durationMs: number;
+    }> = [];
+    let stepStartMs = Date.now();
+
     // prepareStep integration — call consumer's callback before streamText to get initial overrides
     let stepModel = openrouter(options.model);
     let stepActiveTools: string[] | undefined;
@@ -315,6 +326,20 @@ export async function* runKaiAgent(
             finishReason: stepResult.finishReason ?? "unknown",
           };
           pendingStepEvents.push(stepEvent);
+
+          // Collect per-step breakdown when telemetry is enabled (F-007)
+          if (telemetryEnabled) {
+            const now = Date.now();
+            collectedSteps.push({
+              stepNumber: stepCounter,
+              toolCalls: toolNames,
+              inputTokens: stepResult.usage?.promptTokens ?? 0,
+              outputTokens: stepResult.usage?.completionTokens ?? 0,
+              durationMs: now - stepStartMs,
+            });
+            stepStartMs = now;
+          }
+
           previousToolCalls = toolNames;
           stepCounter++;
 
@@ -413,6 +438,10 @@ export async function* runKaiAgent(
         durationMs: Date.now() - startMs,
         durationApiMs: 0,
         stopReason: finishReason,
+        // Step breakdown — only populated when telemetry is enabled (F-007)
+        ...(telemetryEnabled && collectedSteps.length > 0
+          ? { steps: collectedSteps }
+          : {}),
       },
     };
   } finally {

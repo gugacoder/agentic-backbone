@@ -115,7 +115,8 @@
     "id": "F-007",
     "name": "step-data-collection",
     "description": "Coletar dados de steps (toolCalls, tokens, duração) via onStepFinish e popular KaiUsageData.steps no evento usage final.",
-    "status": "failing",
+    "status": "passing",
+    "completed_at": "2026-02-17",
     "priority": 7,
     "tests": [
       "onStepFinish registra dados por step: stepNumber, toolCalls, durationMs",
@@ -134,7 +135,7 @@
     "id": "F-008",
     "name": "build-verification",
     "description": "Verificação final: build limpo, exports corretos, zero breaking changes nos tipos existentes.",
-    "status": "blocked",
+    "status": "failing",
     "priority": 8,
     "tests": [
       "npm run build --workspace=packages/kai-sdk compila sem erros",

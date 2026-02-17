@@ -1,7 +1,7 @@
 # Progress — agenticbackbone-09-kai-telemetry
 
 ## Current Status
-IN PROGRESS — 6/8 features passing.
+IN PROGRESS — 7/8 features passing.
 
 ## Specs Path
 D:\sources\codr.studio\cia-prime-care\agentic-backbone\apps\backbone\milestones\09-kai-telemetry
@@ -20,7 +20,7 @@ D:\sources\codr.studio\cia-prime-care\agentic-backbone\apps\backbone\milestones\
 - [x] F-004 telemetry-in-streamtext — experimental_telemetry no streamText() do agent.ts (2026-02-17)
 - [x] F-005 telemetry-in-compaction — experimental_telemetry no compaction.ts (2026-02-17)
 - [x] F-006 session-span — Span pai kai.agent.run com dynamic import de @opentelemetry/api (2026-02-17)
-- [ ] F-007 step-data-collection — Coletar breakdown por step via onStepFinish
+- [x] F-007 step-data-collection — Coletar breakdown por step via onStepFinish (2026-02-17)
 - [ ] F-008 build-verification — Verificação final de build, exports e backward compat
 
 ## Architecture Decisions
@@ -50,6 +50,7 @@ D:\sources\codr.studio\cia-prime-care\agentic-backbone\apps\backbone\milestones\
 - Session 4: F-003 peer-dependency-otel completada — @opentelemetry/api adicionado como peerDependency opcional com peerDependenciesMeta. F-004 telemetry-in-streamtext implementada — telemetryConfig construído a partir de options.telemetry e passado como experimental_telemetry ao streamText(). Inclui sessionId, model, metadata customizada. recordInputs/recordOutputs desabilitados por segurança. Build limpo.
 - Session 5: F-005 telemetry-in-compaction implementada — CompactOptions recebe telemetry?: KaiTelemetryOptions. telemetryConfig construído com functionId 'kai-compaction' e passado como experimental_telemetry para generateObject() e generateText(). agent.ts passa options.telemetry para compactMessages(). recordInputs/recordOutputs desabilitados. Build limpo.
 - Session 6: F-006 session-span implementada — tryStartSessionSpan() helper com dynamic import de @opentelemetry/api. Cria span 'kai.agent.run' via tracer 'kai-sdk' com atributos kai.session_id, kai.model, kai.max_steps. span.end() no finally. console.warn quando OTel não instalado. Zero overhead quando desabilitado. Build limpo.
+- Session 7: F-007 step-data-collection implementada — collectedSteps[] array coleta dados por step via onStepFinish quando telemetry.enabled. Cada step registra stepNumber, toolCalls, inputTokens (usage.promptTokens), outputTokens (usage.completionTokens), durationMs (delta entre steps). Dados populados em KaiUsageData.steps no usage event via spread condicional. Sem telemetria, steps fica undefined (backward compatible). Build limpo.
 
 ## Next Priority
-F-007 step-data-collection (deps: F-002 ✓, F-004 ✓)
+F-008 build-verification (deps: F-001 ✓, F-002 ✓, F-003 ✓, F-004 ✓, F-005 ✓, F-006 ✓, F-007 ✓)
