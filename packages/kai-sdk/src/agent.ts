@@ -199,6 +199,10 @@ export async function* runKaiAgent(
       context: { ...ctxUsage, compacted },
     };
 
+    // Step event tracking — onStepFinish pushes events, fullStream loop yields them
+    const pendingStepEvents: KaiAgentEvent[] = [];
+    let stepCounter = 0;
+
     let result;
     try {
       result = streamText({
@@ -207,7 +211,18 @@ export async function* runKaiAgent(
         maxSteps: options.maxSteps ?? DEFAULT_MAX_STEPS,
         messages,
         system: systemPrompt,
-        onStepFinish: () => {},
+        onStepFinish: (stepResult) => {
+          const toolNames = (stepResult.toolCalls ?? []).map(
+            (tc: { toolName: string }) => tc.toolName
+          );
+          pendingStepEvents.push({
+            type: "step_finish",
+            step: stepCounter,
+            toolCalls: toolNames,
+            finishReason: stepResult.finishReason ?? "unknown",
+          });
+          stepCounter++;
+        },
       });
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
@@ -221,6 +236,11 @@ export async function* runKaiAgent(
         if (part.type === "text-delta") {
           fullText += part.textDelta;
           yield { type: "text", content: part.textDelta };
+        } else if (part.type === "step-finish") {
+          // Drain pending step_finish events collected by onStepFinish
+          while (pendingStepEvents.length > 0) {
+            yield pendingStepEvents.shift()!;
+          }
         } else if (part.type === "error") {
           const errMsg = (part as any).error?.message ?? JSON.stringify((part as any).error ?? part);
           throw new Error(`OpenRouter API error: ${errMsg}`);
@@ -233,6 +253,11 @@ export async function* runKaiAgent(
         throw new Error(`OpenRouter stream error: ${msg}`);
       }
       throw err;
+    }
+
+    // Drain any remaining step events not yet emitted (edge case: stream ends without step-finish)
+    while (pendingStepEvents.length > 0) {
+      yield pendingStepEvents.shift()!;
     }
 
     // Persist session

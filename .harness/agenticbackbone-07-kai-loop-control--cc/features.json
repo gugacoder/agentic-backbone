@@ -21,7 +21,8 @@
     "id": "F-002",
     "name": "step-finish-events",
     "description": "Implementar emissao de eventos step_finish via onStepFinish no streamText. O onStepFinish popula um array de eventos que sao emitidos durante o loop de streaming, entre os text-deltas.",
-    "status": "failing",
+    "status": "passing",
+    "completed_at": "2026-02-17",
     "priority": 2,
     "tests": [
       "onStepFinish no streamText registra step number, tool calls e finish reason",
@@ -59,7 +60,7 @@
     "id": "F-004",
     "name": "stop-when-integration",
     "description": "Implementar stopWhen como condicao de parada customizada. Usar onStepFinish para avaliar a condicao e abortar o stream quando retornar true. Manter maxSteps como limite superior.",
-    "status": "blocked",
+    "status": "failing",
     "priority": 4,
     "tests": [
       "Quando stopWhen NAO eh fornecido, loop usa apenas maxSteps como limite (comportamento identico ao antes)",

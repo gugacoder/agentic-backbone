@@ -1,7 +1,7 @@
 # Progress — agenticbackbone-07-kai-loop-control--cc
 
 ## Current Status
-1/6 features complete. F-001 passing. Next: F-002 (step-finish-events).
+2/6 features complete. F-001, F-002 passing. Next: F-003 (prepare-step-integration).
 
 ## Specs Path
 D:\sources\codr.studio\cia-prime-care\agentic-backbone\apps\backbone\milestones\07-kai-loop-control
@@ -18,7 +18,7 @@ D:\sources\codr.studio\cia-prime-care\agentic-backbone\apps\backbone\milestones\
 ## Features
 
 - [x] F-001 loop-control-types — Novos tipos (PrepareStepContext, PrepareStepResult, step_finish event, campos em KaiAgentOptions)
-- [ ] F-002 step-finish-events — Emissão de eventos step_finish via onStepFinish
+- [x] F-002 step-finish-events — Emissão de eventos step_finish via onStepFinish
 - [ ] F-003 prepare-step-integration — Integração do callback prepareStep no streamText
 - [ ] F-004 stop-when-integration — Implementação de stopWhen como condição de parada customizada
 - [ ] F-005 public-exports — Atualizar index.ts com novos exports
@@ -30,7 +30,7 @@ D:\sources\codr.studio\cia-prime-care\agentic-backbone\apps\backbone\milestones\
 2. **Sem novas dependências**: Usa apenas APIs já disponíveis no Vercel AI SDK v4
 3. **Arquivos alterados**: Apenas `types.ts`, `agent.ts`, `index.ts` em `packages/kai-sdk/src/`
 4. **stopWhen via onStepFinish + AbortController**: streamText não tem stopWhen nativo; usar AbortController.abort() dentro do onStepFinish
-5. **prepareStep NÃO existe no streamText**: Apenas generateText tem experimental_prepareStep. Para streamText, implementar manualmente via lógica no onStepFinish ou multi-call pattern
+5. **prepareStep EXISTE no streamText** como `experimental_prepareStep`: Recebe `{ stepNumber, stepCount }` e retorna `{ model?, toolChoice?, activeTools? }`. Kai wrapper traduz model string para openrouter() provider
 6. **Eventos step_finish no generator**: fullStream já emite 'step-finish' events nativamente; capturá-los e traduzir para KaiAgentEvent
 7. **prepareStep delega ao consumidor**: Sem abstração de routing — o consumidor decide a lógica
 
@@ -39,10 +39,11 @@ D:\sources\codr.studio\cia-prime-care\agentic-backbone\apps\backbone\milestones\
 - `streamText` has `onStepFinish` (StepResult with toolCalls[].toolName, finishReason)
 - `streamText` has `abortSignal` for cancellation
 - `streamText` fullStream emits `step-finish` events with finishReason, usage
-- `streamText` does NOT have `experimental_prepareStep` (only generateText does)
-- `streamText` does NOT have `stopWhen`
+- `streamText` HAS `experimental_prepareStep` — receives `{ stepNumber, stepCount }`, returns `{ model?, toolChoice?, activeTools? }`
+- `streamText` does NOT have `stopWhen` — use AbortController via onStepFinish
 
 ## Session Notes
 
 - Session 1 (Initializer): Harness criado com 6 features (todas failing). PRP analisado, código existente explorado.
 - Session 2: F-001 implementado. Adicionados PrepareStepContext, PrepareStepResult, step_finish event em KaiAgentEvent, stopWhen e prepareStep em KaiAgentOptions. Build limpo.
+- Session 3: F-002 implementado. onStepFinish popula pendingStepEvents com step number, tool names, finishReason. fullStream loop drena esses eventos quando detecta 'step-finish' parts. Fallback drain no final do stream para edge cases. Build limpo.
