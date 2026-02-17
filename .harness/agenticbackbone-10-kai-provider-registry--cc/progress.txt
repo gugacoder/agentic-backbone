@@ -1,0 +1,78 @@
+═══════════════════════════════════════════════════════════════
+  AGENT HARNESS — agenticbackbone-10-kai-provider-registry--cc
+═══════════════════════════════════════════════════════════════
+
+Current Status: INITIALIZED — 0/7 features passing
+
+Specs Path: D:\sources\codr.studio\cia-prime-care\agentic-backbone\apps\backbone\milestones\10-kai-provider-registry
+PRP: D:\sources\codr.studio\cia-prime-care\agentic-backbone\apps\backbone\milestones\10-kai-provider-registry\PRP.md
+
+═══════════════════════════════════════════════════════════════
+  ENVIRONMENT
+═══════════════════════════════════════════════════════════════
+
+Stack: Node.js + TypeScript (ESM), Vercel AI SDK v4, npm workspaces monorepo
+Package: @agentic-backbone/kai-sdk (packages/kai-sdk)
+Consumer: @agentic-backbone/backbone (apps/backbone)
+
+Commands:
+  Build kai-sdk:   npm run build --workspace=packages/kai-sdk
+  Build backbone:  npm run build --workspace=apps/backbone
+  Dev backbone:    npm run dev:backbone (from root)
+  Install:         npm install (from root)
+
+═══════════════════════════════════════════════════════════════
+  FEATURES
+═══════════════════════════════════════════════════════════════
+
+[ ] F-001  provider-registry-module     — Criar providers.ts com createKaiProviderRegistry()
+[ ] F-002  types-model-aliases          — Adicionar modelAliases em KaiAgentOptions
+[ ] F-003  agent-integration            — Refatorar agent.ts para usar registry
+[ ] F-004  compaction-registry-reuse    — Refatorar compaction.ts para aceitar registry
+[ ] F-005  structured-registry-reuse    — Refatorar structured.ts para aceitar registry
+[ ] F-006  exports-update               — Exportar registry e tipos no index.ts
+[ ] F-007  build-verification           — Validar build completo do monorepo
+
+═══════════════════════════════════════════════════════════════
+  ARCHITECTURE DECISIONS
+═══════════════════════════════════════════════════════════════
+
+1. SINGLE PROVIDER: Apenas OpenRouter neste milestone. Multi-provider (Anthropic direto, Ollama) eh futuro.
+
+2. ALIAS RESOLUTION: createKaiProviderRegistry resolve aliases via mapa simples (nameOrAlias → resolved ID).
+   Default aliases: fast → anthropic/claude-haiku-4.5, balanced → anthropic/claude-sonnet-4, strong → anthropic/claude-opus-4.6.
+
+3. BACKWARD COMPATIBILITY: Todas as funcoes que aceitam providers fazem-no de forma opcional.
+   Se providers nao eh fornecido, criam internamente (identico ao comportamento atual).
+
+4. NO FALLBACK LOGIC: Fallback automatico entre modelos NAO eh escopo deste PRP.
+   Isso pertence ao prepareStep (PRP 07 — kai-loop-control).
+
+5. PASSTHROUGH: IDs de modelo completos (ex: "anthropic/claude-sonnet-4") continuam funcionando sem aliases.
+
+6. EXTRA: structured.ts (kaiGenerateObject, kaiStreamObject) tambem tem providers duplicados.
+   O PRP nao menciona explicitamente, mas F-005 resolve essa inconsistencia.
+
+═══════════════════════════════════════════════════════════════
+  KEY FILES
+═══════════════════════════════════════════════════════════════
+
+NOVO:
+  packages/kai-sdk/src/providers.ts       — Provider registry module
+
+MODIFICADOS:
+  packages/kai-sdk/src/types.ts           — Adicionar modelAliases
+  packages/kai-sdk/src/agent.ts           — Usar registry ao inves de createOpenAICompatible
+  packages/kai-sdk/src/context/compaction.ts — Aceitar registry opcional
+  packages/kai-sdk/src/structured.ts      — Aceitar registry opcional
+  packages/kai-sdk/src/index.ts           — Novos exports
+
+═══════════════════════════════════════════════════════════════
+  SESSION NOTES
+═══════════════════════════════════════════════════════════════
+
+Session 1 (Initializer): Harness criado para onda agenticbackbone-10-kai-provider-registry.
+  - 7 features decompostas do PRP
+  - F-005 (structured.ts) adicionada alem do escopo explicito do PRP
+    (mesma duplicacao de provider encontrada em kaiGenerateObject/kaiStreamObject)
+  - Complexidade geral: BAIXA — refactoring bem definido, sem novos conceitos
