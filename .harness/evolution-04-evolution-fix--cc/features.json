@@ -20,7 +20,8 @@
     "id": "F-002",
     "name": "api-health-card-error-state",
     "description": "Adicionar tratamento de estado de erro no componente ApiHealthCard. Quando a query falha (isError), exibir badge vermelho 'Indisponivel' com texto 'Falha ao consultar o backbone'. Nunca ficar preso em 'Verificando'.",
-    "status": "failing",
+    "status": "passing",
+    "completed_at": "2026-02-16T23:00:00Z",
     "priority": 2,
     "tests": [
       "Com backend rodando: badge mostra 'Online' (verde) ou 'Offline' (vermelho) conforme estado real da Evolution API",

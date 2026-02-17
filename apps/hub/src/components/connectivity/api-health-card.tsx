@@ -20,9 +20,9 @@ const statusConfig: Record<string, { label: string; className: string }> = {
 };
 
 export function ApiHealthCard() {
-  const { data: health, isLoading } = useQuery(evolutionHealthQuery);
+  const { data: health, isFetching, isError } = useQuery(evolutionHealthQuery);
 
-  const apiState = health?.apiState ?? "offline";
+  const apiState = !health && isError ? "offline" : (health?.apiState ?? "unknown");
   const config = statusConfig[apiState] ?? statusConfig.offline;
 
   return (
@@ -32,21 +32,23 @@ export function ApiHealthCard() {
         <Activity className="h-4 w-4 text-muted-foreground" />
       </CardHeader>
       <CardContent>
-        {isLoading ? (
-          <div className="h-6 w-24 animate-pulse rounded bg-muted" />
-        ) : (
-          <div className="flex items-center gap-3">
-            <Badge variant="secondary" className={cn("font-medium", config.className)}>
-              {config.label}
-            </Badge>
-            {health?.lastProbe?.responseTimeMs != null && (
-              <span className="text-sm text-muted-foreground">{health.lastProbe.responseTimeMs}ms</span>
-            )}
-            {health?.lastProbe?.timestamp && (
-              <span className="text-sm text-muted-foreground">{timeAgo(health.lastProbe.timestamp)}</span>
-            )}
-          </div>
-        )}
+        <div className={cn("flex items-center gap-3", isFetching && !health && !isError && "animate-pulse")}>
+          <Badge variant="secondary" className={cn("font-medium", config.className)}>
+            {config.label}
+          </Badge>
+          {!health && isError ? (
+            <span className="text-sm text-destructive">Falha ao consultar o backbone</span>
+          ) : (
+            <>
+              {health?.lastProbe?.responseTimeMs != null && (
+                <span className="text-sm text-muted-foreground">{health.lastProbe.responseTimeMs}ms</span>
+              )}
+              {health?.lastProbe?.timestamp && (
+                <span className="text-sm text-muted-foreground">{timeAgo(health.lastProbe.timestamp)}</span>
+              )}
+            </>
+          )}
+        </div>
       </CardContent>
     </Card>
   );

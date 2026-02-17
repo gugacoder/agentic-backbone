@@ -2,7 +2,7 @@
 
 ## Current Status
 
-F-001 (route-mounting-fix) implementada e validada. 1/8 features complete.
+F-001 e F-002 implementadas e validadas. 2/8 features complete.
 
 ## Specs Path
 
@@ -22,7 +22,7 @@ D:\sources\codr.studio\cia-prime-care\agentic-backbone\apps\backbone\milestones\
 ## Features
 
 - [x] F-001 route-mounting-fix — Reestruturar index.ts: startModules() antes de app.route()
-- [ ] F-002 api-health-card-error-state — ApiHealthCard com tratamento de isError
+- [x] F-002 api-health-card-error-state — ApiHealthCard com tratamento de isError
 - [ ] F-003 whatsapp-page-error-state — WhatsAppPage com card de erro e retry
 - [ ] F-004 whatsapp-instance-error-state — WhatsAppInstancePage diferenciando 404/503/outros
 - [ ] F-005 instance-qr-error-state — InstanceQR com estado 'error' na maquina de estados
@@ -65,3 +65,12 @@ Session 2 (CC): F-001 route-mounting-fix implementada.
 - Testes validados: health=200, instances=503 (nao 404), JWT barrier=401 sem token
 - Build backbone passa limpo
 - Proxima prioridade: F-002 api-health-card-error-state
+
+Session 3 (CC): F-002 api-health-card-error-state implementada.
+- Adicionado `isError` ao destructuring do useQuery em ApiHealthCard
+- Quando `!health && isError`: apiState forcado para "offline" → badge "Indisponivel" (vermelho)
+- Texto de erro "Falha ao consultar o backbone" exibido em estado de erro
+- animate-pulse desativado quando em estado de erro (nao pisca badge de erro)
+- Dados anteriores preservados durante refetch (sem piscar)
+- Build hub passa limpo (tsc --noEmit + vite build)
+- Proxima prioridade: F-003 whatsapp-page-error-state
