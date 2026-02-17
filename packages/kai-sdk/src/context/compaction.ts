@@ -1,7 +1,16 @@
-import { generateText, type CoreMessage } from "ai";
+import { generateObject, type CoreMessage } from "ai";
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
+import { z } from "zod";
 import { countTokens } from "./tokenizer.js";
 import { getContextWindow } from "./models.js";
+
+const CompactionSchema = z.object({
+  summary: z.string().describe("Resumo conciso da conversa"),
+  decisions: z.array(z.string()).describe("Decisoes tomadas"),
+  filesModified: z.array(z.string()).describe("Arquivos modificados"),
+  currentState: z.string().describe("Estado atual do trabalho"),
+  nextSteps: z.array(z.string()).describe("Proximos passos"),
+});
 
 const TAIL_RATIO = 0.30;
 
@@ -117,21 +126,37 @@ export async function compactMessages(
       apiKey: options.apiKey,
     });
 
-    const result = await generateText({
+    const result = await generateObject({
       model: openrouter(options.model),
+      schema: CompactionSchema,
       system: SUMMARIZATION_PROMPT,
       messages: [{ role: "user", content: conversationText }],
       maxTokens: 2000,
     });
 
-    const summary = result.text;
-    if (!summary || summary.trim().length === 0) {
+    const obj = result.object;
+    if (!obj.summary || obj.summary.trim().length === 0) {
       return {
         messages,
         compacted: false,
         warning: "Compaction produced empty summary — keeping original messages",
       };
     }
+
+    const sections: string[] = [];
+    sections.push(`## Summary\n${obj.summary}`);
+    if (obj.decisions.length > 0) {
+      sections.push(`## Decisions\n${obj.decisions.map((d) => `- ${d}`).join("\n")}`);
+    }
+    if (obj.filesModified.length > 0) {
+      sections.push(`## Files Modified\n${obj.filesModified.map((f) => `- ${f}`).join("\n")}`);
+    }
+    sections.push(`## Current State\n${obj.currentState}`);
+    if (obj.nextSteps.length > 0) {
+      sections.push(`## Next Steps\n${obj.nextSteps.map((s) => `- ${s}`).join("\n")}`);
+    }
+
+    const summary = sections.join("\n\n");
 
     const summaryMessage: CoreMessage = {
       role: "user",

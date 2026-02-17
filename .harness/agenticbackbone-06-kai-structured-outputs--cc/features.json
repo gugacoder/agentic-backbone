@@ -62,7 +62,7 @@
     "id": "F-004",
     "name": "compaction-structured-output",
     "description": "Refatorar compactMessages() em context/compaction.ts para usar generateObject() com CompactionSchema Zod (summary, decisions, filesModified, currentState, nextSteps). Montar mensagem de resumo deterministicamente a partir dos campos tipados em vez de texto livre.",
-    "status": "pending",
+    "status": "passing",
     "priority": 4,
     "tests": [
       "CompactionSchema Zod definido com campos: summary (string), decisions (string[]), filesModified (string[]), currentState (string), nextSteps (string[])",
@@ -74,13 +74,14 @@
     "dependencies": [
       "F-001"
     ],
-    "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\06-kai-structured-outputs\\PRP.md"
+    "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\06-kai-structured-outputs\\PRP.md",
+    "completed_at": "2026-02-17T20:30:00Z"
   },
   {
     "id": "F-005",
     "name": "compaction-fallback",
     "description": "Manter fallback na compaction: se generateObject() falhar (provider nao suporta structured outputs, erro de rede, etc.), cair no generateText() atual. O fallback deve ser transparente — mesmo contrato de retorno CompactResult.",
-    "status": "blocked",
+    "status": "failing",
     "priority": 5,
     "tests": [
       "Se generateObject() lancar erro, compactMessages() tenta generateText() como fallback",
