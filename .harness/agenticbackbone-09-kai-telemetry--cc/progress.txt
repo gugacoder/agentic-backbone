@@ -1,0 +1,46 @@
+# Progress — agenticbackbone-09-kai-telemetry
+
+## Current Status
+INITIALIZED — 8 features identificadas, todas failing. Pronto para implementação.
+
+## Specs Path
+D:\sources\codr.studio\cia-prime-care\agentic-backbone\apps\backbone\milestones\09-kai-telemetry
+
+## Environment
+- Stack: Node.js + TypeScript (ESM), Vercel AI SDK v4, npm workspaces
+- Build: npm run build --workspace=packages/kai-sdk
+- Dev: tsc --watch (packages/kai-sdk)
+- No test framework configurado — validação via build + critérios manuais
+
+## Features
+
+- [ ] F-001 telemetry-types — KaiTelemetryOptions + campo em KaiAgentOptions
+- [ ] F-002 usage-step-breakdown — KaiUsageData com timeToFirstTokenMs e steps[]
+- [ ] F-003 peer-dependency-otel — @opentelemetry/api como peerDependency opcional
+- [ ] F-004 telemetry-in-streamtext — experimental_telemetry no streamText() do agent.ts
+- [ ] F-005 telemetry-in-compaction — experimental_telemetry no compaction.ts
+- [ ] F-006 session-span — Span pai kai.agent.run com dynamic import de @opentelemetry/api
+- [ ] F-007 step-data-collection — Coletar breakdown por step via onStepFinish
+- [ ] F-008 build-verification — Verificação final de build, exports e backward compat
+
+## Architecture Decisions
+
+1. **@opentelemetry/api como peerDependency opcional** — A kai-sdk NÃO instala OTel diretamente. O consumidor (backbone) escolhe e configura o exporter (LangFuse, Datadog, console).
+2. **Dynamic import de @opentelemetry/api** — Nunca import top-level. Usar `await import("@opentelemetry/api")` dentro de condicional para zero overhead quando desabilitado e para não quebrar build quando o pacote não está instalado.
+3. **experimental_telemetry do Vercel AI SDK** — O SDK já emite spans GenAI padrão. A kai-sdk apenas liga o flag e propaga metadata.
+4. **Campos opcionais em KaiUsageData** — steps[] e timeToFirstTokenMs são opcionais (?:) para não quebrar consumidores existentes.
+5. **Span pai kai.agent.run** — Engloba toda a execução do agente. Criado via tracer do OTel API quando disponível.
+6. **Telemetry na compaction** — generateObject/generateText na compaction também recebem experimental_telemetry com functionId 'kai-compaction'.
+
+## Arquivos Afetados
+
+| Arquivo | Mudança |
+|---|---|
+| packages/kai-sdk/src/types.ts | KaiTelemetryOptions, campos em KaiUsageData |
+| packages/kai-sdk/src/agent.ts | experimental_telemetry, span pai, step collection |
+| packages/kai-sdk/src/context/compaction.ts | experimental_telemetry na compaction |
+| packages/kai-sdk/src/index.ts | Export de KaiTelemetryOptions |
+| packages/kai-sdk/package.json | peerDependencies de @opentelemetry/api |
+
+## Session Notes
+- Session 1 (Initializer): Harness inicializado para onda 09-kai-telemetry com 8 features (todas failing)

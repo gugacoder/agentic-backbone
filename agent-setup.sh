@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-echo "=== Agent Setup: agenticbackbone-08-kai-middleware ==="
+echo "=== Agent Setup: agenticbackbone-09-kai-telemetry ==="
 
 # ── Detect package manager ───────────────────────────────────
 if command -v npm &>/dev/null; then
@@ -56,7 +56,7 @@ echo "=== Setup Summary ==="
 echo "Package manager: $PKG"
 echo "Dependencies: installed"
 echo "kai-sdk build: attempted"
-echo "Harness: .harness/agenticbackbone-08-kai-middleware--cc/"
-echo "Features: 6 (all failing)"
-echo "First feature: F-001 middleware-type-in-options"
+echo "Harness: .harness/agenticbackbone-09-kai-telemetry--cc/"
+echo "Features: 8 (all failing)"
+echo "First feature: F-001 telemetry-types"
 echo "=== Ready for vibe:code ==="
