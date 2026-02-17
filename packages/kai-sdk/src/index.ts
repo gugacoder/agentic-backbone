@@ -18,3 +18,5 @@ export { createCodeSearchTool } from "./tools/code-search.js";
 export type { CodeSearchProvider, CodeSearchResult } from "./tools/code-search.js";
 export { kaiGenerateObject, kaiStreamObject } from "./structured.js";
 export type { KaiObjectOptions } from "./structured.js";
+export { createLoggingMiddleware } from "./middleware/logging.js";
+export type { LanguageModelV1Middleware } from "ai";

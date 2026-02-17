@@ -76,7 +76,8 @@
     "id": "F-005",
     "name": "public-exports",
     "description": "Atualizar index.ts para exportar createLoggingMiddleware de middleware/logging.js e re-exportar o tipo LanguageModelV1Middleware de 'ai' para consumidores.",
-    "status": "failing",
+    "status": "passing",
+    "completed_at": "2026-02-17T00:00:00Z",
     "priority": 5,
     "tests": [
       "index.ts exporta createLoggingMiddleware",
@@ -93,7 +94,7 @@
     "id": "F-006",
     "name": "build-verification",
     "description": "Verificacao final end-to-end: build limpo, runKaiAgent sem middleware se comporta identicamente, middleware sao aplicados na ordem do array, nenhuma dependencia nova adicionada.",
-    "status": "blocked",
+    "status": "failing",
     "priority": 6,
     "tests": [
       "npm run build --workspace=packages/kai-sdk compila sem erros nem warnings",

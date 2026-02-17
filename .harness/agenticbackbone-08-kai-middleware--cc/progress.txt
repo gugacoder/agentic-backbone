@@ -1,7 +1,7 @@
 # Progress — agenticbackbone-08-kai-middleware
 
 ## Current Status
-F-001, F-002, F-003, F-004 passing. 4/6 features complete. Próxima: F-005 (public-exports).
+F-001, F-002, F-003, F-004, F-005 passing. 5/6 features complete. Próxima: F-006 (build-verification).
 
 ## Specs Path
 D:\sources\codr.studio\cia-prime-care\agentic-backbone\apps\backbone\milestones\08-kai-middleware
@@ -19,7 +19,7 @@ D:\sources\codr.studio\cia-prime-care\agentic-backbone\apps\backbone\milestones\
 - [x] F-002 apply-middleware-in-agent — Aplicar wrapLanguageModel no agent.ts antes de streamText
 - [x] F-003 middleware-in-compaction — Passar middleware para compactMessages/generateText
 - [x] F-004 logging-middleware — Criar createLoggingMiddleware() em src/middleware/logging.ts
-- [ ] F-005 public-exports — Exportar createLoggingMiddleware e re-exportar LanguageModelV1Middleware
+- [x] F-005 public-exports — Exportar createLoggingMiddleware e re-exportar LanguageModelV1Middleware
 - [ ] F-006 build-verification — Verificação final: build limpo, sem regressão, sem dependências novas
 
 ## Architecture Decisions
@@ -51,3 +51,5 @@ Session 3 (CC): Implementado F-002 apply-middleware-in-agent. Importado wrapLang
 Session 4 (CC): Implementado F-003 middleware-in-compaction. Adicionado campo middleware?: LanguageModelV1Middleware[] em CompactOptions. Importado wrapLanguageModel e LanguageModelV1Middleware em compaction.ts. Aplicado wrapLanguageModel em ambos os paths (generateObject e generateText fallback) quando middleware fornecido. No agent.ts, passado options.middleware para compactMessages(). Build limpo sem erros.
 
 Session 5 (CC): Implementado F-004 logging-middleware. Criado packages/kai-sdk/src/middleware/logging.ts com createLoggingMiddleware(). transformParams loga quantidade de tools (via params.mode.tools) e messages (via params.prompt.length). wrapGenerate loga durationMs, finishReason e usage. wrapStream loga durationMs do início do stream. Logger padrão é console.log, customizável via parâmetro. Nota: LanguageModelV1CallOptions não tem modelId — tools estão em params.mode.tools (quando mode.type === "regular"). Build limpo sem erros.
+
+Session 6 (CC): Implementado F-005 public-exports. Adicionado export { createLoggingMiddleware } from "./middleware/logging.js" e export type { LanguageModelV1Middleware } from "ai" ao index.ts. Todos os exports anteriores preservados (sem regressão). Verificado em runtime via dynamic import — createLoggingMiddleware aparece como function e todos os 15 exports existentes presentes. Build limpo sem erros.
