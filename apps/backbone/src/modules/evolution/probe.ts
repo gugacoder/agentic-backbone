@@ -14,7 +14,7 @@ export class EvolutionProbe {
     private ctx: ModuleContext,
     private config: EvolutionConfig,
   ) {
-    this.baseUrl = ctx.env.EVOLUTION_API_URL!;
+    this.baseUrl = ctx.env.EVOLUTION_URL!;
     this.apiKey = ctx.env.EVOLUTION_API_KEY!;
   }
 

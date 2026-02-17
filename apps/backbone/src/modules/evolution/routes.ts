@@ -31,7 +31,7 @@ interface RouteDeps {
  */
 export function createEvolutionRoutes(deps: RouteDeps): Hono {
   const app = new Hono();
-  const baseUrl = deps.env.EVOLUTION_API_URL!;
+  const baseUrl = deps.env.EVOLUTION_URL!;
   const apiKey = deps.env.EVOLUTION_API_KEY!;
 
   // --- GET /health ---

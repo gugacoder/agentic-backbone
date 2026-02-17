@@ -34,7 +34,7 @@ export class EvolutionActions {
     private log: (msg: string) => void,
     env: Record<string, string | undefined>,
   ) {
-    this.baseUrl = env.EVOLUTION_API_URL!;
+    this.baseUrl = env.EVOLUTION_URL!;
     this.apiKey = env.EVOLUTION_API_KEY!;
   }
 

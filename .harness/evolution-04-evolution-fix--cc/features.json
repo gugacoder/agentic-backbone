@@ -3,7 +3,8 @@
     "id": "F-001",
     "name": "route-mounting-fix",
     "description": "Reestruturar apps/backbone/src/index.ts para que startModules() execute ANTES de app.route(), garantindo que rotas de modulos sejam registradas antes do congelamento pelo Hono. Extrair logica de inicializacao do callback de serve() para funcao async bootstrap().",
-    "status": "failing",
+    "status": "passing",
+    "completed_at": "2026-02-16T21:30:00Z",
     "priority": 1,
     "tests": [
       "GET /api/modules/evolution/health retorna 200 com JSON valido (nao 404)",
@@ -117,14 +118,22 @@
     "id": "F-008",
     "name": "build-validation",
     "description": "Validar que ambos os builds (backbone e hub) passam sem erros apos todas as correcoes. Teste final de integridade.",
-    "status": "failing",
+    "status": "blocked",
     "priority": 8,
     "tests": [
       "npm run build --workspace=apps/backbone completa sem erros",
       "npm run build --workspace=apps/hub completa sem erros",
       "Nenhum warning de TypeScript critico nos builds"
     ],
-    "dependencies": ["F-001", "F-002", "F-003", "F-004", "F-005", "F-006", "F-007"],
+    "dependencies": [
+      "F-001",
+      "F-002",
+      "F-003",
+      "F-004",
+      "F-005",
+      "F-006",
+      "F-007"
+    ],
     "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\04-evolution-fix\\PRP.md"
   }
 ]

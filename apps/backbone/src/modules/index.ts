@@ -9,5 +9,5 @@ import { evolutionModule } from "./evolution/index.js";
  * variables are only included when those variables are defined.
  */
 export const modules: BackboneModule[] = [
-  ...(process.env.EVOLUTION_API_URL ? [evolutionModule] : []),
+  ...(process.env.EVOLUTION_URL ? [evolutionModule] : []),
 ];
