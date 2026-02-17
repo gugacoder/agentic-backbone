@@ -2,14 +2,14 @@ import { useState, useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { QrCode, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
+import { QrCode, CheckCircle2, AlertCircle, AlertTriangle, Loader2 } from "lucide-react";
 import { evolutionInstanceQRQuery, evolutionInstanceQuery } from "@/api/evolution";
 
 interface InstanceQRProps {
   instanceName: string;
 }
 
-type QRState = "idle" | "loading" | "active" | "linked" | "expired" | "exhausted";
+type QRState = "idle" | "loading" | "error" | "active" | "linked" | "expired" | "exhausted";
 
 export function InstanceQR({ instanceName }: InstanceQRProps) {
   const [qrState, setQrState] = useState<QRState>("idle");
@@ -18,7 +18,7 @@ export function InstanceQR({ instanceName }: InstanceQRProps) {
   const countdownRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const shouldFetchQR = qrState === "loading";
-  const { data: qrData, isFetching: qrFetching } = useQuery(
+  const { data: qrData, isFetching: qrFetching, isError: qrIsError } = useQuery(
     evolutionInstanceQRQuery(instanceName, shouldFetchQR)
   );
 
@@ -36,6 +36,13 @@ export function InstanceQR({ instanceName }: InstanceQRProps) {
       setCountdown(60);
     }
   }, [qrData, qrFetching, qrState]);
+
+  // When QR query fails during loading, transition to error
+  useEffect(() => {
+    if (qrState === "loading" && qrIsError && !qrFetching) {
+      setQrState("error");
+    }
+  }, [qrState, qrIsError, qrFetching]);
 
   // Countdown timer
   useEffect(() => {
@@ -72,6 +79,10 @@ export function InstanceQR({ instanceName }: InstanceQRProps) {
     setQrState("loading");
   }
 
+  function retryQR() {
+    setQrState("loading");
+  }
+
   return (
     <div className="md:max-w-md md:mx-auto">
       <Card>
@@ -91,6 +102,15 @@ export function InstanceQR({ instanceName }: InstanceQRProps) {
             <>
               <Loader2 className="h-16 w-16 animate-spin text-muted-foreground" />
               <p className="text-sm text-muted-foreground">Gerando QR code...</p>
+            </>
+          )}
+
+          {qrState === "error" && (
+            <>
+              <AlertTriangle className="h-16 w-16 text-destructive" />
+              <p className="text-sm font-medium text-destructive">Falha ao gerar QR code</p>
+              <p className="text-sm text-muted-foreground text-center">Nao foi possivel conectar ao servidor. Verifique se o backbone esta rodando.</p>
+              <Button onClick={retryQR}>Tentar novamente</Button>
             </>
           )}
 

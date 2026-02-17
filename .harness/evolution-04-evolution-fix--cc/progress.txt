@@ -2,7 +2,7 @@
 
 ## Current Status
 
-F-001, F-002, F-003 e F-004 implementadas e validadas. 4/8 features complete.
+F-001, F-002, F-003, F-004 e F-005 implementadas e validadas. 5/8 features complete.
 
 ## Specs Path
 
@@ -25,7 +25,7 @@ D:\sources\codr.studio\cia-prime-care\agentic-backbone\apps\backbone\milestones\
 - [x] F-002 api-health-card-error-state — ApiHealthCard com tratamento de isError
 - [x] F-003 whatsapp-page-error-state — WhatsAppPage com card de erro e retry
 - [x] F-004 whatsapp-instance-error-state — WhatsAppInstancePage diferenciando 404/503/outros
-- [ ] F-005 instance-qr-error-state — InstanceQR com estado 'error' na maquina de estados
+- [x] F-005 instance-qr-error-state — InstanceQR com estado 'error' na maquina de estados
 - [ ] F-006 remove-polling-queries — Confirmar remocao de refetchInterval das queries
 - [ ] F-007 claude-md-anti-polling-rule — Regra anti-polling no CLAUDE.md
 - [ ] F-008 build-validation — Validacao final de builds (backbone + hub)
@@ -97,3 +97,15 @@ Session 5 (CC): F-004 whatsapp-instance-error-state implementada.
 - Nenhum spinner infinito em cenario de falha
 - Build hub passa limpo (tsc --noEmit + vite build)
 - Proxima prioridade: F-005 instance-qr-error-state
+
+Session 6 (CC): F-005 instance-qr-error-state implementada.
+- Adicionado estado "error" ao tipo QRState na maquina de estados do InstanceQR
+- Destructured `isError` (como `qrIsError`) da query `evolutionInstanceQRQuery`
+- Novo useEffect: quando `qrState === "loading"` e `qrIsError && !qrFetching`, transiciona para "error"
+- Criada funcao `retryQR()` que volta para "loading" SEM incrementar contador de tentativas
+- Estado "error" renderiza: AlertTriangle (destructive) + "Falha ao gerar QR code" + mensagem informativa + botao "Tentar novamente"
+- Fluxo normal (idle → loading → active → linked/expired) inalterado
+- Estado "exhausted" (apos 5 tentativas reais) inalterado
+- Build hub passa limpo (tsc --noEmit + vite build)
+- Build backbone passa limpo (tsc)
+- Proxima prioridade: F-006 remove-polling-queries

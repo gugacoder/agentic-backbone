@@ -73,7 +73,8 @@
     "id": "F-005",
     "name": "instance-qr-error-state",
     "description": "Adicionar estado 'error' na maquina de estados do InstanceQR. Quando a query de QR falha durante estado 'loading', transicionar para 'error' com icone de erro, mensagem e botao 'Tentar novamente'. O retry nao incrementa o contador de tentativas.",
-    "status": "failing",
+    "status": "passing",
+    "completed_at": "2026-02-16T03:30:00Z",
     "priority": 5,
     "tests": [
       "Com API offline e QR solicitado: transiciona de 'loading' para 'error' (nao fica preso em spinner)",
