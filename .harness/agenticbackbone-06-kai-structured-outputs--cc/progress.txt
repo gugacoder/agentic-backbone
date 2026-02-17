@@ -2,7 +2,7 @@
 
 ## Current Status
 
-IN PROGRESS — F-001, F-002, F-003, F-004 e F-005 implementadas e passando. Próxima: F-006 (build-verification).
+COMPLETE — Todas as 6 features (F-001 a F-006) implementadas e passando. Milestone 06-kai-structured-outputs finalizado.
 
 ## Specs Path
 
@@ -24,7 +24,7 @@ D:\sources\codr.studio\cia-prime-care\agentic-backbone\apps\backbone\milestones\
 - [x] F-003 public-exports — Exportar novas funcoes e tipos no index.ts
 - [x] F-004 compaction-structured-output — Refatorar compaction para usar generateObject() + Zod schema
 - [x] F-005 compaction-fallback — Fallback para generateText() se generateObject() falhar
-- [ ] F-006 build-verification — Build final sem erros, tipos em dist/
+- [x] F-006 build-verification — Build final sem erros, tipos em dist/
 
 ## Architecture Decisions
 
@@ -70,3 +70,12 @@ Session 5 (Claude Code): Implementou F-005 compaction-fallback.
 - Se fallback falhar: compacted=false, warning inclui ambos erros (structured + fallback)
 - Nenhum erro não-tratado escapa de compactMessages()
 - Build limpo (kai-sdk + backbone). Todos os 5 testes de F-005 passando.
+
+Session 6 (Claude Code): Verificou F-006 build-verification.
+- npm run build --workspace=packages/kai-sdk exit code 0
+- dist/structured.js e dist/structured.d.ts presentes com tipos corretos (kaiGenerateObject, kaiStreamObject, KaiObjectOptions)
+- dist/index.js re-exporta structured corretamente
+- dist/context/compaction.js contém generateObject
+- Nenhuma dependência nova adicionada (ai e zod já existiam)
+- Todos os 6 testes de F-006 passando.
+- MILESTONE COMPLETO: 6/6 features passing.

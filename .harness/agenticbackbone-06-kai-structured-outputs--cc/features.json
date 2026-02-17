@@ -100,7 +100,7 @@
     "id": "F-006",
     "name": "build-verification",
     "description": "Verificacao final: npm run build --workspace=packages/kai-sdk compila sem erros. Todos os tipos exportados corretamente em dist/. Nenhuma dependencia nova alem de ai e zod (ambas ja existem).",
-    "status": "failing",
+    "status": "passing",
     "priority": 6,
     "tests": [
       "npm run build --workspace=packages/kai-sdk exit code 0",
@@ -114,6 +114,7 @@
       "F-003",
       "F-005"
     ],
-    "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\06-kai-structured-outputs\\PRP.md"
+    "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\06-kai-structured-outputs\\PRP.md",
+    "completed_at": "2026-02-17T22:00:00Z"
   }
 ]
