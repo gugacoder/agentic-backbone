@@ -2,7 +2,7 @@
 
 ## Current Status
 
-F-001, F-002, F-003, F-004 e F-005 implementadas e validadas. 5/8 features complete.
+TODAS as 8 features implementadas e validadas. 8/8 features complete. Milestone completo.
 
 ## Specs Path
 
@@ -26,9 +26,9 @@ D:\sources\codr.studio\cia-prime-care\agentic-backbone\apps\backbone\milestones\
 - [x] F-003 whatsapp-page-error-state — WhatsAppPage com card de erro e retry
 - [x] F-004 whatsapp-instance-error-state — WhatsAppInstancePage diferenciando 404/503/outros
 - [x] F-005 instance-qr-error-state — InstanceQR com estado 'error' na maquina de estados
-- [ ] F-006 remove-polling-queries — Confirmar remocao de refetchInterval das queries
-- [ ] F-007 claude-md-anti-polling-rule — Regra anti-polling no CLAUDE.md
-- [ ] F-008 build-validation — Validacao final de builds (backbone + hub)
+- [x] F-006 remove-polling-queries — Confirmado: polling ja removido de evolution.ts
+- [x] F-007 claude-md-anti-polling-rule — Secao "Data Fetching (Hub)" adicionada ao CLAUDE.md
+- [x] F-008 build-validation — Builds backbone e hub passam sem erros
 
 ## Architecture Decisions
 
@@ -109,3 +109,17 @@ Session 6 (CC): F-005 instance-qr-error-state implementada.
 - Build hub passa limpo (tsc --noEmit + vite build)
 - Build backbone passa limpo (tsc)
 - Proxima prioridade: F-006 remove-polling-queries
+
+Session 7 (CC): F-006, F-007, F-008 implementadas — milestone completo.
+- F-006: Confirmado que refetchInterval ja foi removido de evolution.ts em sessao anterior
+  - evolutionHealthQuery, evolutionInstancesQuery, evolutionInstanceQuery: sem polling
+  - instance-qr.tsx: polling condicional (shouldPoll ? 2_000 : false) preservado corretamente
+- F-007: Secao "Data Fetching (Hub)" adicionada ao CLAUDE.md apos "Routing (Hub)"
+  - Regra: polling (refetchInterval) proibido no hub
+  - SSE como fonte de verdade para atualizacoes real-time
+  - Queries buscam dados em montagem, resposta a SSE, e apos mutations
+  - Excecao documentada: polling condicional durante fluxo de QR ativo
+- F-008: Builds validados com sucesso
+  - npm run build --workspace=apps/backbone: tsc sem erros
+  - npm run build --workspace=apps/hub: tsc --noEmit + vite build sem erros
+- Milestone 04-evolution-fix completo: 8/8 features passing

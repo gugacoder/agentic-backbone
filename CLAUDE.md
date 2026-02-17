@@ -118,7 +118,7 @@ Markdown-centric persistent state store with YAML frontmatter:
 |---|---|---|
 | Shared (lowest precedence) | `shared/{skills,tools,adapters}/` | Available to all agents |
 | System/User (mid precedence) | `system/{skills,tools,adapters}/` or `users/:slug/` | Owner-scoped resources |
-| Agent (highest precedence) | `agents/:owner.:slug/` | `AGENT.md`, `SOUL.md`, `HEARTBEAT.md`, `MEMORY.md`, conversations, skills, tools |
+| Agent (highest precedence) | `agents/:owner.:slug/` | `AGENT.md`, `SOUL.md`, `HEARTBEAT.md`, `CONVERSATION.md`, `MEMORY.md`, conversations, skills, tools |
 | Users | `users/:slug/USER.md` | User config + permissions |
 | Channels | `users/:slug/channels/:slug/CHANNEL.md` | Channel definitions |
 
@@ -128,9 +128,9 @@ Markdown-centric persistent state store with YAML frontmatter:
 
 - **Async generator streaming** — `runAgent()`, `sendMessage()`, and the conversation layer all use `AsyncGenerator<AgentEvent>` consumed by Hono's `streamSSE()`.
 
-- **Prompt assembly via XML sections** — `assembleConversationPrompt()` builds prompts with `<identity>`, `<available_skills>`, `<available_tools>`, `<relevant_memories>` sections. Skills/tools are listed by name; the agent reads the full `.md` file on-demand.
+- **Prompt assembly via XML sections** — `assembleAgentCore()` builds the shared agent identity with `<identity>`, `<agent_context>`, `<available_skills>`, `<available_tools>`, `<available_adapters>`, `<relevant_memories>` sections. `assembleConversationPrompt()` extends it with `<conversation_instructions>`. `assembleHeartbeatPrompt()` extends it with `<heartbeat_instructions>`. Skills/tools are listed by name; the agent reads the full `.md` file on-demand.
 
-- **Heartbeat prompt pattern** — `assembleHeartbeatPrompt()` expects agent responses matching `HEARTBEAT_OK`. Responses ≤300 chars are treated as acknowledgments and skipped. Deduplication within 24h prevents repeated outputs.
+- **Heartbeat prompt pattern** — `assembleHeartbeatPrompt()` (async) expects agent responses matching `HEARTBEAT_OK`. Responses ≤300 chars are treated as acknowledgments and skipped. Deduplication within 24h prevents repeated outputs.
 
 - **Session persistence** — SQLite stores session index (`data/backbone.sqlite`). Per-session conversation data lives on filesystem: `SESSION.md` (metadata) + `messages.jsonl` (history).
 
@@ -191,6 +191,14 @@ Markdown-centric persistent state store with YAML frontmatter:
 - **Query → query params.** Search terms, filters, sorting, pagination — anything that parametrizes a view goes in the query string, not in component state. The resulting URL must be shareable and produce the same results when opened by someone else.
 
 **Never store navigational or query state solely in React state.** If a user presses F5 and loses context, a route is missing.
+
+### Data Fetching (Hub)
+
+**Polling (`refetchInterval`) is forbidden in the hub.** SSE is the single source of truth for real-time updates.
+
+- Queries fetch data only on: component mount, SSE event response, and after mutations.
+- Do not create new SSE channels without justification.
+- The only exception is conditional polling during active QR code flows, where SSE does not guarantee sufficient timing.
 
 ---
 

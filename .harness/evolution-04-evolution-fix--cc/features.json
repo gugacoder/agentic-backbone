@@ -91,7 +91,8 @@
     "id": "F-006",
     "name": "remove-polling-queries",
     "description": "Confirmar que refetchInterval foi removido das queries evolutionHealthQuery, evolutionInstancesQuery e evolutionInstanceQuery em evolution.ts. Se ainda existir, remover. Manter refetchInterval condicional em instance-qr.tsx (polling durante QR ativo).",
-    "status": "failing",
+    "status": "passing",
+    "completed_at": "2026-02-17T04:00:00Z",
     "priority": 6,
     "tests": [
       "Nenhum refetchInterval em evolutionHealthQuery",
@@ -107,7 +108,8 @@
     "id": "F-007",
     "name": "claude-md-anti-polling-rule",
     "description": "Verificar se CLAUDE.md possui secao 'Data Fetching (Hub)' com regra anti-polling. Se nao existir, adicionar apos secao 'Routing (Hub)'. Se ja existir (ou foi removida intencionalmente), nao duplicar/readicionar.",
-    "status": "failing",
+    "status": "passing",
+    "completed_at": "2026-02-17T04:00:00Z",
     "priority": 7,
     "tests": [
       "Se regra anti-polling nao existia: secao 'Data Fetching (Hub)' adicionada ao CLAUDE.md apos 'Routing (Hub)'",
@@ -122,7 +124,8 @@
     "id": "F-008",
     "name": "build-validation",
     "description": "Validar que ambos os builds (backbone e hub) passam sem erros apos todas as correcoes. Teste final de integridade.",
-    "status": "blocked",
+    "status": "passing",
+    "completed_at": "2026-02-17T04:00:00Z",
     "priority": 8,
     "tests": [
       "npm run build --workspace=apps/backbone completa sem erros",
