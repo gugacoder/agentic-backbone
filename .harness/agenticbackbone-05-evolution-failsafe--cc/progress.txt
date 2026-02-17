@@ -1,7 +1,7 @@
 # Evolution Fail-Safe — Progress
 
 ## Current Status
-IN PROGRESS — F-001 completa (1/12). Proxima: F-002 backbone-routes-envelope.
+IN PROGRESS — F-001, F-002 completas (2/12). Proxima: F-003 hub-api-types.
 
 ## Specs Path
 D:\sources\codr.studio\cia-prime-care\agentic-backbone\apps\backbone\milestones\05-evolution-failsafe
@@ -28,7 +28,7 @@ D:\sources\codr.studio\cia-prime-care\agentic-backbone\apps\backbone\milestones\
 
 ### Backbone (Response Contract)
 - [x] F-001 backbone-response-helpers — Criar ok(), fail(), proxyGet() helpers
-- [ ] F-002 backbone-routes-envelope — Migrar todas as rotas para HTTP 200 com envelope
+- [x] F-002 backbone-routes-envelope — Migrar todas as rotas para HTTP 200 com envelope
 
 ### Hub (Types & Infrastructure)
 - [ ] F-003 hub-api-types — ApiResult<T> type + mapa de mensagens amigaveis
@@ -83,3 +83,18 @@ Session 2: Implementada F-001 backbone-response-helpers.
 - Corrigido bug de build em jobs/types.ts (adicionado "killed" ao JobStatus)
 - Build limpo (backbone + hub tsc --noEmit)
 - Proxima: F-002 backbone-routes-envelope (migrar todas as rotas para usar os helpers)
+
+Session 3: Implementada F-002 backbone-routes-envelope.
+- Migradas TODAS as rotas do modulo Evolution para HTTP 200 com envelope ok()/fail()
+- GET /instances: api_offline retorna fail(), sucesso retorna ok(data)
+- GET /instances/:name: api_offline e instance_not_found retornam fail(), sucesso retorna ok(data)
+- POST /instances: validacao, criacao com sucesso retorna ok(data), falha retorna fail("create_failed")
+- DELETE /instances/:name: falha retorna fail("delete_failed"), sucesso retorna ok(data)
+- GET /instances/:name/qr: refatorado para usar proxyGet(), error code alterado de "qr_failed" para "qr_unavailable"
+- GET /instances/:name/settings: refatorado para usar proxyGet()
+- PATCH /instances/:name/settings: falha retorna fail("settings_update_failed"), sucesso retorna ok(data)
+- POST reconnect/restart: offline e not_found usam fail(), actionResultToResponse ja usava ok()/fail()
+- actionResultToResponse: corrigido sucesso de ok(c, { ok: true }) para ok(c, null) — evita envelope aninhado
+- Smoke test via curl: todas as 10 rotas confirmadas retornando HTTP 200 com envelope correto
+- Build limpo: backbone tsc + hub tsc --noEmit
+- Proxima: F-003 hub-api-types

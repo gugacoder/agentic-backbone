@@ -59,11 +59,11 @@ export function createEvolutionRoutes(deps: RouteDeps): Hono {
     const apiState = deps.probe.getState();
 
     if (apiState === "offline") {
-      return c.json({ error: "api_offline" }, 503);
+      return fail(c, "api_offline");
     }
 
     const instances = deps.state.getInstances();
-    return c.json(instances);
+    return ok(c, instances);
   });
 
   // --- GET /instances/:name ---
@@ -73,15 +73,15 @@ export function createEvolutionRoutes(deps: RouteDeps): Hono {
     const apiState = deps.probe.getState();
 
     if (apiState === "offline") {
-      return c.json({ error: "api_offline" }, 503);
+      return fail(c, "api_offline");
     }
 
     const instance = deps.state.getInstance(name);
     if (!instance) {
-      return c.json({ error: "instance_not_found" }, 404);
+      return fail(c, "instance_not_found");
     }
 
-    return c.json(instance);
+    return ok(c, instance);
   });
 
   // --- POST /instances/:name/reconnect ---
@@ -91,12 +91,12 @@ export function createEvolutionRoutes(deps: RouteDeps): Hono {
 
     const apiState = deps.probe.getState();
     if (apiState === "offline") {
-      return c.json({ error: "api_offline" }, 503);
+      return fail(c, "api_offline");
     }
 
     const instance = deps.state.getInstance(name);
     if (!instance) {
-      return c.json({ error: "instance_not_found" }, 404);
+      return fail(c, "instance_not_found");
     }
 
     const result = await deps.actions.reconnect(name);
@@ -110,12 +110,12 @@ export function createEvolutionRoutes(deps: RouteDeps): Hono {
 
     const apiState = deps.probe.getState();
     if (apiState === "offline") {
-      return c.json({ error: "api_offline" }, 503);
+      return fail(c, "api_offline");
     }
 
     const instance = deps.state.getInstance(name);
     if (!instance) {
-      return c.json({ error: "instance_not_found" }, 404);
+      return fail(c, "instance_not_found");
     }
 
     const result = await deps.actions.restart(name);
@@ -127,12 +127,12 @@ export function createEvolutionRoutes(deps: RouteDeps): Hono {
   app.post("/instances", async (c) => {
     const apiState = deps.probe.getState();
     if (apiState === "offline") {
-      return c.json({ error: "api_offline" }, 503);
+      return fail(c, "api_offline");
     }
 
     const body = await c.req.json<{ instanceName: string }>();
     if (!body.instanceName) {
-      return c.json({ error: "instance_name_required" }, 400);
+      return fail(c, "instance_name_required");
     }
 
     try {
@@ -147,15 +147,15 @@ export function createEvolutionRoutes(deps: RouteDeps): Hono {
 
       if (!response.ok) {
         const err = await response.json().catch(() => ({ message: `HTTP ${response.status}` }));
-        return c.json({ error: "create_failed", details: err }, response.status as 400);
+        return fail(c, "create_failed", err);
       }
 
       const data = await response.json();
       // Invalidate module state cache so new instance appears immediately
       void deps.probe.forceTick();
-      return c.json(data, 201);
+      return ok(c, data);
     } catch (err) {
-      return c.json({ error: "create_failed", details: String(err) }, 502);
+      return fail(c, "create_failed", String(err));
     }
   });
 
@@ -166,7 +166,7 @@ export function createEvolutionRoutes(deps: RouteDeps): Hono {
 
     const apiState = deps.probe.getState();
     if (apiState === "offline") {
-      return c.json({ error: "api_offline" }, 503);
+      return fail(c, "api_offline");
     }
 
     try {
@@ -177,15 +177,15 @@ export function createEvolutionRoutes(deps: RouteDeps): Hono {
 
       if (!response.ok) {
         const err = await response.json().catch(() => ({ message: `HTTP ${response.status}` }));
-        return c.json({ error: "delete_failed", details: err }, response.status as 400);
+        return fail(c, "delete_failed", err);
       }
 
-      const data = await response.json().catch(() => ({ ok: true }));
+      const data = await response.json().catch(() => null);
       // Invalidate module state cache so removed instance disappears immediately
       void deps.probe.forceTick();
-      return c.json(data);
+      return ok(c, data);
     } catch (err) {
-      return c.json({ error: "delete_failed", details: String(err) }, 502);
+      return fail(c, "delete_failed", String(err));
     }
   });
 
@@ -196,25 +196,10 @@ export function createEvolutionRoutes(deps: RouteDeps): Hono {
 
     const apiState = deps.probe.getState();
     if (apiState === "offline") {
-      return c.json({ error: "api_offline" }, 503);
+      return fail(c, "api_offline");
     }
 
-    try {
-      const response = await fetch(`${baseUrl}/instance/connect/${name}`, {
-        method: "GET",
-        headers: { apikey: apiKey },
-      });
-
-      if (!response.ok) {
-        const err = await response.json().catch(() => ({ message: `HTTP ${response.status}` }));
-        return c.json({ error: "qr_failed", details: err }, response.status as 400);
-      }
-
-      const data = await response.json();
-      return c.json(data);
-    } catch (err) {
-      return c.json({ error: "qr_failed", details: String(err) }, 502);
-    }
+    return proxyGet(c, `${baseUrl}/instance/connect/${name}`, apiKey, "qr_unavailable");
   });
 
   // --- GET /instances/:name/settings ---
@@ -224,25 +209,10 @@ export function createEvolutionRoutes(deps: RouteDeps): Hono {
 
     const apiState = deps.probe.getState();
     if (apiState === "offline") {
-      return c.json({ error: "api_offline" }, 503);
+      return fail(c, "api_offline");
     }
 
-    try {
-      const response = await fetch(`${baseUrl}/settings/find/${name}`, {
-        method: "GET",
-        headers: { apikey: apiKey },
-      });
-
-      if (!response.ok) {
-        const err = await response.json().catch(() => ({ message: `HTTP ${response.status}` }));
-        return c.json({ error: "settings_fetch_failed", details: err }, response.status as 400);
-      }
-
-      const data = await response.json();
-      return c.json(data);
-    } catch (err) {
-      return c.json({ error: "settings_fetch_failed", details: String(err) }, 502);
-    }
+    return proxyGet(c, `${baseUrl}/settings/find/${name}`, apiKey, "settings_fetch_failed");
   });
 
   // --- PATCH /instances/:name/settings ---
@@ -252,7 +222,7 @@ export function createEvolutionRoutes(deps: RouteDeps): Hono {
 
     const apiState = deps.probe.getState();
     if (apiState === "offline") {
-      return c.json({ error: "api_offline" }, 503);
+      return fail(c, "api_offline");
     }
 
     const settings = await c.req.json();
@@ -266,13 +236,13 @@ export function createEvolutionRoutes(deps: RouteDeps): Hono {
 
       if (!response.ok) {
         const err = await response.json().catch(() => ({ message: `HTTP ${response.status}` }));
-        return c.json({ error: "settings_update_failed", details: err }, response.status as 400);
+        return fail(c, "settings_update_failed", err);
       }
 
       const data = await response.json();
-      return c.json(data);
+      return ok(c, data);
     } catch (err) {
-      return c.json({ error: "settings_update_failed", details: String(err) }, 502);
+      return fail(c, "settings_update_failed", String(err));
     }
   });
 
@@ -310,7 +280,7 @@ async function proxyGet<T>(c: Context, url: string, apiKey: string, errorCode: s
  */
 function actionResultToResponse(c: Context, result: ActionResult): Response {
   if (result.ok) {
-    return ok(c, { ok: true });
+    return ok(c, null);
   }
 
   if (result.error === "cooldown_active") {

@@ -19,8 +19,9 @@
     "id": "F-002",
     "name": "backbone-routes-envelope",
     "description": "Migrar TODAS as rotas do modulo Evolution (GET /instances, GET /instances/:name, POST /instances, DELETE /instances/:name, GET /instances/:name/qr, GET /instances/:name/settings, PATCH /instances/:name/settings, POST reconnect, POST restart) para retornar HTTP 200 com envelope padronizado usando ok()/fail(). Nenhuma rota deve retornar 4xx/5xx exceto falha de rede real.",
-    "status": "failing",
+    "status": "passing",
     "priority": 2,
+    "completed_at": "2026-02-17T18:00:00Z",
     "tests": [
       "GET /instances com API offline retorna 200 { ok: false, error: 'api_offline' }",
       "GET /instances com API online retorna 200 { ok: true, data: [...] }",
