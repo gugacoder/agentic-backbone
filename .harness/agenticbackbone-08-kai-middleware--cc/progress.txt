@@ -1,0 +1,45 @@
+# Progress — agenticbackbone-08-kai-middleware
+
+## Current Status
+Harness inicializado. 6 features identificadas, todas failing. Pronto para implementação.
+
+## Specs Path
+D:\sources\codr.studio\cia-prime-care\agentic-backbone\apps\backbone\milestones\08-kai-middleware
+
+## Environment
+- Stack: Node.js, TypeScript (ES2022/ESNext), npm workspaces monorepo
+- Package: packages/kai-sdk (@agentic-backbone/kai-sdk)
+- Build: npm run build --workspace=packages/kai-sdk (tsc)
+- Dev: npm run dev --workspace=packages/kai-sdk (tsc --watch)
+- Dependencies: ai ^4 (Vercel AI SDK — já inclui wrapLanguageModel e LanguageModelV1Middleware)
+
+## Features
+
+- [ ] F-001 middleware-type-in-options — Adicionar middleware?: LanguageModelV1Middleware[] em KaiAgentOptions
+- [ ] F-002 apply-middleware-in-agent — Aplicar wrapLanguageModel no agent.ts antes de streamText
+- [ ] F-003 middleware-in-compaction — Passar middleware para compactMessages/generateText
+- [ ] F-004 logging-middleware — Criar createLoggingMiddleware() em src/middleware/logging.ts
+- [ ] F-005 public-exports — Exportar createLoggingMiddleware e re-exportar LanguageModelV1Middleware
+- [ ] F-006 build-verification — Verificação final: build limpo, sem regressão, sem dependências novas
+
+## Architecture Decisions
+
+1. **wrapLanguageModel do Vercel AI SDK** — Usar o padrão nativo do AI SDK v4 para composição de middleware. Sem reinventar a roda.
+2. **Middleware opcional** — Sem middleware fornecido, comportamento 100% idêntico ao atual. Zero breaking changes.
+3. **Aplicar em ambos os paths** — Tanto streamText (agent loop) quanto generateText (compaction) passam pelo pipeline.
+4. **Logging como exemplo** — Apenas createLoggingMiddleware embutido. Caching, guardrails, RAG ficam para o consumidor.
+5. **Sem dependências novas** — wrapLanguageModel e LanguageModelV1Middleware já existem no pacote 'ai' ^4.
+
+## Files to Modify
+
+| File | Change |
+|---|---|
+| packages/kai-sdk/src/types.ts | Adicionar middleware? em KaiAgentOptions |
+| packages/kai-sdk/src/agent.ts | Importar wrapLanguageModel, aplicar middleware |
+| packages/kai-sdk/src/context/compaction.ts | Aceitar middleware em CompactOptions, aplicar wrapLanguageModel |
+| packages/kai-sdk/src/middleware/logging.ts | NOVO — createLoggingMiddleware() |
+| packages/kai-sdk/src/index.ts | Exportar createLoggingMiddleware e LanguageModelV1Middleware |
+
+## Session Notes
+
+Session 1 (Initializer): Harness criado para onda agenticbackbone-08-kai-middleware. 6 features decompostas do PRP, dependências mapeadas. Escopo bem definido e contido ao packages/kai-sdk.

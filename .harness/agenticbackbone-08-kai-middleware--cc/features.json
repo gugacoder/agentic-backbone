@@ -1,0 +1,99 @@
+[
+  {
+    "id": "F-001",
+    "name": "middleware-type-in-options",
+    "description": "Adicionar campo opcional middleware?: LanguageModelV1Middleware[] em KaiAgentOptions (types.ts). Importar o tipo LanguageModelV1Middleware do pacote 'ai'.",
+    "status": "failing",
+    "priority": 1,
+    "tests": [
+      "types.ts importa LanguageModelV1Middleware de 'ai'",
+      "KaiAgentOptions possui campo opcional middleware do tipo LanguageModelV1Middleware[]",
+      "npm run build --workspace=packages/kai-sdk compila sem erros de tipo"
+    ],
+    "dependencies": [],
+    "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\08-kai-middleware\\PRP.md"
+  },
+  {
+    "id": "F-002",
+    "name": "apply-middleware-in-agent",
+    "description": "No agent.ts, aplicar wrapLanguageModel() ao modelo base quando options.middleware tiver elementos. Importar wrapLanguageModel de 'ai'. Sem middleware, comportamento identico ao atual.",
+    "status": "failing",
+    "priority": 2,
+    "tests": [
+      "agent.ts importa wrapLanguageModel de 'ai'",
+      "Quando options.middleware eh undefined ou vazio, o modelo base eh passado diretamente ao streamText (sem wrapping)",
+      "Quando options.middleware tem elementos, wrapLanguageModel eh chamado com model e middleware antes de streamText",
+      "O modelo wrapped eh usado no streamText no lugar do modelo base",
+      "npm run build --workspace=packages/kai-sdk compila sem erros"
+    ],
+    "dependencies": ["F-001"],
+    "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\08-kai-middleware\\PRP.md"
+  },
+  {
+    "id": "F-003",
+    "name": "middleware-in-compaction",
+    "description": "Refatorar CompactOptions em context/compaction.ts para aceitar middleware?: LanguageModelV1Middleware[]. Aplicar wrapLanguageModel na chamada generateText() da compaction. No agent.ts, passar options.middleware para compactMessages().",
+    "status": "failing",
+    "priority": 3,
+    "tests": [
+      "CompactOptions em compaction.ts possui campo opcional middleware do tipo LanguageModelV1Middleware[]",
+      "compactMessages() aplica wrapLanguageModel ao modelo quando middleware fornecido",
+      "compactMessages() sem middleware usa o modelo base diretamente (comportamento identico ao antes)",
+      "agent.ts passa options.middleware para compactMessages()",
+      "npm run build --workspace=packages/kai-sdk compila sem erros"
+    ],
+    "dependencies": ["F-001"],
+    "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\08-kai-middleware\\PRP.md"
+  },
+  {
+    "id": "F-004",
+    "name": "logging-middleware",
+    "description": "Criar packages/kai-sdk/src/middleware/logging.ts com createLoggingMiddleware(). O middleware intercepta transformParams, wrapGenerate e wrapStream com timing e metadata. Logger customizavel via parametro.",
+    "status": "failing",
+    "priority": 4,
+    "tests": [
+      "Arquivo packages/kai-sdk/src/middleware/logging.ts existe",
+      "createLoggingMiddleware() retorna um objeto LanguageModelV1Middleware valido",
+      "transformParams loga modelo, quantidade de tools e quantidade de messages",
+      "wrapGenerate loga duracao, finishReason e usage",
+      "wrapStream loga duracao do inicio do stream",
+      "Logger padrao eh console.log quando nenhum logger customizado fornecido",
+      "Logger customizado eh usado quando fornecido como parametro",
+      "npm run build --workspace=packages/kai-sdk compila sem erros"
+    ],
+    "dependencies": [],
+    "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\08-kai-middleware\\PRP.md"
+  },
+  {
+    "id": "F-005",
+    "name": "public-exports",
+    "description": "Atualizar index.ts para exportar createLoggingMiddleware de middleware/logging.js e re-exportar o tipo LanguageModelV1Middleware de 'ai' para consumidores.",
+    "status": "failing",
+    "priority": 5,
+    "tests": [
+      "index.ts exporta createLoggingMiddleware",
+      "index.ts re-exporta o tipo LanguageModelV1Middleware de 'ai'",
+      "Todos os exports previamente existentes continuam funcionando (sem regressao)",
+      "npm run build --workspace=packages/kai-sdk compila sem erros"
+    ],
+    "dependencies": ["F-004"],
+    "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\08-kai-middleware\\PRP.md"
+  },
+  {
+    "id": "F-006",
+    "name": "build-verification",
+    "description": "Verificacao final end-to-end: build limpo, runKaiAgent sem middleware se comporta identicamente, middleware sao aplicados na ordem do array, nenhuma dependencia nova adicionada.",
+    "status": "failing",
+    "priority": 6,
+    "tests": [
+      "npm run build --workspace=packages/kai-sdk compila sem erros nem warnings",
+      "runKaiAgent() sem middleware se comporta identicamente ao antes (mesmo modelo passado ao streamText)",
+      "Middleware sao aplicados na ordem do array (primeiro middleware do array eh o mais externo)",
+      "Compaction tambem passa pelo middleware pipeline quando middleware fornecido",
+      "Nenhuma dependencia nova foi adicionada ao package.json (wrapLanguageModel e LanguageModelV1Middleware ja existem no pacote ai)",
+      "Nenhum arquivo fora de packages/kai-sdk/src/ foi modificado"
+    ],
+    "dependencies": ["F-001", "F-002", "F-003", "F-004", "F-005"],
+    "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\08-kai-middleware\\PRP.md"
+  }
+]
