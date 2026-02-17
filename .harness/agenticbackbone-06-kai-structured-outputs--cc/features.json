@@ -1,0 +1,101 @@
+[
+  {
+    "id": "F-001",
+    "name": "kai-generate-object",
+    "description": "Criar packages/kai-sdk/src/structured.ts com a funcao kaiGenerateObject() que encapsula generateObject() do Vercel AI SDK. Recebe KaiObjectOptions<T> (model, apiKey, schema Zod, system?, prompt, maxTokens?) e retorna z.infer<T>. Cria provider OpenRouter internamente via createOpenAICompatible.",
+    "status": "failing",
+    "priority": 1,
+    "tests": [
+      "Arquivo packages/kai-sdk/src/structured.ts existe",
+      "kaiGenerateObject() aceita schema Zod e retorna objeto tipado (z.infer<T>)",
+      "Usa createOpenAICompatible com baseURL openrouter",
+      "Passa model, schema, system, prompt e maxTokens para generateObject()",
+      "Interface KaiObjectOptions<T> exportada com campos: model, apiKey, schema, system?, prompt, maxTokens?",
+      "npm run build --workspace=packages/kai-sdk compila sem erros"
+    ],
+    "dependencies": [],
+    "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\06-kai-structured-outputs\\PRP.md"
+  },
+  {
+    "id": "F-002",
+    "name": "kai-stream-object",
+    "description": "Adicionar kaiStreamObject() em packages/kai-sdk/src/structured.ts. Retorna AsyncGenerator de objetos parciais (Partial<z.infer<T>>) usando streamObject() do Vercel AI SDK. Mesmo pattern de provider do kaiGenerateObject.",
+    "status": "failing",
+    "priority": 2,
+    "tests": [
+      "kaiStreamObject() existe em structured.ts",
+      "Retorna AsyncGenerator<Partial<z.infer<T>>>",
+      "Usa streamObject() do Vercel AI SDK",
+      "Emite objetos parciais incrementalmente via partialObjectStream",
+      "Aceita mesmo KaiObjectOptions<T> do kaiGenerateObject",
+      "npm run build --workspace=packages/kai-sdk compila sem erros"
+    ],
+    "dependencies": ["F-001"],
+    "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\06-kai-structured-outputs\\PRP.md"
+  },
+  {
+    "id": "F-003",
+    "name": "public-exports",
+    "description": "Adicionar exports de kaiGenerateObject, kaiStreamObject e KaiObjectOptions no packages/kai-sdk/src/index.ts. Garantir que tipos e funcoes estejam acessiveis aos consumidores do pacote.",
+    "status": "failing",
+    "priority": 3,
+    "tests": [
+      "index.ts exporta kaiGenerateObject de ./structured.js",
+      "index.ts exporta kaiStreamObject de ./structured.js",
+      "index.ts exporta type KaiObjectOptions de ./structured.js",
+      "npm run build --workspace=packages/kai-sdk compila sem erros",
+      "dist/index.d.ts contém declarações de kaiGenerateObject, kaiStreamObject e KaiObjectOptions"
+    ],
+    "dependencies": ["F-001", "F-002"],
+    "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\06-kai-structured-outputs\\PRP.md"
+  },
+  {
+    "id": "F-004",
+    "name": "compaction-structured-output",
+    "description": "Refatorar compactMessages() em context/compaction.ts para usar generateObject() com CompactionSchema Zod (summary, decisions, filesModified, currentState, nextSteps). Montar mensagem de resumo deterministicamente a partir dos campos tipados em vez de texto livre.",
+    "status": "failing",
+    "priority": 4,
+    "tests": [
+      "CompactionSchema Zod definido com campos: summary (string), decisions (string[]), filesModified (string[]), currentState (string), nextSteps (string[])",
+      "compactMessages() usa generateObject() em vez de generateText()",
+      "Mensagem de resumo montada a partir dos campos do objeto estruturado (nao texto livre)",
+      "Resultado preserva mesma interface CompactResult (messages, compacted, warning)",
+      "npm run build --workspace=packages/kai-sdk compila sem erros"
+    ],
+    "dependencies": ["F-001"],
+    "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\06-kai-structured-outputs\\PRP.md"
+  },
+  {
+    "id": "F-005",
+    "name": "compaction-fallback",
+    "description": "Manter fallback na compaction: se generateObject() falhar (provider nao suporta structured outputs, erro de rede, etc.), cair no generateText() atual. O fallback deve ser transparente — mesmo contrato de retorno CompactResult.",
+    "status": "failing",
+    "priority": 5,
+    "tests": [
+      "Se generateObject() lancar erro, compactMessages() tenta generateText() como fallback",
+      "Fallback usa mesma logica atual (texto livre com SUMMARIZATION_PROMPT)",
+      "CompactResult.warning inclui informacao sobre o fallback usado",
+      "Nenhum erro nao-tratado escapa de compactMessages()",
+      "npm run build --workspace=packages/kai-sdk compila sem erros"
+    ],
+    "dependencies": ["F-004"],
+    "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\06-kai-structured-outputs\\PRP.md"
+  },
+  {
+    "id": "F-006",
+    "name": "build-verification",
+    "description": "Verificacao final: npm run build --workspace=packages/kai-sdk compila sem erros. Todos os tipos exportados corretamente em dist/. Nenhuma dependencia nova alem de ai e zod (ambas ja existem).",
+    "status": "failing",
+    "priority": 6,
+    "tests": [
+      "npm run build --workspace=packages/kai-sdk exit code 0",
+      "dist/structured.js existe",
+      "dist/structured.d.ts existe com tipos kaiGenerateObject, kaiStreamObject, KaiObjectOptions",
+      "dist/index.js re-exporta structured",
+      "dist/context/compaction.js atualizado com generateObject",
+      "Nenhuma dependencia nova adicionada ao package.json (ai e zod ja existem)"
+    ],
+    "dependencies": ["F-003", "F-005"],
+    "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\06-kai-structured-outputs\\PRP.md"
+  }
+]

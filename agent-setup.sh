@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-echo "=== Agent Setup: agenticbackbone-05-evolution-failsafe ==="
+echo "=== Agent Setup: agenticbackbone-06-kai-structured-outputs ==="
 
 # ── Detect package manager ───────────────────────────────────
 if command -v npm &>/dev/null; then
@@ -37,6 +37,11 @@ else
 fi
 
 # ── Build check ──────────────────────────────────────────────
+echo "[setup] building kai-sdk..."
+npm run build --workspace=packages/kai-sdk || {
+  echo "WARN: kai-sdk build failed"
+}
+
 echo "[setup] building backbone..."
 npm run build --workspace=apps/backbone || {
   echo "WARN: backbone build failed"
@@ -74,7 +79,7 @@ echo "Package manager: $PKG"
 echo "Dependencies: installed"
 echo "Backbone build: attempted"
 echo "Hub build: attempted"
-echo "Harness: .harness/agenticbackbone-05-evolution-failsafe--cc/"
-echo "Features: 12 (all failing)"
-echo "First feature: F-001 backbone-response-helpers"
+echo "Harness: .harness/agenticbackbone-06-kai-structured-outputs--cc/"
+echo "Features: 6 (all failing)"
+echo "First feature: F-001 kai-generate-object"
 echo "=== Ready for vibe:code ==="

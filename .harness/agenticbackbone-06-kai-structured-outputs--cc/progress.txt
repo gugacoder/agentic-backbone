@@ -1,0 +1,43 @@
+# Progress — agenticbackbone-06-kai-structured-outputs
+
+## Current Status
+
+INITIALIZING — Harness criado, nenhuma feature implementada ainda.
+
+## Specs Path
+
+D:\sources\codr.studio\cia-prime-care\agentic-backbone\apps\backbone\milestones\06-kai-structured-outputs
+
+## Environment
+
+- Stack: Node.js + TypeScript (ESM), Vercel AI SDK v4, Zod
+- Package manager: npm workspaces
+- Dev: npm run dev:backbone (hot-reload via tsx watch)
+- Build: npm run build --workspace=packages/kai-sdk
+- Target package: packages/kai-sdk
+- No test framework configured
+
+## Features
+
+- [ ] F-001 kai-generate-object — kaiGenerateObject() utility em structured.ts
+- [ ] F-002 kai-stream-object — kaiStreamObject() com AsyncGenerator de parciais
+- [ ] F-003 public-exports — Exportar novas funcoes e tipos no index.ts
+- [ ] F-004 compaction-structured-output — Refatorar compaction para usar generateObject() + Zod schema
+- [ ] F-005 compaction-fallback — Fallback para generateText() se generateObject() falhar
+- [ ] F-006 build-verification — Build final sem erros, tipos em dist/
+
+## Architecture Decisions
+
+1. kaiGenerateObject() e kaiStreamObject() sao funcoes utilitarias independentes — NAO alteram runKaiAgent()
+2. Provider OpenRouter criado internamente (mesmo pattern de compactMessages). Migracao para registry centralizado sera feita no PRP-10.
+3. Compaction migra de generateText() (texto livre) para generateObject() (Zod schema CompactionSchema)
+4. Fallback obrigatorio: se generateObject() falhar, cai no generateText() atual
+5. Nenhuma dependencia nova — ai e zod ja estao no package.json
+6. Arquivos impactados:
+   - packages/kai-sdk/src/structured.ts (NOVO)
+   - packages/kai-sdk/src/context/compaction.ts (MODIFICAR)
+   - packages/kai-sdk/src/index.ts (MODIFICAR)
+
+## Session Notes
+
+Session 1 (Initializer): Harness criado para onda agenticbackbone-06-kai-structured-outputs com 6 features (todas failing).

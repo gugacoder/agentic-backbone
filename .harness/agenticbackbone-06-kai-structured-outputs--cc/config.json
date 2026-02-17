@@ -1,0 +1,15 @@
+{
+  "slug": "agenticbackbone-06-kai-structured-outputs--cc",
+  "project": "agentic-backbone — 06-kai-structured-outputs",
+  "session_name": "agenticbackbone-06-kai-structured-outputs--cc",
+  "specs": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\06-kai-structured-outputs",
+  "agent": {
+    "harness": "claude-code",
+    "model": null,
+    "max_turns": 200,
+    "max_iterations": null,
+    "max_retries": 5,
+    "rollback": "stash"
+  },
+  "notifications": []
+}
