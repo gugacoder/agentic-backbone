@@ -1,7 +1,7 @@
 # Evolution Fail-Safe — Progress
 
 ## Current Status
-IN PROGRESS — F-001, F-002, F-003, F-004, F-005, F-006, F-007, F-008, F-009, F-010 completas (10/12). Proxima: F-011 hub-delete-flow-resilient.
+COMPLETE — Todas as 12 features implementadas e validadas (12/12).
 
 ## Specs Path
 D:\sources\codr.studio\cia-prime-care\agentic-backbone\apps\backbone\milestones\05-evolution-failsafe
@@ -41,10 +41,10 @@ D:\sources\codr.studio\cia-prime-care\agentic-backbone\apps\backbone\milestones\
 - [x] F-008 hub-instance-page-no-error-card — Pagina instancia sem InstanceErrorCard
 - [x] F-009 hub-qr-component-resilient — QR resiliente com retry e reset
 - [x] F-010 hub-settings-form-resilient — Settings form resiliente
-- [ ] F-011 hub-delete-flow-resilient — Delete flow resiliente
+- [x] F-011 hub-delete-flow-resilient — Delete flow resiliente
 
 ### Validation
-- [ ] F-012 smoke-test-end-to-end — Validacao final de todos os cenarios
+- [x] F-012 smoke-test-end-to-end — Validacao final de todos os cenarios
 
 ## Architecture Decisions
 
@@ -188,3 +188,27 @@ Session 10: Implementada F-010 hub-settings-form-resilient.
 - Consolidados imports de @tanstack/react-query (useQuery + useQueryClient)
 - Build limpo: backbone tsc + hub tsc --noEmit + vite build
 - Proxima: F-011 hub-delete-flow-resilient
+
+Session 11: Validada F-011 hub-delete-flow-resilient.
+- Delete flow ja estava completamente implementado desde F-005 (hub-mutations-envelope)
+- whatsapp.tsx handleDelete: verifica result.ok, toast amigavel via friendlyMessage() quando ok: false, limpa deleteTarget
+- whatsapp-instance.tsx handleDelete: verifica result.ok, toast amigavel quando ok: false, navega quando ok: true
+- useDeleteInstance mutation: retorna ApiResult<unknown>, invalidacao condicional (so quando ok: true)
+- onError em ambos: so dispara por falha de rede real (backbone inacessivel)
+- Nenhuma mudanca de codigo necessaria — apenas validacao e build
+- Build limpo: backbone tsc + hub tsc --noEmit + vite build
+
+Session 12: Validada F-012 smoke-test-end-to-end.
+- Backbone reiniciado com modulo Evolution saudavel (routes montadas)
+- curl em TODAS as 10 rotas do modulo Evolution: 100% HTTP 200 com envelope correto
+- Cenarios testados: api_offline, instance_not_found, create success, delete success, qr fetch, settings fetch, settings update (parcial e completo), reconnect, restart, validation error (empty name, no body)
+- Build limpo: backbone tsc + hub tsc --noEmit + vite build
+- Hub code review: todos os componentes verificados contra tabela de cenarios do PRP
+- whatsapp.tsx: sem isError, tabela sempre renderiza, delete com toast amigavel
+- whatsapp-instance.tsx: api_offline e instance_not_found inline, tabs sempre renderizam, useActionState interpreta cooldown/exhausted
+- create-instance-dialog.tsx: navega para tab "status", ok:false mantem dialog aberto
+- instance-qr.tsx: erro inline com retry, instancia open mostra "ja vinculada", exhausted com botao "Recomecar"
+- instance-settings-form.tsx: settings null mostra "indisponiveis" + retry, mutation ok:false com toast
+- instance-table.tsx: reconnect/restart verificam result.ok
+- Tabela de cenarios do PRP (secao 1): 100% coberta
+- MILESTONE COMPLETO: 12/12 features passing

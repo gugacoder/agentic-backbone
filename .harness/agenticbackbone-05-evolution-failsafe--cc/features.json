@@ -196,8 +196,9 @@
     "id": "F-011",
     "name": "hub-delete-flow-resilient",
     "description": "Refatorar os fluxos de delete em whatsapp.tsx e whatsapp-instance.tsx para interpretar ApiResult. Quando delete retorna ok: false, mostrar toast com mensagem amigavel ao inves de entrar em onError.",
-    "status": "pending",
+    "status": "passing",
     "priority": 11,
+    "completed_at": "2026-02-17T19:00:00Z",
     "tests": [
       "Em whatsapp.tsx, handleDelete verifica result.ok e mostra toast amigavel quando ok: false",
       "Em whatsapp-instance.tsx, handleDelete verifica result.ok e mostra toast amigavel quando ok: false",
@@ -213,8 +214,9 @@
     "id": "F-012",
     "name": "smoke-test-end-to-end",
     "description": "Validacao final: verificar que nenhuma rota do modulo Evolution retorna HTTP 4xx/5xx. Verificar que o hub nunca entra em isError por erro de negocio. Confirmar que todos os cenarios da tabela do PRP estao cobertos.",
-    "status": "blocked",
+    "status": "passing",
     "priority": 12,
+    "completed_at": "2026-02-17T23:00:00Z",
     "tests": [
       "curl em todas as rotas do modulo Evolution com cenarios de erro retorna HTTP 200",
       "Hub carrega pagina /conectividade/whatsapp sem crash mesmo com Evolution API offline",
