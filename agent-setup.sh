@@ -1,142 +1,80 @@
 #!/usr/bin/env bash
-# =============================================================================
-# agent-setup.sh — Bootstrap script for Evolution Module
-# Milestone: 02-evolution-module (Gestao robusta de conectividade Evolution API)
-# =============================================================================
 set -euo pipefail
 
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-CYAN='\033[0;36m'
-NC='\033[0m'
+echo "=== Agent Setup: evolution-04-evolution-fix ==="
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-BACKBONE_DIR="$SCRIPT_DIR/apps/backbone"
-
-echo -e "${CYAN}=======================================${NC}"
-echo -e "${CYAN}  Backbone — Agent Setup${NC}"
-echo -e "${CYAN}  Milestone: 02-evolution-module${NC}"
-echo -e "${CYAN}=======================================${NC}"
-echo ""
-
-# 1. Detect package manager and install dependencies
-echo -e "${CYAN}[1/5] Installing dependencies...${NC}"
-cd "$SCRIPT_DIR"
-
-if [ -f "package-lock.json" ]; then
-    npm install
-elif [ -f "pnpm-lock.yaml" ]; then
-    pnpm install
-elif [ -f "yarn.lock" ]; then
-    yarn install
-elif [ -f "bun.lockb" ]; then
-    bun install
+# ── Detect package manager ───────────────────────────────────
+if command -v npm &>/dev/null; then
+  PKG="npm"
+elif command -v pnpm &>/dev/null; then
+  PKG="pnpm"
+elif command -v yarn &>/dev/null; then
+  PKG="yarn"
+elif command -v bun &>/dev/null; then
+  PKG="bun"
 else
-    echo -e "${YELLOW}No lockfile found, using npm...${NC}"
-    npm install
+  echo "FATAL: no package manager found (npm, pnpm, yarn, bun)"
+  exit 1
 fi
-echo -e "${GREEN}Dependencies installed.${NC}"
-echo ""
 
-# 2. Docker platform (Evolution API needs postgres + redis + evolution)
-echo -e "${CYAN}[2/5] Checking Docker platform...${NC}"
-if [ -f "$SCRIPT_DIR/docker-compose.platform.yml" ]; then
-    if command -v docker &>/dev/null; then
-        # Check if platform services are running
-        if docker compose -f docker-compose.platform.yml ps --quiet 2>/dev/null | head -1 &>/dev/null; then
-            echo -e "${GREEN}Docker platform services detected.${NC}"
-            echo -e "  To start: npm run platform:up"
-            echo -e "  To check: npm run platform:ps"
-        else
-            echo -e "${YELLOW}Docker available but platform not running.${NC}"
-            echo -e "  Start with: npm run platform:up"
-        fi
-    else
-        echo -e "${YELLOW}Docker not found. Evolution API requires docker platform.${NC}"
-    fi
+echo "[setup] package manager: $PKG"
+
+# ── Install dependencies ─────────────────────────────────────
+echo "[setup] installing dependencies..."
+$PKG install
+
+# ── Check .env exists ────────────────────────────────────────
+if [ ! -f .env ]; then
+  echo "WARN: .env file not found — backbone will fail to start without required env vars"
+fi
+
+# ── Platform services (Docker Compose) ───────────────────────
+if command -v docker &>/dev/null && [ -f docker-compose.platform.yml ]; then
+  echo "[setup] starting platform services..."
+  npm run platform:up || echo "WARN: platform:up failed — some modules may not work"
 else
-    echo -e "${YELLOW}No docker-compose.platform.yml found.${NC}"
+  echo "[setup] skipping docker (not available or no compose file)"
 fi
-echo ""
 
-# 3. Check .env for required Evolution variables
-echo -e "${CYAN}[3/5] Checking environment...${NC}"
-if [ -f "$SCRIPT_DIR/.env" ]; then
-    MISSING_VARS=""
-    for VAR in EVOLUTION_API_URL EVOLUTION_API_KEY BACKBONE_PORT JWT_SECRET SYSUSER SYSPASS; do
-        if ! grep -q "^${VAR}=" "$SCRIPT_DIR/.env" 2>/dev/null; then
-            MISSING_VARS="$MISSING_VARS $VAR"
-        fi
-    done
-    if [ -z "$MISSING_VARS" ]; then
-        echo -e "${GREEN}.env has all required variables.${NC}"
-    else
-        echo -e "${YELLOW}Missing in .env:${MISSING_VARS}${NC}"
-    fi
-else
-    echo -e "${RED}.env file not found! Copy .env.example and configure.${NC}"
-fi
-echo ""
-
-# 4. Build the backbone
-echo -e "${CYAN}[4/5] Building Backbone...${NC}"
-npm run build --workspace=apps/backbone 2>&1 || {
-    echo -e "${RED}Build failed! Check TypeScript errors above.${NC}"
-    exit 1
+# ── Build check ──────────────────────────────────────────────
+echo "[setup] building backbone..."
+npm run build --workspace=apps/backbone || {
+  echo "WARN: backbone build failed"
 }
-echo -e "${GREEN}Build succeeded.${NC}"
-echo ""
 
-# 5. Smoke test
-echo -e "${CYAN}[5/5] Smoke test...${NC}"
+echo "[setup] building hub..."
+npm run build --workspace=apps/hub || {
+  echo "WARN: hub build failed"
+}
 
-# Check build output
-if [ -f "$BACKBONE_DIR/dist/index.js" ]; then
-    echo -e "${GREEN}  dist/index.js exists.${NC}"
+# ── Start dev server (background) ────────────────────────────
+echo "[setup] starting backbone dev server..."
+npm run dev:backbone &
+BACKBONE_PID=$!
+sleep 3
+
+# ── Smoke test ───────────────────────────────────────────────
+BACKBONE_PORT="${BACKBONE_PORT:-7700}"
+echo "[setup] smoke test: GET http://localhost:$BACKBONE_PORT/health"
+
+if curl -sf "http://localhost:$BACKBONE_PORT/health" > /dev/null 2>&1; then
+  echo "[setup] backbone health: OK"
 else
-    echo -e "${RED}  dist/index.js not found! Build may have failed.${NC}"
-    exit 1
+  echo "WARN: backbone health check failed (may still be starting)"
 fi
 
-# Check modules directory
-if [ -d "$BACKBONE_DIR/src/modules" ]; then
-    MODULE_FILES=$(find "$BACKBONE_DIR/src/modules" -name "*.ts" | wc -l)
-    echo -e "${GREEN}  src/modules/ exists with ${MODULE_FILES} TypeScript files.${NC}"
-else
-    echo -e "${YELLOW}  src/modules/ does not exist yet (expected after F-001).${NC}"
-fi
+# ── Stop dev server ──────────────────────────────────────────
+kill $BACKBONE_PID 2>/dev/null || true
+wait $BACKBONE_PID 2>/dev/null || true
 
-# Check evolution module
-if [ -d "$BACKBONE_DIR/src/modules/evolution" ]; then
-    EVO_FILES=$(find "$BACKBONE_DIR/src/modules/evolution" -name "*.ts" | wc -l)
-    echo -e "${GREEN}  src/modules/evolution/ exists with ${EVO_FILES} TypeScript files.${NC}"
-else
-    echo -e "${YELLOW}  src/modules/evolution/ does not exist yet (expected after F-005).${NC}"
-fi
-
-# Check context config
-if [ -f "$BACKBONE_DIR/context/modules/evolution/CONFIG.yaml" ]; then
-    echo -e "${GREEN}  context/modules/evolution/CONFIG.yaml exists.${NC}"
-else
-    echo -e "${YELLOW}  context/modules/evolution/CONFIG.yaml does not exist yet (expected after F-006).${NC}"
-fi
-
+# ── Summary ──────────────────────────────────────────────────
 echo ""
-
-# Summary
-echo -e "${GREEN}=======================================${NC}"
-echo -e "${GREEN}  Setup complete!${NC}"
-echo -e "${GREEN}=======================================${NC}"
-echo ""
-echo -e "  Workspace:    $BACKBONE_DIR"
-echo -e "  Milestone:    02-evolution-module"
-echo -e "  Goal:         Gestao robusta de conectividade Evolution API"
-echo -e "  Build:        npm run build --workspace=apps/backbone"
-echo -e "  Dev:          npm run dev:backbone"
-echo -e "  Platform:     npm run platform:up"
-echo -e "  Validate:     npm run build --workspace=apps/backbone"
-echo ""
-echo -e "  Features:     13 total (4 module system infra + 8 evolution + 1 build validation)"
-echo -e "  First task:   F-001 — Module System Types (src/modules/types.ts)"
-echo ""
+echo "=== Setup Summary ==="
+echo "Package manager: $PKG"
+echo "Dependencies: installed"
+echo "Backbone build: attempted"
+echo "Hub build: attempted"
+echo "Harness: .harness/evolution-04-evolution-fix--cc/"
+echo "Features: 8 (all failing)"
+echo "First feature: F-001 route-mounting-fix"
+echo "=== Ready for vibe:code ==="

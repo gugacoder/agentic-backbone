@@ -1,0 +1,130 @@
+[
+  {
+    "id": "F-001",
+    "name": "route-mounting-fix",
+    "description": "Reestruturar apps/backbone/src/index.ts para que startModules() execute ANTES de app.route(), garantindo que rotas de modulos sejam registradas antes do congelamento pelo Hono. Extrair logica de inicializacao do callback de serve() para funcao async bootstrap().",
+    "status": "failing",
+    "priority": 1,
+    "tests": [
+      "GET /api/modules/evolution/health retorna 200 com JSON valido (nao 404)",
+      "GET /api/modules/evolution/instances retorna 200 ou 503 (nao 404)",
+      "Rotas de modulo exigem JWT — GET /api/modules/evolution/health sem token retorna 401",
+      "Build backend passa: npm run build --workspace=apps/backbone",
+      "Servidor inicia sem erros e loga modulos carregados"
+    ],
+    "dependencies": [],
+    "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\04-evolution-fix\\PRP.md"
+  },
+  {
+    "id": "F-002",
+    "name": "api-health-card-error-state",
+    "description": "Adicionar tratamento de estado de erro no componente ApiHealthCard. Quando a query falha (isError), exibir badge vermelho 'Indisponivel' com texto 'Falha ao consultar o backbone'. Nunca ficar preso em 'Verificando'.",
+    "status": "failing",
+    "priority": 2,
+    "tests": [
+      "Com backend rodando: badge mostra 'Online' (verde) ou 'Offline' (vermelho) conforme estado real da Evolution API",
+      "Com backend parado: badge mostra 'Indisponivel' (vermelho) com texto 'Falha ao consultar o backbone'",
+      "Nunca exibe 'Verificando' eternamente — transiciona para erro apos falha da query",
+      "Com dados anteriores e refetch em andamento: mostra dados anteriores sem piscar",
+      "Build hub passa: npm run build --workspace=apps/hub"
+    ],
+    "dependencies": [],
+    "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\04-evolution-fix\\PRP.md"
+  },
+  {
+    "id": "F-003",
+    "name": "whatsapp-page-error-state",
+    "description": "Adicionar tratamento de erro na WhatsAppPage. Quando evolutionInstancesQuery falha, exibir card de erro com icone AlertTriangle, titulo 'Falha ao carregar instancias', mensagem de erro e botao 'Tentar novamente' (refetch). Nao mascarar erro como lista vazia.",
+    "status": "failing",
+    "priority": 3,
+    "tests": [
+      "Com backend rodando: pagina WhatsApp mostra dados normalmente (tabela de instancias)",
+      "Com backend parado: exibe card de erro com mensagem clara e botao retry",
+      "Botao 'Tentar novamente' dispara refetch da query",
+      "InstanceSummaryCards nao recebe dados de erro — recebe array vazio ou nao renderiza quando isError",
+      "Nenhuma tela em branco em cenario de falha",
+      "Build hub passa: npm run build --workspace=apps/hub"
+    ],
+    "dependencies": [],
+    "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\04-evolution-fix\\PRP.md"
+  },
+  {
+    "id": "F-004",
+    "name": "whatsapp-instance-error-state",
+    "description": "Diferenciar erros na WhatsAppInstancePage: 404 mostra 'Instancia nao encontrada', 503 mostra 'Evolution API indisponivel', outros erros mostram 'Falha ao carregar instancia' com error.message e botao retry. Nunca confundir erro de rede com instancia inexistente.",
+    "status": "failing",
+    "priority": 4,
+    "tests": [
+      "Com backend rodando e instancia existente: exibe card de status normal",
+      "Com API retornando 404: mostra 'Instancia nao encontrada' com link para voltar",
+      "Com API retornando 503: mostra 'Evolution API indisponivel' com botao retry",
+      "Com outro erro (ex: 500): mostra 'Falha ao carregar instancia' com error.message e botao retry",
+      "Nenhum spinner infinito em cenario de falha",
+      "Build hub passa: npm run build --workspace=apps/hub"
+    ],
+    "dependencies": [],
+    "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\04-evolution-fix\\PRP.md"
+  },
+  {
+    "id": "F-005",
+    "name": "instance-qr-error-state",
+    "description": "Adicionar estado 'error' na maquina de estados do InstanceQR. Quando a query de QR falha durante estado 'loading', transicionar para 'error' com icone de erro, mensagem e botao 'Tentar novamente'. O retry nao incrementa o contador de tentativas.",
+    "status": "failing",
+    "priority": 5,
+    "tests": [
+      "Com API offline e QR solicitado: transiciona de 'loading' para 'error' (nao fica preso em spinner)",
+      "Estado 'error' exibe icone de erro + mensagem + botao 'Tentar novamente'",
+      "Botao retry em estado 'error' NAO incrementa contador de tentativas",
+      "Fluxo normal (API online) continua funcionando: idle -> loading -> active -> linked/expired",
+      "Estado 'exhausted' continua funcionando apos 5 tentativas reais",
+      "Build hub passa: npm run build --workspace=apps/hub"
+    ],
+    "dependencies": [],
+    "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\04-evolution-fix\\PRP.md"
+  },
+  {
+    "id": "F-006",
+    "name": "remove-polling-queries",
+    "description": "Confirmar que refetchInterval foi removido das queries evolutionHealthQuery, evolutionInstancesQuery e evolutionInstanceQuery em evolution.ts. Se ainda existir, remover. Manter refetchInterval condicional em instance-qr.tsx (polling durante QR ativo).",
+    "status": "failing",
+    "priority": 6,
+    "tests": [
+      "Nenhum refetchInterval em evolutionHealthQuery",
+      "Nenhum refetchInterval em evolutionInstancesQuery",
+      "Nenhum refetchInterval em evolutionInstanceQuery",
+      "refetchInterval condicional em instance-qr.tsx (shouldPoll ? 2_000 : false) permanece inalterado",
+      "DevTools Network: nenhuma requisicao periodica a /modules/evolution/* (exceto durante QR ativo)"
+    ],
+    "dependencies": [],
+    "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\04-evolution-fix\\PRP.md"
+  },
+  {
+    "id": "F-007",
+    "name": "claude-md-anti-polling-rule",
+    "description": "Verificar se CLAUDE.md possui secao 'Data Fetching (Hub)' com regra anti-polling. Se nao existir, adicionar apos secao 'Routing (Hub)'. Se ja existir (ou foi removida intencionalmente), nao duplicar/readicionar.",
+    "status": "failing",
+    "priority": 7,
+    "tests": [
+      "Se regra anti-polling nao existia: secao 'Data Fetching (Hub)' adicionada ao CLAUDE.md apos 'Routing (Hub)'",
+      "Se regra anti-polling ja existia: nenhuma duplicacao",
+      "Regra menciona: polling proibido, SSE como fonte de verdade, queries apenas em montagem/SSE/mutations",
+      "CLAUDE.md permanece bem formatado e sem secoes duplicadas"
+    ],
+    "dependencies": [],
+    "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\04-evolution-fix\\PRP.md"
+  },
+  {
+    "id": "F-008",
+    "name": "build-validation",
+    "description": "Validar que ambos os builds (backbone e hub) passam sem erros apos todas as correcoes. Teste final de integridade.",
+    "status": "failing",
+    "priority": 8,
+    "tests": [
+      "npm run build --workspace=apps/backbone completa sem erros",
+      "npm run build --workspace=apps/hub completa sem erros",
+      "Nenhum warning de TypeScript critico nos builds"
+    ],
+    "dependencies": ["F-001", "F-002", "F-003", "F-004", "F-005", "F-006", "F-007"],
+    "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\04-evolution-fix\\PRP.md"
+  }
+]

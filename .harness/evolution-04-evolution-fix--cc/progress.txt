@@ -1,0 +1,56 @@
+# Evolution 04 — Evolution Fix (Route Mounting + Robustness)
+
+## Current Status
+
+Harness inicializado. 8 features identificadas (todas failing). Nenhuma implementacao realizada.
+
+## Specs Path
+
+D:\sources\codr.studio\cia-prime-care\agentic-backbone\apps\backbone\milestones\04-evolution-fix
+
+## Environment
+
+- **Stack:** Node.js + Hono (backend), React 19 + Vite + TanStack Query/Router (hub)
+- **Monorepo:** npm workspaces (apps/backbone, apps/hub, packages/kai-sdk)
+- **Dev backbone:** `npm run dev:backbone` (tsx watch, porta 7700)
+- **Dev hub:** `npm run dev:hub` (Vite, porta 7701)
+- **Build backbone:** `npm run build --workspace=apps/backbone`
+- **Build hub:** `npm run build --workspace=apps/hub`
+- **Platform:** `npm run platform:up` (Docker Compose para servicos)
+- **Env:** `.env` na raiz (JWT_SECRET, SYSUSER, SYSPASS, BACKBONE_PORT, HUB_PORT)
+
+## Features
+
+- [ ] F-001 route-mounting-fix — Reestruturar index.ts: startModules() antes de app.route()
+- [ ] F-002 api-health-card-error-state — ApiHealthCard com tratamento de isError
+- [ ] F-003 whatsapp-page-error-state — WhatsAppPage com card de erro e retry
+- [ ] F-004 whatsapp-instance-error-state — WhatsAppInstancePage diferenciando 404/503/outros
+- [ ] F-005 instance-qr-error-state — InstanceQR com estado 'error' na maquina de estados
+- [ ] F-006 remove-polling-queries — Confirmar remocao de refetchInterval das queries
+- [ ] F-007 claude-md-anti-polling-rule — Regra anti-polling no CLAUDE.md
+- [ ] F-008 build-validation — Validacao final de builds (backbone + hub)
+
+## Architecture Decisions
+
+1. **Route mounting timing:** O Hono copia rotas no `.route()`. Portanto `startModules()` DEVE executar antes de `app.route("/api", routes)`. A solucao e criar funcao async `bootstrap()` que roda toda inicializacao antes de montar rotas e iniciar o servidor.
+
+2. **JWT barrier automatico:** Como `startModules` monta rotas no objeto `routes` que ja tem o JWT middleware registrado (linha 47 de routes/index.ts), e a montagem agora acontece ANTES do `app.route()`, as rotas ficam corretamente atras do barrier. Nenhuma mudanca em loader.ts necessaria.
+
+3. **Robustez do hub:** Todo componente que consome query deve tratar 3 estados: carregando, sucesso e erro. Nunca spinner infinito, nunca tela em branco, nunca mensagem errada.
+
+4. **Anti-polling:** refetchInterval proibido no hub. SSE e fonte de verdade para atualizacoes real-time. Queries buscam dados em montagem, resposta a SSE, e apos mutations.
+
+5. **Mensagens em pt-BR:** Todas as mensagens de erro visíveis ao operador devem ser em portugues.
+
+6. **Componentes shadcn:** Usar Card, Badge, Alert, Button existentes do shadcn — nao criar componentes novos.
+
+## Session Notes
+
+Session 1 (Initializer): Harness criado para onda evolution-04-evolution-fix.
+- 8 features decompostas do PRP (todas failing)
+- F-001 e a feature critica (desbloqueia rotas do modulo Evolution)
+- F-002 a F-005 sao correcoes de robustez no hub (independentes entre si)
+- F-006 e F-007 sao verificacoes/ajustes menores
+- F-008 e validacao final (depende de todas as anteriores)
+- Polling ja foi removido de evolution.ts em sessao anterior (F-006 pode ser fast-pass)
+- Regra anti-polling nao encontrada no CLAUDE.md atual (F-007 precisa adicionar)
