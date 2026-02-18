@@ -1,0 +1,44 @@
+# Progress — 11-kai-needs-approval
+
+## Current Status
+
+Harness inicializado. 10 features decompostas, todas failing. Nenhum código de implementação foi tocado.
+
+## Specs Path
+
+D:\sources\codr.studio\cia-prime-care\agentic-backbone\apps\backbone\milestones\11-kai-needs-approval
+
+## Environment
+
+- **Stack:** Node.js, TypeScript (strict, ES2022, ESM), npm workspaces monorepo
+- **Main package:** packages/kai-sdk (Vercel AI SDK v4, Zod)
+- **Consumer:** apps/backbone (Hono, Claude Agent SDK)
+- **Build:** `npm run build --workspace=packages/kai-sdk` / `npm run build --workspace=apps/backbone`
+- **Dev:** `npm run dev:backbone` (tsx watch)
+- **No test framework configurado** — validação via build + critérios manuais
+
+## Features
+
+- [ ] F-001 types-tool-approval — Novos tipos em types.ts (ToolApprovalRequest, autoApprove, onToolApproval, evento tool_approval)
+- [ ] F-002 factory-bash-tool — Converter bashTool para factory createBashTool com needsApproval
+- [ ] F-003 factory-write-tool — Converter writeTool para factory createWriteTool com needsApproval
+- [ ] F-004 factory-edit-tool — Converter editTool para factory createEditTool com needsApproval
+- [ ] F-005 factory-multi-edit-tool — Converter multiEditTool para factory createMultiEditTool com needsApproval
+- [ ] F-006 factory-apply-patch-tool — Converter applyPatchTool para factory createApplyPatchTool com needsApproval
+- [ ] F-007 agent-tools-assembly — Integrar factories no agent.ts e exportar em tools/index.ts
+- [ ] F-008 tool-approval-event-emission — Emissão do evento tool_approval com callback onToolApproval
+- [ ] F-009 exports-and-backward-compat — Exports finais em index.ts + validação de backward compat
+- [ ] F-010 build-verification — Build final de verificação (kai-sdk + backbone)
+
+## Architecture Decisions
+
+1. **autoApprove default true** — Backward compat: consumidores existentes (heartbeat, testes) não precisam mudar nada
+2. **Factory pattern** — Tools sensíveis (Bash, Write, Edit, MultiEdit, ApplyPatch) passam de constantes para factories que recebem `{ autoApprove }`. Constante original mantida como `createXTool()` para backward compat
+3. **needsApproval do Vercel AI SDK** — Quando `autoApprove === false`, a tool declara `needsApproval: async () => true`. O SDK pausa a execução e o consumidor decide via callback
+4. **Dois modos de uso** — Heartbeat (autônomo, `autoApprove: true`) vs Conversa (interativo, `autoApprove: false` + `onToolApproval`)
+5. **Sem novas dependências** — Apenas reorganização de código existente + uso de API do Vercel AI SDK v4
+6. **Tools de leitura nunca pedem aprovação** — Read, Glob, Grep, ListDir, WebFetch, TodoWrite/Read, Diagnostics ficam inalteradas
+
+## Session Notes
+
+Session 1 (Initializer): Harness criado para onda agenticbackbone-11-kai-needs-approval--cc com 10 features (todas failing).
