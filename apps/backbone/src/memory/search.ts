@@ -44,7 +44,13 @@ export function searchVector(
 export function sanitizeFts5Query(raw: string): string {
   const words = raw.match(/\w+/g);
   if (!words || words.length === 0) return '""';
-  return words.map((w) => `"${w}"`).join(" ");
+  const individual = words.map((w) => `"${w}"`).join(" ");
+  // Also match underscore-joined identifiers (e.g. "capability test token" → "capability_test_token")
+  if (words.length > 1) {
+    const joined = `"${words.join("_")}"`;
+    return `${individual} OR ${joined}`;
+  }
+  return individual;
 }
 
 interface FtsRow {

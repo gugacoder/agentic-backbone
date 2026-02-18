@@ -90,6 +90,10 @@ class MemoryManager implements MemorySearchManager {
     );
   }
 
+  markDirty(): void {
+    this.dirty = true;
+  }
+
   async sync(opts?: { force?: boolean }): Promise<void> {
     if (this.syncing && !opts?.force) return;
     this.syncing = true;

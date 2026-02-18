@@ -62,6 +62,9 @@ export function createMemoryKaiTools(agentId: string): Record<string, any> {
         const updated = existing.trimEnd() + "\n" + section;
         ensureWrite(path, updated);
 
+        // Ensure next search re-indexes the updated content
+        try { getAgentMemoryManager(agentId).markDirty(); } catch {}
+
         return { saved: true, path, factsCount: newFacts.length };
       },
     }),
@@ -88,6 +91,10 @@ export function createMemoryKaiTools(agentId: string): Record<string, any> {
         }
 
         ensureWrite(path, updated);
+
+        // Ensure next search re-indexes the updated content
+        try { getAgentMemoryManager(agentId).markDirty(); } catch {}
+
         return { saved: true, path };
       },
     }),
