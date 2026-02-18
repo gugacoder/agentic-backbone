@@ -61,7 +61,8 @@
     "id": "F-004",
     "name": "factory-edit-tool",
     "description": "Converter editTool de constante para factory createEditTool(opts?) com needsApproval condicional. Manter backward compat.",
-    "status": "pending",
+    "status": "passing",
+    "completed_at": "2026-02-18T01:00:00Z",
     "priority": 4,
     "tests": [
       "createEditTool é exportada como named function em tools/edit.ts",
