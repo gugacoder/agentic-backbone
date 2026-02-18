@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-echo "=== Agent Setup: agenticbackbone-11-kai-needs-approval ==="
+echo "=== Agent Setup: agenticbackbone-12-kai-tool-repair ==="
 
 # ── Detect package manager ───────────────────────────────────
 if command -v npm &>/dev/null; then
@@ -56,7 +56,7 @@ echo "=== Setup Summary ==="
 echo "Package manager: $PKG"
 echo "Dependencies: installed"
 echo "kai-sdk build: attempted"
-echo "Harness: .harness/agenticbackbone-11-kai-needs-approval--cc/"
-echo "Features: 10 (all failing)"
-echo "First feature: F-001 types-tool-approval"
+echo "Harness: .harness/agenticbackbone-12-kai-tool-repair--cc/"
+echo "Features: 6 (all failing)"
+echo "First feature: F-001 types-options"
 echo "=== Ready for vibe:code ==="
