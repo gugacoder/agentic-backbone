@@ -2,7 +2,7 @@
 
 ## Current Status
 
-F-001 e F-002 implementadas e passing. 2/10 features complete.
+F-001, F-002 e F-003 implementadas e passing. 3/10 features complete.
 
 ## Specs Path
 
@@ -21,7 +21,7 @@ D:\sources\codr.studio\cia-prime-care\agentic-backbone\apps\backbone\milestones\
 
 - [x] F-001 types-tool-approval — Novos tipos em types.ts (ToolApprovalRequest, autoApprove, onToolApproval, evento tool_approval)
 - [x] F-002 factory-bash-tool — Converter bashTool para factory createBashTool com needsApproval
-- [ ] F-003 factory-write-tool — Converter writeTool para factory createWriteTool com needsApproval
+- [x] F-003 factory-write-tool — Converter writeTool para factory createWriteTool com needsApproval
 - [ ] F-004 factory-edit-tool — Converter editTool para factory createEditTool com needsApproval
 - [ ] F-005 factory-multi-edit-tool — Converter multiEditTool para factory createMultiEditTool com needsApproval
 - [ ] F-006 factory-apply-patch-tool — Converter applyPatchTool para factory createApplyPatchTool com needsApproval
@@ -44,3 +44,4 @@ D:\sources\codr.studio\cia-prime-care\agentic-backbone\apps\backbone\milestones\
 Session 1 (Initializer): Harness criado para onda agenticbackbone-11-kai-needs-approval--cc com 10 features (todas failing).
 Session 2 (CC): Implementada F-001 types-tool-approval — adicionados ToolApprovalRequest, autoApprove, onToolApproval em KaiAgentOptions, e evento tool_approval em KaiAgentEvent. Build passing. Next: F-002 factory-bash-tool.
 Session 3 (CC): Implementada F-002 factory-bash-tool — bashTool convertida para factory createBashTool(opts?) com needsApproval condicional via Object.assign. Backward compat mantida com export const bashTool = createBashTool(). ai@4.3.19 não suporta needsApproval nativamente, então é adicionado como propriedade custom no objeto retornado. Build passing. Next: F-003 factory-write-tool.
+Session 4 (CC): Implementada F-003 factory-write-tool — writeTool convertida para factory createWriteTool(opts?) seguindo o mesmo pattern de F-002 (Object.assign com needsApproval condicional). Backward compat mantida com export const writeTool = createWriteTool(). Lógica interna (mkdir, writeFile) inalterada. Build passing. Next: F-004 factory-edit-tool.
