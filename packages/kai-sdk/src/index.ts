@@ -26,3 +26,5 @@ export { createKaiProviderRegistry } from "./providers.js";
 export type { KaiProviderConfig } from "./providers.js";
 export { createLoggingMiddleware } from "./middleware/logging.js";
 export type { LanguageModelV1Middleware } from "ai";
+export { createToolCallRepairHandler } from "./tool-repair.js";
+export type { RepairContext } from "./tool-repair.js";

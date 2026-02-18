@@ -17,15 +17,19 @@ import { serve } from "@hono/node-server";
 import { Hono } from "hono";
 import { sign } from "hono/jwt";
 import { routes } from "./routes/index.js";
-import { startHeartbeat } from "./heartbeat/index.js";
-import { startCron } from "./cron/index.js";
-import { startWatchers } from "./watchers/index.js";
+import { startHeartbeat, stopHeartbeat } from "./heartbeat/index.js";
+import { startCron, stopCron } from "./cron/index.js";
+import { startWatchers, stopWatchers } from "./watchers/index.js";
 import { listAgents } from "./agents/registry.js";
 import { listChannels } from "./channels/registry.js";
 import { initHooks, wireEventBusToHooks, triggerHook } from "./hooks/index.js";
-import { startJobSweeper, shutdownAllJobs } from "./jobs/engine.js";
+import { startJobSweeper, stopJobSweeper, shutdownAllJobs } from "./jobs/engine.js";
 import { modules } from "./modules/index.js";
 import { startModules, stopModules } from "./modules/loader.js";
+
+import type { ServerType } from "@hono/node-server";
+
+let server: ServerType;
 
 const app = new Hono();
 
@@ -96,7 +100,7 @@ async function bootstrap() {
 
   const port = Number(process.env.BACKBONE_PORT);
 
-  serve({ fetch: app.fetch, port }, (info) => {
+  server = serve({ fetch: app.fetch, port }, (info) => {
     console.log(`[backbone] listening on http://localhost:${info.port}`);
 
     const agents = listAgents();
@@ -130,10 +134,38 @@ bootstrap().catch((err) => {
 
 // --- Graceful shutdown ---
 
+let shuttingDown = false;
+
 async function onShutdown(signal: string) {
+  if (shuttingDown) return;
+  shuttingDown = true;
+
   console.log(`[backbone] ${signal} received — shutting down`);
-  await stopModules();
-  shutdownAllJobs();
+
+  // Safety timeout — force exit if cleanup hangs
+  const forceExit = setTimeout(() => {
+    console.error("[backbone] shutdown timed out — forcing exit");
+    process.exit(1);
+  }, 5_000);
+  forceExit.unref();
+
+  try {
+    stopHeartbeat();
+    stopCron();
+    stopWatchers();
+    stopJobSweeper();
+    shutdownAllJobs();
+    await stopModules();
+
+    if (server) {
+      await new Promise<void>((resolve, reject) => {
+        server.close((err) => (err ? reject(err) : resolve()));
+      });
+    }
+  } catch (err) {
+    console.error("[backbone] error during shutdown:", err);
+  }
+
   process.exit(0);
 }
 
