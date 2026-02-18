@@ -24,7 +24,8 @@ export type KaiAgentEvent =
   | { type: "todo_update"; todos: KaiTodoItem[] }
   | { type: "context_status"; context: ContextUsage & { compacted: boolean } }
   | { type: "step_finish"; step: number; toolCalls: string[]; finishReason: string }
-  | { type: "tool_approval"; toolName: string; params: Record<string, unknown>; approved: boolean };
+  | { type: "tool_approval"; toolName: string; params: Record<string, unknown>; approved: boolean }
+  | { type: "tool_repair"; toolName: string; error: string; repaired: boolean };
 
 export interface KaiTodoItem {
   id: string;
@@ -45,6 +46,8 @@ export interface KaiUsageData {
   stopReason: string;
   /** Latencia ate o primeiro token (ms). Disponivel apenas com telemetria. */
   timeToFirstTokenMs?: number;
+  /** Numero de tool calls reparadas nesta sessao. */
+  repairedToolCalls?: number;
   /** Breakdown de uso por step. Disponivel apenas com telemetria. */
   steps?: Array<{
     stepNumber: number;
