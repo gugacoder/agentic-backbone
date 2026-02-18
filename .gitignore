@@ -85,3 +85,5 @@ apps/hub/dev-dist/
 # =============================================================================
 .user-folder/
 
+context/agents/**/conversations/
+context/agents/**/journal/
