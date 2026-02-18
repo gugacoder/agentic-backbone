@@ -50,8 +50,24 @@ authPublicRoutes.post("/auth/login", async (c) => {
 });
 
 // GET /auth/me — protected (mounted after JWT middleware)
+// Returns user data appropriate to JWT type (Laravel vs Backbone)
 authProtectedRoutes.get("/auth/me", (c) => {
   const payload = c.get("jwtPayload");
+
+  if (payload.jwtSource === "laravel") {
+    // Laravel JWT — return Cia user data derived from token claims
+    return c.json({
+      user: payload.sub,
+      role: payload.role,
+      displayName: payload.name ?? payload.sub,
+      jwtSource: "laravel",
+      roleId: payload.role_id,
+      tenantId: payload.tenant_id,
+      unidades: payload.unidades,
+    });
+  }
+
+  // Backbone JWT — existing behavior
   const role = payload.role as "sysuser" | "user";
 
   if (role === "sysuser") {
@@ -59,6 +75,7 @@ authProtectedRoutes.get("/auth/me", (c) => {
       user: payload.sub,
       role: "sysuser",
       displayName: payload.sub,
+      jwtSource: "backbone",
     });
   }
 
@@ -67,5 +84,6 @@ authProtectedRoutes.get("/auth/me", (c) => {
     user: payload.sub,
     role: "user",
     displayName: userConfig?.displayName ?? payload.sub,
+    jwtSource: "backbone",
   });
 });

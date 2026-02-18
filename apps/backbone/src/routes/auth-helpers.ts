@@ -3,11 +3,33 @@ import type { Context } from "hono";
 export interface AuthUser {
   user: string;
   role: "sysuser" | "user";
+  jwtSource: "laravel" | "backbone";
+  /** Laravel JWT only: user display name */
+  name?: string;
+  /** Laravel JWT only: tenant (unidade principal) */
+  tenantId?: number;
+  /** Laravel JWT only: array of unidade IDs */
+  unidades?: number[];
+  /** Laravel JWT only: original role_id from Laravel */
+  roleId?: number;
 }
 
 export function getAuthUser(c: Context): AuthUser {
   const payload = c.get("jwtPayload");
-  return { user: payload.sub, role: payload.role };
+  const base: AuthUser = {
+    user: payload.sub,
+    role: payload.role,
+    jwtSource: payload.jwtSource ?? "backbone",
+  };
+
+  if (payload.jwtSource === "laravel") {
+    base.name = payload.name;
+    base.roleId = payload.role_id;
+    base.tenantId = payload.tenant_id;
+    base.unidades = payload.unidades;
+  }
+
+  return base;
 }
 
 export function requireSysuser(c: Context): Response | null {
