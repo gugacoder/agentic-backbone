@@ -1,0 +1,4 @@
+{"ts":"2026-02-17T20:31:42.258Z","role":"user","content":"Usando a ferramenta cron_add, agende uma tarefa.\nParâmetros exatos:\n- slug: \"_probe_cron_noctx\"\n- name: \"probe-cron-noctx\"\n- schedule: kind \"at\", at \"2026-02-17T20:32:17.247Z\"\n- payload: kind \"agentTurn\", message \"Respond with exactly: CRON_NOCONTEXT_TOKEN_X1\"\n- deleteAfterRun: true\nChame cron_add com esses parâmetros exatos. Apenas confirme que agendou."}
+{"ts":"2026-02-17T20:31:48.475Z","role":"assistant","content":"A tarefa foi agendada com sucesso."}
+{"ts":"2026-02-17T20:32:17.261Z","role":"user","content":"[cron:_probe_cron_noctx] Respond with exactly: CRON_NOCONTEXT_TOKEN_X1"}
+{"ts":"2026-02-17T20:32:21.263Z","role":"assistant","content":"```\nCRON_NOCONTEXT_TOKEN_X1\n```"}

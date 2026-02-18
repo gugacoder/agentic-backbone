@@ -1,0 +1,9 @@
+name: <string>
+connector: mysql
+policy: <string>
+params:
+  host: <string>
+  port: <number>
+  database: <string>
+  user: <string>
+  password: <secret>

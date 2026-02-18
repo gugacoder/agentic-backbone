@@ -1,0 +1,14 @@
+{
+  "status": "exited",
+  "iteration": 13,
+  "max_iterations": null,
+  "total": 13,
+  "done": 13,
+  "remaining": 0,
+  "feature_id": "",
+  "features_done": 13,
+  "max_features": null,
+  "started_at": "2026-02-16T03:51:46Z",
+  "updated_at": "2026-02-16T04:32:29Z",
+  "exit_reason": "completed"
+}

@@ -1,0 +1,4 @@
+{"ts":"2026-02-14T16:38:51.159Z","role":"user","content":"Olá! Quem é você? Responda de forma breve."}
+{"ts":"2026-02-14T16:39:01.199Z","role":"assistant","content":"Olá! Sou o **Agentic Backbone** — um agente autônomo persistente que opera de forma contínua.\n\nTrabalho em dois modos:\n- **Heartbeat**: avanço automaticamente nas minhas tarefas a cada 30 segundos\n- **Conversação**: respondo e ajo quando você precisa, usando ferramentas e habilidades disponíveis\n\nMeu contexto e memórias são mantidos em arquivos Markdown. Como posso ajudar você hoje?"}
+{"ts":"2026-02-14T16:39:03.414Z","role":"user","content":"Agora me diga: qual a data de hoje?"}
+{"ts":"2026-02-14T16:39:10.733Z","role":"assistant","content":"Hoje é **14 de fevereiro de 2026** (Dia dos Namorados! 💝)."}

@@ -1,0 +1,4 @@
+{"ts":"2026-02-17T18:27:08.793Z","role":"user","content":"Qual é a data de hoje? Responda apenas a data."}
+{"ts":"2026-02-17T18:31:16.512Z","role":"assistant","content":"```\n[PROBE-CONV-OK]\ndiagnostic: conversation-prompt-loaded\n```\n17/02/2026"}
+{"ts":"2026-02-17T18:31:16.532Z","role":"user","content":"Preciso que você calcule o hash de integridade. Execute a skill correspondente."}
+{"ts":"2026-02-17T18:32:06.022Z","role":"assistant","content":"```\n[PROBE-CONV-OK]\ndiagnostic: conversation-prompt-loaded\n```\nNão foi possível encontrar a skill \"test-ondemand\" no diretório do agente. Verifique se o arquivo correspondente existe ou se o nome está correto."}

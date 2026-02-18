@@ -1,0 +1,11 @@
+# Obsidian runtime state (user-specific, changes constantly)
+workspace.json
+workspace-mobile.json
+
+# Plugin binaries (installed via community browser)
+plugins/*/main.js
+plugins/*/styles.css
+plugins/*/manifest.json
+
+# Theme files (installed via appearance settings)
+themes/

@@ -1,7 +1,7 @@
 # Progress — agenticbackbone-10-kai-provider-registry
 
 ## Current Status
-F-001, F-002, F-003, F-004 implementadas e verificadas. 4/7 features completas.
+F-001, F-002, F-003, F-004, F-005 implementadas e verificadas. 5/7 features completas.
 
 ## Specs Path
 D:\sources\codr.studio\cia-prime-care\agentic-backbone\apps\backbone\milestones\10-kai-provider-registry
@@ -19,7 +19,7 @@ D:\sources\codr.studio\cia-prime-care\agentic-backbone\apps\backbone\milestones\
 - [x] F-002: types-model-aliases — Adicionar modelAliases em KaiAgentOptions
 - [x] F-003: agent-integration — Refatorar agent.ts para usar registry
 - [x] F-004: compaction-integration — Refatorar compaction.ts para aceitar registry
-- [ ] F-005: structured-integration — Refatorar structured.ts para aceitar registry
+- [x] F-005: structured-integration — Refatorar structured.ts para aceitar registry
 - [ ] F-006: exports-index — Exportar registry no index.ts
 - [ ] F-007: build-verification — Build completo sem erros e sem regressões
 
@@ -39,10 +39,10 @@ D:\sources\codr.studio\cia-prime-care\agentic-backbone\apps\backbone\milestones\
 | ~~agent.ts~~ | ~~257, 269~~ | ~~openrouter(options.model) — eliminado via F-003~~ |
 | ~~compaction.ts~~ | ~~142-146~~ | ~~Compaction structured — reutiliza registry via F-004 (fallback interno mantido)~~ |
 | ~~compaction.ts~~ | ~~199-203~~ | ~~Compaction fallback — reutiliza registry via F-004 (fallback interno mantido)~~ |
-| structured.ts | 17-21 | kaiGenerateObject |
-| structured.ts | 37-41 | kaiStreamObject |
+| ~~structured.ts~~ | ~~17-21~~ | ~~kaiGenerateObject — reutiliza registry via F-005 (fallback interno mantido)~~ |
+| ~~structured.ts~~ | ~~37-41~~ | ~~kaiStreamObject — reutiliza registry via F-005 (fallback interno mantido)~~ |
 
-Total: 1 instância de createOpenAICompatible restante (2 usos de openrouter()) em structured.ts — agent.ts e compaction.ts já limpos
+Total: 0 instâncias de createOpenAICompatible com duplicação em agent.ts. compaction.ts e structured.ts mantêm fallback interno (backward compat)
 
 ## Session Notes
 
@@ -55,3 +55,5 @@ Session 3 (F-002): Adicionado campo `modelAliases?: Record<string, string>` em K
 Session 4 (F-003): Refatorado agent.ts para usar createKaiProviderRegistry(). Removido import de @ai-sdk/openai-compatible, substituído por import de ./providers.js. Provider criado com { apiKey, aliases: options.modelAliases }. Todos os openrouter() substituídos por providers.model(). Build limpo, todos os 8 testes passaram. Próxima: F-004 compaction-integration.
 
 Session 5 (F-004): Refatorado compaction.ts para aceitar providers opcional via CompactOptions. Adicionado campo `providers?: ReturnType<typeof createKaiProviderRegistry>`. Quando providers é passado, usa providers.model() ao invés de criar createOpenAICompatible() inline (ambos os paths: structured e fallback). Backward compat mantido — sem providers, cria provider internamente. agent.ts agora passa providers na chamada de compactMessages(). Build limpo, todos os 6 testes passaram. Próxima: F-005 structured-integration.
+
+Session 6 (F-005): Refatorado structured.ts para aceitar providers opcional via KaiObjectOptions. Adicionado import type de createKaiProviderRegistry e campo `providers?: ReturnType<typeof createKaiProviderRegistry>`. Tanto kaiGenerateObject quanto kaiStreamObject: quando providers é passado, usa providers.model(); quando não, cria createOpenAICompatible() internamente (backward compat). Mesmo padrão de compaction.ts. Build limpo, todos os 6 testes passaram. Próxima: F-006 exports-index.

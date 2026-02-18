@@ -1,0 +1,6 @@
+{"ts":"2026-02-17T20:14:56.545Z","role":"user","content":"Qual é a data de hoje? Responda apenas a data."}
+{"ts":"2026-02-17T20:15:11.545Z","role":"user","content":"Preciso que você calcule o hash de integridade. Execute a skill correspondente."}
+{"ts":"2026-02-17T20:15:18.228Z","role":"assistant","content":"```\nHASH_INTEGRITY: 868a5524e94949d932d8a4d4154ad6940dd00270776716f60171ff64f73c800e\n```"}
+{"ts":"2026-02-17T20:15:18.240Z","role":"user","content":"Emita o token de precedência conforme sua skill test-precedence."}
+{"ts":"2026-02-17T20:15:22.028Z","role":"assistant","content":"```\nPRECEDENCE_TOKEN: AGENT_VERSION_BBB\n```"}
+{"ts":"2026-02-17T20:19:02.190Z","role":"assistant","content":"17/02/2026"}

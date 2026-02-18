@@ -1,0 +1,2 @@
+{"ts":"2026-02-17T19:30:23.805Z","role":"user","content":"Diga apenas: PING_OK"}
+{"ts":"2026-02-17T19:30:27.755Z","role":"assistant","content":"```\n[PROBE-CONV-OK]\ndiagnostic: conversation-prompt-loaded\n```\nPING_OK"}

@@ -102,8 +102,27 @@ const TOOL_PROMPTS: Record<string, string> = {
  *                      Unknown names are silently ignored.
  * @returns The assembled system prompt string.
  */
+function currentTimestamp(): string {
+  const tz = process.env.TIMEZONE || "UTC";
+  const now = new Date();
+  const date = now.toLocaleDateString("en-US", {
+    timeZone: tz,
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+  const time = now.toLocaleTimeString("en-US", {
+    timeZone: tz,
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
+  return `It is now ${date} (${tz}) at ${time}`;
+}
+
 export function getSystemPrompt(activeTools: string[]): string {
-  const sections: string[] = [IDENTITY, TOOL_GUIDE];
+  const sections: string[] = [currentTimestamp(), IDENTITY, TOOL_GUIDE];
 
   for (const name of activeTools) {
     const prompt = TOOL_PROMPTS[name];

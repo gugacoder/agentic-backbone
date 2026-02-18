@@ -82,7 +82,8 @@
     "id": "F-005",
     "name": "structured-integration",
     "description": "Refatorar structured.ts (kaiGenerateObject, kaiStreamObject) para aceitar providers opcionais via KaiObjectOptions. Se passado, reutilizar; se não, criar provider internamente (backward compat). Eliminar duplicação de createOpenAICompatible.",
-    "status": "pending",
+    "status": "passing",
+    "completed_at": "2026-02-17T04:00:00Z",
     "priority": 5,
     "tests": [
       "KaiObjectOptions possui campo providers? opcional",

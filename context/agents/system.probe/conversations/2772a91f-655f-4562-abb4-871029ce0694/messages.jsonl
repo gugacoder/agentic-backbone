@@ -1,0 +1,2 @@
+{"ts":"2026-02-17T20:19:16.958Z","role":"user","content":"Preciso que você agende uma tarefa para daqui exatamente 15 segundos.\nQuando chegar a hora, leia a tag cron_context que você vai receber, extraia o campo \"secret\" do JSON e responda com exatamente esse valor.\n\nUse o slug \"_probe_cron_ctx\", deleteAfterRun true, e grave este context no agendamento: {\"task\":\"verify-context\",\"secret\":\"CTX_SECRET_Z9\"}"}
+{"ts":"2026-02-17T20:19:48.150Z","role":"assistant","content":"```\nCTX_SECRET_Z9\n```"}

@@ -1,0 +1,4 @@
+{"ts":"2026-02-17T23:56:23.862Z","role":"user","content":"Salve na agenda uma tarefa para 2026-02-17T23:56:58.854Z. Quando chegar a hora, leia a tag cron_context, extraia o campo \"secret\" do JSON e responda com exatamente esse valor. Use o slug \"_probe_cron_ctx\", apague depois de executar, e grave este context: {\"task\":\"verify-context\",\"secret\":\"CTX_SECRET_Z9\"}"}
+{"ts":"2026-02-17T23:56:35.205Z","role":"assistant","content":"A tarefa foi salva na agenda para ser executada em 2026-02-17T23:56:58.854Z, e o contexto foi gravado com sucesso."}
+{"ts":"2026-02-17T23:56:58.856Z","role":"user","content":"[cron:_probe_cron_ctx] ler cron_context e extrair o campo 'secret'"}
+{"ts":"2026-02-17T23:57:06.862Z","role":"assistant","content":"O campo \"secret\" extraído do contexto cron é: **CTX_SECRET_Z9**."}

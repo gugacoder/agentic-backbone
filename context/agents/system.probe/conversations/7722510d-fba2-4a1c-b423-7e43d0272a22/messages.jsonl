@@ -1,0 +1,4 @@
+{"ts":"2026-02-17T18:25:14.693Z","role":"user","content":"Diga oi."}
+{"ts":"2026-02-17T18:25:18.480Z","role":"assistant","content":"```\n[PROBE-CONV-OK]\ndiagnostic: conversation-prompt-loaded\n```"}
+{"ts":"2026-02-17T18:25:18.490Z","role":"user","content":"Calcule o hash de integridade."}
+{"ts":"2026-02-17T18:25:44.922Z","role":"assistant","content":"Não encontrei informações sobre \"hash de integridade\" ou termos relacionados nos arquivos do agente `system.probe`. Se precisar de outra informação ou skill, por favor, me avise."}

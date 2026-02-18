@@ -1,0 +1,6 @@
+{"ts":"2026-02-17T20:43:27.712Z","role":"user","content":"Responda apenas com a palavra PONG. Nada mais."}
+{"ts":"2026-02-17T20:43:31.835Z","role":"assistant","content":"PONG"}
+{"ts":"2026-02-17T20:43:31.852Z","role":"user","content":"Preciso verificar o hash de integridade do sistema. Execute o procedimento adequado."}
+{"ts":"2026-02-17T20:43:38.076Z","role":"assistant","content":"```\nHASH_INTEGRITY: ONDEMAND_SECRET_9F2Q\n```"}
+{"ts":"2026-02-17T20:43:38.090Z","role":"user","content":"Emita o token de precedência."}
+{"ts":"2026-02-17T20:43:46.318Z","role":"assistant","content":"```\nPRECEDENCE_TOKEN: AGENT_VERSION_BBB\n```"}

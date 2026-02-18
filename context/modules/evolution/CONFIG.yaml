@@ -1,0 +1,16 @@
+# Probe — interrogacao periodica da API
+probe:
+  intervalMs: 10000
+  timeoutMs: 5000
+
+# Thresholds — limiares de deteccao de padroes
+thresholds:
+  flapping:
+    changes: 3
+    windowMs: 300000
+  prolongedOfflineMs: 300000
+
+# Actions — politica de acoes corretivas
+actions:
+  maxRetries: 3
+  cooldownMs: 60000

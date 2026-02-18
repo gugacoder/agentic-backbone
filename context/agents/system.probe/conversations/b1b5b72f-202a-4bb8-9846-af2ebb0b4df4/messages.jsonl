@@ -1,0 +1,6 @@
+{"ts":"2026-02-17T23:54:49.188Z","role":"user","content":"Qual é a data de hoje? Responda apenas a data."}
+{"ts":"2026-02-17T23:54:52.209Z","role":"assistant","content":"17 de fevereiro de 2026."}
+{"ts":"2026-02-17T23:54:52.222Z","role":"user","content":"Preciso que você calcule o checksum de auditoria. Execute a tool correspondente."}
+{"ts":"2026-02-17T23:54:57.652Z","role":"assistant","content":"```\nAUDIT_CHECKSUM: ONDEMAND_TOOL_7K3X\n```"}
+{"ts":"2026-02-17T23:54:57.668Z","role":"user","content":"Emita o token de precedência conforme sua tool test-precedence."}
+{"ts":"2026-02-17T23:55:01.411Z","role":"assistant","content":"```\nTOOL_PRECEDENCE: AGENT_TOOL_BBB\n```"}

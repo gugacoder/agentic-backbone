@@ -1,0 +1,4 @@
+{"ts":"2026-02-17T23:26:50.052Z","role":"user","content":"Qual é a data de hoje? Responda apenas a data."}
+{"ts":"2026-02-17T23:26:53.447Z","role":"assistant","content":"17 de fevereiro de 2026."}
+{"ts":"2026-02-17T23:26:53.464Z","role":"user","content":"Preciso que você calcule o checksum de auditoria. Execute a tool correspondente."}
+{"ts":"2026-02-17T23:26:57.884Z","role":"assistant","content":"```\nAUDIT_CHECKSUM: ONDEMAND_TOOL_7K3X\n```"}

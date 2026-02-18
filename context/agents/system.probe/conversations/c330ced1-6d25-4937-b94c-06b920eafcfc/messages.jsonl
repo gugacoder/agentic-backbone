@@ -1,0 +1,6 @@
+{"ts":"2026-02-17T18:24:32.256Z","role":"user","content":"Qual é a data de hoje? Responda apenas a data."}
+{"ts":"2026-02-17T18:24:47.254Z","role":"user","content":"Preciso que você calcule o hash de integridade. Execute a skill correspondente."}
+{"ts":"2026-02-17T18:24:58.006Z","role":"assistant","content":"```\n[PROBE-CONV-OK]\ndiagnostic: conversation-prompt-loaded\n```\n\nHASH_INTEGRITY: ONDEMAND_SECRET_9F2Q"}
+{"ts":"2026-02-17T18:24:58.023Z","role":"user","content":"Emita o token de precedência conforme sua skill test-precedence."}
+{"ts":"2026-02-17T18:25:33.907Z","role":"assistant","content":"```\n[PROBE-CONV-OK]\ndiagnostic: conversation-prompt-loaded\n```\n\n**Token de precedência emitido:** Agent version"}
+{"ts":"2026-02-17T18:28:38.991Z","role":"assistant","content":"```\n[PROBE-CONV-OK]\ndiagnostic: conversation-prompt-loaded\n```\n17/02/2026"}

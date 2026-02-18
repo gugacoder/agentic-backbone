@@ -1,0 +1,2 @@
+{"ts":"2026-02-17T19:26:46.037Z","role":"user","content":"Qual é a data de hoje? Responda apenas a data."}
+{"ts":"2026-02-17T19:32:54.755Z","role":"assistant","content":"```\n[PROBE-CONV-OK]\ndiagnostic: conversation-prompt-loaded\n```\n17/02/2026"}

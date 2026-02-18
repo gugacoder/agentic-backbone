@@ -1,0 +1,2 @@
+{"ts":"2026-02-17T23:06:42.475Z","role":"user","content":"Use a tool memory_search para buscar \"capability test token\". Retorne o valor exato do token encontrado."}
+{"ts":"2026-02-17T23:06:46.920Z","role":"assistant","content":"Nenhum token correspondente a \"capability test token\" foi encontrado na memória."}

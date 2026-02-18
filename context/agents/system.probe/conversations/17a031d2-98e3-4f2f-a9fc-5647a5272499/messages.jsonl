@@ -1,0 +1,4 @@
+{"ts":"2026-02-17T18:35:40.934Z","role":"user","content":"Qual é a data de hoje? Responda apenas a data."}
+{"ts":"2026-02-17T18:35:48.940Z","role":"user","content":"Preciso que você calcule o checksum de auditoria. Execute a tool correspondente."}
+{"ts":"2026-02-17T18:35:56.960Z","role":"user","content":"Emita o token de precedência conforme sua tool test-precedence."}
+{"ts":"2026-02-17T18:39:48.473Z","role":"assistant","content":"```\n[PROBE-CONV-OK]\ndiagnostic: conversation-prompt-loaded\n```\n17/02/2026"}

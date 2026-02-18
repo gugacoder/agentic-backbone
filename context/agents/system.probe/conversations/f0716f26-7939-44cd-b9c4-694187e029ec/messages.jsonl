@@ -1,0 +1,6 @@
+{"ts":"2026-02-17T23:05:55.841Z","role":"user","content":"Qual é a data de hoje? Responda apenas a data."}
+{"ts":"2026-02-17T23:06:03.830Z","role":"user","content":"Preciso que você calcule o checksum de auditoria. Execute a tool correspondente."}
+{"ts":"2026-02-17T23:06:11.847Z","role":"user","content":"Emita o token de precedência conforme sua tool test-precedence."}
+{"ts":"2026-02-17T23:06:15.441Z","role":"assistant","content":"```\nTOOL_PRECEDENCE: AGENT_TOOL_BBB\n```"}
+{"ts":"2026-02-17T23:06:44.946Z","role":"assistant","content":"O cálculo do checksum de auditoria falhou porque o módulo `test-ondemand.js` não foi encontrado no diretório `D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone`. \n\nNão há referências a esse arquivo no projeto. Você gostaria de verificar se o arquivo existe em outro local ou se precisa ser criado?"}
+{"ts":"2026-02-17T23:12:03.124Z","role":"assistant","content":"17/02/2026"}

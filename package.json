@@ -25,6 +25,15 @@
 
     "build:hub": "npm run build --workspace=apps/hub",
 
+    "test:conversation": "dotenv -o -e .env -- node tests/test-conversations.mjs",
+    "test:capabilities": "dotenv -o -e .env -- node tests/capabilities/run-all.mjs",
+    "test:capabilities:hooks": "dotenv -o -e .env -- node tests/capabilities/test-conversation-hooks.mjs",
+    "test:capabilities:skills": "dotenv -o -e .env -- node tests/capabilities/test-conversation-skills.mjs",
+    "test:capabilities:memory": "dotenv -o -e .env -- node tests/capabilities/test-conversation-memory.mjs",
+    "test:capabilities:tools": "dotenv -o -e .env -- node tests/capabilities/test-conversation-tools.mjs",
+    "test:capabilities:cron": "dotenv -o -e .env -- node tests/capabilities/test-conversation-cron.mjs",
+    "test:capabilities:jobs": "dotenv -o -e .env -- node tests/capabilities/test-conversation-jobs.mjs",
+    "test:capabilities:identity": "dotenv -o -e .env -- node tests/capabilities/test-conversation-identity-and-context.mjs",
     "test:e2e": "npx playwright test",
     "test:e2e:hub": "npx playwright test --project=hub"
   },

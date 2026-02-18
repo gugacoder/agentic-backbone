@@ -1,0 +1,6 @@
+{"ts":"2026-02-17T18:27:00.730Z","role":"user","content":"Qual é a data de hoje? Responda apenas a data."}
+{"ts":"2026-02-17T18:27:15.734Z","role":"user","content":"Preciso que você calcule o hash de integridade. Execute a skill correspondente."}
+{"ts":"2026-02-17T18:27:29.593Z","role":"assistant","content":"```\n[PROBE-CONV-OK]\ndiagnostic: conversation-prompt-loaded\n```\n\nO cálculo do hash de integridade foi realizado com sucesso. O hash SHA-256 do arquivo `SKILL.md` é:\n\n```\n491f53905ab1e02baaa8a4c775c724eb10a85ff23d3a3eaad05a2cb18ceac44d\n```"}
+{"ts":"2026-02-17T18:27:29.606Z","role":"user","content":"Emita o token de precedência conforme sua skill test-precedence."}
+{"ts":"2026-02-17T18:27:41.998Z","role":"assistant","content":"```\n[PROBE-CONV-OK]\ndiagnostic: conversation-prompt-loaded\n```\n\nO token de precedência foi emitido conforme solicitado:\n\n```\nPRECEDENCE_TOKEN: AGENT_VERSION_BBB\n```"}
+{"ts":"2026-02-17T18:31:06.498Z","role":"assistant","content":"```\n[PROBE-CONV-OK]\ndiagnostic: conversation-prompt-loaded\n```\n17/02/2026"}

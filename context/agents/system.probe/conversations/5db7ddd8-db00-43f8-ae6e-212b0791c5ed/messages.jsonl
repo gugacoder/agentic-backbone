@@ -1,0 +1,4 @@
+{"ts":"2026-02-17T21:46:24.868Z","role":"user","content":"Estou submetendo um job de teste. Quando ele terminar, você vai receber o resultado aqui na conversa. Apenas confirme que entendeu."}
+{"ts":"2026-02-17T21:46:28.958Z","role":"assistant","content":"```\n[PROBE-CONV-OK]\ndiagnostic: conversation-prompt-loaded\n```\n\nEntendi. Aguardarei o resultado do job."}
+{"ts":"2026-02-17T21:46:33.017Z","role":"user","content":"[job:wake] Job **386de344-1885-488a-99c8-d1da42aa5d41** completed (exit 0, 4034ms)\n\n<job_output>\nCONV_WAKE_PROBE_99\r\n\n</job_output>\n\n<job_context>\nEste job foi submetido para testar o wake em modo conversation.\n</job_context>"}
+{"ts":"2026-02-17T21:46:38.245Z","role":"assistant","content":"O job **386de344-1885-488a-99c8-d1da42aa5d41** foi concluído com sucesso (exit 0) em 4034ms. O resultado do job é:\n\n```\nCONV_WAKE_PROBE_99\n```\n\nContexto do job: Este job foi submetido para testar o wake em modo conversation."}

@@ -1,0 +1,37 @@
+{
+  "_version": 1,
+  "slug": "kai-sdk--cc",
+  "name": "Kai SDK",
+  "specs": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\packages\\kai-sdk\\milestones\\01-better-kay\\PRP.md",
+  "workspace": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\packages\\kai-sdk",
+  "agent": {
+    "harness": "claude-code",
+    "max_turns": 50,
+    "max_retries": 5
+  },
+  "artifacts": {
+    "harness_config": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\packages\\kai-sdk\\agent-harness.json",
+    "harness_script": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\packages\\kai-sdk\\agent-harness.mjs",
+    "setup_script": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\packages\\kai-sdk\\agent-setup.mjs",
+    "features": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\packages\\kai-sdk\\features.json",
+    "progress": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\packages\\kai-sdk\\agent-progress.txt",
+    "state": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\packages\\kai-sdk\\agent-harness.state",
+    "pid": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\packages\\kai-sdk\\agent-harness.pid",
+    "sessions": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\packages\\kai-sdk\\.sessions",
+    "current_milestone": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\packages\\kai-sdk\\.sessions\\.current-milestone"
+  },
+  "session_template": {
+    "pattern": "./.sessions/{feature-id}/",
+    "files": [
+      "checklist.md",
+      "output.jsonl",
+      "pid",
+      "started_at",
+      "finished_at"
+    ],
+    "dirs": [
+      "worktree"
+    ]
+  },
+  "notifications": []
+}
