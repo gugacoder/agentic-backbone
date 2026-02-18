@@ -2,7 +2,7 @@
 
 ## Current Status
 
-F-001, F-002, F-003 e F-004 implementadas e passing. 4/10 features complete.
+F-001, F-002, F-003, F-004 e F-005 implementadas e passing. 5/10 features complete.
 
 ## Specs Path
 
@@ -23,7 +23,7 @@ D:\sources\codr.studio\cia-prime-care\agentic-backbone\apps\backbone\milestones\
 - [x] F-002 factory-bash-tool — Converter bashTool para factory createBashTool com needsApproval
 - [x] F-003 factory-write-tool — Converter writeTool para factory createWriteTool com needsApproval
 - [x] F-004 factory-edit-tool — Converter editTool para factory createEditTool com needsApproval
-- [ ] F-005 factory-multi-edit-tool — Converter multiEditTool para factory createMultiEditTool com needsApproval
+- [x] F-005 factory-multi-edit-tool — Converter multiEditTool para factory createMultiEditTool com needsApproval
 - [ ] F-006 factory-apply-patch-tool — Converter applyPatchTool para factory createApplyPatchTool com needsApproval
 - [ ] F-007 agent-tools-assembly — Integrar factories no agent.ts e exportar em tools/index.ts
 - [ ] F-008 tool-approval-event-emission — Emissão do evento tool_approval com callback onToolApproval
@@ -46,3 +46,4 @@ Session 2 (CC): Implementada F-001 types-tool-approval — adicionados ToolAppro
 Session 3 (CC): Implementada F-002 factory-bash-tool — bashTool convertida para factory createBashTool(opts?) com needsApproval condicional via Object.assign. Backward compat mantida com export const bashTool = createBashTool(). ai@4.3.19 não suporta needsApproval nativamente, então é adicionado como propriedade custom no objeto retornado. Build passing. Next: F-003 factory-write-tool.
 Session 4 (CC): Implementada F-003 factory-write-tool — writeTool convertida para factory createWriteTool(opts?) seguindo o mesmo pattern de F-002 (Object.assign com needsApproval condicional). Backward compat mantida com export const writeTool = createWriteTool(). Lógica interna (mkdir, writeFile) inalterada. Build passing. Next: F-004 factory-edit-tool.
 Session 5 (CC): Implementada F-004 factory-edit-tool — editTool convertida para factory createEditTool(opts?) seguindo o mesmo pattern de F-002/F-003 (Object.assign com needsApproval condicional). Backward compat mantida com export const editTool = createEditTool(). Lógica interna (readFile, replace, writeFile) inalterada. kai-sdk build passing. Next: F-005 factory-multi-edit-tool.
+Session 6 (CC): Implementada F-005 factory-multi-edit-tool — multiEditTool convertida para factory createMultiEditTool(opts?) seguindo o mesmo pattern (Object.assign com needsApproval condicional). Backward compat mantida com export const multiEditTool = createMultiEditTool(). Lógica interna (validação atômica, replace sequencial, writeFile) inalterada. kai-sdk build passing. Next: F-006 factory-apply-patch-tool.
