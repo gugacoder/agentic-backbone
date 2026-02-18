@@ -101,7 +101,8 @@
     "id": "F-006",
     "name": "factory-apply-patch-tool",
     "description": "Converter applyPatchTool de constante para factory createApplyPatchTool(opts?) com needsApproval condicional. Manter backward compat.",
-    "status": "pending",
+    "status": "passing",
+    "completed_at": "2026-02-18T03:00:00Z",
     "priority": 6,
     "tests": [
       "createApplyPatchTool é exportada como named function em tools/apply-patch.ts",
@@ -120,7 +121,7 @@
     "id": "F-007",
     "name": "agent-tools-assembly",
     "description": "Atualizar agent.ts para usar as factories (createBashTool, createWriteTool, createEditTool, createMultiEditTool, createApplyPatchTool) com { autoApprove } derivado de options.autoApprove ?? true. Atualizar tools/index.ts para exportar as factories além das constantes.",
-    "status": "blocked",
+    "status": "failing",
     "priority": 7,
     "tests": [
       "agent.ts lê options.autoApprove com default true",

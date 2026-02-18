@@ -119,58 +119,70 @@ function applyUpdate(original: string, patchLines: string[]): string {
   return result.join("\n");
 }
 
-export const applyPatchTool = tool({
-  description:
-    "Applies a multi-file patch in envelope format (Begin Patch / End Patch). Supports Add File (create new), Update File (apply diff with @@ context and +/- lines), and Delete File operations.",
-  parameters: z.object({
-    patch: z
-      .string()
-      .describe(
-        'The patch text in envelope format: "*** Begin Patch" / "*** End Patch" with "*** Add File: path", "*** Update File: path", "*** Delete File: path" sections'
-      ),
-  }),
-  execute: async ({ patch }) => {
-    try {
-      const operations = parsePatch(patch);
+export function createApplyPatchTool(opts?: { autoApprove?: boolean }) {
+  const baseTool = tool({
+    description:
+      "Applies a multi-file patch in envelope format (Begin Patch / End Patch). Supports Add File (create new), Update File (apply diff with @@ context and +/- lines), and Delete File operations.",
+    parameters: z.object({
+      patch: z
+        .string()
+        .describe(
+          'The patch text in envelope format: "*** Begin Patch" / "*** End Patch" with "*** Add File: path", "*** Update File: path", "*** Delete File: path" sections'
+        ),
+    }),
+    execute: async ({ patch }) => {
+      try {
+        const operations = parsePatch(patch);
 
-      if (operations.length === 0) {
-        return "Error: no valid operations found in patch. Ensure the patch uses the *** Begin Patch / *** End Patch envelope format.";
-      }
+        if (operations.length === 0) {
+          return "Error: no valid operations found in patch. Ensure the patch uses the *** Begin Patch / *** End Patch envelope format.";
+        }
 
-      const results: string[] = [];
+        const results: string[] = [];
 
-      for (const op of operations) {
-        switch (op.type) {
-          case "add": {
-            const content = op.lines
-              .filter((l) => l.startsWith("+"))
-              .map((l) => l.slice(1))
-              .join("\n");
-            await mkdir(dirname(op.path), { recursive: true });
-            await writeFile(op.path, content, "utf-8");
-            results.push(`Added: ${op.path}`);
-            break;
-          }
+        for (const op of operations) {
+          switch (op.type) {
+            case "add": {
+              const content = op.lines
+                .filter((l) => l.startsWith("+"))
+                .map((l) => l.slice(1))
+                .join("\n");
+              await mkdir(dirname(op.path), { recursive: true });
+              await writeFile(op.path, content, "utf-8");
+              results.push(`Added: ${op.path}`);
+              break;
+            }
 
-          case "update": {
-            const original = await readFile(op.path, "utf-8");
-            const updated = applyUpdate(original, op.lines);
-            await writeFile(op.path, updated, "utf-8");
-            results.push(`Updated: ${op.path}`);
-            break;
-          }
+            case "update": {
+              const original = await readFile(op.path, "utf-8");
+              const updated = applyUpdate(original, op.lines);
+              await writeFile(op.path, updated, "utf-8");
+              results.push(`Updated: ${op.path}`);
+              break;
+            }
 
-          case "delete": {
-            await unlink(op.path);
-            results.push(`Deleted: ${op.path}`);
-            break;
+            case "delete": {
+              await unlink(op.path);
+              results.push(`Deleted: ${op.path}`);
+              break;
+            }
           }
         }
-      }
 
-      return `Patch applied successfully:\n${results.join("\n")}`;
-    } catch (err: any) {
-      return `Error applying patch: ${err.message}`;
-    }
-  },
-});
+        return `Patch applied successfully:\n${results.join("\n")}`;
+      } catch (err: any) {
+        return `Error applying patch: ${err.message}`;
+      }
+    },
+  });
+
+  if (opts?.autoApprove === false) {
+    return Object.assign(baseTool, {
+      needsApproval: async () => true as const,
+    });
+  }
+
+  return baseTool;
+}
+
+export const applyPatchTool = createApplyPatchTool();
