@@ -43,6 +43,7 @@ routes.route("/", authPublicRoutes);
 
 // ── JWT middleware barrier ──────────────────────────────────
 // Supports both Authorization header and ?token= query param (for EventSource)
+// Hybrid auth: accepts both Laravel JWT (role_id + unidades) and Backbone JWT (role)
 
 routes.use("*", async (c, next) => {
   const secret = process.env.JWT_SECRET!;
@@ -66,7 +67,25 @@ routes.use("*", async (c, next) => {
 
   try {
     const payload = await verify(token, secret, "HS256");
-    c.set("jwtPayload", payload);
+
+    // Detect JWT type and normalize to Backbone's canonical format
+    if (payload.role_id !== undefined && payload.unidades !== undefined) {
+      // Laravel JWT — map to Backbone context
+      // role_id === 1 (Administrador) → sysuser, all others → user
+      const role = payload.role_id === 1 ? "sysuser" : "user";
+      c.set("jwtPayload", {
+        ...payload,
+        role,
+        jwtSource: "laravel",
+      });
+    } else {
+      // Backbone JWT (including backbone-internal) — use as-is
+      c.set("jwtPayload", {
+        ...payload,
+        jwtSource: "backbone",
+      });
+    }
+
     await next();
   } catch {
     return c.json({ error: "invalid or expired token" }, 401);
