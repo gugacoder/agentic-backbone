@@ -3,7 +3,8 @@
     "id": "F-001",
     "name": "types-tool-approval",
     "description": "Adicionar ToolApprovalRequest, autoApprove e onToolApproval em KaiAgentOptions, e o evento tool_approval em KaiAgentEvent (types.ts). Exportar os novos tipos em index.ts.",
-    "status": "failing",
+    "status": "passing",
+    "completed_at": "2026-02-17T23:50:00Z",
     "priority": 1,
     "tests": [
       "Interface ToolApprovalRequest existe em types.ts com campos toolName (string) e params (Record<string, unknown>)",
@@ -20,7 +21,7 @@
     "id": "F-002",
     "name": "factory-bash-tool",
     "description": "Converter bashTool de constante para factory createBashTool(opts?) que aceita { autoApprove?: boolean }. Quando autoApprove === false, configurar needsApproval: async () => true. Manter export const bashTool = createBashTool() para backward compat.",
-    "status": "failing",
+    "status": "blocked",
     "priority": 2,
     "tests": [
       "createBashTool é exportada como named function em tools/bash.ts",
@@ -30,14 +31,16 @@
       "Lógica interna de execução (exec, timeout, truncation) inalterada",
       "npm run build --workspace=packages/kai-sdk compila sem erros"
     ],
-    "dependencies": ["F-001"],
+    "dependencies": [
+      "F-001"
+    ],
     "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\11-kai-needs-approval\\PRP.md"
   },
   {
     "id": "F-003",
     "name": "factory-write-tool",
     "description": "Converter writeTool de constante para factory createWriteTool(opts?) com needsApproval condicional. Manter backward compat com export const writeTool.",
-    "status": "failing",
+    "status": "blocked",
     "priority": 3,
     "tests": [
       "createWriteTool é exportada como named function em tools/write.ts",
@@ -47,14 +50,16 @@
       "Lógica interna de execução (mkdir, writeFile) inalterada",
       "npm run build --workspace=packages/kai-sdk compila sem erros"
     ],
-    "dependencies": ["F-001"],
+    "dependencies": [
+      "F-001"
+    ],
     "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\11-kai-needs-approval\\PRP.md"
   },
   {
     "id": "F-004",
     "name": "factory-edit-tool",
     "description": "Converter editTool de constante para factory createEditTool(opts?) com needsApproval condicional. Manter backward compat.",
-    "status": "failing",
+    "status": "blocked",
     "priority": 4,
     "tests": [
       "createEditTool é exportada como named function em tools/edit.ts",
@@ -64,14 +69,16 @@
       "Lógica interna de execução (readFile, replace, writeFile) inalterada",
       "npm run build --workspace=packages/kai-sdk compila sem erros"
     ],
-    "dependencies": ["F-001"],
+    "dependencies": [
+      "F-001"
+    ],
     "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\11-kai-needs-approval\\PRP.md"
   },
   {
     "id": "F-005",
     "name": "factory-multi-edit-tool",
     "description": "Converter multiEditTool de constante para factory createMultiEditTool(opts?) com needsApproval condicional. Manter backward compat.",
-    "status": "failing",
+    "status": "blocked",
     "priority": 5,
     "tests": [
       "createMultiEditTool é exportada como named function em tools/multi-edit.ts",
@@ -81,14 +88,16 @@
       "Lógica interna de execução (validação atômica, replace) inalterada",
       "npm run build --workspace=packages/kai-sdk compila sem erros"
     ],
-    "dependencies": ["F-001"],
+    "dependencies": [
+      "F-001"
+    ],
     "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\11-kai-needs-approval\\PRP.md"
   },
   {
     "id": "F-006",
     "name": "factory-apply-patch-tool",
     "description": "Converter applyPatchTool de constante para factory createApplyPatchTool(opts?) com needsApproval condicional. Manter backward compat.",
-    "status": "failing",
+    "status": "blocked",
     "priority": 6,
     "tests": [
       "createApplyPatchTool é exportada como named function em tools/apply-patch.ts",
@@ -98,14 +107,16 @@
       "Lógica interna de execução (parsePatch, applyUpdate) inalterada",
       "npm run build --workspace=packages/kai-sdk compila sem erros"
     ],
-    "dependencies": ["F-001"],
+    "dependencies": [
+      "F-001"
+    ],
     "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\11-kai-needs-approval\\PRP.md"
   },
   {
     "id": "F-007",
     "name": "agent-tools-assembly",
     "description": "Atualizar agent.ts para usar as factories (createBashTool, createWriteTool, createEditTool, createMultiEditTool, createApplyPatchTool) com { autoApprove } derivado de options.autoApprove ?? true. Atualizar tools/index.ts para exportar as factories além das constantes.",
-    "status": "failing",
+    "status": "blocked",
     "priority": 7,
     "tests": [
       "agent.ts lê options.autoApprove com default true",
@@ -118,14 +129,20 @@
       "codingTools continua usando as constantes (backward compat para importação direta)",
       "npm run build --workspace=packages/kai-sdk compila sem erros"
     ],
-    "dependencies": ["F-002", "F-003", "F-004", "F-005", "F-006"],
+    "dependencies": [
+      "F-002",
+      "F-003",
+      "F-004",
+      "F-005",
+      "F-006"
+    ],
     "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\11-kai-needs-approval\\PRP.md"
   },
   {
     "id": "F-008",
     "name": "tool-approval-event-emission",
     "description": "Implementar emissão do evento tool_approval no agent.ts. Quando needsApproval pausa a execução, chamar onToolApproval callback e emitir evento com resultado. Se autoApprove: false sem onToolApproval, aprovar automaticamente com console.warn.",
-    "status": "failing",
+    "status": "blocked",
     "priority": 8,
     "tests": [
       "Quando autoApprove: false e onToolApproval fornecido, o callback é invocado com { toolName, params }",
@@ -136,14 +153,16 @@
       "Tools de leitura (Read, Glob, Grep, ListDir, WebFetch) nunca disparam o mecanismo de approval",
       "npm run build --workspace=packages/kai-sdk compila sem erros"
     ],
-    "dependencies": ["F-007"],
+    "dependencies": [
+      "F-007"
+    ],
     "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\11-kai-needs-approval\\PRP.md"
   },
   {
     "id": "F-009",
     "name": "exports-and-backward-compat",
     "description": "Garantir que todos os novos tipos e factories são exportados em index.ts. Verificar que runKaiAgent() sem autoApprove se comporta identicamente ao antes. Exportar as factories para consumidores que precisem montar tools manualmente.",
-    "status": "failing",
+    "status": "blocked",
     "priority": 9,
     "tests": [
       "index.ts exporta ToolApprovalRequest",
@@ -153,14 +172,16 @@
       "npm run build --workspace=packages/kai-sdk compila sem erros",
       "npm run build --workspace=apps/backbone compila sem erros (consumidor principal)"
     ],
-    "dependencies": ["F-008"],
+    "dependencies": [
+      "F-008"
+    ],
     "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\11-kai-needs-approval\\PRP.md"
   },
   {
     "id": "F-010",
     "name": "build-verification",
     "description": "Build final de verificação: compilar kai-sdk e backbone, garantindo que nenhum tipo quebrou e nenhum import está faltando.",
-    "status": "failing",
+    "status": "blocked",
     "priority": 10,
     "tests": [
       "npm run build --workspace=packages/kai-sdk compila sem erros nem warnings",
@@ -168,7 +189,9 @@
       "Nenhum import relativo quebrado em agent.ts, tools/index.ts, index.ts",
       "TypeScript strict mode passa sem erros"
     ],
-    "dependencies": ["F-009"],
+    "dependencies": [
+      "F-009"
+    ],
     "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\apps\\backbone\\milestones\\11-kai-needs-approval\\PRP.md"
   }
 ]

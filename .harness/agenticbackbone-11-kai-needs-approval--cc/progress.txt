@@ -2,7 +2,7 @@
 
 ## Current Status
 
-Harness inicializado. 10 features decompostas, todas failing. Nenhum código de implementação foi tocado.
+F-001 (types-tool-approval) implementada e passing. 1/10 features complete.
 
 ## Specs Path
 
@@ -19,7 +19,7 @@ D:\sources\codr.studio\cia-prime-care\agentic-backbone\apps\backbone\milestones\
 
 ## Features
 
-- [ ] F-001 types-tool-approval — Novos tipos em types.ts (ToolApprovalRequest, autoApprove, onToolApproval, evento tool_approval)
+- [x] F-001 types-tool-approval — Novos tipos em types.ts (ToolApprovalRequest, autoApprove, onToolApproval, evento tool_approval)
 - [ ] F-002 factory-bash-tool — Converter bashTool para factory createBashTool com needsApproval
 - [ ] F-003 factory-write-tool — Converter writeTool para factory createWriteTool com needsApproval
 - [ ] F-004 factory-edit-tool — Converter editTool para factory createEditTool com needsApproval
@@ -42,3 +42,4 @@ D:\sources\codr.studio\cia-prime-care\agentic-backbone\apps\backbone\milestones\
 ## Session Notes
 
 Session 1 (Initializer): Harness criado para onda agenticbackbone-11-kai-needs-approval--cc com 10 features (todas failing).
+Session 2 (CC): Implementada F-001 types-tool-approval — adicionados ToolApprovalRequest, autoApprove, onToolApproval em KaiAgentOptions, e evento tool_approval em KaiAgentEvent. Build passing. Next: F-002 factory-bash-tool.

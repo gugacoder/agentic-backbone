@@ -7,6 +7,13 @@ export interface McpServerConfig {
     | { type: "stdio"; command: string; args?: string[] };
 }
 
+export interface ToolApprovalRequest {
+  /** Nome da tool que precisa de aprovação */
+  toolName: string;
+  /** Parâmetros que o modelo quer passar para a tool */
+  params: Record<string, unknown>;
+}
+
 export type KaiAgentEvent =
   | { type: "init"; sessionId: string }
   | { type: "mcp_connected"; servers: string[] }
@@ -16,7 +23,8 @@ export type KaiAgentEvent =
   | { type: "ask_user"; question: string; options?: string[] }
   | { type: "todo_update"; todos: KaiTodoItem[] }
   | { type: "context_status"; context: ContextUsage & { compacted: boolean } }
-  | { type: "step_finish"; step: number; toolCalls: string[]; finishReason: string };
+  | { type: "step_finish"; step: number; toolCalls: string[]; finishReason: string }
+  | { type: "tool_approval"; toolName: string; params: Record<string, unknown>; approved: boolean };
 
 export interface KaiTodoItem {
   id: string;
@@ -122,4 +130,8 @@ export interface KaiAgentOptions {
   telemetry?: KaiTelemetryOptions;
   /** Aliases de modelo customizados: nome amigavel → model ID completo (ex: { fast: "anthropic/claude-haiku-4.5" }) */
   modelAliases?: Record<string, string>;
+  /** Se true, tools sensíveis executam sem pedir aprovação. Default: true (backward compat). */
+  autoApprove?: boolean;
+  /** Callback invocado quando uma tool precisa de aprovação. Retorna true para aprovar, false para rejeitar. */
+  onToolApproval?: (request: ToolApprovalRequest) => Promise<boolean>;
 }
