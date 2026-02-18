@@ -25,6 +25,15 @@ export interface JobSession {
   // Config
   timeoutMs: number;
 
+  // Wake settings
+  wakeMode?: "heartbeat" | "conversation";
+  wakeContext?: string;
+  sessionId?: string;
+  userId?: string;
+
+  // Poll tracking
+  _pollOffset?: number;
+
   // Resource monitoring
   resourceStats?: { cpu: number; memory: number; sampledAt: number };
 
@@ -39,6 +48,12 @@ export interface SubmitJobInput {
   command: string;
   cwd?: string;
   timeout?: number; // seconds, default 1800 (30min)
+  background?: boolean;
+  yieldMs?: number;
+  wakeMode?: "heartbeat" | "conversation";
+  wakeContext?: string;
+  sessionId?: string;
+  userId?: string;
 }
 
 export interface JobSummary {

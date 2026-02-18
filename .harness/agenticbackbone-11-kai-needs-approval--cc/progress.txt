@@ -2,7 +2,7 @@
 
 ## Current Status
 
-F-001 a F-009 implementadas e passing. 9/10 features complete.
+F-001 a F-010 todas implementadas e passing. 10/10 features complete. Milestone 11 concluído.
 
 ## Specs Path
 
@@ -28,7 +28,7 @@ D:\sources\codr.studio\cia-prime-care\agentic-backbone\apps\backbone\milestones\
 - [x] F-007 agent-tools-assembly — Integrar factories no agent.ts e exportar em tools/index.ts
 - [x] F-008 tool-approval-event-emission — Emissão do evento tool_approval com callback onToolApproval
 - [x] F-009 exports-and-backward-compat — Exports finais em index.ts + validação de backward compat
-- [ ] F-010 build-verification — Build final de verificação (kai-sdk + backbone)
+- [x] F-010 build-verification — Build final de verificação (kai-sdk + backbone)
 
 ## Architecture Decisions
 
@@ -52,3 +52,4 @@ Session 7 (CC): Implementada F-006 factory-apply-patch-tool — applyPatchTool c
 Session 8 (CC): Implementada F-007 agent-tools-assembly — agent.ts agora lê options.autoApprove (default true) e monta dangerousTools com as 5 factories (createBashTool, createWriteTool, createEditTool, createMultiEditTool, createApplyPatchTool). dangerousTools sobrescreve codingTools no spread, garantindo que autoApprove é respeitado. tools/index.ts agora exporta as 5 factory functions. codingTools continua usando as constantes para backward compat. kai-sdk build passing. Next: F-008 tool-approval-event-emission.
 Session 9 (CC): Implementada F-008 tool-approval-event-emission — Quando autoApprove é false, agent.ts agora wrapa o execute de cada dangerous tool (Bash, Write, Edit, MultiEdit, ApplyPatch) para interceptar chamadas antes da execução. O wrapper invoca onToolApproval callback (ou auto-aprova com console.warn se callback ausente), emite evento tool_approval via pendingStepEvents, e rejeita a execução se não aprovado. ai@4.3.19 não tem needsApproval nativo, então a interceptação é feita via wrapping do execute no layer do agent. Eventos são drenados no fullStream em tool-result e step-finish. kai-sdk build passing. Next: F-009 exports-and-backward-compat.
 Session 10 (CC): Implementada F-009 exports-and-backward-compat — index.ts agora re-exporta as 5 factory functions (createBashTool, createWriteTool, createEditTool, createMultiEditTool, createApplyPatchTool) para consumidores que queiram montar tools manualmente. ToolApprovalRequest já estava exportado. Backward compat verificada: runKaiAgent() sem autoApprove usa default true, todas tools executam direto. kai-sdk build passing. Backbone build tem erros pré-existentes em adapters/tools.ts, cron/tools.ts e jobs/ (incompatibilidade Zod) não relacionados ao milestone 11 — o consumidor real (agent/providers/kai.ts) compila sem erros. Next: F-010 build-verification.
+Session 11 (CC): Implementada F-010 build-verification — Corrigidos todos os erros de build do backbone. Três categorias de erros: (1) Incompatibilidade Zod v3/v4 em adapters/tools.ts, cron/tools.ts, jobs/tools.ts — resolvida via wrapper tipado do SDK tool() que aceita schemas any; (2) Exports faltantes em jobs/engine.ts — adicionadas funções pollJob, logJob, writeJob; (3) Campos faltantes em jobs/types.ts — adicionados wakeMode, wakeContext, sessionId, userId em JobSession e SubmitJobInput, _pollOffset em JobSession. stdin do spawn alterado de "ignore" para "pipe" para suportar writeJob. kai-sdk + backbone builds passando limpos. Milestone 11 completo — 10/10 features passing.

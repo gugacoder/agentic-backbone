@@ -110,7 +110,7 @@ export function submitJob(input: SubmitJobInput): JobSummary {
   const child = spawn(input.command, {
     shell: true,
     cwd,
-    stdio: ["ignore", "pipe", "pipe"],
+    stdio: ["pipe", "pipe", "pipe"],
   });
 
   const session: JobSession = {
@@ -127,6 +127,11 @@ export function submitJob(input: SubmitJobInput): JobSummary {
     truncated: false,
     status: "running",
     timeoutMs,
+    wakeMode: input.wakeMode,
+    wakeContext: input.wakeContext,
+    sessionId: input.sessionId,
+    userId: input.userId,
+    _pollOffset: 0,
     _child: child,
   };
 
@@ -203,6 +208,34 @@ export function killJob(jobId: string): boolean {
 
 export function clearJob(jobId: string): boolean {
   return finishedJobs.delete(jobId);
+}
+
+// --- Poll / Log / Write ---
+
+export function pollJob(jobId: string): { delta: string; status: JobStatus; done: boolean } | null {
+  const session = runningJobs.get(jobId) ?? finishedJobs.get(jobId);
+  if (!session) return null;
+  const full = session.stdout + session.stderr;
+  const offset = session._pollOffset ?? 0;
+  const delta = full.slice(offset);
+  session._pollOffset = full.length;
+  return { delta, status: session.status, done: session.status !== "running" };
+}
+
+export function logJob(jobId: string, offset?: number, limit?: number): { log: string; total: number } | null {
+  const session = runningJobs.get(jobId) ?? finishedJobs.get(jobId);
+  if (!session) return null;
+  const full = session.stdout + session.stderr;
+  const start = offset ?? 0;
+  const maxLen = limit ?? MAX_OUTPUT_CHARS;
+  return { log: full.slice(start, start + maxLen), total: full.length };
+}
+
+export function writeJob(jobId: string, data: string): boolean {
+  const session = runningJobs.get(jobId);
+  if (!session || !session._child?.stdin?.writable) return false;
+  session._child.stdin.write(data);
+  return true;
 }
 
 // --- Sweeper ---

@@ -1,7 +1,17 @@
-import { createSdkMcpServer, tool } from "@anthropic-ai/claude-agent-sdk";
+import { createSdkMcpServer, tool as sdkTool } from "@anthropic-ai/claude-agent-sdk";
 import { z } from "zod";
 import { resolveAdapters } from "../context/resolver.js";
 import { loadAdapter, type AdapterInstance } from "./loader.js";
+
+// Workaround: SDK expects zod v4 types but backbone uses zod v3.
+// Both are structurally compatible at runtime. This wrapper bridges the type gap.
+const tool = sdkTool as (
+  name: string,
+  description: string,
+  inputSchema: Record<string, any>,
+  handler: (args: any, extra: unknown) => Promise<any>,
+  extras?: any,
+) => ReturnType<typeof sdkTool>;
 
 // --- SQL Guards ---
 

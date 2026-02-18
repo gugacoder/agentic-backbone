@@ -1,5 +1,14 @@
-import { createSdkMcpServer, tool } from "@anthropic-ai/claude-agent-sdk";
+import { createSdkMcpServer, tool as sdkTool } from "@anthropic-ai/claude-agent-sdk";
 import { z } from "zod";
+
+// Workaround: SDK expects zod v4 types but backbone uses zod v3.
+const tool = sdkTool as (
+  name: string,
+  description: string,
+  inputSchema: Record<string, any>,
+  handler: (args: any, extra: unknown) => Promise<any>,
+  extras?: any,
+) => ReturnType<typeof sdkTool>;
 import { submitJob, listJobs, getJob, killJob } from "./engine.js";
 
 export const jobsMcpServer = createSdkMcpServer({

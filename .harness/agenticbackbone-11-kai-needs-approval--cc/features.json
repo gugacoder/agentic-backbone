@@ -189,7 +189,8 @@
     "id": "F-010",
     "name": "build-verification",
     "description": "Build final de verificação: compilar kai-sdk e backbone, garantindo que nenhum tipo quebrou e nenhum import está faltando.",
-    "status": "failing",
+    "status": "passing",
+    "completed_at": "2026-02-18T01:20:00Z",
     "priority": 10,
     "tests": [
       "npm run build --workspace=packages/kai-sdk compila sem erros nem warnings",
