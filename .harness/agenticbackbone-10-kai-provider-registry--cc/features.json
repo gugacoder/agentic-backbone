@@ -120,7 +120,8 @@
     "id": "F-007",
     "name": "build-verification",
     "description": "Verificação final: build completo do workspace kai-sdk sem erros e sem regressões. Garantir que nenhum createOpenAICompatible() inline permanece em agent.ts (os demais mantêm fallback interno).",
-    "status": "failing",
+    "status": "passing",
+    "completed_at": "2026-02-18T02:00:00Z",
     "priority": 7,
     "tests": [
       "npm run build --workspace=packages/kai-sdk compila sem erros",
