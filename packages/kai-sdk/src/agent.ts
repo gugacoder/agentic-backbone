@@ -17,6 +17,7 @@ import { loadSession, saveSession } from "./session.js";
 import { getSystemPrompt, discoverProjectContext } from "./prompts/assembly.js";
 import { getContextUsage } from "./context/usage.js";
 import { compactMessages } from "./context/compaction.js";
+import { createToolCallRepairHandler } from "./tool-repair.js";
 import type { KaiAgentEvent, KaiAgentOptions, McpServerConfig, PrepareStepResult, ToolApprovalRequest } from "./types.js";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
@@ -306,6 +307,45 @@ export async function* runKaiAgent(
       }
     }
 
+    // Tool repair integration (F-004): wrap createToolCallRepairHandler to emit events + track count
+    const repairEnabled = options.repairToolCalls !== false;
+    let repairedToolCallsCount = 0;
+
+    const experimentalRepairToolCall = repairEnabled
+      ? (() => {
+          const baseModel = providers.model(options.model);
+          const handler = createToolCallRepairHandler({
+            model: baseModel,
+            maxAttempts: options.maxRepairAttempts ?? 1,
+          });
+
+          return async (params: {
+            system: string | undefined;
+            messages: CoreMessage[];
+            toolCall: { toolCallType: "function"; toolCallId: string; toolName: string; args: string };
+            tools: Record<string, unknown>;
+            parameterSchema: (options: { toolName: string }) => unknown;
+            error: Error;
+          }) => {
+            const result = await handler(params);
+            const repaired = result !== null;
+
+            pendingStepEvents.push({
+              type: "tool_repair",
+              toolName: params.toolCall.toolName,
+              error: params.error.message,
+              repaired,
+            });
+
+            if (repaired) {
+              repairedToolCallsCount++;
+            }
+
+            return result;
+          };
+        })()
+      : undefined;
+
     // prepareStep integration — call consumer's callback before streamText to get initial overrides
     let stepModel = providers.model(options.model);
     let stepActiveTools: string[] | undefined;
@@ -368,6 +408,7 @@ export async function* runKaiAgent(
         ...(stepActiveTools ? { experimental_activeTools: stepActiveTools as any } : {}),
         ...(stepToolChoice ? { toolChoice: stepToolChoice as any } : {}),
         ...(abortController ? { abortSignal: abortController.signal } : {}),
+        ...(experimentalRepairToolCall ? { experimental_repairToolCall: experimentalRepairToolCall } : {}),
         onStepFinish: (stepResult) => {
           const toolNames = (stepResult.toolCalls ?? []).map(
             (tc: { toolName: string }) => tc.toolName
@@ -496,6 +537,8 @@ export async function* runKaiAgent(
         durationMs: Date.now() - startMs,
         durationApiMs: 0,
         stopReason: finishReason,
+        // Tool repair count (F-004) — only populated when repairs occurred
+        ...(repairedToolCallsCount > 0 ? { repairedToolCalls: repairedToolCallsCount } : {}),
         // Step breakdown — only populated when telemetry is enabled (F-007)
         ...(telemetryEnabled && collectedSteps.length > 0
           ? { steps: collectedSteps }

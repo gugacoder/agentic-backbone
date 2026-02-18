@@ -6,6 +6,13 @@ export interface RepairContext {
   maxAttempts: number;
 }
 
+interface RepairToolCall {
+  toolCallType: "function";
+  toolCallId: string;
+  toolName: string;
+  args: string;
+}
+
 /**
  * Cria um handler de reparo que pede ao modelo para corrigir a tool call.
  * Tenta N vezes. Se todas falharem, retorna null (deixa o erro original propagar).
@@ -19,11 +26,11 @@ export function createToolCallRepairHandler(ctx: RepairContext) {
     parameterSchema,
     error,
   }: {
-    toolCall: { toolName: string; args: string };
+    toolCall: RepairToolCall;
     tools: Record<string, unknown>;
-    parameterSchema: unknown;
+    parameterSchema: (options: { toolName: string }) => unknown;
     error: Error;
-  }) => {
+  }): Promise<RepairToolCall | null> => {
     const key = `${toolCall.toolName}:${toolCall.args}`;
     const current = attempts.get(key) ?? 0;
 
@@ -33,6 +40,8 @@ export function createToolCallRepairHandler(ctx: RepairContext) {
     attempts.set(key, current + 1);
 
     try {
+      const schema = parameterSchema({ toolName: toolCall.toolName });
+
       const result = await generateText({
         model: ctx.model,
         system: [
@@ -41,7 +50,7 @@ export function createToolCallRepairHandler(ctx: RepairContext) {
         ].join("\n"),
         prompt: [
           `Tool: ${toolCall.toolName}`,
-          `Schema: ${JSON.stringify(parameterSchema)}`,
+          `Schema: ${JSON.stringify(schema)}`,
           `Invalid args: ${toolCall.args}`,
           `Error: ${error.message}`,
         ].join("\n"),
@@ -49,7 +58,12 @@ export function createToolCallRepairHandler(ctx: RepairContext) {
       });
 
       const repaired = result.text.trim();
-      return { toolName: toolCall.toolName, args: repaired };
+      return {
+        toolCallType: toolCall.toolCallType,
+        toolCallId: toolCall.toolCallId,
+        toolName: toolCall.toolName,
+        args: repaired,
+      };
     } catch {
       return null; // reparo falhou — erro original propaga
     }
