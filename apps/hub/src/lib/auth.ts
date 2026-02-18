@@ -1,5 +1,7 @@
 import { create } from "zustand";
 
+const TOKEN_KEY = "cia_token";
+
 interface AuthState {
   token: string | null;
   user: string | null;
@@ -7,49 +9,71 @@ interface AuthState {
   displayName: string | null;
   isAuthenticated: boolean;
   isSysuser: boolean;
-  login: (token: string) => Promise<void>;
+  login: (token: string) => void;
   logout: () => void;
 }
 
-function decodeJwtPayload(token: string): { sub: string; role: "sysuser" | "user" } {
+interface JwtClaims {
+  sub: string;
+  role?: "sysuser" | "user";
+  role_id?: number;
+  name?: string;
+}
+
+function decodeJwtPayload(token: string): JwtClaims {
   const base64 = token.split(".")[1];
   const json = atob(base64.replace(/-/g, "+").replace(/_/g, "/"));
   return JSON.parse(json);
 }
 
-export const useAuthStore = create<AuthState>((set) => ({
-  token: localStorage.getItem("hub-auth-token"),
-  user: localStorage.getItem("hub-auth-user"),
-  role: localStorage.getItem("hub-auth-role") as AuthState["role"],
-  displayName: localStorage.getItem("hub-auth-displayName"),
-  isAuthenticated: !!localStorage.getItem("hub-auth-token"),
-  isSysuser: localStorage.getItem("hub-auth-role") === "sysuser",
-  login: async (token) => {
-    localStorage.setItem("hub-auth-token", token);
-    const { sub, role } = decodeJwtPayload(token);
-    localStorage.setItem("hub-auth-user", sub);
-    localStorage.setItem("hub-auth-role", role);
-    set({ token, user: sub, role, isAuthenticated: true, isSysuser: role === "sysuser" });
+function deriveAuthFromToken(token: string): {
+  user: string;
+  role: "sysuser" | "user";
+  displayName: string | null;
+} {
+  const claims = decodeJwtPayload(token);
 
-    // Fetch displayName from /auth/me
-    try {
-      const res = await fetch("/api/auth/me", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (res.ok) {
-        const data = await res.json();
-        localStorage.setItem("hub-auth-displayName", data.displayName);
-        set({ displayName: data.displayName });
-      }
-    } catch {
-      // displayName is non-critical
-    }
+  if (claims.role_id !== undefined) {
+    // JWT Laravel — role_id present
+    return {
+      user: claims.sub,
+      role: claims.role_id === 1 ? "sysuser" : "user",
+      displayName: claims.name ?? null,
+    };
+  }
+
+  // JWT Backbone — role claim present
+  return {
+    user: claims.sub,
+    role: claims.role ?? "user",
+    displayName: null,
+  };
+}
+
+function initFromStorage(): Omit<AuthState, "login" | "logout"> {
+  const token = localStorage.getItem(TOKEN_KEY);
+  if (!token) {
+    return { token: null, user: null, role: null, displayName: null, isAuthenticated: false, isSysuser: false };
+  }
+  try {
+    const { user, role, displayName } = deriveAuthFromToken(token);
+    return { token, user, role, displayName, isAuthenticated: true, isSysuser: role === "sysuser" };
+  } catch {
+    // Corrupted token — treat as unauthenticated
+    localStorage.removeItem(TOKEN_KEY);
+    return { token: null, user: null, role: null, displayName: null, isAuthenticated: false, isSysuser: false };
+  }
+}
+
+export const useAuthStore = create<AuthState>((set) => ({
+  ...initFromStorage(),
+  login: (token) => {
+    localStorage.setItem(TOKEN_KEY, token);
+    const { user, role, displayName } = deriveAuthFromToken(token);
+    set({ token, user, role, displayName, isAuthenticated: true, isSysuser: role === "sysuser" });
   },
   logout: () => {
-    localStorage.removeItem("hub-auth-token");
-    localStorage.removeItem("hub-auth-user");
-    localStorage.removeItem("hub-auth-role");
-    localStorage.removeItem("hub-auth-displayName");
+    localStorage.removeItem(TOKEN_KEY);
     set({ token: null, user: null, role: null, displayName: null, isAuthenticated: false, isSysuser: false });
   },
 }));
