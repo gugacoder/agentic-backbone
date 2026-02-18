@@ -36,12 +36,8 @@ const CONTEXT = resolve(process.cwd(), process.env.CONTEXT_FOLDER);
 const MEMORY_TOKEN = "CAPABILITY_TEST_TOKEN_2026";
 const JOURNAL_TOKEN = "JOURNAL_PROBE_ENTRY_X9";
 
-const today = new Date();
-const TODAY_STR = [
-  today.getFullYear(),
-  String(today.getMonth() + 1).padStart(2, "0"),
-  String(today.getDate()).padStart(2, "0"),
-].join("-");
+// Use UTC date to match backbone's today() → new Date().toISOString().slice(0, 10)
+const TODAY_STR = new Date().toISOString().slice(0, 10);
 
 const MEMORY_PATH = join(CONTEXT, "agents", AGENT_ID, "MEMORY.md");
 const JOURNAL_PATH = join(CONTEXT, "agents", AGENT_ID, "journal", TODAY_STR, "MEMORY.md");
