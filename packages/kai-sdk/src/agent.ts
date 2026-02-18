@@ -3,6 +3,11 @@ import { createKaiProviderRegistry } from "./providers.js";
 import { createMCPClient, type MCPClient } from "@ai-sdk/mcp";
 import { Experimental_StdioMCPTransport as StdioMCPTransport } from "@ai-sdk/mcp/mcp-stdio";
 import { codingTools } from "./tools/index.js";
+import { createBashTool } from "./tools/bash.js";
+import { createWriteTool } from "./tools/write.js";
+import { createEditTool } from "./tools/edit.js";
+import { createMultiEditTool } from "./tools/multi-edit.js";
+import { createApplyPatchTool } from "./tools/apply-patch.js";
 import { createAskUserTool } from "./tools/ask-user.js";
 import { createWebSearchTool } from "./tools/web-search.js";
 import { createTaskTool } from "./tools/task.js";
@@ -122,7 +127,15 @@ export async function* runKaiAgent(
 
     // Override pluggable tools with configured callbacks if provided
     // codingTools have priority over MCP tools (spread order: MCP first, coding on top)
-    let tools = { ...mcpTools, ...codingTools };
+    const autoApprove = options.autoApprove ?? true;
+    const dangerousTools = {
+      Bash: createBashTool({ autoApprove }),
+      Write: createWriteTool({ autoApprove }),
+      Edit: createEditTool({ autoApprove }),
+      MultiEdit: createMultiEditTool({ autoApprove }),
+      ApplyPatch: createApplyPatchTool({ autoApprove }),
+    };
+    let tools = { ...mcpTools, ...codingTools, ...dangerousTools };
     if (options.tools) {
       tools = { ...tools, ...options.tools };
     }

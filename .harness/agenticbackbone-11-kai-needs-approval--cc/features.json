@@ -121,7 +121,8 @@
     "id": "F-007",
     "name": "agent-tools-assembly",
     "description": "Atualizar agent.ts para usar as factories (createBashTool, createWriteTool, createEditTool, createMultiEditTool, createApplyPatchTool) com { autoApprove } derivado de options.autoApprove ?? true. Atualizar tools/index.ts para exportar as factories além das constantes.",
-    "status": "failing",
+    "status": "passing",
+    "completed_at": "2026-02-18T04:00:00Z",
     "priority": 7,
     "tests": [
       "agent.ts lê options.autoApprove com default true",
@@ -147,7 +148,7 @@
     "id": "F-008",
     "name": "tool-approval-event-emission",
     "description": "Implementar emissão do evento tool_approval no agent.ts. Quando needsApproval pausa a execução, chamar onToolApproval callback e emitir evento com resultado. Se autoApprove: false sem onToolApproval, aprovar automaticamente com console.warn.",
-    "status": "blocked",
+    "status": "failing",
     "priority": 8,
     "tests": [
       "Quando autoApprove: false e onToolApproval fornecido, o callback é invocado com { toolName, params }",

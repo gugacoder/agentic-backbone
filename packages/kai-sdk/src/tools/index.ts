@@ -1,11 +1,11 @@
 import { readTool } from "./read.js";
-import { writeTool } from "./write.js";
-import { editTool } from "./edit.js";
-import { bashTool } from "./bash.js";
+import { writeTool, createWriteTool } from "./write.js";
+import { editTool, createEditTool } from "./edit.js";
+import { bashTool, createBashTool } from "./bash.js";
 import { globTool } from "./glob.js";
 import { grepTool } from "./grep.js";
 import { listDirTool } from "./list-dir.js";
-import { multiEditTool } from "./multi-edit.js";
+import { multiEditTool, createMultiEditTool } from "./multi-edit.js";
 import { todoWriteTool, todoReadTool } from "./todo.js";
 import { diagnosticsTool } from "./diagnostics.js";
 import { createAskUserTool } from "./ask-user.js";
@@ -13,8 +13,14 @@ import { webFetchTool } from "./web-fetch.js";
 import { createWebSearchTool } from "./web-search.js";
 import { createTaskTool } from "./task.js";
 import { createBatchTool } from "./batch.js";
-import { applyPatchTool } from "./apply-patch.js";
+import { applyPatchTool, createApplyPatchTool } from "./apply-patch.js";
 import { createCodeSearchTool } from "./code-search.js";
+
+export { createBashTool } from "./bash.js";
+export { createWriteTool } from "./write.js";
+export { createEditTool } from "./edit.js";
+export { createMultiEditTool } from "./multi-edit.js";
+export { createApplyPatchTool } from "./apply-patch.js";
 
 export const codingTools = {
   Read: readTool,
