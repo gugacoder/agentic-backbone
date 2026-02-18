@@ -134,4 +134,8 @@ export interface KaiAgentOptions {
   autoApprove?: boolean;
   /** Callback invocado quando uma tool precisa de aprovação. Retorna true para aprovar, false para rejeitar. */
   onToolApproval?: (request: ToolApprovalRequest) => Promise<boolean>;
+  /** Habilita reparo automatico de tool calls malformadas. Default: true */
+  repairToolCalls?: boolean;
+  /** Maximo de tentativas de reparo por tool call. Default: 1 */
+  maxRepairAttempts?: number;
 }
