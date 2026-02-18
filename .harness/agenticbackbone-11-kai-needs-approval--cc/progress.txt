@@ -2,7 +2,7 @@
 
 ## Current Status
 
-F-001 a F-007 implementadas e passing. 7/10 features complete.
+F-001 a F-008 implementadas e passing. 8/10 features complete.
 
 ## Specs Path
 
@@ -26,7 +26,7 @@ D:\sources\codr.studio\cia-prime-care\agentic-backbone\apps\backbone\milestones\
 - [x] F-005 factory-multi-edit-tool — Converter multiEditTool para factory createMultiEditTool com needsApproval
 - [x] F-006 factory-apply-patch-tool — Converter applyPatchTool para factory createApplyPatchTool com needsApproval
 - [x] F-007 agent-tools-assembly — Integrar factories no agent.ts e exportar em tools/index.ts
-- [ ] F-008 tool-approval-event-emission — Emissão do evento tool_approval com callback onToolApproval
+- [x] F-008 tool-approval-event-emission — Emissão do evento tool_approval com callback onToolApproval
 - [ ] F-009 exports-and-backward-compat — Exports finais em index.ts + validação de backward compat
 - [ ] F-010 build-verification — Build final de verificação (kai-sdk + backbone)
 
@@ -38,6 +38,7 @@ D:\sources\codr.studio\cia-prime-care\agentic-backbone\apps\backbone\milestones\
 4. **Dois modos de uso** — Heartbeat (autônomo, `autoApprove: true`) vs Conversa (interativo, `autoApprove: false` + `onToolApproval`)
 5. **Sem novas dependências** — Apenas reorganização de código existente + uso de API do Vercel AI SDK v4
 6. **Tools de leitura nunca pedem aprovação** — Read, Glob, Grep, ListDir, WebFetch, TodoWrite/Read, Diagnostics ficam inalteradas
+7. **Execute wrapping ao invés de needsApproval nativo** — ai@4.3.19 não suporta needsApproval no `tool()`. A interceptação é feita via wrapping do execute function dos dangerous tools no agent.ts, com dreno de eventos via pendingStepEvents
 
 ## Session Notes
 
@@ -49,3 +50,4 @@ Session 5 (CC): Implementada F-004 factory-edit-tool — editTool convertida par
 Session 6 (CC): Implementada F-005 factory-multi-edit-tool — multiEditTool convertida para factory createMultiEditTool(opts?) seguindo o mesmo pattern (Object.assign com needsApproval condicional). Backward compat mantida com export const multiEditTool = createMultiEditTool(). Lógica interna (validação atômica, replace sequencial, writeFile) inalterada. kai-sdk build passing. Next: F-006 factory-apply-patch-tool.
 Session 7 (CC): Implementada F-006 factory-apply-patch-tool — applyPatchTool convertida para factory createApplyPatchTool(opts?) seguindo o mesmo pattern (Object.assign com needsApproval condicional). Backward compat mantida com export const applyPatchTool = createApplyPatchTool(). Lógica interna (parsePatch, applyUpdate, execute) inalterada. kai-sdk build passing. Next: F-007 agent-tools-assembly.
 Session 8 (CC): Implementada F-007 agent-tools-assembly — agent.ts agora lê options.autoApprove (default true) e monta dangerousTools com as 5 factories (createBashTool, createWriteTool, createEditTool, createMultiEditTool, createApplyPatchTool). dangerousTools sobrescreve codingTools no spread, garantindo que autoApprove é respeitado. tools/index.ts agora exporta as 5 factory functions. codingTools continua usando as constantes para backward compat. kai-sdk build passing. Next: F-008 tool-approval-event-emission.
+Session 9 (CC): Implementada F-008 tool-approval-event-emission — Quando autoApprove é false, agent.ts agora wrapa o execute de cada dangerous tool (Bash, Write, Edit, MultiEdit, ApplyPatch) para interceptar chamadas antes da execução. O wrapper invoca onToolApproval callback (ou auto-aprova com console.warn se callback ausente), emite evento tool_approval via pendingStepEvents, e rejeita a execução se não aprovado. ai@4.3.19 não tem needsApproval nativo, então a interceptação é feita via wrapping do execute no layer do agent. Eventos são drenados no fullStream em tool-result e step-finish. kai-sdk build passing. Next: F-009 exports-and-backward-compat.

@@ -148,7 +148,8 @@
     "id": "F-008",
     "name": "tool-approval-event-emission",
     "description": "Implementar emissão do evento tool_approval no agent.ts. Quando needsApproval pausa a execução, chamar onToolApproval callback e emitir evento com resultado. Se autoApprove: false sem onToolApproval, aprovar automaticamente com console.warn.",
-    "status": "failing",
+    "status": "passing",
+    "completed_at": "2026-02-18T05:00:00Z",
     "priority": 8,
     "tests": [
       "Quando autoApprove: false e onToolApproval fornecido, o callback é invocado com { toolName, params }",

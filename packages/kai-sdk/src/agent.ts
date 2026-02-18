@@ -17,7 +17,7 @@ import { loadSession, saveSession } from "./session.js";
 import { getSystemPrompt, discoverProjectContext } from "./prompts/assembly.js";
 import { getContextUsage } from "./context/usage.js";
 import { compactMessages } from "./context/compaction.js";
-import type { KaiAgentEvent, KaiAgentOptions, McpServerConfig, PrepareStepResult } from "./types.js";
+import type { KaiAgentEvent, KaiAgentOptions, McpServerConfig, PrepareStepResult, ToolApprovalRequest } from "./types.js";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 
@@ -266,6 +266,46 @@ export async function* runKaiAgent(
     }> = [];
     let stepStartMs = Date.now();
 
+    // Tool approval wrapping (F-008): when autoApprove is false, wrap dangerous tools'
+    // execute functions to intercept calls and invoke the onToolApproval callback.
+    // ai@4.3.19 doesn't natively support needsApproval, so we implement it at this layer.
+    if (!autoApprove) {
+      const dangerousToolNames = ["Bash", "Write", "Edit", "MultiEdit", "ApplyPatch"];
+      const toolsRecord = tools as Record<string, any>;
+      for (const toolName of dangerousToolNames) {
+        const t = toolsRecord[toolName];
+        if (!t || !t.execute) continue;
+
+        const originalExecute = t.execute;
+        t.execute = async (args: Record<string, unknown>, execOpts: any) => {
+          const request: ToolApprovalRequest = { toolName, params: args };
+          let approved: boolean;
+
+          if (options.onToolApproval) {
+            approved = await options.onToolApproval(request);
+          } else {
+            console.warn(
+              `[kai] autoApprove is false but no onToolApproval callback provided. Auto-approving ${toolName}.`
+            );
+            approved = true;
+          }
+
+          pendingStepEvents.push({
+            type: "tool_approval",
+            toolName,
+            params: args,
+            approved,
+          });
+
+          if (!approved) {
+            return `Tool call rejected: ${toolName} was not approved by the user.`;
+          }
+
+          return originalExecute(args, execOpts);
+        };
+      }
+    }
+
     // prepareStep integration — call consumer's callback before streamText to get initial overrides
     let stepModel = providers.model(options.model);
     let stepActiveTools: string[] | undefined;
@@ -375,6 +415,11 @@ export async function* runKaiAgent(
         if (part.type === "text-delta") {
           fullText += part.textDelta;
           yield { type: "text", content: part.textDelta };
+        } else if (part.type === "tool-result") {
+          // Drain tool_approval events pushed by wrapped execute functions (F-008)
+          while (pendingStepEvents.length > 0) {
+            yield pendingStepEvents.shift()!;
+          }
         } else if (part.type === "step-finish") {
           // Drain pending step_finish events collected by onStepFinish
           while (pendingStepEvents.length > 0) {
