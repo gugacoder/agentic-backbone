@@ -68,6 +68,10 @@ export function agentMemoryPath(agentId: string): string {
   return join(agentDir(agentId), "MEMORY.md");
 }
 
+export function agentJournalDayPath(agentId: string, day: string): string {
+  return join(agentDir(agentId), "journal", day, "MEMORY.md");
+}
+
 export function agentConfigPath(agentId: string): string {
   return join(agentDir(agentId), "AGENT.md");
 }
