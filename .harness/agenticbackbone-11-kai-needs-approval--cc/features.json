@@ -21,7 +21,7 @@
     "id": "F-002",
     "name": "factory-bash-tool",
     "description": "Converter bashTool de constante para factory createBashTool(opts?) que aceita { autoApprove?: boolean }. Quando autoApprove === false, configurar needsApproval: async () => true. Manter export const bashTool = createBashTool() para backward compat.",
-    "status": "blocked",
+    "status": "in_progress",
     "priority": 2,
     "tests": [
       "createBashTool é exportada como named function em tools/bash.ts",
@@ -40,7 +40,7 @@
     "id": "F-003",
     "name": "factory-write-tool",
     "description": "Converter writeTool de constante para factory createWriteTool(opts?) com needsApproval condicional. Manter backward compat com export const writeTool.",
-    "status": "blocked",
+    "status": "pending",
     "priority": 3,
     "tests": [
       "createWriteTool é exportada como named function em tools/write.ts",
@@ -59,7 +59,7 @@
     "id": "F-004",
     "name": "factory-edit-tool",
     "description": "Converter editTool de constante para factory createEditTool(opts?) com needsApproval condicional. Manter backward compat.",
-    "status": "blocked",
+    "status": "pending",
     "priority": 4,
     "tests": [
       "createEditTool é exportada como named function em tools/edit.ts",
@@ -78,7 +78,7 @@
     "id": "F-005",
     "name": "factory-multi-edit-tool",
     "description": "Converter multiEditTool de constante para factory createMultiEditTool(opts?) com needsApproval condicional. Manter backward compat.",
-    "status": "blocked",
+    "status": "pending",
     "priority": 5,
     "tests": [
       "createMultiEditTool é exportada como named function em tools/multi-edit.ts",
@@ -97,7 +97,7 @@
     "id": "F-006",
     "name": "factory-apply-patch-tool",
     "description": "Converter applyPatchTool de constante para factory createApplyPatchTool(opts?) com needsApproval condicional. Manter backward compat.",
-    "status": "blocked",
+    "status": "pending",
     "priority": 6,
     "tests": [
       "createApplyPatchTool é exportada como named function em tools/apply-patch.ts",
