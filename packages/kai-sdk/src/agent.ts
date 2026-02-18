@@ -207,6 +207,7 @@ export async function* runKaiAgent(
         toolDefinitionsTokens: ctxUsage.toolDefinitions,
         middleware: options.middleware,
         telemetry: options.telemetry,
+        providers,
       });
 
       if (compactResult.compacted) {

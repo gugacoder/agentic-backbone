@@ -61,7 +61,8 @@
     "id": "F-004",
     "name": "compaction-integration",
     "description": "Refatorar compaction.ts para aceitar providers opcionais via CompactOptions. Se providers for passado, usá-lo ao invés de criar createOpenAICompatible() inline. Se não for passado, criar provider internamente (backward compat). Atualizar agent.ts para passar providers na chamada de compactMessages().",
-    "status": "pending",
+    "status": "passing",
+    "completed_at": "2026-02-17T03:00:00Z",
     "priority": 4,
     "tests": [
       "CompactOptions possui campo providers? do tipo ReturnType<typeof createKaiProviderRegistry>",

@@ -4,6 +4,7 @@ import { z } from "zod";
 import { countTokens } from "./tokenizer.js";
 import { getContextWindow } from "./models.js";
 import type { KaiTelemetryOptions } from "../types.js";
+import type { createKaiProviderRegistry } from "../providers.js";
 
 const CompactionSchema = z.object({
   summary: z.string().describe("Resumo conciso da conversa"),
@@ -25,6 +26,8 @@ export interface CompactOptions {
   toolDefinitionsTokens: number;
   middleware?: LanguageModelV1Middleware[];
   telemetry?: KaiTelemetryOptions;
+  /** Provider registry para reuso. Se nao fornecido, cria um internamente (backward compat). */
+  providers?: ReturnType<typeof createKaiProviderRegistry>;
 }
 
 export interface CompactResult {
@@ -139,13 +142,13 @@ export async function compactMessages(
       : undefined;
 
   try {
-    const openrouter = createOpenAICompatible({
-      name: "openrouter",
-      baseURL: "https://openrouter.ai/api/v1",
-      apiKey: options.apiKey,
-    });
-
-    const baseModel = openrouter(options.model);
+    const baseModel = options.providers
+      ? options.providers.model(options.model)
+      : createOpenAICompatible({
+          name: "openrouter",
+          baseURL: "https://openrouter.ai/api/v1",
+          apiKey: options.apiKey,
+        })(options.model);
     const model =
       options.middleware && options.middleware.length > 0
         ? wrapLanguageModel({ model: baseModel, middleware: options.middleware })
@@ -196,13 +199,13 @@ export async function compactMessages(
   } catch (structuredErr) {
     // Fallback: generateObject() failed — try generateText() with free-text summarization
     try {
-      const openrouter = createOpenAICompatible({
-        name: "openrouter",
-        baseURL: "https://openrouter.ai/api/v1",
-        apiKey: options.apiKey,
-      });
-
-      const fallbackBaseModel = openrouter(options.model);
+      const fallbackBaseModel = options.providers
+        ? options.providers.model(options.model)
+        : createOpenAICompatible({
+            name: "openrouter",
+            baseURL: "https://openrouter.ai/api/v1",
+            apiKey: options.apiKey,
+          })(options.model);
       const fallbackModel =
         options.middleware && options.middleware.length > 0
           ? wrapLanguageModel({ model: fallbackBaseModel, middleware: options.middleware })
