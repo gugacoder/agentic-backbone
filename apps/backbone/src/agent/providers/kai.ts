@@ -63,6 +63,7 @@ export function createKaiProvider(): AgentProvider {
           sessionDir,
           maxSteps: options?.maxTurns ?? 30,
           ...(mcpConfigs.length > 0 ? { mcpServers: mcpConfigs } : {}),
+          ...(options?.tools ? { tools: options.tools } : {}),
         })) {
           // KaiAgentEvent maps 1:1 to AgentEvent
           yield event as AgentEvent;

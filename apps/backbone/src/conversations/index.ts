@@ -9,6 +9,7 @@ import {
   readMessages,
 } from "./persistence.js";
 import { flushMemory } from "../memory/flush.js";
+import { createMemoryKaiTools } from "../memory/kai-tools.js";
 import { getAgent } from "../agents/registry.js";
 import { triggerHook } from "../hooks/index.js";
 
@@ -182,6 +183,7 @@ export async function* sendMessage(
   for await (const event of runAgent(prompt, {
     sdkSessionId,
     role: "conversation",
+    tools: createMemoryKaiTools(agentId),
   })) {
     // Capture SDK session on first init for future resume
     if (event.type === "init" && event.sessionId) {

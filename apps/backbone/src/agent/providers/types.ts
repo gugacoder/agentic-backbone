@@ -5,6 +5,7 @@ export interface AgentProviderOptions {
   role?: string;
   mcpServers?: Record<string, unknown>;
   maxTurns?: number;
+  tools?: Record<string, any>;
 }
 
 export interface AgentProvider {

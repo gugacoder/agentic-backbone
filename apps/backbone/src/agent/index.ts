@@ -11,6 +11,7 @@ export async function* runAgent(
     sdkSessionId?: string;
     role?: string;
     mcpServers?: Record<string, unknown>;
+    tools?: Record<string, any>;
   }
 ): AsyncGenerator<AgentEvent> {
   const config = loadLlmConfig();
