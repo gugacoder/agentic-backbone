@@ -1,7 +1,7 @@
 # Progress — agenticbackbone-10-kai-provider-registry
 
 ## Current Status
-F-001, F-002, F-003, F-004, F-005, F-006 implementadas e verificadas. 6/7 features completas.
+TODAS as features implementadas e verificadas. 7/7 features completas. Milestone 10-kai-provider-registry FINALIZADO.
 
 ## Specs Path
 D:\sources\codr.studio\cia-prime-care\agentic-backbone\apps\backbone\milestones\10-kai-provider-registry
@@ -21,7 +21,7 @@ D:\sources\codr.studio\cia-prime-care\agentic-backbone\apps\backbone\milestones\
 - [x] F-004: compaction-integration — Refatorar compaction.ts para aceitar registry
 - [x] F-005: structured-integration — Refatorar structured.ts para aceitar registry
 - [x] F-006: exports-index — Exportar registry no index.ts
-- [ ] F-007: build-verification — Build completo sem erros e sem regressões
+- [x] F-007: build-verification — Build completo sem erros e sem regressões
 
 ## Architecture Decisions
 
@@ -59,3 +59,5 @@ Session 5 (F-004): Refatorado compaction.ts para aceitar providers opcional via 
 Session 6 (F-005): Refatorado structured.ts para aceitar providers opcional via KaiObjectOptions. Adicionado import type de createKaiProviderRegistry e campo `providers?: ReturnType<typeof createKaiProviderRegistry>`. Tanto kaiGenerateObject quanto kaiStreamObject: quando providers é passado, usa providers.model(); quando não, cria createOpenAICompatible() internamente (backward compat). Mesmo padrão de compaction.ts. Build limpo, todos os 6 testes passaram. Próxima: F-006 exports-index.
 
 Session 7 (F-006): Adicionado exports de createKaiProviderRegistry e KaiProviderConfig em index.ts. Duas linhas adicionadas: `export { createKaiProviderRegistry } from "./providers.js"` e `export type { KaiProviderConfig } from "./providers.js"`. Build limpo, dist/index.js e dist/index.d.ts contêm os exports. Todos os 4 testes passaram. Próxima: F-007 build-verification.
+
+Session 8 (F-007): Verificação final do build. Todos os 6 critérios verificados: (1) Build `tsc` compila sem erros; (2) agent.ts zero imports de @ai-sdk/openai-compatible; (3) agent.ts zero instâncias de createOpenAICompatible; (4) compaction.ts mantém createOpenAICompatible apenas nos fallbacks internos (linhas 147, 204 — condicionais `!options.providers`); (5) structured.ts mantém createOpenAICompatible apenas nos fallbacks internos (linhas 22, 44 — condicionais `!options.providers`); (6) dist/index.js e dist/index.d.ts exportam createKaiProviderRegistry e KaiProviderConfig. Milestone 10-kai-provider-registry COMPLETO.
