@@ -3,9 +3,10 @@ import { join } from "node:path";
 import { Hono } from "hono";
 import { eventBus } from "../events/index.js";
 import type { BackboneModule, ModuleContext, ModuleHealth } from "./types.js";
+import { CONTEXT_DIR } from "../context/paths.js";
 
 const DATA_DIR = join(process.cwd(), "data", "modules");
-const CONTEXT_DIR = join(process.cwd(), "context", "modules");
+const MODULES_CONTEXT_DIR = join(CONTEXT_DIR, "modules");
 
 const moduleStates = new Map<
   string,
@@ -22,7 +23,7 @@ export async function startModules(
   app: Hono
 ): Promise<void> {
   for (const mod of modules) {
-    const contextDir = join(CONTEXT_DIR, mod.name);
+    const contextDir = join(MODULES_CONTEXT_DIR, mod.name);
     const dbPath = join(DATA_DIR, `${mod.name}.sqlite`);
 
     // Ensure directories exist

@@ -65,11 +65,15 @@ export async function assembleConversationPrompt(
   const { prompt: skillsPrompt } = buildSkillsSnapshot(agentId);
   const toolsPrompt = formatToolsPrompt(agentId);
 
+  const dir = agentDir(agentId);
+
   let prompt = "";
 
   if (soul) {
     prompt += `<identity>\n${soul}\n</identity>\n\n`;
   }
+
+  prompt += `<agent_context>\nagent_id: ${agentId}\nagent_dir: ${dir}\n</agent_context>\n\n`;
 
   prompt += skillsPrompt;
   prompt += toolsPrompt;

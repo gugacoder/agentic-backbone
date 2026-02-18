@@ -1,8 +1,0 @@
-name: <string>
-connector: evolution
-policy: <string>
-params:
-  host: <string>
-  port: <number>
-  api_key: <secret>
-  instance_name: <string>

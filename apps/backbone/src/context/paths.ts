@@ -1,6 +1,20 @@
-import { resolve, join } from "node:path";
+import { dirname, resolve, join } from "node:path";
+import { fileURLToPath } from "node:url";
 
-export const CONTEXT_DIR = resolve(process.cwd(), "context");
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
+// Anchor on the monorepo root, NOT process.cwd(), so the path is stable
+// regardless of which directory the process was launched from.
+// process.cwd() is unreliable: npm workspace scripts run from apps/backbone/,
+// but CONTEXT_FOLDER in .env is relative to the monorepo root.
+// __dirname = apps/backbone/src/context/ → 4 levels up = monorepo root
+const REPO_ROOT = resolve(__dirname, "../../../..");
+
+if (!process.env.CONTEXT_FOLDER) {
+  throw new Error("Missing required env var: CONTEXT_FOLDER");
+}
+
+export const CONTEXT_DIR = resolve(REPO_ROOT, process.env.CONTEXT_FOLDER);
 
 export type ResourceKind = "skills" | "tools" | "adapters" | "connectors";
 
