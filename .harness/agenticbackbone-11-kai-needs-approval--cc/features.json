@@ -21,7 +21,8 @@
     "id": "F-002",
     "name": "factory-bash-tool",
     "description": "Converter bashTool de constante para factory createBashTool(opts?) que aceita { autoApprove?: boolean }. Quando autoApprove === false, configurar needsApproval: async () => true. Manter export const bashTool = createBashTool() para backward compat.",
-    "status": "in_progress",
+    "status": "passing",
+    "completed_at": "2026-02-17T23:59:00Z",
     "priority": 2,
     "tests": [
       "createBashTool é exportada como named function em tools/bash.ts",
