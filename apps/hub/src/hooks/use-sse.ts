@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback, useState } from "react";
+import { useEffect, useRef, useCallback, useState, useMemo } from "react";
 import { useAuthStore } from "@/lib/auth";
 
 interface UseSSEOptions {
@@ -9,17 +9,25 @@ interface UseSSEOptions {
   additionalEventTypes?: string[];
 }
 
+const BUILT_IN_TYPES = ["connected", "heartbeat:status", "channel:message", "registry:adapters", "job:status", "ping"];
+
 export function useSSE({ url, enabled = true, onEvent, additionalEventTypes = [] }: UseSSEOptions) {
   const [connected, setConnected] = useState(false);
   const [lastEvent, setLastEvent] = useState<unknown>(null);
   const esRef = useRef<EventSource | null>(null);
+  const reconnectTimer = useRef<ReturnType<typeof setTimeout>>();
   const onEventRef = useRef(onEvent);
   onEventRef.current = onEvent;
+
+  // Stabilize the array reference — only change when the actual values change
+  const eventTypesKey = additionalEventTypes.join(",");
+  const stableEventTypes = useMemo(() => additionalEventTypes, [eventTypesKey]);
 
   const connect = useCallback(() => {
     if (esRef.current) {
       esRef.current.close();
     }
+    clearTimeout(reconnectTimer.current);
 
     const token = useAuthStore.getState().token;
     const fullUrl = token
@@ -32,9 +40,8 @@ export function useSSE({ url, enabled = true, onEvent, additionalEventTypes = []
     es.onerror = () => {
       setConnected(false);
       es.close();
-      // Auto-reconnect after 3s
-      setTimeout(() => {
-        if (enabled) connect();
+      reconnectTimer.current = setTimeout(() => {
+        if (esRef.current === es) connect();
       }, 3000);
     };
 
@@ -48,9 +55,7 @@ export function useSSE({ url, enabled = true, onEvent, additionalEventTypes = []
       }
     };
 
-    // Listen for named events
-    const builtInTypes = ["connected", "heartbeat:status", "channel:message", "registry:adapters", "job:status", "ping"];
-    for (const eventType of [...builtInTypes, ...additionalEventTypes]) {
+    for (const eventType of [...BUILT_IN_TYPES, ...stableEventTypes]) {
       es.addEventListener(eventType, (evt) => {
         try {
           const data = JSON.parse((evt as MessageEvent).data);
@@ -61,18 +66,20 @@ export function useSSE({ url, enabled = true, onEvent, additionalEventTypes = []
         }
       });
     }
-  }, [url, enabled, additionalEventTypes]);
+  }, [url, stableEventTypes]);
 
   useEffect(() => {
     if (!enabled) return;
     connect();
     return () => {
+      clearTimeout(reconnectTimer.current);
       esRef.current?.close();
       esRef.current = null;
     };
   }, [connect, enabled]);
 
   const disconnect = useCallback(() => {
+    clearTimeout(reconnectTimer.current);
     esRef.current?.close();
     esRef.current = null;
     setConnected(false);
