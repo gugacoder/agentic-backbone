@@ -15,7 +15,7 @@ export function useSSE({ url, enabled = true, onEvent, additionalEventTypes = []
   const [connected, setConnected] = useState(false);
   const [lastEvent, setLastEvent] = useState<unknown>(null);
   const esRef = useRef<EventSource | null>(null);
-  const reconnectTimer = useRef<ReturnType<typeof setTimeout>>();
+  const reconnectTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const onEventRef = useRef(onEvent);
   onEventRef.current = onEvent;
 
