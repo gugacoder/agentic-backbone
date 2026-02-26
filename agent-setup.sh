@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-echo "=== Agent Setup: agenticbackbone-12-kai-tool-repair ==="
+echo "=== Agent Setup: agenticbackbone-12-ai-tool-repair ==="
 
 # ── Detect package manager ───────────────────────────────────
 if command -v npm &>/dev/null; then
@@ -37,17 +37,17 @@ else
 fi
 
 # ── Build check ──────────────────────────────────────────────
-echo "[setup] building kai-sdk..."
-npm run build --workspace=packages/kai-sdk || {
-  echo "WARN: kai-sdk build failed"
+echo "[setup] building ai-sdk..."
+npm run build --workspace=packages/ai-sdk || {
+  echo "WARN: ai-sdk build failed"
 }
 
 # ── Smoke test (build only — no dev server needed for SDK work) ──
-echo "[setup] verifying kai-sdk dist output..."
-if [ -f packages/kai-sdk/dist/index.js ]; then
-  echo "[setup] kai-sdk dist: OK"
+echo "[setup] verifying ai-sdk dist output..."
+if [ -f packages/ai-sdk/dist/index.js ]; then
+  echo "[setup] ai-sdk dist: OK"
 else
-  echo "WARN: kai-sdk dist/index.js not found"
+  echo "WARN: ai-sdk dist/index.js not found"
 fi
 
 # ── Summary ──────────────────────────────────────────────────
@@ -55,8 +55,8 @@ echo ""
 echo "=== Setup Summary ==="
 echo "Package manager: $PKG"
 echo "Dependencies: installed"
-echo "kai-sdk build: attempted"
-echo "Harness: .harness/agenticbackbone-12-kai-tool-repair--cc/"
+echo "ai-sdk build: attempted"
+echo "Harness: .harness/agenticbackbone-12-ai-tool-repair--cc/"
 echo "Features: 6 (all failing)"
 echo "First feature: F-001 types-options"
 echo "=== Ready for vibe:code ==="

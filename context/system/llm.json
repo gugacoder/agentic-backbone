@@ -1,5 +1,5 @@
 {
-  "provider": "kai",
+  "provider": "ai",
   "active": "economico",
   "plans": {
     "claude": {
@@ -58,7 +58,7 @@
         }
       }
     },
-    "kai": {
+    "ai": {
       "economico": {
         "label": "Econômico",
         "description": "GPT-4o-mini para tudo. Máxima economia via OpenRouter.",

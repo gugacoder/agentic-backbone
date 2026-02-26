@@ -16,7 +16,7 @@ export interface LlmPlan {
   thinking?: { type: "adaptive" } | { type: "enabled"; budgetTokens: number } | { type: "disabled" };
 }
 
-export type LlmProvider = "claude" | "kai";
+export type LlmProvider = "claude" | "ai";
 
 export interface LlmConfig {
   provider: LlmProvider;

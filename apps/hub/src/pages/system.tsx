@@ -16,7 +16,7 @@ import { cn } from "@/lib/utils";
 
 const PROVIDER_LABELS: Record<LlmProvider, string> = {
   claude: "Claude",
-  kai: "Kai (OpenRouter)",
+  ai: "Ai (OpenRouter)",
 };
 
 export function SystemPage() {

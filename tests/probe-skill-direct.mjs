@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 /**
- * Teste direto da kai — replica exatamente o que o backbone faz:
+ * Teste direto da ai — replica exatamente o que o backbone faz:
  * 1. Monta o prompt igual a assembleConversationPrompt()
- * 2. Passa como `prompt` para runKaiAgent() (sem system override)
- * 3. Verifica se a kai usa a skill
+ * 2. Passa como `prompt` para runAiAgent() (sem system override)
+ * 3. Verifica se a ai usa a skill
  */
-import { runKaiAgent } from "../packages/kai-sdk/src/agent.ts";
+import { runAiAgent } from "../packages/ai-sdk/src/agent.ts";
 import { readFileSync, existsSync, readdirSync } from "node:fs";
 import { resolve, join } from "node:path";
 
@@ -99,7 +99,7 @@ async function runTest(label, userMessage) {
   console.log(`[prompt length: ${prompt.length} chars]\n`);
 
   let fullText = "";
-  for await (const ev of runKaiAgent(prompt, {
+  for await (const ev of runAiAgent(prompt, {
     model: MODEL,
     apiKey: API_KEY,
     maxSteps: 10,

@@ -69,7 +69,7 @@ All environment variables are defined in the root `.env` file — the single sou
 **API keys:**
 - `ANTHROPIC_API_KEY` (required for `claude` provider) — Claude API access
 - `OPENAI_API_KEY` (optional) — enables memory embeddings via `text-embedding-3-small`
-- `OPENROUTER_API_KEY` (required for `kai` provider) — OpenRouter API access
+- `OPENROUTER_API_KEY` (required for `ai` provider) — OpenRouter API access
 
 **Other:**
 - `HUB_PORT` — Hub dev server port (e.g. `7701`)
@@ -91,12 +91,12 @@ This is an **npm workspaces monorepo** with two apps and one internal package:
 |---|---|---|
 | `@agentic-backbone/backbone` | `apps/backbone` | Autonomous multi-agent runtime (Node.js, Hono, Claude Agent SDK) |
 | `@agentic-backbone/hub` | `apps/hub` | Admin UI / chat (React 19, TanStack Router, shadcn/ui, PWA) |
-| `@agentic-backbone/kai-sdk` | `packages/kai-sdk` | Alternative agent runtime via Vercel AI SDK + OpenRouter |
+| `@agentic-backbone/ai-sdk` | `packages/ai-sdk` | Alternative agent runtime via Vercel AI SDK + OpenRouter |
 
 ### Core Flow
 
 ```
-HTTP (Hono, :7700) → Routes → Conversations → Agent Runner → Provider (claude | kai)
+HTTP (Hono, :7700) → Routes → Conversations → Agent Runner → Provider (claude | ai)
                          │                          ↓
                          │                    SSE streaming → client
                          │
@@ -124,7 +124,7 @@ Two providers, switchable at runtime via `context/system/llm.json`:
 | Provider | SDK | API | Key env var |
 |---|---|---|---|
 | `claude` | `@anthropic-ai/claude-agent-sdk` | Anthropic direct | `ANTHROPIC_API_KEY` |
-| `kai` | Vercel AI SDK (`ai@^4`) | OpenRouter | `OPENROUTER_API_KEY` |
+| `ai` | Vercel AI SDK (`ai@^4`) | OpenRouter | `OPENROUTER_API_KEY` |
 
 **Plans** define per-role model profiles (`conversation`, `heartbeat`, `memory`). Three plans per provider: `economico`, `padrao`, `otimizado`. The active provider + plan is set in `context/system/llm.json` (editable at runtime via the `/settings` route).
 
@@ -147,7 +147,7 @@ Two providers, switchable at runtime via `context/system/llm.json`:
 |---|---|
 | `index.ts` | Hono server entry; mounts routes, bootstraps subsystems |
 | `routes/` | REST + SSE endpoints (health, conversations, channels, users, agents, cron, jobs, settings, system events) |
-| `agent/` | `runAgent()` async generator — dispatches to `providers/claude.ts` or `providers/kai.ts` based on `resolveProvider()` |
+| `agent/` | `runAgent()` async generator — dispatches to `providers/claude.ts` or `providers/ai.ts` based on `resolveProvider()` |
 | `agents/` | Agent registry — discovers `AGENT.md` files, parses frontmatter config. Agent IDs use `owner.slug` dot notation |
 | `conversations/` | Session lifecycle (create/get/sendMessage). SQLite for session index, filesystem for message history (JSONL) |
 | `channels/` | Channel registry + system channel for heartbeat/system message delivery |
@@ -201,12 +201,12 @@ Markdown-centric persistent state store with YAML frontmatter:
 
 - **`isMarkdownEmpty(raw, opts?)`** — Checks if a `.md` file has meaningful content. Strips frontmatter by default (`ignoreFrontmatter: true`). Use this whenever the system needs to decide if a markdown document is "empty" (e.g. heartbeat skip-if-empty gate). Internally delegates to `isEffectivelyEmpty()` which ignores headers, bare bullets, and empty checkboxes.
 
-### kai-sdk Package (`packages/kai-sdk/`)
+### ai-sdk Package (`packages/ai-sdk/`)
 
 Alternative agent runtime using Vercel AI SDK against OpenRouter:
 
-- `runKaiAgent()` — async generator using `streamText()`, same `AgentEvent` output as claude provider
-- Session persistence: saves/loads `CoreMessage[]` to `data/kai-sessions/`
+- `runAiAgent()` — async generator using `streamText()`, same `AgentEvent` output as claude provider
+- Session persistence: saves/loads `CoreMessage[]` to `data/ai-sessions/`
 - Context compaction: auto-compacts when context window threshold exceeded
 - MCP support: stdio and http transports via `@ai-sdk/mcp`
 - Tool repair: `createToolCallRepairHandler()` for malformed tool call JSON
