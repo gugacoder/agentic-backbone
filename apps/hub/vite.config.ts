@@ -46,6 +46,7 @@ export default defineConfig(({ mode }) => {
     },
     server: {
       port: Number(env.HUB_PORT),
+      strictPort: true,
       proxy: {
         "/api": {
           target: `http://localhost:${env.BACKBONE_PORT}`,

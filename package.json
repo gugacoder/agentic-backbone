@@ -19,6 +19,8 @@
     "docker:down": "dotenv -o -e .env -- docker compose down",
     "docker:ps": "dotenv -o -e .env -- docker compose ps",
     "docker:logs": "dotenv -o -e .env -- docker compose logs -f",
+    "build": "npm run build --workspace=packages/ai-sdk && npm run build --workspace=apps/backbone && npm run build --workspace=apps/hub",
+    "build:packages": "npm run build --workspace=packages/ai-sdk",
     "build:hub": "npm run build --workspace=apps/hub",
     "test:conversation": "dotenv -o -e .env -- node tests/test-conversations.mjs",
     "test:capabilities": "dotenv -o -e .env -- node tests/capabilities/run-all.mjs",
@@ -30,7 +32,8 @@
     "test:capabilities:jobs": "dotenv -o -e .env -- node tests/capabilities/test-conversation-jobs.mjs",
     "test:capabilities:identity": "dotenv -o -e .env -- node tests/capabilities/test-conversation-identity-and-context.mjs",
     "test:e2e": "npx playwright test",
-    "test:e2e:hub": "npx playwright test --project=hub"
+    "test:e2e:hub": "npx playwright test --project=hub",
+    "killports": "dotenv -o -e .env -- bash scripts/killports.sh"
   },
   "devDependencies": {
     "@playwright/test": "^1.58.2",
