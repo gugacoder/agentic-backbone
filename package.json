@@ -34,7 +34,9 @@
     "test:capabilities:identity": "dotenv -o -e .env -- node tests/capabilities/test-conversation-identity-and-context.mjs",
     "test:e2e": "npx playwright test",
     "test:e2e:hub": "npx playwright test --project=hub",
-    "killports": "dotenv -o -e .env -- bash scripts/killports.sh"
+    "killports": "dotenv -o -e .env -- bash scripts/killports.sh",
+    "secrets:decrypt": "node scripts/secrets.mjs decrypt",
+    "secrets:encrypt": "node scripts/secrets.mjs encrypt"
   },
   "devDependencies": {
     "@playwright/test": "^1.58.2",
