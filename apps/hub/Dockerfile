@@ -17,6 +17,19 @@ COPY package.json package-lock.json ./
 COPY apps/hub/package.json apps/hub/
 
 RUN npm ci
+# Lockfile gerado no Windows não inclui optional native deps linux-x64.
+# Instalar binários nativos explicitamente (rollup, lightningcss, esbuild, tailwindcss-oxide).
+RUN node -e " \
+  const packages = [ \
+    '@rollup/rollup-linux-x64-gnu', \
+    'lightningcss-linux-x64-gnu', \
+    '@esbuild/linux-x64', \
+    '@tailwindcss/oxide-linux-x64-gnu' \
+  ]; \
+  require('child_process').execSync( \
+    'npm install --no-save ' + packages.join(' '), \
+    { stdio: 'inherit' } \
+  );"
 
 # Copiar codigo do hub
 COPY apps/hub/ apps/hub/
@@ -51,6 +64,6 @@ RUN echo 'server { \
 EXPOSE 3000
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
-  CMD wget --quiet --tries=1 --spider http://localhost:3000/health || exit 1
+  CMD wget --quiet --tries=1 --spider http://127.0.0.1:3000/health || exit 1
 
 CMD ["nginx", "-g", "daemon off;"]

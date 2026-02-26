@@ -61,16 +61,16 @@
     "ai": {
       "economico": {
         "label": "Econômico",
-        "description": "GPT-4o-mini para tudo. Máxima economia via OpenRouter.",
+        "description": "Gemini Flash Lite (grátis) para tudo via OpenRouter.",
         "profiles": {
           "conversation": {
-            "model": "openai/gpt-4o-mini"
+            "model": "google/gemini-2.0-flash-lite-001"
           },
           "heartbeat": {
-            "model": "openai/gpt-4o-mini"
+            "model": "google/gemini-2.0-flash-lite-001"
           },
           "memory": {
-            "model": "openai/gpt-4o-mini"
+            "model": "google/gemini-2.0-flash-lite-001"
           }
         }
       },

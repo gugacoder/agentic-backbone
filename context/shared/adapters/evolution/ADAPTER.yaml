@@ -3,7 +3,7 @@ connector: evolution
 policy: readwrite
 description: WhatsApp messaging via Evolution API
 params:
-  host: evolution.internal
+  host: localhost
   port: 8080
-  api_key: change-me
+  api_key: evolution-key
   instance_name: evolution
