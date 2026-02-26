@@ -366,14 +366,14 @@ O adapter é só dados — por padrão é apenas o `ADAPTER.yaml`. Pode conter o
 O `ADAPTER.yaml` declara de qual connector veio e quais parâmetros foram preenchidos:
 
 ```yaml
-name: CiaPrime
+name: SampleDB
 connector: mysql
 policy: readwrite
-description: Base de negócio da CiaPrimeCare
+description: Base de negócio — exemplo
 params:
   host: 127.0.0.1
   port: 3306
-  database: cia_beta
+  database: myapp
   user: root
   password: root
 ```

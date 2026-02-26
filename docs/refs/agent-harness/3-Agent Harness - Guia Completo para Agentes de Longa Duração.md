@@ -132,7 +132,7 @@ O Initializer expande o prompt original do usuário numa feature list detalhada 
 
 ```json
 {
-  "project": "CiaPrimeCare Dashboard",
+  "project": "Sample Dashboard",
   "created": "2026-02-06T10:00:00Z",
   "total_features": 12,
   "completed": 3,

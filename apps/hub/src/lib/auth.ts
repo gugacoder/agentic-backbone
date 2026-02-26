@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-const TOKEN_KEY = "cia_token";
+const TOKEN_KEY = "auth_token";
 
 interface AuthState {
   token: string | null;

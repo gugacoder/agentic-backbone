@@ -6,8 +6,8 @@ import { test, expect } from "@playwright/test";
  */
 
 const API = "http://localhost:7700/api";
-const SYSUSER = "cia";
-const SYSPASS = "[Cia@2026]";
+const SYSUSER = process.env.SYSUSER ?? "admin";
+const SYSPASS = process.env.SYSPASS ?? "changeme";
 
 let authToken: string;
 
@@ -76,9 +76,7 @@ test.describe("Agent enabled toggle — UI", () => {
     await page.goto("/login");
     await page.evaluate(
       ({ token, user }) => {
-        localStorage.setItem("hub-auth-token", token);
-        localStorage.setItem("hub-auth-user", user);
-        localStorage.setItem("hub-auth-role", "sysuser");
+        localStorage.setItem("auth_token", token);
       },
       { token: authToken, user: SYSUSER }
     );

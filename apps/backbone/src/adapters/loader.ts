@@ -12,8 +12,8 @@ const cache = new Map<string, AdapterInstance>();
  * Load an adapter by slug, resolving its connector automatically.
  *
  * Usage:
- *   const db = await loadAdapter("cia-prime");
- *   const rows = await db.query("SELECT * FROM funcionarios");
+ *   const db = await loadAdapter("my-adapter");
+ *   const rows = await db.query("SELECT * FROM users");
  *   await db.close();
  */
 export async function loadAdapter(slug: string): Promise<AdapterInstance> {

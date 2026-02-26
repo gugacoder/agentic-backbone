@@ -39,7 +39,7 @@ Cada item é testado pelo probe agent via Conversation API ou Probe Channel SSE.
 
 | # | Capability | Canal | Prova |
 |---|-----------|-------|-------|
-| 4.1 | Adapters listados | Conv | 3 adapters na tabela. Conv-2. |
+| 4.1 | Adapters listados | Conv | Adapters na tabela. Conv-2. |
 | 4.2 | Connector resolution | Conv | connector_dir do mysql resolvido. Conv-4. |
 | 4.3 | Shell interfaces | Conv | `query.sh` retorna dados reais do banco. Conv-4. |
 | 4.4 | Políticas de acesso | Conv | Policies corretas (full, readwrite). Conv-2. |
@@ -164,10 +164,8 @@ Cada item é testado pelo probe agent via Conversation API ou Probe Channel SSE.
 | jobs | Jobs | shared | Submeter processos longos ao backbone |
 | introspect | Introspect | agent | Verificar integridade do próprio agente |
 
-### Adapters (3 total)
+### Adapters (1 total)
 
 | Slug | Nome | Connector | Policy | Descrição |
 |------|------|-----------|--------|-----------|
-| cia-app | CiaApp | mysql | full | DB de monitoramento de agentes |
-| cia-prime | CiaPrime | mysql | readwrite | DB de negócio CiaPrimeCare |
 | evolution | Evolution | evolution | readwrite | WhatsApp via Evolution API |

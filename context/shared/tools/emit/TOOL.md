@@ -13,4 +13,4 @@ Emita mensagens em canais SSE. Consumidores conectados ao canal recebem em tempo
 
 Exemplo:
 
-  bash <tool_dir>/emit.sh cia-app.fichas '{"action":"created","type":"band_change","title":"Pedro Silva: vermelho"}'
+  bash <tool_dir>/emit.sh my-agent.events '{"action":"created","type":"band_change","title":"Pedro Silva: vermelho"}'

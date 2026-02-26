@@ -132,7 +132,7 @@ export function createMemoryKaiTools(agentId: string): Record<string, any> {
       parameters: z.object({
         userSlug: z
           .string()
-          .describe("User slug (e.g. 'guga', 'cia')"),
+          .describe("User slug (e.g. 'guga', 'admin')"),
         facts: z
           .array(z.string())
           .min(1)

@@ -12,7 +12,7 @@
       "npm run build --workspace=packages/kai-sdk compila sem erros"
     ],
     "dependencies": [],
-    "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\packages\\kai-sdk\\milestones\\01-better-kay\\PRP.md"
+    "prp_path": "D:\\sources\\codr.studio\\gugacoder\\agentic-backbone\\packages\\kai-sdk\\milestones\\01-better-kay\\PRP.md"
   },
   {
     "id": "F-002",
@@ -33,7 +33,7 @@
       "npm run build --workspace=packages/kai-sdk compila sem erros"
     ],
     "dependencies": [],
-    "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\packages\\kai-sdk\\milestones\\01-better-kay\\PRP.md"
+    "prp_path": "D:\\sources\\codr.studio\\gugacoder\\agentic-backbone\\packages\\kai-sdk\\milestones\\01-better-kay\\PRP.md"
   },
   {
     "id": "F-003",
@@ -52,7 +52,7 @@
       "npm run build --workspace=packages/kai-sdk compila sem erros"
     ],
     "dependencies": [],
-    "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\packages\\kai-sdk\\milestones\\01-better-kay\\PRP.md"
+    "prp_path": "D:\\sources\\codr.studio\\gugacoder\\agentic-backbone\\packages\\kai-sdk\\milestones\\01-better-kay\\PRP.md"
   },
   {
     "id": "F-004",
@@ -73,7 +73,7 @@
     "dependencies": [
       "F-001"
     ],
-    "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\packages\\kai-sdk\\milestones\\01-better-kay\\PRP.md"
+    "prp_path": "D:\\sources\\codr.studio\\gugacoder\\agentic-backbone\\packages\\kai-sdk\\milestones\\01-better-kay\\PRP.md"
   },
   {
     "id": "F-005",
@@ -92,7 +92,7 @@
       "npm run build --workspace=packages/kai-sdk compila sem erros"
     ],
     "dependencies": [],
-    "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\packages\\kai-sdk\\milestones\\01-better-kay\\PRP.md"
+    "prp_path": "D:\\sources\\codr.studio\\gugacoder\\agentic-backbone\\packages\\kai-sdk\\milestones\\01-better-kay\\PRP.md"
   },
   {
     "id": "F-006",
@@ -113,7 +113,7 @@
     "dependencies": [
       "F-001"
     ],
-    "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\packages\\kai-sdk\\milestones\\01-better-kay\\PRP.md"
+    "prp_path": "D:\\sources\\codr.studio\\gugacoder\\agentic-backbone\\packages\\kai-sdk\\milestones\\01-better-kay\\PRP.md"
   },
   {
     "id": "F-007",
@@ -134,7 +134,7 @@
       "npm run build --workspace=packages/kai-sdk compila sem erros"
     ],
     "dependencies": [],
-    "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\packages\\kai-sdk\\milestones\\01-better-kay\\PRP.md"
+    "prp_path": "D:\\sources\\codr.studio\\gugacoder\\agentic-backbone\\packages\\kai-sdk\\milestones\\01-better-kay\\PRP.md"
   },
   {
     "id": "F-008",
@@ -153,7 +153,7 @@
       "npm run build --workspace=packages/kai-sdk compila sem erros"
     ],
     "dependencies": [],
-    "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\packages\\kai-sdk\\milestones\\01-better-kay\\PRP.md"
+    "prp_path": "D:\\sources\\codr.studio\\gugacoder\\agentic-backbone\\packages\\kai-sdk\\milestones\\01-better-kay\\PRP.md"
   },
   {
     "id": "F-009",
@@ -175,7 +175,7 @@
       "npm run build --workspace=packages/kai-sdk compila sem erros"
     ],
     "dependencies": [],
-    "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\packages\\kai-sdk\\milestones\\01-better-kay\\PRP.md"
+    "prp_path": "D:\\sources\\codr.studio\\gugacoder\\agentic-backbone\\packages\\kai-sdk\\milestones\\01-better-kay\\PRP.md"
   },
   {
     "id": "F-010",
@@ -195,7 +195,7 @@
       "npm run build --workspace=packages/kai-sdk compila sem erros"
     ],
     "dependencies": [],
-    "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\packages\\kai-sdk\\milestones\\01-better-kay\\PRP.md"
+    "prp_path": "D:\\sources\\codr.studio\\gugacoder\\agentic-backbone\\packages\\kai-sdk\\milestones\\01-better-kay\\PRP.md"
   },
   {
     "id": "F-011",
@@ -216,7 +216,7 @@
       "npm run build --workspace=packages/kai-sdk compila sem erros"
     ],
     "dependencies": [],
-    "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\packages\\kai-sdk\\milestones\\01-better-kay\\PRP.md"
+    "prp_path": "D:\\sources\\codr.studio\\gugacoder\\agentic-backbone\\packages\\kai-sdk\\milestones\\01-better-kay\\PRP.md"
   },
   {
     "id": "F-012",
@@ -234,7 +234,7 @@
       "npm run build --workspace=packages/kai-sdk compila sem erros"
     ],
     "dependencies": [],
-    "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\packages\\kai-sdk\\milestones\\01-better-kay\\PRP.md"
+    "prp_path": "D:\\sources\\codr.studio\\gugacoder\\agentic-backbone\\packages\\kai-sdk\\milestones\\01-better-kay\\PRP.md"
   },
   {
     "id": "F-013",
@@ -268,6 +268,6 @@
       "F-011",
       "F-012"
     ],
-    "prp_path": "D:\\sources\\codr.studio\\cia-prime-care\\agentic-backbone\\packages\\kai-sdk\\milestones\\01-better-kay\\PRP.md"
+    "prp_path": "D:\\sources\\codr.studio\\gugacoder\\agentic-backbone\\packages\\kai-sdk\\milestones\\01-better-kay\\PRP.md"
   }
 ]

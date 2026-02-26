@@ -22,8 +22,8 @@
 // ── Config ──────────────────────────────────────────────────
 
 const BASE = `http://localhost:${process.env.BACKBONE_PORT || 8004}`;
-const SYSUSER = process.env.SYSUSER || "cia";
-const SYSPASS = process.env.SYSPASS || "[Cia@2026]";
+const SYSUSER = process.env.SYSUSER || "admin";
+const SYSPASS = process.env.SYSPASS || "changeme";
 const AGENT_ID = "system.probe";
 const SEND_TIMEOUT_MS = 120_000;
 

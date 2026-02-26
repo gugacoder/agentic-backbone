@@ -12,8 +12,8 @@ const INSTANCES = ["test-alpha", "test-beta", "test-gamma"];
 async function login(page: Page) {
   await page.goto(`${BASE}/login`);
   await page.waitForLoadState("networkidle");
-  await page.getByPlaceholder("Username").fill("cia");
-  await page.getByPlaceholder("Password").fill("[Cia@2026]");
+  await page.getByPlaceholder("Username").fill(process.env.SYSUSER ?? "admin");
+  await page.getByPlaceholder("Password").fill(process.env.SYSPASS ?? "changeme");
   await page.getByRole("button", { name: "Sign In" }).click();
   await page.waitForURL("**/dashboard", { timeout: 15_000 });
 }
