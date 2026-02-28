@@ -5,7 +5,8 @@ export type CronSchedule =
 
 export type CronPayload =
   | { kind: "heartbeat" }
-  | { kind: "agentTurn"; message: string };
+  | { kind: "conversation"; message: string }
+  | { kind: "request"; message: string };
 
 export interface CronJobState {
   nextRunAtMs?: number;

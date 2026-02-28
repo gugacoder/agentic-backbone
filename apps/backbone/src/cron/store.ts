@@ -37,8 +37,8 @@ function metadataToDef(m: Record<string, unknown>, slug: string): CronJobDef | n
 
   const payloadKind = (m["payload-kind"] as string) ?? "heartbeat";
   let payload: CronPayload;
-  if (payloadKind === "agentTurn") {
-    payload = { kind: "agentTurn", message: (m["payload-message"] as string) ?? "" };
+  if (payloadKind === "conversation" || payloadKind === "request") {
+    payload = { kind: payloadKind, message: (m["payload-message"] as string) ?? "" };
   } else {
     payload = { kind: "heartbeat" };
   }
@@ -75,7 +75,7 @@ function defToMetadata(def: CronJobDef): Record<string, unknown> {
   }
 
   m["payload-kind"] = def.payload.kind;
-  if (def.payload.kind === "agentTurn") {
+  if (def.payload.kind !== "heartbeat") {
     m["payload-message"] = def.payload.message;
   }
 
@@ -203,7 +203,7 @@ export function updateCronJobFile(jobPath: string, patch: CronJobPatch): void {
 
   if (patch.payload) {
     updates["payload-kind"] = patch.payload.kind;
-    if (patch.payload.kind === "agentTurn") {
+    if (patch.payload.kind !== "heartbeat") {
       updates["payload-message"] = patch.payload.message;
     }
   }

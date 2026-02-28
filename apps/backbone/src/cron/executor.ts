@@ -1,6 +1,7 @@
 import { runAgent, type UsageData } from "../agent/index.js";
 import { triggerManualHeartbeat } from "../heartbeat/index.js";
 import { deliverToSystemChannel } from "../channels/system-channel.js";
+import { assemblePrompt } from "../context/index.js";
 import { logCronRun } from "./log.js";
 import type { CronJob } from "./types.js";
 
@@ -21,7 +22,7 @@ export async function executeCronJob(job: CronJob): Promise<CronExecutionResult>
     if (job.def.payload.kind === "heartbeat") {
       return await executeHeartbeatPayload(job, startMs);
     } else {
-      return await executeAgentTurnPayload(job, startMs);
+      return await executeMessagePayload(job, startMs);
     }
   } catch (err) {
     const durationMs = Date.now() - startMs;
@@ -58,16 +59,29 @@ async function executeHeartbeatPayload(
   return { status: "ok", summary: "heartbeat triggered", durationMs };
 }
 
-async function executeAgentTurnPayload(
+async function executeMessagePayload(
   job: CronJob,
   startMs: number
 ): Promise<CronExecutionResult> {
   const payload = job.def.payload;
-  if (payload.kind !== "agentTurn") {
+  if (payload.kind === "heartbeat") {
     return { status: "error", error: "invalid payload kind", durationMs: 0 };
   }
 
-  const prompt = `[cron:${job.agentId}/${job.slug}] ${payload.message}`;
+  const mode = payload.kind;
+  const userMessage = `[cron:${job.agentId}/${job.slug}] ${payload.message}`;
+  const prompt = await assemblePrompt(job.agentId, mode, { userMessage });
+  if (!prompt) {
+    const durationMs = Date.now() - startMs;
+    logCronRun({
+      jobSlug: job.slug,
+      agentId: job.agentId,
+      status: "skipped",
+      durationMs,
+      error: `no ${mode} instructions`,
+    });
+    return { status: "skipped", error: `no ${mode} instructions`, durationMs };
+  }
 
   let fullText = "";
   let usageData: UsageData | undefined;

@@ -20,9 +20,8 @@ const scheduleSchema = z.object({
 });
 
 const payloadSchema = z.object({
-  kind: z.enum(["heartbeat", "agentTurn"]),
-  message: z.string().optional().describe("Message for agentTurn payload"),
-  context: z.string().optional().describe("Arbitrary payload you will receive back when awakened by cron. Use for task specs, structured data, or any info your future self needs."),
+  kind: z.enum(["heartbeat", "conversation", "request"]),
+  message: z.string().optional().describe("Message for conversation/request payload"),
 });
 
 function toSchedule(raw: z.infer<typeof scheduleSchema>): CronSchedule {
@@ -37,14 +36,8 @@ function toSchedule(raw: z.infer<typeof scheduleSchema>): CronSchedule {
 }
 
 function toPayload(raw: z.infer<typeof payloadSchema>): CronPayload {
-  if (raw.kind === "agentTurn") {
-    return {
-      kind: "agentTurn",
-      message: raw.message ?? "",
-      ...(process.env.SESSION_ID ? { sessionId: process.env.SESSION_ID } : {}),
-      ...(process.env.USER_ID ? { userId: process.env.USER_ID } : {}),
-      ...(raw.context ? { context: raw.context } : {}),
-    };
+  if (raw.kind === "conversation" || raw.kind === "request") {
+    return { kind: raw.kind, message: raw.message ?? "" };
   }
   return { kind: "heartbeat" };
 }
@@ -74,7 +67,7 @@ export function createCronAiTools(): Record<string, any> {
     }),
 
     cron_add: tool({
-      description: "Create a new scheduled cron job. Use kind='at' for one-shot, kind='every' for interval, kind='cron' for cron expressions. Payload kind='heartbeat' triggers a heartbeat; kind='agentTurn' starts a conversation turn with the given message.",
+      description: "Create a new scheduled cron job. Use kind='at' for one-shot, kind='every' for interval, kind='cron' for cron expressions. Payload kind='heartbeat' triggers a heartbeat; kind='conversation' starts a conversation turn; kind='request' invokes the agent in request/API mode.",
       parameters: z.object({
         slug: z.string().describe("Unique slug for this job (used as filename)"),
         name: z.string().describe("Human-readable job name"),
