@@ -1,5 +1,6 @@
 import { Hono } from "hono";
-import { listAgents, getAgent, refreshAgentRegistry } from "../agents/registry.js";
+import { streamSSE } from "hono/streaming";
+import { listAgents, getAgent } from "../agents/registry.js";
 import {
   createAgent,
   updateAgent,
@@ -18,6 +19,10 @@ import { getHeartbeatHistory, getHeartbeatStats } from "../heartbeat/log.js";
 import { getAgentMemoryManager } from "../memory/manager.js";
 import { loadAllSkills } from "../skills/loader.js";
 import { loadAgentTools } from "../tools/loader.js";
+import { loadAgentServices, findService } from "../services/loader.js";
+import { executeServiceDirect } from "../services/executor.js";
+import { assemblePrompt } from "../context/index.js";
+import { runAgent } from "../agent/index.js";
 import { getAuthUser, filterByOwner, assertOwnership } from "./auth-helpers.js";
 
 export const agentRoutes = new Hono();
@@ -286,4 +291,117 @@ agentRoutes.get("/agents/:id/tools", (c) => {
   if (denied) return denied;
   const tools = loadAgentTools(agentId);
   return c.json(tools);
+});
+
+// --- Agent Services ---
+
+agentRoutes.get("/agents/:id/services", (c) => {
+  const agentId = c.req.param("id");
+  const denied = assertAgentOwnership(c, agentId);
+  if (denied) return denied;
+  const services = loadAgentServices(agentId);
+  return c.json(services);
+});
+
+// --- Agent Request (direct invocation in request mode) ---
+
+agentRoutes.post("/agents/:id/request", async (c) => {
+  const agentId = c.req.param("id");
+  const denied = assertAgentOwnership(c, agentId);
+  if (denied) return denied;
+
+  const agent = getAgent(agentId);
+  if (!agent) return c.json({ error: "not found" }, 404);
+
+  const { prompt: userMessage } = await c.req.json<{ prompt: string }>();
+  if (!userMessage) return c.json({ error: "prompt is required" }, 400);
+
+  const assembled = await assemblePrompt(agentId, "request", {
+    userMessage,
+  });
+  if (!assembled) {
+    return c.json({ error: "agent has no REQUEST.md instructions" }, 400);
+  }
+
+  const wantsSSE = c.req.header("Accept") === "text/event-stream";
+
+  if (wantsSSE) {
+    return streamSSE(c, async (stream) => {
+      for await (const event of runAgent(assembled, { role: "request" })) {
+        await stream.writeSSE({ data: JSON.stringify(event) });
+      }
+    });
+  }
+
+  // JSON synchronous response
+  const startMs = Date.now();
+  let result = "";
+  let usage: unknown;
+  for await (const event of runAgent(assembled, { role: "request" })) {
+    if (event.type === "result" && event.content) {
+      result = event.content;
+    } else if (event.type === "text" && event.content) {
+      result += event.content;
+    } else if (event.type === "usage" && event.usage) {
+      usage = event.usage;
+    }
+  }
+  return c.json({ result, usage, durationMs: Date.now() - startMs });
+});
+
+// --- Agent Service Invocation ---
+
+agentRoutes.post("/agents/:id/services/:slug", async (c) => {
+  const agentId = c.req.param("id");
+  const serviceSlug = c.req.param("slug");
+  const denied = assertAgentOwnership(c, agentId);
+  if (denied) return denied;
+
+  const service = findService(agentId, serviceSlug);
+  if (!service) {
+    return c.json({ error: `service '${serviceSlug}' not found` }, 404);
+  }
+
+  const body = await c.req.json().catch(() => ({}));
+
+  // skip-agent: execute directly without LLM
+  if (service.skipAgent) {
+    const execResult = await executeServiceDirect(service, body);
+    return c.json(execResult, execResult.ok ? 200 : 500);
+  }
+
+  // LLM-backed service invocation via request mode
+  const payload =
+    typeof body.prompt === "string" ? body.prompt : JSON.stringify(body);
+
+  const assembled = await assemblePrompt(agentId, "request", {
+    userMessage: payload,
+  });
+  if (!assembled) {
+    return c.json({ error: "agent has no REQUEST.md instructions" }, 400);
+  }
+
+  const wantsSSE = c.req.header("Accept") === "text/event-stream";
+
+  if (wantsSSE) {
+    return streamSSE(c, async (stream) => {
+      for await (const event of runAgent(assembled, { role: "request" })) {
+        await stream.writeSSE({ data: JSON.stringify(event) });
+      }
+    });
+  }
+
+  const startMs = Date.now();
+  let result = "";
+  let usage: unknown;
+  for await (const event of runAgent(assembled, { role: "request" })) {
+    if (event.type === "result" && event.content) {
+      result = event.content;
+    } else if (event.type === "text" && event.content) {
+      result += event.content;
+    } else if (event.type === "usage" && event.usage) {
+      usage = event.usage;
+    }
+  }
+  return c.json({ result, usage, durationMs: Date.now() - startMs });
 });
