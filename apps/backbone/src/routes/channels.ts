@@ -105,7 +105,7 @@ channelRoutes.post("/channels/:slug/emit", async (c) => {
   }>();
   if (!content) return c.json({ error: "content is required" }, 400);
 
-  deliverToChannel(channelId, agentId ?? "system.main", content);
+  await deliverToChannel(channelId, agentId ?? "system.main", content);
   return c.json({ status: "delivered", channelId }, 200);
 });
 
