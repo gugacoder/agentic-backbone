@@ -19,6 +19,7 @@ export interface Session {
   session_id: string;
   user_id: string;
   agent_id: string;
+  channel_id: string | null;
   sdk_session_id: string | null;
   title: string | null;
   created_at: string;
@@ -28,11 +29,11 @@ export interface Session {
 // --- Prepared statements ---
 
 const insertSession = db.prepare(
-  `INSERT INTO sessions (session_id, user_id, agent_id) VALUES (?, ?, ?)`
+  `INSERT INTO sessions (session_id, user_id, agent_id, channel_id) VALUES (?, ?, ?, ?)`
 );
 
 const selectSession = db.prepare(
-  `SELECT session_id, user_id, agent_id, sdk_session_id, title, created_at, updated_at
+  `SELECT session_id, user_id, agent_id, channel_id, sdk_session_id, title, created_at, updated_at
    FROM sessions WHERE session_id = ?`
 );
 
@@ -42,23 +43,35 @@ const setSdkSessionId = db.prepare(
 );
 
 const selectAllSessions = db.prepare(
-  `SELECT session_id, user_id, agent_id, sdk_session_id, title, created_at, updated_at
+  `SELECT session_id, user_id, agent_id, channel_id, sdk_session_id, title, created_at, updated_at
    FROM sessions ORDER BY updated_at DESC`
 );
 
 const selectSessionsByUser = db.prepare(
-  `SELECT session_id, user_id, agent_id, sdk_session_id, title, created_at, updated_at
+  `SELECT session_id, user_id, agent_id, channel_id, sdk_session_id, title, created_at, updated_at
    FROM sessions WHERE user_id = ? ORDER BY updated_at DESC`
 );
 
 const selectSessionsByUserAndAgent = db.prepare(
-  `SELECT session_id, user_id, agent_id, sdk_session_id, title, created_at, updated_at
+  `SELECT session_id, user_id, agent_id, channel_id, sdk_session_id, title, created_at, updated_at
    FROM sessions WHERE user_id = ? AND agent_id = ? ORDER BY updated_at DESC`
 );
 
 const selectSessionsByAgent = db.prepare(
-  `SELECT session_id, user_id, agent_id, sdk_session_id, title, created_at, updated_at
+  `SELECT session_id, user_id, agent_id, channel_id, sdk_session_id, title, created_at, updated_at
    FROM sessions WHERE agent_id = ? ORDER BY updated_at DESC`
+);
+
+const findSessionByChannelKey = db.prepare(
+  `SELECT session_id, user_id, agent_id, channel_id, sdk_session_id, title, created_at, updated_at
+   FROM sessions WHERE agent_id = ? AND user_id = ? AND channel_id = ?
+   ORDER BY updated_at DESC LIMIT 1`
+);
+
+const lastActiveChannel = db.prepare(
+  `SELECT channel_id FROM sessions
+   WHERE agent_id = ? AND user_id = ? AND channel_id IS NOT NULL
+   ORDER BY updated_at DESC LIMIT 1`
 );
 
 const updateSessionTitle = db.prepare(
@@ -78,9 +91,9 @@ const FLUSH_EVERY = 20;
 
 // --- API ---
 
-export function createSession(userId: string, agentId = "system.main"): Session {
+export function createSession(userId: string, agentId = "system.main", channelId?: string): Session {
   const sessionId = randomUUID();
-  insertSession.run(sessionId, userId, agentId);
+  insertSession.run(sessionId, userId, agentId, channelId ?? null);
 
   // Persist session to filesystem
   initPersistentSession(agentId, sessionId, userId);
@@ -90,6 +103,7 @@ export function createSession(userId: string, agentId = "system.main"): Session 
     session_id: sessionId,
     user_id: userId,
     agent_id: agentId,
+    channel_id: channelId ?? null,
     sdk_session_id: null,
     title: null,
     created_at: now,
@@ -131,6 +145,17 @@ export function updateSession(
 export function deleteSession(sessionId: string): boolean {
   const result = deleteSessionStmt.run(sessionId);
   return result.changes > 0;
+}
+
+export function findOrCreateSession(agentId: string, userId: string, channelId: string): Session {
+  const existing = findSessionByChannelKey.get(agentId, userId, channelId) as Session | undefined;
+  if (existing) return existing;
+  return createSession(userId, agentId, channelId);
+}
+
+export function resolveLastActiveChannel(agentId: string, userId: string): string | null {
+  const row = lastActiveChannel.get(agentId, userId) as { channel_id: string } | undefined;
+  return row?.channel_id ?? null;
 }
 
 export async function* sendMessage(
