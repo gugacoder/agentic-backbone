@@ -26,6 +26,7 @@ import { initHooks, wireEventBusToHooks, triggerHook } from "./hooks/index.js";
 import { startJobSweeper, stopJobSweeper, shutdownAllJobs } from "./jobs/engine.js";
 import { modules } from "./modules/index.js";
 import { startModules, stopModules } from "./modules/loader.js";
+import { initChannelAdapters, channelAdapterRegistry } from "./channel-adapters/index.js";
 
 import type { ServerType } from "@hono/node-server";
 
@@ -44,6 +45,8 @@ async function bootstrap() {
 
   await initHooks();
   wireEventBusToHooks();
+
+  await initChannelAdapters();
 
   // Modules must be started BEFORE app.route() — Hono copies routes on mount,
   // so routes added after .route() won't propagate to the app.
@@ -154,6 +157,7 @@ async function onShutdown(signal: string) {
     stopWatchers();
     stopJobSweeper();
     shutdownAllJobs();
+    await channelAdapterRegistry.shutdownAll();
     await stopModules();
 
     if (server) {
