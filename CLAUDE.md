@@ -4,6 +4,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ---
 
+## **IMPORTANTE**
+
+*Este sistema nunca saiu do papel.*
+*Essa é a primeira versao em desenvolvimento.*
+**Não ha motivo racional para manter codigo legado no codigo fonte.**
+
+---
+
 ## User Folder — A private user space, isolated from Claude core.
 
 The `.user-folder` directory is a strictly private user workspace. **Access is explicitly forbidden** — do not read, index, analyze, or reference it.
