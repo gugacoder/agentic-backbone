@@ -1,6 +1,6 @@
 import { useAuthStore } from "./auth.js";
 
-const BASE = "/api";
+const BASE = "/api/v1/ai";
 
 class ApiError extends Error {
   constructor(

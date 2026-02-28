@@ -5,7 +5,7 @@ export async function login(credentials: {
   password: string;
 }): Promise<{ token: string }> {
   // Direct fetch — bypass api wrapper to avoid 401 interceptor on login
-  const res = await fetch("/api/auth/login", {
+  const res = await fetch("/api/v1/ai/auth/login", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(credentials),

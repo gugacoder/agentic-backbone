@@ -16,7 +16,7 @@ export default defineConfig(({ mode }) => {
         workbox: {
           runtimeCaching: [
             {
-              urlPattern: /^\/api\/.*/i,
+              urlPattern: /^\/api\/v1\/ai\/.*/i,
               handler: "NetworkFirst",
               options: {
                 cacheName: "api-cache",
@@ -48,9 +48,8 @@ export default defineConfig(({ mode }) => {
       port: Number(env.HUB_PORT),
       strictPort: true,
       proxy: {
-        "/api": {
+        "/api/v1/ai": {
           target: `http://localhost:${env.BACKBONE_PORT}`,
-          rewrite: (path) => path.replace(/^\/api/, ""),
         },
       },
     },

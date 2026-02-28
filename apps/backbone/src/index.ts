@@ -52,8 +52,7 @@ async function bootstrap() {
   console.log(`[backbone] modules: ${moduleNames}`);
 
   // Mount routes AFTER modules registered their routes on the `routes` Hono instance
-  app.route("/api", routes);
-  app.route("/", routes);
+  app.route("/api/v1/ai", routes);
 
   // Serve frontend static files when built
   const webDistPath = resolve(process.cwd(), "..", "web", "dist");

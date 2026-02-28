@@ -31,8 +31,8 @@ export function useSSE({ url, enabled = true, onEvent, additionalEventTypes = []
 
     const token = useAuthStore.getState().token;
     const fullUrl = token
-      ? `/api${url}?token=${encodeURIComponent(token)}`
-      : `/api${url}`;
+      ? `/api/v1/ai${url}?token=${encodeURIComponent(token)}`
+      : `/api/v1/ai${url}`;
     const es = new EventSource(fullUrl);
     esRef.current = es;
 

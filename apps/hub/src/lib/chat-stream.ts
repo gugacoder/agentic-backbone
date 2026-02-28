@@ -18,7 +18,7 @@ export async function streamMessage(
   try {
     const token = useAuthStore.getState().token;
 
-    res = await fetch(`/api/conversations/${sessionId}/messages`, {
+    res = await fetch(`/api/v1/ai/conversations/${sessionId}/messages`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
