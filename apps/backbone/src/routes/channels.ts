@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import { listChannels, getChannel } from "../channels/registry.js";
 import { createChannel, updateChannel, deleteChannel } from "../channels/manager.js";
 import { createSSEHandler, sseHub } from "../events/sse.js";
-import { assembleConversationPrompt } from "../context/index.js";
+import { assemblePrompt } from "../context/index.js";
 import { runAgent } from "../agent/index.js";
 import { deliverToSystemChannel, deliverToChannel } from "../channels/system-channel.js";
 import { getAuthUser, filterByOwner, assertOwnership } from "./auth-helpers.js";
@@ -128,7 +128,7 @@ channelRoutes.post("/channels/:slug/messages", async (c) => {
 
   (async () => {
     try {
-      const prompt = await assembleConversationPrompt(agent, message);
+      const prompt = await assemblePrompt(agent, "conversation", { userMessage: message }) ?? "";
       let fullText = "";
       for await (const event of runAgent(prompt, { role: "conversation" })) {
         if (event.type === "result" && event.content) {

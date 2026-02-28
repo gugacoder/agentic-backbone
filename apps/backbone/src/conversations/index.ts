@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { db } from "../db/index.js";
-import { assembleConversationPrompt } from "../context/index.js";
+import { assemblePrompt } from "../context/index.js";
 import { runAgent, type AgentEvent } from "../agent/index.js";
 import {
   initSession as initPersistentSession,
@@ -165,7 +165,7 @@ export async function* sendMessage(
     message,
   });
 
-  const prompt = await assembleConversationPrompt(agentId, message, userId);
+  const prompt = await assemblePrompt(agentId, "conversation", { userMessage: message }) ?? "";
 
   let fullText = "";
   let sdkSessionId = session.sdk_session_id ?? undefined;

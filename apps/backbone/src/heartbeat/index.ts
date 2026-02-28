@@ -1,4 +1,4 @@
-import { assembleHeartbeatPrompt } from "../context/index.js";
+import { assemblePrompt } from "../context/index.js";
 import { runAgent, type UsageData } from "../agent/index.js";
 import { eventBus } from "../events/index.js";
 import { deliverToSystemChannel, deliverToChannel } from "../channels/system-channel.js";
@@ -118,7 +118,7 @@ async function tick(agentId: string): Promise<void> {
   }
 
   // Guard: empty instructions
-  const prompt = assembleHeartbeatPrompt(agentId);
+  const prompt = await assemblePrompt(agentId, "heartbeat");
   if (!prompt) {
     state.lastStatus = "skipped";
     state.lastSkipReason = "empty-instructions";

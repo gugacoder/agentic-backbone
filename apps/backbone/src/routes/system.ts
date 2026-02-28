@@ -6,7 +6,7 @@ import { listChannels } from "../channels/registry.js";
 import { getHeartbeatStatus } from "../heartbeat/index.js";
 import { getGlobalHeartbeatStats } from "../heartbeat/log.js";
 import { createSSEHandler } from "../events/sse.js";
-import { assembleConversationPrompt } from "../context/index.js";
+import { assemblePrompt } from "../context/index.js";
 import { runAgent } from "../agent/index.js";
 import { deliverToSystemChannel } from "../channels/system-channel.js";
 import { CONTEXT_DIR } from "../context/paths.js";
@@ -31,7 +31,7 @@ systemRoutes.post("/system/messages", async (c) => {
 
   (async () => {
     try {
-      const prompt = await assembleConversationPrompt("system.main", message);
+      const prompt = await assemblePrompt("system.main", "conversation", { userMessage: message }) ?? "";
       let fullText = "";
       for await (const event of runAgent(prompt, { role: "conversation" })) {
         if (event.type === "result" && event.content) {
