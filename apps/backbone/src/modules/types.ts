@@ -1,5 +1,6 @@
 import type { Hono } from "hono";
 import type { BackboneEventBus } from "../events/index.js";
+import type { ChannelAdapterFactory } from "../channel-adapters/types.js";
 
 // --- Module Health ---
 
@@ -16,6 +17,7 @@ export interface ModuleContext {
   contextDir: string;
   log: (msg: string) => void;
   env: Record<string, string | undefined>;
+  registerChannelAdapter(slug: string, factory: ChannelAdapterFactory): void;
 }
 
 // --- Module Contract ---

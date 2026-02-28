@@ -65,6 +65,33 @@ export const evolutionModule: BackboneModule = {
       env: ctx.env as Record<string, string | undefined>,
     });
 
+    // Register "whatsapp" channel-adapter
+    ctx.registerChannelAdapter("whatsapp", (channelConfig) => {
+      const instance = channelConfig.instance as string;
+      const target = channelConfig.target as string;
+      const baseUrl = ctx.env.EVOLUTION_URL!;
+      const apiKey = ctx.env.EVOLUTION_API_KEY ?? "";
+
+      return {
+        slug: "whatsapp",
+
+        async send({ content }) {
+          await fetch(`${baseUrl}/message/sendText/${instance}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", apikey: apiKey },
+            body: JSON.stringify({ number: target, text: content }),
+          });
+        },
+
+        health() {
+          const apiState = probe!.getState();
+          return {
+            status: apiState === "online" ? "healthy" as const : "unhealthy" as const,
+          };
+        },
+      };
+    });
+
     // Start the probe loop
     probe.start();
     ctx.log("started");

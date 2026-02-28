@@ -2,6 +2,8 @@ import { Hono, type Context } from "hono";
 import type { EvolutionProbe } from "./probe.js";
 import type { EvolutionStateTracker } from "./state.js";
 import type { EvolutionActions, ActionResult } from "./actions.js";
+import { findChannelByMetadata } from "../../channels/lookup.js";
+import { routeInboundMessage } from "../../channel-adapters/inbound-router.js";
 
 interface RouteDeps {
   probe: EvolutionProbe;
@@ -244,6 +246,44 @@ export function createEvolutionRoutes(deps: RouteDeps): Hono {
     } catch (err) {
       return fail(c, "settings_update_failed", String(err));
     }
+  });
+
+  // --- POST /webhook (inbound messages from Evolution) ---
+
+  app.post("/webhook", async (c) => {
+    const body = await c.req.json();
+
+    // Evolution webhook payload: { instance, data: { key: { remoteJid }, message: { conversation } }, ... }
+    const instanceName = body.instance as string | undefined;
+    const remoteJid = body.data?.key?.remoteJid as string | undefined;
+    const messageText =
+      (body.data?.message?.conversation as string) ??
+      (body.data?.message?.extendedTextMessage?.text as string) ??
+      "";
+
+    if (!instanceName || !remoteJid || !messageText) {
+      return c.json({ status: "ignored" }, 200);
+    }
+
+    // Extract sender number from JID (e.g. "5511999999999@s.whatsapp.net" → "5511999999999")
+    const senderId = remoteJid.split("@")[0];
+
+    // Lookup channel by instance metadata
+    const channel = findChannelByMetadata("instance", instanceName);
+    if (!channel) {
+      return c.json({ status: "no_channel" }, 200);
+    }
+
+    routeInboundMessage(channel.slug, {
+      senderId,
+      content: messageText,
+      ts: Date.now(),
+      metadata: { instance: instanceName, remoteJid },
+    }).catch((err) => {
+      console.error(`[evolution/webhook] routing failed:`, err);
+    });
+
+    return c.json({ status: "accepted" }, 200);
   });
 
   return app;

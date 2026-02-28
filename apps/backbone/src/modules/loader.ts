@@ -2,6 +2,7 @@ import { mkdirSync } from "node:fs";
 import { join } from "node:path";
 import { Hono } from "hono";
 import { eventBus } from "../events/index.js";
+import { channelAdapterRegistry } from "../channel-adapters/index.js";
 import type { BackboneModule, ModuleContext, ModuleHealth } from "./types.js";
 import { CONTEXT_DIR } from "../context/paths.js";
 
@@ -36,6 +37,10 @@ export async function startModules(
       contextDir,
       log: (msg: string) => console.log(`[module:${mod.name}] ${msg}`),
       env: process.env as Record<string, string | undefined>,
+      registerChannelAdapter(slug, factory) {
+        channelAdapterRegistry.register(slug, factory);
+        console.log(`[module:${mod.name}] registered channel-adapter: ${slug}`);
+      },
     };
 
     try {
