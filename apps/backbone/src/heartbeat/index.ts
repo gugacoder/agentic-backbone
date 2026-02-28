@@ -2,6 +2,7 @@ import { assemblePrompt } from "../context/index.js";
 import { runAgent, type UsageData } from "../agent/index.js";
 import { eventBus } from "../events/index.js";
 import { deliverToSystemChannel, deliverToChannel } from "../channels/system-channel.js";
+import { resolveLastActiveChannel } from "../conversations/index.js";
 import { listAgents } from "../agents/registry.js";
 import { isWithinActiveHours } from "./active-hours.js";
 import { createHeartbeatScheduler, type HeartbeatScheduler } from "./scheduler.js";
@@ -228,9 +229,16 @@ async function tick(agentId: string): Promise<void> {
       durationMs,
       usage: usageData,
     });
-    const deliveryChannel = agentConfig?.delivery;
-    if (deliveryChannel && deliveryChannel !== "system-channel") {
-      deliverToChannel(deliveryChannel, agentId, cleanText);
+    const deliveryMode = agentConfig?.delivery;
+    if (deliveryMode === "last-active") {
+      const lastChannel = resolveLastActiveChannel(agentId, agentConfig.owner);
+      if (lastChannel) {
+        await deliverToChannel(lastChannel, agentId, cleanText);
+      } else {
+        deliverToSystemChannel(agentId, cleanText);
+      }
+    } else if (deliveryMode && deliveryMode !== "system-channel") {
+      await deliverToChannel(deliveryMode, agentId, cleanText);
     } else {
       deliverToSystemChannel(agentId, cleanText);
     }
