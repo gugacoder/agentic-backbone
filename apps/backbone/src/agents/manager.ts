@@ -47,6 +47,7 @@ export function createAgent(input: CreateAgentInput): AgentConfig {
   mkdirSync(join(dir, "tasks"), { recursive: true });
   mkdirSync(join(dir, "skills"), { recursive: true });
   mkdirSync(join(dir, "tools"), { recursive: true });
+  mkdirSync(join(dir, "services"), { recursive: true });
 
   const meta: Record<string, unknown> = {
     id: agentId,
@@ -63,9 +64,11 @@ export function createAgent(input: CreateAgentInput): AgentConfig {
   const md = serializeFrontmatter(meta, content);
   writeFileSync(agentConfigPath(agentId), md);
 
-  // Create default SOUL.md and HEARTBEAT.md
+  // Create default markdown files
   writeFileSync(join(dir, "SOUL.md"), `# ${input.slug} Soul\n\nDescribe this agent's identity and behavior.\n`);
   writeFileSync(join(dir, "HEARTBEAT.md"), `# Heartbeat Instructions\n\n- [ ] Add heartbeat tasks here\n`);
+  writeFileSync(join(dir, "CONVERSATION.md"), `# Conversation Instructions\n`);
+  writeFileSync(join(dir, "REQUEST.md"), `# Request Instructions\n`);
 
   refreshAgentRegistry();
   return getAgent(agentId)!;

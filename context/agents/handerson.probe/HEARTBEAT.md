@@ -24,3 +24,6 @@ Para enviar para um canal do Hub ao mesmo tempo, adicione `--channel <slug>`:
 ```bash
 node <agent_dir>/../../shared/tools/send-message/send-message.mjs --whatsapp 5532988889819 --instance 988889819 --channel handerson --message "texto"
 ```
+
+Do not infer or repeat old tasks from prior context.
+If nothing needs attention, reply with exactly: HEARTBEAT_OK
