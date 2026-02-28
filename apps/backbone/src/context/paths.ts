@@ -16,7 +16,7 @@ if (!process.env.CONTEXT_FOLDER) {
 
 export const CONTEXT_DIR = resolve(REPO_ROOT, process.env.CONTEXT_FOLDER);
 
-export type ResourceKind = "skills" | "tools" | "adapters" | "connectors";
+export type ResourceKind = "skills" | "tools" | "adapters" | "connectors" | "services";
 
 // --- Top-level directories ---
 
@@ -84,6 +84,14 @@ export function agentMemoryPath(agentId: string): string {
 
 export function agentJournalDayPath(agentId: string, day: string): string {
   return join(agentDir(agentId), "journal", day, "MEMORY.md");
+}
+
+export function agentConversationPath(agentId: string): string {
+  return join(agentDir(agentId), "CONVERSATION.md");
+}
+
+export function agentRequestPath(agentId: string): string {
+  return join(agentDir(agentId), "REQUEST.md");
 }
 
 export function agentConfigPath(agentId: string): string {

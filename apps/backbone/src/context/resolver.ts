@@ -12,6 +12,8 @@ import {
   agentSoulPath,
   systemDir,
   agentHeartbeatPath,
+  agentConversationPath,
+  agentRequestPath,
 } from "./paths.js";
 
 // --- Types ---
@@ -183,9 +185,29 @@ export function resolveAgentSoul(agentId: string): string {
   return "";
 }
 
-// --- Heartbeat instructions ---
+// --- Interaction mode ---
 
-export function resolveHeartbeatInstructions(agentId: string): string {
-  const path = agentHeartbeatPath(agentId);
+export type InteractionMode = "heartbeat" | "conversation" | "request";
+
+const MODE_PATH: Record<InteractionMode, (agentId: string) => string> = {
+  heartbeat: agentHeartbeatPath,
+  conversation: agentConversationPath,
+  request: agentRequestPath,
+};
+
+export function resolveModeInstructions(
+  agentId: string,
+  mode: InteractionMode
+): string {
+  const pathFn = MODE_PATH[mode];
+  const path = pathFn(agentId);
   return existsSync(path) ? readFileSync(path, "utf-8") : "";
+}
+
+// --- Services ---
+
+export function resolveServices(
+  agentId: string
+): Map<string, ResolvedResource> {
+  return resolveResources(agentId, "services", "SERVICE.md");
 }
