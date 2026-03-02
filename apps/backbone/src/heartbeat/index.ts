@@ -8,7 +8,7 @@ import { isWithinActiveHours } from "./active-hours.js";
 import { createHeartbeatScheduler, type HeartbeatScheduler } from "./scheduler.js";
 import { logHeartbeat } from "./log.js";
 import { triggerHook } from "../hooks/index.js";
-import { jobsMcpServer } from "../jobs/tools.js";
+import { composeAgentTools } from "../agent/tools.js";
 import { agentDir } from "../context/paths.js";
 
 const HEARTBEAT_OK = "HEARTBEAT_OK";
@@ -159,7 +159,7 @@ async function tick(agentId: string): Promise<void> {
 
     for await (const event of runAgent(prompt, {
       role: "heartbeat",
-      mcpServers: { "backbone-jobs": jobsMcpServer },
+      tools: composeAgentTools(agentId, "heartbeat"),
     })) {
       if (event.type === "result" && event.content) {
         fullText = event.content;

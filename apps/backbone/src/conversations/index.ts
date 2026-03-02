@@ -9,7 +9,7 @@ import {
   readMessages,
 } from "./persistence.js";
 import { flushMemory } from "../memory/flush.js";
-import { createMemoryAiTools } from "../memory/ai-tools.js";
+import { composeAgentTools } from "../agent/tools.js";
 import { getAgent } from "../agents/registry.js";
 import { triggerHook } from "../hooks/index.js";
 
@@ -206,9 +206,9 @@ export async function* sendMessage(
   });
 
   for await (const event of runAgent(prompt, {
-    sdkSessionId,
+    sessionId: sdkSessionId,
     role: "conversation",
-    tools: createMemoryAiTools(agentId),
+    tools: composeAgentTools(agentId, "conversation"),
   })) {
     // Capture SDK session on first init for future resume
     if (event.type === "init" && event.sessionId) {

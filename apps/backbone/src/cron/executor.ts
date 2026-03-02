@@ -2,6 +2,7 @@ import { runAgent, type UsageData } from "../agent/index.js";
 import { triggerManualHeartbeat } from "../heartbeat/index.js";
 import { deliverToSystemChannel } from "../channels/system-channel.js";
 import { assemblePrompt } from "../context/index.js";
+import { composeAgentTools } from "../agent/tools.js";
 import { logCronRun } from "./log.js";
 import type { CronJob } from "./types.js";
 
@@ -90,8 +91,12 @@ async function executeMessagePayload(
     setTimeout(() => reject(new Error("cron job timeout")), EXECUTION_TIMEOUT_MS);
   });
 
+  process.env.AGENT_ID = job.agentId;
   const execution = (async () => {
-    for await (const event of runAgent(prompt, { role: "cron" })) {
+    for await (const event of runAgent(prompt, {
+      role: "cron",
+      tools: composeAgentTools(job.agentId, "cron"),
+    })) {
       if (event.type === "result" && event.content) {
         fullText = event.content;
       } else if (event.type === "text" && event.content) {

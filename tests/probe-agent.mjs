@@ -1,8 +1,8 @@
 // Simula o que o heartbeat faz: monta prompt → chama runAgent → loga eventos
 import { assembleHeartbeatPrompt } from "../apps/backbone/src/context/index.js";
 import { runAgent } from "../apps/backbone/src/agent/index.js";
-import { createAdapterMcpServer } from "../apps/backbone/src/adapters/tools.js";
-import { jobsMcpServer } from "../apps/backbone/src/jobs/tools.js";
+import { createAdapterTools } from "../apps/backbone/src/adapters/tools.js";
+import { createJobTools } from "../apps/backbone/src/jobs/tools.js";
 
 const agentId = "system.probe";
 
@@ -14,16 +14,16 @@ console.log("--- PROMPT ---");
 console.log(prompt.slice(0, 500));
 console.log("--- FIM (truncado) ---\n");
 
-console.log("2. Criando MCP servers...");
-const mcpServers = { "backbone-jobs": jobsMcpServer };
-const adapterMcp = createAdapterMcpServer(agentId);
-if (adapterMcp) mcpServers["backbone-adapters"] = adapterMcp;
-console.log(`   MCP servers: ${Object.keys(mcpServers).join(", ")}`);
+console.log("2. Criando tools...");
+const tools = { ...createJobTools() };
+const adapterTools = createAdapterTools(agentId);
+if (adapterTools) Object.assign(tools, adapterTools);
+console.log(`   Tools: ${Object.keys(tools).join(", ")}`);
 
 console.log("\n3. Chamando runAgent...");
 const start = Date.now();
 try {
-  for await (const event of runAgent(prompt, { role: "heartbeat", mcpServers })) {
+  for await (const event of runAgent(prompt, { role: "heartbeat", tools })) {
     const elapsed = ((Date.now() - start) / 1000).toFixed(1);
     if (event.type === "text") {
       console.log(`   [${elapsed}s] text: ${event.content?.slice(0, 100)}`);

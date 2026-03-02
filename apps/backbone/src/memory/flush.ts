@@ -34,7 +34,7 @@ export async function flushMemory(options: {
     let fullText = "";
 
     for await (const event of runAgent(prompt, {
-      sdkSessionId,
+      sessionId: sdkSessionId,
       role: "memory",
     })) {
       if (event.type === "result" && event.content) {

@@ -1,14 +1,5 @@
-import { createSdkMcpServer, tool as sdkTool } from "@anthropic-ai/claude-agent-sdk";
+import { tool } from "ai";
 import { z } from "zod";
-
-// Workaround: SDK expects zod v4 types but backbone uses zod v3.
-const tool = sdkTool as (
-  name: string,
-  description: string,
-  inputSchema: Record<string, any>,
-  handler: (args: any, extra: unknown) => Promise<any>,
-  extras?: any,
-) => ReturnType<typeof sdkTool>;
 import {
   getCronStatus,
   listCronJobs,
@@ -51,56 +42,46 @@ function toPayload(raw: z.infer<typeof payloadSchema>): CronPayload {
   return { kind: "heartbeat" };
 }
 
-function ok(data: unknown) {
-  return { content: [{ type: "text" as const, text: JSON.stringify(data) }] };
-}
-
-function err(msg: string) {
-  return { content: [{ type: "text" as const, text: `Error: ${msg}` }] };
-}
-
 function requireAgentId(): string | null {
   return process.env.AGENT_ID ?? null;
 }
 
-export const cronMcpServer = createSdkMcpServer({
-  name: "backbone-cron",
-  version: "1.0.0",
-  tools: [
-    tool(
-      "cron_status",
-      "Get the cron scheduler status: whether it is enabled, job count, and next wake time.",
-      {},
-      async () => ok(getCronStatus())
-    ),
+export function createCronTools(): Record<string, any> {
+  return {
+    cron_status: tool({
+      description:
+        "Get the cron scheduler status: whether it is enabled, job count, and next wake time.",
+      parameters: z.object({}),
+      execute: async () => getCronStatus(),
+    }),
 
-    tool(
-      "cron_list",
-      "List your scheduled cron jobs. Returns an array of job definitions with their current state.",
-      {
+    cron_list: tool({
+      description:
+        "List your scheduled cron jobs. Returns an array of job definitions with their current state.",
+      parameters: z.object({
         includeDisabled: z.boolean().optional().describe("Include disabled jobs (default: false)"),
-      },
-      async (args) => {
+      }),
+      execute: async (args) => {
         const agentId = requireAgentId();
-        if (!agentId) return err("AGENT_ID not available");
-        return ok(listCronJobs({ agentId, includeDisabled: args.includeDisabled }));
-      }
-    ),
+        if (!agentId) return { error: "AGENT_ID not available" };
+        return listCronJobs({ agentId, includeDisabled: args.includeDisabled });
+      },
+    }),
 
-    tool(
-      "cron_add",
-      "Create a new scheduled cron job. Use kind='at' for one-shot, kind='every' for interval, kind='cron' for cron expressions. Payload kind='heartbeat' triggers a heartbeat; kind='conversation' starts a conversation turn; kind='request' invokes the agent in request/API mode.",
-      {
+    cron_add: tool({
+      description:
+        "Create a new scheduled cron job. Use kind='at' for one-shot, kind='every' for interval, kind='cron' for cron expressions. Payload kind='heartbeat' triggers a heartbeat; kind='conversation' starts a conversation turn; kind='request' invokes the agent in request/API mode.",
+      parameters: z.object({
         slug: z.string().describe("Unique slug for this job (used as filename)"),
         name: z.string().describe("Human-readable job name"),
         schedule: scheduleSchema,
         payload: payloadSchema,
         deleteAfterRun: z.boolean().optional().describe("Delete job after first successful run (useful for one-shot 'at' jobs)"),
         description: z.string().optional().describe("Optional description of what this job does"),
-      },
-      async (args) => {
+      }),
+      execute: async (args) => {
         const agentId = requireAgentId();
-        if (!agentId) return err("AGENT_ID not available");
+        if (!agentId) return { error: "AGENT_ID not available" };
         try {
           const def: CronJobDef = {
             name: args.name,
@@ -110,18 +91,17 @@ export const cronMcpServer = createSdkMcpServer({
             ...(args.deleteAfterRun != null ? { deleteAfterRun: args.deleteAfterRun } : {}),
             ...(args.description ? { description: args.description } : {}),
           };
-          const job = await addCronJob({ slug: args.slug, agentId, def });
-          return ok(job);
+          return await addCronJob({ slug: args.slug, agentId, def });
         } catch (e) {
-          return err(e instanceof Error ? e.message : String(e));
+          return { error: e instanceof Error ? e.message : String(e) };
         }
-      }
-    ),
+      },
+    }),
 
-    tool(
-      "cron_update",
-      "Update an existing cron job. Only provided fields are changed; omitted fields keep their current value.",
-      {
+    cron_update: tool({
+      description:
+        "Update an existing cron job. Only provided fields are changed; omitted fields keep their current value.",
+      parameters: z.object({
         slug: z.string().describe("Slug of the job to update"),
         name: z.string().optional().describe("New job name"),
         enabled: z.boolean().optional().describe("Enable or disable the job"),
@@ -129,10 +109,10 @@ export const cronMcpServer = createSdkMcpServer({
         payload: payloadSchema.optional().describe("New payload"),
         deleteAfterRun: z.boolean().optional().describe("New deleteAfterRun value"),
         description: z.string().optional().describe("New description"),
-      },
-      async (args) => {
+      }),
+      execute: async (args) => {
         const agentId = requireAgentId();
-        if (!agentId) return err("AGENT_ID not available");
+        if (!agentId) return { error: "AGENT_ID not available" };
         try {
           const patch: Record<string, unknown> = {};
           if (args.name != null) patch.name = args.name;
@@ -141,70 +121,66 @@ export const cronMcpServer = createSdkMcpServer({
           if (args.payload) patch.payload = toPayload(args.payload);
           if (args.deleteAfterRun != null) patch.deleteAfterRun = args.deleteAfterRun;
           if (args.description != null) patch.description = args.description;
-          const job = await updateCronJob(agentId, args.slug, patch);
-          return ok(job);
+          return await updateCronJob(agentId, args.slug, patch);
         } catch (e) {
-          return err(e instanceof Error ? e.message : String(e));
+          return { error: e instanceof Error ? e.message : String(e) };
         }
-      }
-    ),
-
-    tool(
-      "cron_remove",
-      "Delete a scheduled cron job permanently.",
-      {
-        slug: z.string().describe("Slug of the job to delete"),
       },
-      async (args) => {
+    }),
+
+    cron_remove: tool({
+      description: "Delete a scheduled cron job permanently.",
+      parameters: z.object({
+        slug: z.string().describe("Slug of the job to delete"),
+      }),
+      execute: async (args) => {
         const agentId = requireAgentId();
-        if (!agentId) return err("AGENT_ID not available");
+        if (!agentId) return { error: "AGENT_ID not available" };
         try {
           const removed = await removeCronJob(agentId, args.slug);
-          return ok({ removed });
+          return { removed };
         } catch (e) {
-          return err(e instanceof Error ? e.message : String(e));
+          return { error: e instanceof Error ? e.message : String(e) };
         }
-      }
-    ),
+      },
+    }),
 
-    tool(
-      "cron_run",
-      "Manually trigger a cron job right now. Use mode='force' to ignore disabled/not-due guards, or mode='due' (default) to respect them.",
-      {
+    cron_run: tool({
+      description:
+        "Manually trigger a cron job right now. Use mode='force' to ignore disabled/not-due guards, or mode='due' (default) to respect them.",
+      parameters: z.object({
         slug: z.string().describe("Slug of the job to run"),
         mode: z.enum(["due", "force"]).optional().describe("Execution mode (default: 'due')"),
-      },
-      async (args) => {
+      }),
+      execute: async (args) => {
         const agentId = requireAgentId();
-        if (!agentId) return err("AGENT_ID not available");
+        if (!agentId) return { error: "AGENT_ID not available" };
         try {
-          const result = await runCronJob(agentId, args.slug, args.mode);
-          return ok(result);
+          return await runCronJob(agentId, args.slug, args.mode);
         } catch (e) {
-          return err(e instanceof Error ? e.message : String(e));
+          return { error: e instanceof Error ? e.message : String(e) };
         }
-      }
-    ),
+      },
+    }),
 
-    tool(
-      "cron_runs",
-      "Get the execution history of a cron job. Returns recent runs with status, duration, and error details.",
-      {
+    cron_runs: tool({
+      description:
+        "Get the execution history of a cron job. Returns recent runs with status, duration, and error details.",
+      parameters: z.object({
         slug: z.string().describe("Slug of the job to query"),
         limit: z.number().optional().describe("Max entries to return (default: 50)"),
         offset: z.number().optional().describe("Skip N entries for pagination"),
-      },
-      async (args) => {
+      }),
+      execute: async (args) => {
         try {
-          const result = getCronRunHistory(args.slug, {
+          return getCronRunHistory(args.slug, {
             limit: args.limit,
             offset: args.offset,
           });
-          return ok(result);
         } catch (e) {
-          return err(e instanceof Error ? e.message : String(e));
+          return { error: e instanceof Error ? e.message : String(e) };
         }
-      }
-    ),
-  ],
-});
+      },
+    }),
+  };
+}
