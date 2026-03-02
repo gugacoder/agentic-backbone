@@ -50,7 +50,7 @@ routes.route("/", authPublicRoutes);
 routes.use("*", async (c, next) => {
   // Skip auth for module webhook callbacks (external services can't send JWT)
   const path = new URL(c.req.url).pathname;
-  if (path.endsWith("/webhook")) {
+  if (path.includes("/webhook")) {
     return next();
   }
 

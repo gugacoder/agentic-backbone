@@ -1,5 +1,6 @@
 import type { BackboneModule } from "./types.js";
 import { evolutionModule } from "./evolution/index.js";
+import { twilioModule } from "./twilio/index.js";
 
 /**
  * Registered modules — explicit array, no filesystem discovery.
@@ -10,4 +11,5 @@ import { evolutionModule } from "./evolution/index.js";
  */
 export const modules: BackboneModule[] = [
   ...(process.env.EVOLUTION_URL ? [evolutionModule] : []),
+  ...(process.env.TWILIO_ACCOUNT_SID ? [twilioModule] : []),
 ];
