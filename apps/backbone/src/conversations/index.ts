@@ -208,7 +208,7 @@ export async function* sendMessage(
   for await (const event of runAgent(prompt, {
     sessionId: sdkSessionId,
     role: "conversation",
-    tools: composeAgentTools(agentId, "conversation"),
+    tools: composeAgentTools(agentId, "conversation", { sessionId, userId }),
   })) {
     // Capture SDK session on first init for future resume
     if (event.type === "init" && event.sessionId) {

@@ -3,23 +3,31 @@ import { createMemoryAiTools } from "../memory/ai-tools.js";
 import { createCronTools } from "../cron/tools.js";
 import { createAdapterTools } from "../adapters/tools.js";
 import { createMessageTools } from "../channels/tools.js";
+import { createQueueTools } from "../conversations/queue-tools.js";
 
 type AgentMode = "heartbeat" | "conversation" | "cron" | "memory";
+
+interface ComposeOptions {
+  sessionId?: string;
+  userId?: string;
+}
 
 /**
  * Composes all available tools for an agent based on its operating mode.
  *
- * | Tool set       | heartbeat | conversation | cron | memory |
- * |----------------|-----------|--------------|------|--------|
- * | job tools      | sim       | -            | -    | -      |
- * | memory tools   | -         | sim          | -    | -      |
- * | cron tools     | sim       | sim          | -    | -      |
- * | adapter tools  | sim       | sim          | sim  | -      |
- * | send_message   | sim       | sim          | sim  | -      |
+ * | Tool set        | heartbeat | conversation | cron | memory |
+ * |-----------------|-----------|--------------|------|--------|
+ * | job tools       | sim       | -            | -    | -      |
+ * | memory tools    | -         | sim          | -    | -      |
+ * | cron tools      | sim       | sim          | -    | -      |
+ * | adapter tools   | sim       | sim          | sim  | -      |
+ * | send_message    | sim       | sim          | sim  | -      |
+ * | check_messages  | -         | sim          | -    | -      |
  */
 export function composeAgentTools(
   agentId: string,
-  mode: AgentMode
+  mode: AgentMode,
+  opts?: ComposeOptions
 ): Record<string, any> | undefined {
   const tools: Record<string, any> = {};
 
@@ -46,8 +54,16 @@ export function composeAgentTools(
 
   // Message tools — heartbeat + conversation + cron
   if (mode !== "memory") {
-    const messageTools = createMessageTools(agentId);
+    const messageTools = createMessageTools(agentId, {
+      sessionId: opts?.sessionId,
+      recipientId: opts?.userId,
+    });
     if (messageTools) Object.assign(tools, messageTools);
+  }
+
+  // Queue tools (check_messages) — conversation only, requires sessionId
+  if (mode === "conversation" && opts?.sessionId) {
+    Object.assign(tools, createQueueTools(opts.sessionId));
   }
 
   return Object.keys(tools).length > 0 ? tools : undefined;
