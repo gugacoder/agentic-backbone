@@ -99,7 +99,7 @@ This is an **npm workspaces monorepo** with two apps and one internal package:
 |---|---|---|
 | `@agentic-backbone/backbone` | `apps/backbone` | Autonomous multi-agent runtime (Node.js, Hono, Claude Agent SDK) |
 | `@agentic-backbone/hub` | `apps/hub` | Admin UI / chat (React 19, TanStack Router, shadcn/ui, PWA) |
-| `@agentic-backbone/ai-sdk` | `packages/ai-sdk` | Alternative agent runtime via Vercel AI SDK + OpenRouter |
+| `@agentic-backbone/ai-sdk` | `apps/packages/ai-sdk` | Alternative agent runtime via Vercel AI SDK + OpenRouter |
 
 ### Core Flow
 
@@ -168,6 +168,7 @@ Two providers, switchable at runtime via `context/system/llm.json`:
 | `skills/` | Skill loading, runtime eligibility filtering (env vars, binaries, OS), prompt assembly |
 | `tools/` | Tool loading from TOOL.md, prompt assembly |
 | `adapters/` | Outbound adapter registry with factory pattern |
+| `channel-adapters/` | Inbound channel adapter registry — discovery, SSE push, inbound message routing |
 | `modules/` | Pluggable `BackboneModule` interface. Currently: Evolution (WhatsApp) — conditionally loaded |
 | `watchers/` | chokidar hot-reload: `AGENT.md` → refreshes registry + heartbeat; `CHANNEL.md` → refreshes channels; `ADAPTER.yaml` → emits event. 300ms debounce |
 | `users/` | User CRUD — filesystem-based (USER.md with frontmatter), permission model |
@@ -209,7 +210,7 @@ Markdown-centric persistent state store with YAML frontmatter:
 
 - **`isMarkdownEmpty(raw, opts?)`** — Checks if a `.md` file has meaningful content. Strips frontmatter by default (`ignoreFrontmatter: true`). Use this whenever the system needs to decide if a markdown document is "empty" (e.g. heartbeat skip-if-empty gate). Internally delegates to `isEffectivelyEmpty()` which ignores headers, bare bullets, and empty checkboxes.
 
-### ai-sdk Package (`packages/ai-sdk/`)
+### ai-sdk Package (`apps/packages/ai-sdk/`)
 
 Alternative agent runtime using Vercel AI SDK against OpenRouter:
 
@@ -234,7 +235,7 @@ JWT-based. Internal backbone token generated at startup (1-year validity). Clien
 
 ### Design Documents
 
-`docs/openclaw-concepts/` contains reference designs for the heartbeat, memory, skills, and adapters subsystems. `docs/CONCEPT.md` and `docs/PLAN.md` cover system-level design.
+`docs/openclaw-concepts/` contains reference designs for the heartbeat, memory, skills, and adapters subsystems. `docs/agentic-backbone/CONCEPT.md` and `docs/agentic-backbone/PLAN.md` cover system-level design.
 
 ### Specification
 
@@ -254,22 +255,10 @@ JWT-based. Internal backbone token generated at startup (1-year validity). Clien
 
 **Sistema para brasileiros. Mantenha a interface em pt-BR**
 
-**Use these references for building better UI/UX:**
-
-- refs\ux\colorization.md — Pattern de tokens CSS semânticos
-- refs\ux\react — React Patterns
-- refs\ux\shadcn-v4 — shadcn component references
-- refs\ux\framer-motion.md — Motion pattern for modern apps
-- refs\ux\mobile-patterns.md — Patterns for mobile improved user experience
-- refs\ux\vaul.md — Decision patterns for building drawers and popups consistently
-- refs\pwa\PWA-Mobile-First-Agentic-App.md — Patterns for build PWA mobile-first apps
-
 **Rule of thumb guidelines:**
 
-- It's strongly recomended to user shadcn components instead of customizing components throught tweaking html.
-- Shadcn components reduzies the sizes of source files while also provides better standardized user experience.
-- Do not use colors throughout the source code — use CSS tokens instead.
-- Do not use tailwind colors throughout the source code — use CSS tokens instead.
+- Prefer shadcn components over custom HTML — they reduce source file size and provide standardized UX.
+- Do not use colors or tailwind colors throughout the source code — use CSS tokens instead.
 
 **Respeite a cultura do projeto. Antes de criar novas páginas e componentes estude como as páginas e componentes são feitas nesse projeto.**
 
@@ -290,6 +279,14 @@ JWT-based. Internal backbone token generated at startup (1-year validity). Clien
 - Do not create new SSE channels without justification.
 - The only exception is conditional polling during active QR code flows, where SSE does not guarantee sufficient timing.
 
+### Hub State & Libraries
+
+- **Zustand** — lightweight stores for UI state (`useUIStore` in `lib/store.ts`) and auth (`useAuthStore` in `lib/auth.ts`). Use for cross-component ephemeral state only.
+- **TanStack React Query (v5)** — server state. API modules in `api/*.ts` export `queryOptions()` factories. Query keys follow the pattern `["resource"]` / `["resource", id]`.
+- **SSE** — `useSSE` hook (`hooks/use-sse.ts`) subscribes to the event bus at layout level. Handles reconnection and typed events automatically.
+- **API client** — `lib/api.ts` exports a `request<T>()` wrapper that injects JWT from `useAuthStore`. Base path: `/api/v1/ai`.
+- **Chat streaming** — `lib/chat-stream.ts` implements SSE-based `streamMessage()` consuming `AgentEvent` JSON lines with abort signal support.
+
 ---
 
 ## TypeScript Configuration
@@ -299,6 +296,27 @@ JWT-based. Internal backbone token generated at startup (1-year validity). Clien
 - ESM-only (`"type": "module"` in package.json) — use `.js` extensions in import paths
 - Hub has path alias: `@/*` → `./src/*`
 
-## Notes
+## Claude Code Skills & Commands
 
-**Use Prompt Caching @"docs\claude-code\Prompt Caching — Guia Rápido.md"**
+Project-specific Claude Code extensions live in `.claude/`:
+
+### Skills (invoked via `/skill-name`)
+- `/git-commit` — Conventional Commits (pt-BR, scoped). Use this for all commits.
+- `/generate-prp` — Generate PRPs from user stories / feature ideas
+- `/ui-ux` — Plan UI/UX for Hub pages/components before coding
+- `/rocim` — Transform raw text into structured ROCIN/ROCI[TE]N prompts
+- `/agent-browser`, `/e2e-test` — Browser automation and testing
+
+### Commands (invoked via `/command-name`)
+- `/vibe:create` — Create isolated worktree + scaffold for a PRP
+- `/vibe:loop` — Incremental development loop in worktree
+- `/vibe:merge-back` — Merge worktree changes back to parent
+- `/derive:specs` — Derive specs from brainstorming session
+- `/derive:prps` — Derive PRPs from specs
+
+## OpenClaw Source Code
+
+OpenClaw source code está em .tmp/openclaw
+Se não estiver e precisar dele faça o cloning:
+
+git clone https://github.com/openclaw/openclaw .tmp/openclaw
