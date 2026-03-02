@@ -11,7 +11,7 @@ export function parseFrontmatter(raw: string): ParsedMarkdown {
   const content = match[2];
 
   const metadata: Record<string, unknown> = {};
-  for (const line of yamlBlock.split("\n")) {
+  for (const line of yamlBlock.split(/\r?\n/)) {
     const kv = line.match(/^([\w][\w-]*):\s*(.+)$/);
     if (!kv) continue;
     const val = kv[2].trim();
