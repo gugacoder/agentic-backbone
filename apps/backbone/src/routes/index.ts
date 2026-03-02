@@ -48,6 +48,12 @@ routes.route("/", authPublicRoutes);
 // Hybrid auth: accepts both Laravel JWT (role_id + unidades) and Backbone JWT (role)
 
 routes.use("*", async (c, next) => {
+  // Skip auth for module webhook callbacks (external services can't send JWT)
+  const path = new URL(c.req.url).pathname;
+  if (path.endsWith("/webhook")) {
+    return next();
+  }
+
   const secret = process.env.JWT_SECRET!;
 
   // Try Authorization header first

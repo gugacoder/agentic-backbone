@@ -6,7 +6,11 @@ export async function deliverToChannel(
   channelId: string,
   agentId: string,
   content: string,
-  options?: { role?: "assistant" | "user" | "system"; sessionId?: string }
+  options?: {
+    role?: "assistant" | "user" | "system";
+    sessionId?: string;
+    metadata?: Record<string, unknown>;
+  }
 ): Promise<void> {
   const channel = getChannel(channelId);
   const adapterSlug = (channel?.metadata?.["channel-adapter"] as string) ?? "sse";
@@ -18,6 +22,7 @@ export async function deliverToChannel(
     content,
     role: options?.role ?? "assistant",
     sessionId: options?.sessionId,
+    metadata: options?.metadata,
   });
 }
 

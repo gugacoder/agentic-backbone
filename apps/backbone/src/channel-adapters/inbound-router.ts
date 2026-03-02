@@ -24,6 +24,17 @@ export async function routeInboundMessage(
     return;
   }
 
+  const rawAllowed = channel.metadata["allowed-senders"];
+  if (rawAllowed) {
+    const allowedSenders = Array.isArray(rawAllowed)
+      ? rawAllowed.map(String)
+      : String(rawAllowed).split(",").map((s) => s.trim());
+    if (!allowedSenders.includes(message.senderId)) {
+      console.log(`[inbound-router] sender ${message.senderId} not in allowed-senders for "${channelId}"`);
+      return;
+    }
+  }
+
   const agentId = channel.metadata.agent as string | undefined;
   if (!agentId) {
     console.warn(
@@ -40,12 +51,16 @@ export async function routeInboundMessage(
 
   const session = findOrCreateSession(agentId, message.senderId, channelId);
 
+  // Prefix message with channel adapter name so the agent knows the context
+  const adapterSlug = (channel.metadata["channel-adapter"] as string) ?? channelId;
+  const prefixedContent = `[canal: ${adapterSlug}] ${content}`;
+
   // Consume sendMessage() completely (no streaming for external channels)
   let fullText = "";
   for await (const event of sendMessage(
     message.senderId,
     session.session_id,
-    content
+    prefixedContent
   )) {
     if (event.type === "result" && event.content) {
       fullText = event.content;
@@ -54,7 +69,16 @@ export async function routeInboundMessage(
     }
   }
 
+  // Strip channel prefix if the model echoed it back
+  const prefixPattern = new RegExp(`^\\[canal:\\s*${adapterSlug}\\]\\s*`);
+  fullText = fullText.replace(prefixPattern, "").trim();
+
   if (fullText) {
-    await deliverToChannel(channelId, agentId, fullText);
+    await deliverToChannel(channelId, agentId, fullText, {
+      metadata: {
+        recipientId: message.senderId,
+        ...message.metadata,
+      },
+    });
   }
 }

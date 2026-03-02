@@ -153,6 +153,28 @@ export function createEvolutionRoutes(deps: RouteDeps): Hono {
       }
 
       const data = await response.json();
+
+      // Registrar webhook para a nova instância
+      const callbackHost = deps.env.BACKBONE_CALLBACK_HOST ?? "localhost";
+      const backbonePort = deps.env.BACKBONE_PORT;
+      const webhookUrl = `http://${callbackHost}:${backbonePort}/api/v1/ai/modules/evolution/webhook`;
+      try {
+        await fetch(`${baseUrl}/webhook/set/${body.instanceName}`, {
+          method: "POST",
+          headers: { apikey: apiKey, "Content-Type": "application/json" },
+          body: JSON.stringify({
+            webhook: {
+              enabled: true,
+              url: webhookUrl,
+              webhook_by_events: false,
+              events: ["MESSAGES_UPSERT"],
+            },
+          }),
+        });
+      } catch (webhookErr) {
+        console.warn(`[evolution] webhook registration failed for ${body.instanceName}:`, webhookErr);
+      }
+
       // Invalidate module state cache so new instance appears immediately
       void deps.probe.forceTick();
       return ok(c, data);
@@ -256,6 +278,7 @@ export function createEvolutionRoutes(deps: RouteDeps): Hono {
     // Evolution webhook payload: { instance, data: { key: { remoteJid }, message: { conversation } }, ... }
     const instanceName = body.instance as string | undefined;
     const remoteJid = body.data?.key?.remoteJid as string | undefined;
+    const fromMe = body.data?.key?.fromMe as boolean | undefined;
     const messageText =
       (body.data?.message?.conversation as string) ??
       (body.data?.message?.extendedTextMessage?.text as string) ??
@@ -263,6 +286,14 @@ export function createEvolutionRoutes(deps: RouteDeps): Hono {
 
     if (!instanceName || !remoteJid || !messageText) {
       return c.json({ status: "ignored" }, 200);
+    }
+
+    if (fromMe) {
+      return c.json({ status: "ignored_self" }, 200);
+    }
+
+    if (remoteJid.endsWith("@g.us")) {
+      return c.json({ status: "ignored_group" }, 200);
     }
 
     // Extract sender number from JID (e.g. "5511999999999@s.whatsapp.net" → "5511999999999")

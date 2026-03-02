@@ -68,19 +68,26 @@ export const evolutionModule: BackboneModule = {
     // Register "whatsapp" channel-adapter
     ctx.registerChannelAdapter("whatsapp", (channelConfig) => {
       const instance = channelConfig.instance as string;
-      const target = channelConfig.target as string;
       const baseUrl = ctx.env.EVOLUTION_URL!;
       const apiKey = ctx.env.EVOLUTION_API_KEY ?? "";
 
       return {
         slug: "whatsapp",
 
-        async send({ content }) {
-          await fetch(`${baseUrl}/message/sendText/${instance}`, {
+        async send({ content, metadata }) {
+          const recipientId = metadata?.recipientId as string | undefined;
+          if (!recipientId) {
+            console.warn("[whatsapp-adapter] send sem recipientId — ignorando");
+            return;
+          }
+          const res = await fetch(`${baseUrl}/message/sendText/${instance}`, {
             method: "POST",
             headers: { "Content-Type": "application/json", apikey: apiKey },
-            body: JSON.stringify({ number: target, text: content }),
+            body: JSON.stringify({ number: recipientId, text: content }),
           });
+          if (!res.ok) {
+            console.error(`[whatsapp-adapter] sendText falhou: HTTP ${res.status}`);
+          }
         },
 
         health() {
@@ -95,6 +102,11 @@ export const evolutionModule: BackboneModule = {
     // Start the probe loop
     probe.start();
     ctx.log("started");
+
+    // Sync webhooks for existing instances (fire-and-forget)
+    syncWebhooks(ctx.env as Record<string, string | undefined>, ctx.log).catch((err) => {
+      ctx.log(`webhook sync failed: ${err}`);
+    });
   },
 
   async stop(): Promise<void> {
@@ -153,3 +165,47 @@ export const evolutionModule: BackboneModule = {
     };
   },
 };
+
+async function syncWebhooks(
+  env: Record<string, string | undefined>,
+  log: (msg: string) => void,
+): Promise<void> {
+  const baseUrl = env.EVOLUTION_URL!;
+  const apiKey = env.EVOLUTION_API_KEY!;
+  const callbackHost = env.BACKBONE_CALLBACK_HOST ?? "localhost";
+  const backbonePort = env.BACKBONE_PORT;
+  const webhookUrl = `http://${callbackHost}:${backbonePort}/api/v1/ai/modules/evolution/webhook`;
+
+  const res = await fetch(`${baseUrl}/instance/fetchInstances`, {
+    headers: { apikey: apiKey },
+  });
+  if (!res.ok) {
+    log(`webhook sync: fetchInstances failed HTTP ${res.status}`);
+    return;
+  }
+
+  const instances = (await res.json()) as { name?: string }[];
+
+  for (const entry of instances) {
+    const name = entry.name;
+    if (!name) continue;
+
+    try {
+      const setRes = await fetch(`${baseUrl}/webhook/set/${name}`, {
+        method: "POST",
+        headers: { apikey: apiKey, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          webhook: {
+            enabled: true,
+            url: webhookUrl,
+            webhook_by_events: false,
+            events: ["MESSAGES_UPSERT"],
+          },
+        }),
+      });
+      log(`webhook sync: ${name} → ${setRes.ok ? "ok" : `HTTP ${setRes.status}`}`);
+    } catch (err) {
+      log(`webhook sync: ${name} → failed: ${err}`);
+    }
+  }
+}
