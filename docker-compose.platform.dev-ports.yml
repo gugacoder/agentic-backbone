@@ -4,10 +4,24 @@
 services:
   postgres:
     ports:
-      - "${EXPORT_POSTGRES_PORT}:5432"
+      - "${POSTGRES_PORT}:5432"
+
   redis:
     ports:
-      - "${EXPORT_REDIS_PORT}:6379"
+      - "${REDIS_PORT}:6379"
+
   evolution:
     ports:
-      - "${EXPORT_EVOLUTION_PORT}:8080"
+      - "${EVOLUTION_PORT}:8080"
+
+  adminer:
+    ports:
+      - "${ADMINER_PORT}:8080"
+
+  whisper:
+    ports:
+      - "${WHISPER_PORT:-9095}:8000"
+
+  ngrok:
+    ports:
+      - "${NGROK_PORT:-4040}:4040"

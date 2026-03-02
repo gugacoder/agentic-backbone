@@ -79,6 +79,85 @@ services:
         aliases:
           - evolution.internal
 
+  evolution-init:
+    image: curlimages/curl:8.12.1
+    depends_on:
+      evolution:
+        condition: service_started
+    environment:
+      EVOLUTION_URL: http://evolution.internal:8080
+      EVOLUTION_API_KEY: ${EVOLUTION_API_KEY}
+      EVOLUTION_INSTANCE_NAME: ${EVOLUTION_INSTANCE_NAME}
+      WEBHOOK_URL: http://${BACKBONE_CALLBACK_HOST}:${BACKBONE_PORT}/api/v1/ai/modules/evolution/webhook
+    volumes:
+      - ./docker/evolution/init.sh:/init.sh:ro
+    entrypoint: ["sh", "/init.sh"]
+    networks:
+      - internal
+    restart: "no"
+
+  whisper:
+    image: fedirz/faster-whisper-server:latest-cpu
+    depends_on:
+      init:
+        condition: service_started
+    environment:
+      - WHISPER__MODEL=${WHISPER_MODEL:-small}
+      - WHISPER__DEVICE=cpu
+      - WHISPER__COMPUTE_TYPE=${WHISPER_COMPUTE_TYPE:-int8}
+    volumes:
+      - ./data/whisper:/root/.cache/huggingface
+    networks:
+      internal:
+        aliases:
+          - whisper.internal
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s  # modelo demora para carregar
+    restart: unless-stopped
+
+  # ===========================================================================
+  # ngrok (Tunel publico para webhooks Twilio)
+  # ===========================================================================
+  ngrok:
+    image: ngrok/ngrok:latest
+    restart: unless-stopped
+    environment:
+      NGROK_AUTHTOKEN: ${NGROK_AUTHTOKEN}
+    command: http backbone.internal:${BACKBONE_PORT} --url ${NGROK_DOMAIN}
+    networks:
+      - internal
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://localhost:4040/api/tunnels"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # ===========================================================================
+  # Adminer (Database GUI)
+  # ===========================================================================
+  adminer:
+    image: adminer:latest
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      POSTGRES_HOST: postgres.internal
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: postgres
+    volumes:
+      - ./docker/adminer/auto-login.php:/var/www/html/plugins-enabled/auto-login.php
+    networks:
+      internal:
+        aliases:
+          - adminer.internal
+
 networks:
   internal:
     driver: bridge
