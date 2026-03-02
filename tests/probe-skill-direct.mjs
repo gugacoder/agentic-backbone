@@ -5,7 +5,7 @@
  * 2. Passa como `prompt` para runAiAgent() (sem system override)
  * 3. Verifica se a ai usa a skill
  */
-import { runAiAgent } from "../packages/ai-sdk/src/agent.ts";
+import { runAiAgent } from "../apps/packages/ai-sdk/src/agent.ts";
 import { readFileSync, existsSync, readdirSync } from "node:fs";
 import { resolve, join } from "node:path";
 

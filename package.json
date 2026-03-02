@@ -3,7 +3,7 @@
   "private": true,
   "workspaces": [
     "apps/*",
-    "packages/*"
+    "apps/packages/*"
   ],
   "scripts": {
     "printenv": "dotenv -o -e .env -- printenv",
@@ -20,8 +20,8 @@
     "docker:down": "dotenv -o -e .env -- docker compose down",
     "docker:ps": "dotenv -o -e .env -- docker compose ps",
     "docker:logs": "dotenv -o -e .env -- docker compose logs -f",
-    "build": "npm run build --workspace=packages/ai-sdk && npm run build --workspace=apps/backbone && npm run build --workspace=apps/hub",
-    "build:packages": "npm run build --workspace=packages/ai-sdk",
+    "build": "npm run build --workspace=apps/packages/ai-sdk && npm run build --workspace=apps/backbone && npm run build --workspace=apps/hub",
+    "build:packages": "npm run build --workspace=apps/packages/ai-sdk",
     "build:hub": "npm run build --workspace=apps/hub",
     "test:conversation": "dotenv -o -e .env -- node tests/test-conversations.mjs",
     "test:capabilities": "dotenv -o -e .env -- node tests/capabilities/run-all.mjs",
