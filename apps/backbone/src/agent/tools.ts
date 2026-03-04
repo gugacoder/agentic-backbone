@@ -3,7 +3,6 @@ import { createMemoryAiTools } from "../memory/ai-tools.js";
 import { createCronTools } from "../cron/tools.js";
 import { createAdapterTools } from "../adapters/tools.js";
 import { createMessageTools } from "../channels/tools.js";
-import { createQueueTools } from "../conversations/queue-tools.js";
 
 type AgentMode = "heartbeat" | "conversation" | "cron" | "memory";
 
@@ -13,58 +12,27 @@ interface ComposeOptions {
 }
 
 /**
- * Composes all available tools for an agent based on its operating mode.
- *
- * | Tool set        | heartbeat | conversation | cron | memory |
- * |-----------------|-----------|--------------|------|--------|
- * | job tools       | sim       | -            | -    | -      |
- * | memory tools    | -         | sim          | -    | -      |
- * | cron tools      | sim       | sim          | -    | -      |
- * | adapter tools   | sim       | sim          | sim  | -      |
- * | send_message    | sim       | sim          | sim  | -      |
- * | check_messages  | -         | sim          | -    | -      |
+ * Composes all available tools for an agent run.
+ * The agent is one — all tools are available in all modes.
  */
 export function composeAgentTools(
   agentId: string,
-  mode: AgentMode,
+  _mode?: AgentMode,
   opts?: ComposeOptions
 ): Record<string, any> | undefined {
   const tools: Record<string, any> = {};
 
-  // Job tools — heartbeat only
-  if (mode === "heartbeat") {
-    Object.assign(tools, createJobTools());
-  }
+  Object.assign(tools, createJobTools());
+  Object.assign(tools, createMemoryAiTools(agentId));
+  Object.assign(tools, createCronTools());
 
-  // Memory tools — conversation only
-  if (mode === "conversation") {
-    Object.assign(tools, createMemoryAiTools(agentId));
-  }
+  const adapterTools = createAdapterTools(agentId);
+  if (adapterTools) Object.assign(tools, adapterTools);
 
-  // Cron tools — heartbeat + conversation
-  if (mode === "heartbeat" || mode === "conversation") {
-    Object.assign(tools, createCronTools());
-  }
-
-  // Adapter tools — heartbeat + conversation + cron
-  if (mode !== "memory") {
-    const adapterTools = createAdapterTools(agentId);
-    if (adapterTools) Object.assign(tools, adapterTools);
-  }
-
-  // Message tools — heartbeat + conversation + cron
-  if (mode !== "memory") {
-    const messageTools = createMessageTools(agentId, {
-      sessionId: opts?.sessionId,
-      recipientId: opts?.userId,
-    });
-    if (messageTools) Object.assign(tools, messageTools);
-  }
-
-  // Queue tools (check_messages) — conversation only, requires sessionId
-  if (mode === "conversation" && opts?.sessionId) {
-    Object.assign(tools, createQueueTools(opts.sessionId));
-  }
+  const messageTools = createMessageTools(agentId, {
+    recipientId: opts?.userId,
+  });
+  if (messageTools) Object.assign(tools, messageTools);
 
   return Object.keys(tools).length > 0 ? tools : undefined;
 }
