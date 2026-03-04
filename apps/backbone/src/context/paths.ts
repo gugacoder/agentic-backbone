@@ -98,6 +98,14 @@ export function agentConfigPath(agentId: string): string {
   return join(agentDir(agentId), "AGENT.md");
 }
 
+export function agentUserPath(agentId: string): string {
+  return join(agentDir(agentId), "USER.md");
+}
+
+export function ownerUserPath(ownerSlug: string): string {
+  return join(userDir(ownerSlug), "USER.md");
+}
+
 // --- Resource kind directories at each level ---
 
 export function sharedResourceDir(kind: ResourceKind): string {

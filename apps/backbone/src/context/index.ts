@@ -1,5 +1,6 @@
 import {
   resolveAgentSoul,
+  resolveUserProfile,
   resolveModeInstructions,
   type InteractionMode,
 } from "./resolver.js";
@@ -67,22 +68,28 @@ export async function assemblePrompt(
     system += `<identity>\n${soul}\n</identity>\n\n`;
   }
 
-  // 3. Agent context
+  // 3. User/mentor profile
+  const userProfile = resolveUserProfile(agentId);
+  if (userProfile) {
+    system += `<user_profile>\nEste é o perfil do seu criador. Com quem você conversa na maioria dos canais.\n\n${userProfile}\n</user_profile>\n\n`;
+  }
+
+  // 4. Agent context
   system += `<agent_context>\nagent_id: ${agentId}\nagent_dir: ${dir}\n</agent_context>\n\n`;
 
-  // 4. Skills
+  // 5. Skills
   system += buildSkillsSnapshot(agentId).prompt;
 
-  // 5. Tools
+  // 6. Tools
   system += formatToolsPrompt(agentId);
 
-  // 6. Adapters
+  // 7. Adapters
   system += formatAdaptersPrompt(agentId);
 
-  // 7. Services
+  // 8. Services
   system += formatServicesPrompt(agentId);
 
-  // 8. Semantic memory (data-driven: requires userMessage + OPENAI_API_KEY)
+  // 9. Semantic memory (data-driven: requires userMessage + OPENAI_API_KEY)
   if (opts.userMessage && process.env.OPENAI_API_KEY) {
     try {
       const mgr = getAgentMemoryManager(agentId);
@@ -99,10 +106,10 @@ export async function assemblePrompt(
     }
   }
 
-  // 9. Mode instructions (generic tag)
+  // 10. Mode instructions (generic tag)
   system += `<instructions>\n${instructions}\n</instructions>\n\n`;
 
-  // 10. Tail
+  // 11. Tail
   system += "Follow the instructions strictly.\n";
 
   return {

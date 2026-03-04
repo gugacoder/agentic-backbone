@@ -10,6 +10,8 @@ import {
   parseAgentId,
   userResourceDir,
   agentSoulPath,
+  agentUserPath,
+  ownerUserPath,
   systemDir,
   agentHeartbeatPath,
   agentConversationPath,
@@ -202,6 +204,31 @@ export function resolveModeInstructions(
   const pathFn = MODE_PATH[mode];
   const path = pathFn(agentId);
   return existsSync(path) ? readFileSync(path, "utf-8") : "";
+}
+
+// --- User/mentor profile (agent-specific → owner fallback, merged) ---
+
+export function resolveUserProfile(agentId: string): string {
+  const { owner } = parseAgentId(agentId);
+  const parts: string[] = [];
+
+  // Owner-level (lower precedence — comes first)
+  if (owner !== "system") {
+    const ownerPath = ownerUserPath(owner);
+    if (existsSync(ownerPath)) {
+      const { content } = parseFrontmatter(readFileSync(ownerPath, "utf-8"));
+      if (content.trim()) parts.push(content.trim());
+    }
+  }
+
+  // Agent-level (higher precedence — appended, can override/extend)
+  const agentPath = agentUserPath(agentId);
+  if (existsSync(agentPath)) {
+    const { content } = parseFrontmatter(readFileSync(agentPath, "utf-8"));
+    if (content.trim()) parts.push(content.trim());
+  }
+
+  return parts.join("\n\n");
 }
 
 // --- Services ---
