@@ -7,13 +7,6 @@ export interface McpServerConfig {
     | { type: "stdio"; command: string; args?: string[] };
 }
 
-export interface ToolApprovalRequest {
-  /** Nome da tool que precisa de aprovação */
-  toolName: string;
-  /** Parâmetros que o modelo quer passar para a tool */
-  params: Record<string, unknown>;
-}
-
 export type AiAgentEvent =
   | { type: "init"; sessionId: string }
   | { type: "mcp_connected"; servers: string[] }
@@ -24,8 +17,6 @@ export type AiAgentEvent =
   | { type: "todo_update"; todos: AiTodoItem[] }
   | { type: "context_status"; context: ContextUsage & { compacted: boolean } }
   | { type: "step_finish"; step: number; toolCalls: string[]; finishReason: string }
-  | { type: "tool_approval"; toolName: string; params: Record<string, unknown>; approved: boolean }
-  | { type: "tool_repair"; toolName: string; error: string; repaired: boolean }
   | { type: "mcp_error"; server: string; error: string };
 
 export interface AiTodoItem {
@@ -47,8 +38,6 @@ export interface AiUsageData {
   stopReason: string;
   /** Latencia ate o primeiro token (ms). Disponivel apenas com telemetria. */
   timeToFirstTokenMs?: number;
-  /** Numero de tool calls reparadas nesta sessao. */
-  repairedToolCalls?: number;
   /** Breakdown de uso por step. Disponivel apenas com telemetria. */
   steps?: Array<{
     stepNumber: number;
@@ -134,10 +123,6 @@ export interface AiAgentOptions {
   telemetry?: AiTelemetryOptions;
   /** Aliases de modelo customizados: nome amigavel → model ID completo (ex: { fast: "anthropic/claude-haiku-4.5" }) */
   modelAliases?: Record<string, string>;
-  /** Se true, tools sensíveis executam sem pedir aprovação. Default: true (backward compat). */
-  autoApprove?: boolean;
-  /** Callback invocado quando uma tool precisa de aprovação. Retorna true para aprovar, false para rejeitar. */
-  onToolApproval?: (request: ToolApprovalRequest) => Promise<boolean>;
   /** Habilita reparo automatico de tool calls malformadas. Default: true */
   repairToolCalls?: boolean;
   /** Maximo de tentativas de reparo por tool call. Default: 1 */

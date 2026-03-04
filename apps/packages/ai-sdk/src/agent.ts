@@ -18,7 +18,7 @@ import { getSystemPrompt, discoverProjectContext } from "./prompts/assembly.js";
 import { getContextUsage } from "./context/usage.js";
 import { compactMessages } from "./context/compaction.js";
 import { createToolCallRepairHandler } from "./tool-repair.js";
-import type { AiAgentEvent, AiAgentOptions, McpServerConfig, PrepareStepResult, ToolApprovalRequest } from "./types.js";
+import type { AiAgentEvent, AiAgentOptions, McpServerConfig, PrepareStepResult } from "./types.js";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 
@@ -129,13 +129,12 @@ export async function* runAiAgent(
 
     // Override pluggable tools with configured callbacks if provided
     // codingTools have priority over MCP tools (spread order: MCP first, coding on top)
-    const autoApprove = options.autoApprove ?? true;
     const dangerousTools = {
-      Bash: createBashTool({ autoApprove }),
-      Write: createWriteTool({ autoApprove }),
-      Edit: createEditTool({ autoApprove }),
-      MultiEdit: createMultiEditTool({ autoApprove }),
-      ApplyPatch: createApplyPatchTool({ autoApprove }),
+      Bash: createBashTool(),
+      Write: createWriteTool(),
+      Edit: createEditTool(),
+      MultiEdit: createMultiEditTool(),
+      ApplyPatch: createApplyPatchTool(),
     };
     let tools = { ...mcpTools, ...codingTools, ...dangerousTools };
     if (options.tools) {
@@ -268,83 +267,12 @@ export async function* runAiAgent(
     }> = [];
     let stepStartMs = Date.now();
 
-    // Tool approval wrapping (F-008): when autoApprove is false, wrap dangerous tools'
-    // execute functions to intercept calls and invoke the onToolApproval callback.
-    // ai@4.3.19 doesn't natively support needsApproval, so we implement it at this layer.
-    if (!autoApprove) {
-      const dangerousToolNames = ["Bash", "Write", "Edit", "MultiEdit", "ApplyPatch"];
-      const toolsRecord = tools as Record<string, any>;
-      for (const toolName of dangerousToolNames) {
-        const t = toolsRecord[toolName];
-        if (!t || !t.execute) continue;
-
-        const originalExecute = t.execute;
-        t.execute = async (args: Record<string, unknown>, execOpts: any) => {
-          const request: ToolApprovalRequest = { toolName, params: args };
-          let approved: boolean;
-
-          if (options.onToolApproval) {
-            approved = await options.onToolApproval(request);
-          } else {
-            console.warn(
-              `[ai] autoApprove is false but no onToolApproval callback provided. Auto-approving ${toolName}.`
-            );
-            approved = true;
-          }
-
-          pendingStepEvents.push({
-            type: "tool_approval",
-            toolName,
-            params: args,
-            approved,
-          });
-
-          if (!approved) {
-            return `Tool call rejected: ${toolName} was not approved by the user.`;
-          }
-
-          return originalExecute(args, execOpts);
-        };
-      }
-    }
-
-    // Tool repair integration (F-004): wrap createToolCallRepairHandler to emit events + track count
-    const repairEnabled = options.repairToolCalls !== false;
-    let repairedToolCallsCount = 0;
-
-    const experimentalRepairToolCall = repairEnabled
-      ? (() => {
-          const baseModel = providers.model(options.model);
-          const handler = createToolCallRepairHandler({
-            model: baseModel,
-            maxAttempts: options.maxRepairAttempts ?? 1,
-          });
-
-          return async (params: {
-            system: string | undefined;
-            messages: ModelMessage[];
-            toolCall: { toolCallType: "function"; toolCallId: string; toolName: string; args: string };
-            tools: Record<string, unknown>;
-            parameterSchema: (options: { toolName: string }) => unknown;
-            error: Error;
-          }) => {
-            const result = await handler(params);
-            const repaired = result !== null;
-
-            pendingStepEvents.push({
-              type: "tool_repair",
-              toolName: params.toolCall.toolName,
-              error: params.error.message,
-              repaired,
-            });
-
-            if (repaired) {
-              repairedToolCallsCount++;
-            }
-
-            return result;
-          };
-        })()
+    // Tool repair: delegate to SDK's experimental_repairToolCall
+    const experimentalRepairToolCall = (options.repairToolCalls !== false)
+      ? createToolCallRepairHandler({
+          model: providers.model(options.model),
+          maxAttempts: options.maxRepairAttempts ?? 1,
+        })
       : undefined;
 
     // prepareStep integration — call consumer's callback before streamText to get initial overrides
@@ -401,6 +329,7 @@ export async function* runAiAgent(
       streamText({
         model: effectiveModel,
         tools,
+        maxRetries: 3,
         stopWhen: stepCountIs(options.maxSteps ?? DEFAULT_MAX_STEPS),
         messages,
         system: systemPrompt,
@@ -445,46 +374,16 @@ export async function* runAiAgent(
         },
       });
 
-    // Retry wrapper: retry on transient errors (network, 429, 5xx) with exponential backoff
-    const MAX_RETRIES = 3;
-    const RETRY_DELAYS = [1000, 2000, 4000];
-    let result;
-    let lastError: Error | undefined;
-
-    for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
-      try {
-        result = callStreamText();
-        break;
-      } catch (err) {
-        lastError = err instanceof Error ? err : new Error(String(err));
-        const isRetryable =
-          lastError.message.includes("429") ||
-          lastError.message.includes("500") ||
-          lastError.message.includes("502") ||
-          lastError.message.includes("503") ||
-          lastError.message.includes("ECONNRESET") ||
-          lastError.message.includes("ETIMEDOUT") ||
-          lastError.message.includes("fetch failed");
-        if (!isRetryable || attempt === MAX_RETRIES) {
-          throw new Error(`OpenRouter request failed: ${lastError.message}`);
-        }
-        await new Promise((r) => setTimeout(r, RETRY_DELAYS[attempt]));
-      }
-    }
+    const result = callStreamText();
 
     // Stream text deltas — surface API errors instead of hanging
     let fullText = "";
     try {
-      for await (const part of result!.fullStream) {
+      for await (const part of result.fullStream) {
         if (part.type === "text-delta") {
           const delta = (part as any).text ?? (part as any).delta ?? (part as any).textDelta ?? "";
           fullText += delta;
           yield { type: "text", content: delta };
-        } else if (part.type === "tool-result") {
-          // Drain tool_approval events pushed by wrapped execute functions (F-008)
-          while (pendingStepEvents.length > 0) {
-            yield pendingStepEvents.shift()!;
-          }
         } else if (part.type === "finish-step") {
           // Drain pending step_finish events collected by onStepFinish
           while (pendingStepEvents.length > 0) {
@@ -521,15 +420,15 @@ export async function* runAiAgent(
     let totalCostUsd = 0;
 
     try {
-      const response = await result!.response;
+      const response = await result.response;
       await saveSession(sessionDir, sessionId, [
         ...messages,
         ...response.messages as ModelMessage[],
       ]);
 
-      usage = await result!.totalUsage;
-      steps = await result!.steps;
-      finishReason = stoppedByStopWhen ? "stop_when" : (await result!.finishReason ?? "unknown");
+      usage = await result.totalUsage;
+      steps = await result.steps;
+      finishReason = stoppedByStopWhen ? "stop_when" : (await result.finishReason ?? "unknown");
 
       // Fetch cost from OpenRouter generation endpoint
       const genId = response.id;
@@ -561,8 +460,6 @@ export async function* runAiAgent(
         durationMs: Date.now() - startMs,
         durationApiMs: 0,
         stopReason: finishReason,
-        // Tool repair count (F-004) — only populated when repairs occurred
-        ...(repairedToolCallsCount > 0 ? { repairedToolCalls: repairedToolCallsCount } : {}),
         // Step breakdown — only populated when telemetry is enabled (F-007)
         ...(telemetryEnabled && collectedSteps.length > 0
           ? { steps: collectedSteps }

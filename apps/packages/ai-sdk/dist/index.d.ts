@@ -1,9 +1,6 @@
-// Proxy (primary API)
 export { runAgent } from "./proxy.js";
 export { AgentRunOptionsSchema, AgentEventSchema, UsageDataSchema } from "./schemas.js";
 export type { AgentEvent, UsageData, AgentRunOptions } from "./schemas.js";
-
-// AI agent (internal, kept for backward compat)
 export { runAiAgent } from "./agent.js";
 export type { AiAgentEvent, AiUsageData, AiAgentOptions, AiTodoItem, McpServerConfig, ContextUsage, PrepareStepContext, PrepareStepResult, AiTelemetryOptions } from "./types.js";
 export { getContextUsage } from "./context/usage.js";
@@ -26,13 +23,11 @@ export { createEditTool } from "./tools/edit.js";
 export { createMultiEditTool } from "./tools/multi-edit.js";
 export { createCodeSearchTool } from "./tools/code-search.js";
 export type { CodeSearchProvider, CodeSearchResult } from "./tools/code-search.js";
-export { httpRequestTool } from "./tools/http-request.js";
-export { apiSpecTool } from "./tools/api-spec.js";
 export { aiGenerateObject, aiStreamObject } from "./structured.js";
 export type { AiObjectOptions } from "./structured.js";
 export { createAiProviderRegistry } from "./providers.js";
 export type { AiProviderConfig } from "./providers.js";
 export { createLoggingMiddleware } from "./middleware/logging.js";
-export type { LanguageModelMiddleware } from "ai";
+export type { LanguageModelV1Middleware } from "ai";
 export { createToolCallRepairHandler } from "./tool-repair.js";
 export type { RepairContext } from "./tool-repair.js";
