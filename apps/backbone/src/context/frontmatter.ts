@@ -1,3 +1,22 @@
+import { readFileSync } from "node:fs";
+
+/** Interpola ${VAR} com process.env */
+export function interpolateEnvVars(raw: string): string {
+  return raw.replace(/\$\{([^}]+)\}/g, (_, key) => {
+    const val = process.env[key.trim()];
+    if (val === undefined) {
+      console.warn(`[interpolate] env var not found: ${key.trim()}`);
+      return "";
+    }
+    return val;
+  });
+}
+
+/** Le arquivo de contexto com interpolacao de env vars */
+export function readContextFile(filePath: string): string {
+  return interpolateEnvVars(readFileSync(filePath, "utf-8"));
+}
+
 export interface ParsedMarkdown {
   metadata: Record<string, unknown>;
   content: string;

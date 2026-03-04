@@ -1,7 +1,7 @@
-import { readdirSync, readFileSync, existsSync } from "node:fs";
+import { readdirSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { usersDir } from "../context/paths.js";
-import { parseFrontmatter } from "../context/frontmatter.js";
+import { parseFrontmatter, readContextFile } from "../context/frontmatter.js";
 import type { ChannelConfig } from "./types.js";
 
 let cache: Map<string, ChannelConfig> | null = null;
@@ -19,7 +19,7 @@ function scanChannels(): Map<string, ChannelConfig> {
       const mdPath = join(channelsDir, channelSlug, "CHANNEL.md");
       if (!existsSync(mdPath)) continue;
 
-      const raw = readFileSync(mdPath, "utf-8");
+      const raw = readContextFile(mdPath);
       const { metadata, content } = parseFrontmatter(raw);
 
       map.set(channelSlug, {

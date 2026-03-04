@@ -9,7 +9,7 @@ import {
 } from "node:fs";
 import { join } from "node:path";
 import { agentDir, agentsDir, agentConfigPath } from "../context/paths.js";
-import { parseFrontmatter, serializeFrontmatter } from "../context/frontmatter.js";
+import { parseFrontmatter, serializeFrontmatter, readContextFile } from "../context/frontmatter.js";
 import { updateFrontmatter, writeFileAtomic } from "../context/frontmatter-writer.js";
 import { refreshAgentRegistry, getAgent } from "./registry.js";
 import type { AgentConfig } from "./types.js";
@@ -149,7 +149,7 @@ export function duplicateAgent(
 export function readAgentFile(agentId: string, filename: string): string | null {
   const filePath = join(agentDir(agentId), filename);
   if (!existsSync(filePath)) return null;
-  return readFileSync(filePath, "utf-8");
+  return readContextFile(filePath);
 }
 
 export function writeAgentFile(agentId: string, filename: string, content: string): void {

@@ -1,7 +1,7 @@
-import { readFileSync, readdirSync, existsSync } from "node:fs";
+import { readdirSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import yaml from "js-yaml";
-import { parseFrontmatter } from "./frontmatter.js";
+import { parseFrontmatter, readContextFile } from "./frontmatter.js";
 import {
   type ResourceKind,
   sharedResourceDir,
@@ -41,7 +41,7 @@ function scanResourceDir(
   for (const slug of readdirSync(dir)) {
     const mdPath = join(dir, slug, filename);
     if (!existsSync(mdPath)) continue;
-    const raw = readFileSync(mdPath, "utf-8");
+    const raw = readContextFile(mdPath);
     const { metadata, content } = parseFrontmatter(raw);
     entries.push({ slug, path: mdPath, source, metadata, content });
   }
@@ -100,7 +100,7 @@ function scanYamlResourceDir(
   for (const slug of readdirSync(dir)) {
     const yamlPath = join(dir, slug, filename);
     if (!existsSync(yamlPath)) continue;
-    const raw = readFileSync(yamlPath, "utf-8");
+    const raw = readContextFile(yamlPath);
     const parsed = yaml.load(raw);
     const metadata = (parsed && typeof parsed === "object" ? parsed : {}) as Record<string, unknown>;
     entries.push({ slug, path: yamlPath, source, metadata, content: raw });
@@ -164,7 +164,7 @@ export function findAdapter(slug: string): ResolvedResource | null {
   for (const dir of [sharedResourceDir("adapters"), systemResourceDir("adapters")]) {
     const yamlPath = join(dir, slug, filename);
     if (!existsSync(yamlPath)) continue;
-    const raw = readFileSync(yamlPath, "utf-8");
+    const raw = readContextFile(yamlPath);
     const parsed = yaml.load(raw);
     const metadata = (parsed && typeof parsed === "object" ? parsed : {}) as Record<string, unknown>;
     return { slug, path: yamlPath, source: "shared", metadata, content: raw };
@@ -178,11 +178,11 @@ export function findAdapter(slug: string): ResolvedResource | null {
 export function resolveAgentSoul(agentId: string): string {
   const agentPath = agentSoulPath(agentId);
   if (existsSync(agentPath)) {
-    return readFileSync(agentPath, "utf-8");
+    return readContextFile(agentPath);
   }
   const systemPath = join(systemDir(), "SOUL.md");
   if (existsSync(systemPath)) {
-    return readFileSync(systemPath, "utf-8");
+    return readContextFile(systemPath);
   }
   return "";
 }
@@ -203,7 +203,7 @@ export function resolveModeInstructions(
 ): string {
   const pathFn = MODE_PATH[mode];
   const path = pathFn(agentId);
-  return existsSync(path) ? readFileSync(path, "utf-8") : "";
+  return existsSync(path) ? readContextFile(path) : "";
 }
 
 // --- User/mentor profile (agent-specific → owner fallback, merged) ---
@@ -216,7 +216,7 @@ export function resolveUserProfile(agentId: string): string {
   if (owner !== "system") {
     const ownerPath = ownerUserPath(owner);
     if (existsSync(ownerPath)) {
-      const { content } = parseFrontmatter(readFileSync(ownerPath, "utf-8"));
+      const { content } = parseFrontmatter(readContextFile(ownerPath));
       if (content.trim()) parts.push(content.trim());
     }
   }
@@ -224,7 +224,7 @@ export function resolveUserProfile(agentId: string): string {
   // Agent-level (higher precedence — appended, can override/extend)
   const agentPath = agentUserPath(agentId);
   if (existsSync(agentPath)) {
-    const { content } = parseFrontmatter(readFileSync(agentPath, "utf-8"));
+    const { content } = parseFrontmatter(readContextFile(agentPath));
     if (content.trim()) parts.push(content.trim());
   }
 

@@ -1,7 +1,6 @@
 import { readdirSync, existsSync } from "node:fs";
 import { agentsDir, agentConfigPath, parseAgentId } from "../context/paths.js";
-import { parseFrontmatter } from "../context/frontmatter.js";
-import { readFileSync } from "node:fs";
+import { parseFrontmatter, readContextFile } from "../context/frontmatter.js";
 import {
   type AgentConfig,
   type HeartbeatConfig,
@@ -14,7 +13,7 @@ function parseAgentConfig(agentId: string): AgentConfig | null {
   const configPath = agentConfigPath(agentId);
   if (!existsSync(configPath)) return null;
 
-  const raw = readFileSync(configPath, "utf-8");
+  const raw = readContextFile(configPath);
   const { metadata, content } = parseFrontmatter(raw);
   const { owner, slug } = parseAgentId(agentId);
 

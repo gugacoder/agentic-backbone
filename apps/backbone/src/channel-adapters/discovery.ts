@@ -1,7 +1,7 @@
-import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
-import { parseFrontmatter } from "../context/frontmatter.js";
+import { parseFrontmatter, readContextFile } from "../context/frontmatter.js";
 import { sharedDir } from "../context/paths.js";
 import { channelAdapterRegistry } from "./registry.js";
 import type { ChannelAdapterFactory } from "./types.js";
@@ -15,7 +15,7 @@ export async function discoverDropInAdapters(): Promise<void> {
     const mdPath = join(adapterDir, "CHANNEL-ADAPTER.md");
     if (!existsSync(mdPath)) continue;
 
-    const raw = readFileSync(mdPath, "utf-8");
+    const raw = readContextFile(mdPath);
     const { metadata } = parseFrontmatter(raw);
 
     const adapterSlug = (metadata.slug as string) ?? slug;
