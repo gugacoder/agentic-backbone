@@ -7,6 +7,7 @@ import { PageHeader } from "@/components/shared/page-header";
 import { EmptyState } from "@/components/shared/empty-state";
 import { LlmPlanCard } from "@/components/settings/llm-plan-card";
 import { WebSearchSettings } from "@/components/settings/web-search-settings";
+import { SystemInfo } from "@/components/settings/system-info";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { llmSettingsQueryOptions, activateLlmPlan } from "@/api/settings";
@@ -80,11 +81,7 @@ function SettingsPage() {
         </TabsContent>
 
         <TabsContent value="system">
-          <EmptyState
-            icon={<Server />}
-            title="Sistema"
-            description="Informacoes do sistema em breve."
-          />
+          <SystemInfo />
         </TabsContent>
       </Tabs>
     </div>

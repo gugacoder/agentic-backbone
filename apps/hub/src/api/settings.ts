@@ -54,3 +54,31 @@ export function updateWebSearchProvider(provider: WebSearchProvider) {
     body: JSON.stringify({ provider }),
   });
 }
+
+export interface SystemInfo {
+  version: string;
+  nodeVersion: string;
+  platform: string;
+  contextDir: string;
+}
+
+export interface SystemEnv {
+  OPENROUTER_API_KEY: boolean;
+  OPENAI_API_KEY: boolean;
+  BACKBONE_PORT: string;
+  NODE_ENV: string;
+}
+
+export function systemInfoQueryOptions() {
+  return queryOptions({
+    queryKey: ["system", "info"],
+    queryFn: () => request<SystemInfo>("/system/info"),
+  });
+}
+
+export function systemEnvQueryOptions() {
+  return queryOptions({
+    queryKey: ["system", "env"],
+    queryFn: () => request<SystemEnv>("/system/env"),
+  });
+}
