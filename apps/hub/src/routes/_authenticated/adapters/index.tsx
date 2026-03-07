@@ -7,6 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { PageHeader } from "@/components/shared/page-header";
 import { EmptyState } from "@/components/shared/empty-state";
 import { AdapterCard } from "@/components/adapters/adapter-card";
+import { AdapterDialog } from "@/components/adapters/adapter-dialog";
 import { adaptersQueryOptions, type Adapter } from "@/api/adapters";
 
 export const Route = createFileRoute("/_authenticated/adapters/")({
@@ -100,10 +101,11 @@ function AdaptersPage() {
         </div>
       )}
 
-      {/* Placeholder for AdapterDialog (F-086) */}
-      {editingAdapter !== null && (
-        <div style={{ display: "none" }} aria-hidden="true" />
-      )}
+      <AdapterDialog
+        open={editingAdapter !== null}
+        onOpenChange={(open) => { if (!open) setEditingAdapter(null); }}
+        editingAdapter={editingAdapter}
+      />
     </div>
   );
 }
