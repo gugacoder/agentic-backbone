@@ -3,7 +3,8 @@
     "id": "F-075",
     "name": "Tabelas de avaliacao + migracao DB",
     "description": "Criar tabelas eval_sets, eval_cases, eval_runs e eval_results no SQLite do backbone com todos os indices especificados no PRP-19. Adicionar migracao no startup do backbone (db/migrations.ts ou equivalente). Validar: tabelas criadas ao iniciar o servidor, indices presentes, foreign keys com ON DELETE CASCADE funcionando.",
-    "status": "pending",
+    "status": "passing",
+    "completed_at": "2026-03-07T20:00:00Z",
     "priority": 1,
     "agent": "coder",
     "task": "vibe-code",
@@ -20,11 +21,13 @@
     "id": "F-076",
     "name": "Endpoints CRUD eval sets e cases + API module Hub",
     "description": "Criar routes/evaluation.ts no backbone com endpoints: GET/POST /agents/:id/eval-sets, GET/PATCH/DELETE /agents/:id/eval-sets/:setId, POST/PATCH/DELETE /agents/:id/eval-sets/:setId/cases/:caseId. Montar rotas no index.ts. Criar apps/hub/src/api/evaluation.ts com evalSetsQueryOptions, evalRunsQueryOptions e evalRunDetailQueryOptions usando queryOptions do TanStack Query.",
-    "status": "pending",
+    "status": "blocked",
     "priority": 2,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-075"],
+    "dependencies": [
+      "F-075"
+    ],
     "tests": [
       "POST /agents/:id/eval-sets cria set e retorna 201",
       "GET /agents/:id/eval-sets retorna lista de sets do agente",
@@ -39,11 +42,13 @@
     "id": "F-077",
     "name": "Pipeline LLM-as-judge + endpoints de eval runs",
     "description": "Adicionar endpoints POST /agents/:id/eval-sets/:setId/runs (202 Accepted + background), GET /agents/:id/eval-runs e GET /agents/:id/eval-runs/:runId no routes/evaluation.ts. Implementar background pipeline: cria eval_runs com status running, para cada eval_case chama runAgent() com o input (sem persistir sessao), chama LLM-as-judge com prompt fixo definido no PRP-19, insere eval_results com score/reasoning/passed, ao concluir atualiza eval_runs com score_avg/passed/failed/status:done.",
-    "status": "pending",
+    "status": "blocked",
     "priority": 3,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-076"],
+    "dependencies": [
+      "F-076"
+    ],
     "tests": [
       "POST /eval-sets/:setId/runs retorna 202 Accepted imediatamente",
       "eval_runs criado com status 'running' ao disparar",
@@ -60,11 +65,13 @@
     "id": "F-078",
     "name": "Aba Avaliacao na pagina do agente",
     "description": "Criar rota routes/_authenticated/agents/$agentId/evaluation.tsx com EvalTab. Criar componentes: EvalSetCard (nome, qtd casos, ultimo score como badge colorido verde/amarelo/vermelho, botao Run, menu Editar/Remover), EvalSetDialog (sheet para criar/editar set com tabela inline de casos com campos input/expected/tags e botao Adicionar caso), EvalCaseTable, EvalScoreBadge. Adicionar aba 'Avaliacao' na pagina do agente existente.",
-    "status": "pending",
+    "status": "blocked",
     "priority": 4,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-077"],
+    "dependencies": [
+      "F-077"
+    ],
     "tests": [
       "Aba 'Avaliacao' visivel na pagina /agents/:id",
       "EvalSetCard exibe nome, quantidade de casos e ultimo score como badge colorido (verde >= 0.8, amarelo 0.5-0.79, vermelho < 0.5)",
@@ -79,11 +86,13 @@
     "id": "F-079",
     "name": "Pagina de detalhe de eval run",
     "description": "Criar rota routes/_authenticated/agents/$agentId/eval-runs/$runId.tsx com EvalRunPage. Criar EvalResultTable com colunas Entrada/Esperado/Real/Score/Status. Linhas com score < 0.7 destacadas em vermelho. Clicar na linha expande reasoning do judge. Botao 'Exportar para golden set' em linhas reprovadas adiciona input+actual como novo caso editavel no eval set. Header da pagina exibe Score Geral, Total de Casos, Aprovados e Reprovados.",
-    "status": "pending",
+    "status": "blocked",
     "priority": 5,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-078"],
+    "dependencies": [
+      "F-078"
+    ],
     "tests": [
       "Rota /agents/:id/eval-runs/:runId renderiza sem erros",
       "Header exibe Score Geral, Casos totais, Aprovados e Reprovados",
@@ -118,11 +127,13 @@
     "id": "F-081",
     "name": "Interceptor de tool HITL + frontmatter requires_approval + SSE",
     "description": "Ler frontmatter requires_approval, approval_label e approval_timeout_seconds em TOOL.md no loader de tools existente. Implementar interceptor no fluxo de tool call: se requires_approval = true, criar registro em approval_requests (status: pending, expires_at = now + timeout), emitir evento SSE 'approval:pending' no event bus ({type, approvalId, agentId, actionLabel, expiresAt}), suspender execucao aguardando Promise que resolve quando status muda (approved/rejected/expired). Se approved: executar tool com payload original. Se rejected: retornar ApprovalRejectedError ao agente. Se expired: retornar ApprovalExpiredError. Hook useSSE do Hub deve tratar approval:pending invalidando ['approvals', 'pending'].",
-    "status": "pending",
+    "status": "blocked",
     "priority": 7,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-080"],
+    "dependencies": [
+      "F-080"
+    ],
     "tests": [
       "Frontmatter requires_approval em TOOL.md lido corretamente pelo loader",
       "Tool com requires_approval: true cria registro em approval_requests ao ser chamada",
@@ -138,11 +149,13 @@
     "id": "F-082",
     "name": "Pagina /approvals + badge no menu lateral",
     "description": "Criar rota routes/_authenticated/approvals/index.tsx com ApprovalsPage. Criar componentes ApprovalCard (agent_id, action_label, timer regressivo ate expiracao, botao Ver detalhes expande payload JSON, botao Rejeitar com input de motivo, botao Aprovar) e ApprovalHistory (tabela com colunas Acao/Agente/Status/Decidido por/Data e filtros por status e agent_id). Badge no menu lateral com icone ShieldCheck exibindo contador de pendentes atualizado via SSE. Badge vermelho no sino da topbar ao haver pendentes; clicar navega para /approvals.",
-    "status": "pending",
+    "status": "blocked",
     "priority": 8,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-081"],
+    "dependencies": [
+      "F-081"
+    ],
     "tests": [
       "Rota /approvals renderiza sem erros",
       "ApprovalCard exibe action_label, agent_id e timer regressivo correto",
@@ -159,11 +172,13 @@
     "id": "F-083",
     "name": "Aprovacao inline na pagina de conversa",
     "description": "Criar componente ApprovalInlineActions (components/approvals/approval-inline-actions.tsx) exibido como mensagem de sistema na timeline da conversa ao receber SSE approval:pending com session_id correspondente. Exibe 'Aguardando aprovacao: {action_label}' com botoes Aprovar/Rejeitar inline. Apos decisao, mensagem de sistema indica resultado ('Acao aprovada' / 'Acao rejeitada'). Consulta approval_requests filtrando por session_id da conversa atual.",
-    "status": "pending",
+    "status": "blocked",
     "priority": 9,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-082"],
+    "dependencies": [
+      "F-082"
+    ],
     "tests": [
       "ApprovalInlineActions aparece na timeline da conversa ao receber SSE approval:pending com session_id correspondente",
       "Exibe mensagem 'Aguardando aprovacao: {action_label}' corretamente",
@@ -200,11 +215,13 @@
     "id": "F-085",
     "name": "Pagina /adapters com listagem e filtros",
     "description": "Criar rota routes/_authenticated/adapters/index.tsx com AdaptersPage. Item 'Adaptadores' com icone Plug no menu lateral em secao 'Integracoes'. Criar AdapterCard (slug, label, badge de tipo de conector, scope, toggle ativo/inativo via PATCH enabled, botao Testar com feedback inline spinner/checkmark/erro, menu [...] com Editar e Remover). Filtros horizontais no topo: Todos | MySQL | Postgres | Evolution | Twilio | HTTP. Botao '+ Novo Adaptador' abre AdapterDialog.",
-    "status": "pending",
+    "status": "blocked",
     "priority": 11,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-084"],
+    "dependencies": [
+      "F-084"
+    ],
     "tests": [
       "Menu lateral exibe item 'Adaptadores' com icone Plug em secao Integracoes",
       "Pagina /adapters lista todos os adaptadores como cards",
@@ -220,11 +237,13 @@
     "id": "F-086",
     "name": "AdapterDialog com formulario dinamico por conector",
     "description": "Criar AdapterDialog (components/adapters/adapter-dialog.tsx) como Sheet (drawer lateral) com campos: connector (Select: MySQL/Postgres/Evolution/Twilio/HTTP), label, slug (auto-gerado a partir de label via slugify, editavel), scope (Select: shared/system), policy (Select: readonly/readwrite). Criar ConnectorForm (components/adapters/connector-form.tsx) com campos dinamicos por conector: MySQL/Postgres (host, porta, usuario, senha, banco, SSL), Evolution (URL, API Key, nome instancia), Twilio (Account SID, Auth Token, numero), HTTP (URL base, headers JSON, Bearer Token, timeout). Campos password: valor mascarado ao editar; botao 'Alterar' limpa para redigitar. Botao 'Testar conexao' com feedback inline antes de habilitar Salvar.",
-    "status": "pending",
+    "status": "blocked",
     "priority": 12,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-085"],
+    "dependencies": [
+      "F-085"
+    ],
     "tests": [
       "AdapterDialog abre como sheet/drawer lateral ao clicar em Novo Adaptador ou Editar",
       "ConnectorForm muda campos conforme tipo de conector selecionado no Select",
@@ -263,11 +282,13 @@
     "id": "F-088",
     "name": "Thumbs up/down na interface de conversa",
     "description": "Criar componente MessageFeedback (components/conversations/message-feedback.tsx) exibido em cada mensagem do agente na pagina de conversa. Comportamento: botoes thumbs up/down aparecem no hover (desktop) ou sempre visiveis (mobile). Thumbs down abre FeedbackReasonPopover (components/conversations/feedback-reason-popover.tsx) com radio group de motivos em pt-BR (resposta_incorreta, sem_contexto, incompleta, tom_inadequado, outro). Motivo selecionado submete POST feedback. Thumbs up submete diretamente sem popover. Botao com rating ativo destacado; clicar novamente executa DELETE. Estado de feedback carregado com a conversa.",
-    "status": "pending",
+    "status": "blocked",
     "priority": 14,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-087"],
+    "dependencies": [
+      "F-087"
+    ],
     "tests": [
       "Botoes thumbs up/down visiveis em mensagens do agente na conversa",
       "Thumbs down abre popover com opcoes de motivo em portugues",
@@ -284,11 +305,13 @@
     "id": "F-089",
     "name": "Aba Qualidade na pagina do agente",
     "description": "Criar rota routes/_authenticated/agents/$agentId/quality.tsx com QualityTab. Criar componentes: QualityOverviewCards (taxa de aprovacao, total de avaliacoes, boas/ruins), QualityTrendChart (LineChart de approvalRate por dia usando shadcn Chart/Recharts), TopReasonsChart (BarChart horizontal de count por reason), LowRatedTable (tabela com colunas entrada/saida/motivo/data). Filtro de periodo no topo: 7 dias, 30 dias, 90 dias (query param days). Adicionar aba 'Qualidade' na pagina do agente existente.",
-    "status": "pending",
+    "status": "blocked",
     "priority": 15,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-087"],
+    "dependencies": [
+      "F-087"
+    ],
     "tests": [
       "Aba 'Qualidade' visivel na pagina /agents/:id",
       "QualityOverviewCards exibe taxa de aprovacao calculada corretamente",
@@ -304,11 +327,14 @@
     "id": "F-090",
     "name": "Export de mensagens mal-avaliadas para golden set",
     "description": "Criar componente ExportToGoldenSetModal (components/quality/export-to-golden-set-modal.tsx). Botao 'Exportar para Golden Set' na LowRatedTable abre modal para selecionar eval set existente (via evalSetsQueryOptions do PRP-19) ou criar novo. Para cada item selecionado: POST /agents/:id/eval-sets/:setId/cases com input = pergunta do usuario e expected = vazio (operador preenche). Apos conclusao: redirecionar para aba Avaliacao do agente.",
-    "status": "pending",
+    "status": "blocked",
     "priority": 16,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-089", "F-076"],
+    "dependencies": [
+      "F-089",
+      "F-076"
+    ],
     "tests": [
       "Botao 'Exportar para Golden Set' visivel na LowRatedTable",
       "Modal exibe lista de eval sets existentes do agente",
@@ -343,11 +369,13 @@
     "id": "F-092",
     "name": "Interceptor de mensagens + deteccao de anomalia",
     "description": "Criar modulo apps/backbone/src/security/filter.ts com funcao checkMessageSecurity(input, agentId, sessionId). Algoritmo: normalizar input (lowercase, trim), para cada regra habilitada verificar keyword (JSON array) ou regex, calcular score de confianca, determinar action (blocked > flagged > allow). Para blocked e flagged: inserir em security_events com input_hash=SHA-256(input), input_excerpt=input.slice(0,200), pattern_matched, score. Integrar em conversations/index.ts antes de runAgent(): se blocked retornar mensagem de erro sem chamar agente; se flagged passar ao agente e logar. Background job a cada hora: se > 5 eventos high/critical por agente na ultima hora, emitir SSE security:alert.",
-    "status": "pending",
+    "status": "blocked",
     "priority": 18,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-091"],
+    "dependencies": [
+      "F-091"
+    ],
     "tests": [
       "Mensagem contendo 'ignore previous instructions' eh bloqueada sem chamar runAgent()",
       "Mensagem bloqueada retorna erro 'Mensagem nao permitida pelo sistema de seguranca.'",
@@ -364,11 +392,13 @@
     "id": "F-093",
     "name": "Endpoints API de seguranca",
     "description": "Criar routes/security.ts com endpoints: GET /security/events (query: agent_id, severity, action, from, to, limit, offset), GET /security/summary (query: days, retorna totalEvents, byAction, bySeverity, byAgent, trend), GET /security/rules, POST /security/rules (is_system=0), PATCH /security/rules/:id (customizada ou toggle enabled de sistema), DELETE /security/rules/:id (apenas is_system=0). Criar apps/hub/src/api/security.ts com securitySummaryQueryOptions e securityEventsQueryOptions.",
-    "status": "pending",
+    "status": "blocked",
     "priority": 19,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-091"],
+    "dependencies": [
+      "F-091"
+    ],
     "tests": [
       "GET /security/events com filtros agent_id, severity, action, from, to funcionais",
       "GET /security/summary retorna totalEvents, byAction, bySeverity, byAgent e trend",
@@ -385,11 +415,13 @@
     "id": "F-094",
     "name": "Dashboard /security no Hub",
     "description": "Criar rota routes/_authenticated/security/index.tsx com SecurityPage. Item 'Seguranca' com icone ShieldAlert no menu lateral em secao 'Sistema'. Badge vermelho quando ha eventos critical nas ultimas 24h. Aba 'Eventos': SecuritySummaryCards (Bloqueados, Suspeitos, Total), SecurityTrendChart (BarChart empilhado blocked/flagged por dia), tabela de agentes mais visados, SecurityEventTable (log com filtros). Aba 'Regras': SecurityRulesTab com tabela de regras, toggle enabled, regras is_system marcadas como 'Sistema' (nao removiveis), botao '+ Nova Regra' abre SecurityRuleDialog (campos: nome, descricao, tipo regex/keyword, pattern, severidade, acao). Filtro de periodo: 7 dias, 30 dias.",
-    "status": "pending",
+    "status": "blocked",
     "priority": 20,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-093"],
+    "dependencies": [
+      "F-093"
+    ],
     "tests": [
       "Menu lateral exibe item 'Seguranca' com icone ShieldAlert em secao Sistema",
       "Badge vermelho no menu lateral quando ha eventos critical nas ultimas 24h",
@@ -427,11 +459,13 @@
     "id": "F-096",
     "name": "Pagina /inbox com cards, filtros, metricas e SSE",
     "description": "Criar rota routes/_authenticated/inbox/index.tsx com InboxPage. Item 'Inbox' com icone Inbox no menu lateral posicionado antes de 'Agentes'. Badge com contador de sessoes waiting atualizado via SSE channel:message. InboxMetricsCards: 4 cards (Conversas Ativas, Aguardando Resposta, Tempo Medio, Canal Mais Ativo). InboxFilters: selects Canal/Agente/Status refletidos em query params da URL. InboxConversationList com InboxConversationCard: horario relativo, agentLabel, ChannelBadge (WPP=verde, WEB=azul, VOZ=roxo), status badge (operator=laranja, waiting=vermelho pulsante), preview 80 chars, messageCount. Clicar navega para /conversations/:sessionId. SSE channel:message invalida queries inbox. Layout responsivo: mobile com chips horizontais.",
-    "status": "pending",
+    "status": "blocked",
     "priority": 22,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-095"],
+    "dependencies": [
+      "F-095"
+    ],
     "tests": [
       "Menu lateral exibe item 'Inbox' antes de 'Agentes' com badge de sessoes waiting",
       "InboxMetricsCards exibe 4 cards com valores corretos de totalActive, waiting, tempo medio e canal mais ativo",

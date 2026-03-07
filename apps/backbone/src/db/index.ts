@@ -168,4 +168,55 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_knowledge_docs_agent ON knowledge_docs(agent_id);
 `);
 
+db.exec(`
+  CREATE TABLE IF NOT EXISTS eval_sets (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    agent_id    TEXT NOT NULL,
+    name        TEXT NOT NULL,
+    description TEXT,
+    created_at  TEXT NOT NULL DEFAULT (datetime('now')),
+    updated_at  TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+  CREATE INDEX IF NOT EXISTS idx_eval_sets_agent ON eval_sets(agent_id);
+
+  CREATE TABLE IF NOT EXISTS eval_cases (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    set_id      INTEGER NOT NULL REFERENCES eval_sets(id) ON DELETE CASCADE,
+    input       TEXT NOT NULL,
+    expected    TEXT NOT NULL,
+    tags        TEXT,
+    created_at  TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+  CREATE INDEX IF NOT EXISTS idx_eval_cases_set ON eval_cases(set_id);
+
+  CREATE TABLE IF NOT EXISTS eval_runs (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    set_id      INTEGER NOT NULL REFERENCES eval_sets(id) ON DELETE CASCADE,
+    agent_id    TEXT NOT NULL,
+    status      TEXT NOT NULL DEFAULT 'pending',
+    score_avg   REAL,
+    total_cases INTEGER NOT NULL DEFAULT 0,
+    passed      INTEGER NOT NULL DEFAULT 0,
+    failed      INTEGER NOT NULL DEFAULT 0,
+    started_at  TEXT,
+    finished_at TEXT,
+    created_at  TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+  CREATE INDEX IF NOT EXISTS idx_eval_runs_agent ON eval_runs(agent_id);
+  CREATE INDEX IF NOT EXISTS idx_eval_runs_set ON eval_runs(set_id);
+
+  CREATE TABLE IF NOT EXISTS eval_results (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    run_id      INTEGER NOT NULL REFERENCES eval_runs(id) ON DELETE CASCADE,
+    case_id     INTEGER NOT NULL REFERENCES eval_cases(id),
+    actual      TEXT NOT NULL,
+    score       REAL NOT NULL,
+    reasoning   TEXT,
+    passed      INTEGER NOT NULL DEFAULT 0,
+    latency_ms  INTEGER,
+    created_at  TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+  CREATE INDEX IF NOT EXISTS idx_eval_results_run ON eval_results(run_id);
+`);
+
 export { db };
