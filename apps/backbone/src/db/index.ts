@@ -219,4 +219,22 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_eval_results_run ON eval_results(run_id);
 `);
 
+db.exec(`
+  CREATE TABLE IF NOT EXISTS approval_requests (
+    id           INTEGER PRIMARY KEY AUTOINCREMENT,
+    agent_id     TEXT NOT NULL,
+    session_id   TEXT,
+    tool_name    TEXT NOT NULL,
+    action_label TEXT NOT NULL,
+    payload      TEXT NOT NULL,
+    status       TEXT NOT NULL DEFAULT 'pending',
+    decided_by   TEXT,
+    decided_at   TEXT,
+    expires_at   TEXT NOT NULL,
+    created_at   TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+  CREATE INDEX IF NOT EXISTS idx_approval_agent ON approval_requests(agent_id, status);
+  CREATE INDEX IF NOT EXISTS idx_approval_session ON approval_requests(session_id);
+`);
+
 export { db };
