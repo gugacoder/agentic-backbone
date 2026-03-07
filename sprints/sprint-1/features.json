@@ -316,7 +316,7 @@
     "id": "F-016",
     "name": "Lista de conversas",
     "description": "Substituir placeholder /conversations: fetch sessoes, lista vertical com badge agente, titulo, preview ultima msg, timestamp relativo. Busca por titulo, filtro por agente (select). Botao Nova Conversa (dialog escolher agente, POST /conversations, navega para chat).",
-    "status": "pending",
+    "status": "passing",
     "priority": 16,
     "agent": "coder",
     "task": "vibe-code",
@@ -330,7 +330,8 @@
       "Filtro por agente funciona",
       "Nova Conversa cria sessao e navega para /conversations/:id"
     ],
-    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-1/worktree/sprints/sprint-1/3-prps/PRP-04-chat-conversas.md"
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-1/worktree/sprints/sprint-1/3-prps/PRP-04-chat-conversas.md",
+    "completed_at": "2026-03-07T07:20:00Z"
   },
   {
     "id": "F-017",

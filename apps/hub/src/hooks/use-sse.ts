@@ -125,6 +125,7 @@ function invalidateByEvent(event: SystemEvent) {
       break;
     case "channel:message":
       queryClient.invalidateQueries({ queryKey: ["channels"] });
+      queryClient.invalidateQueries({ queryKey: ["conversations"] });
       break;
     case "job:status":
       queryClient.invalidateQueries({ queryKey: ["jobs"] });
