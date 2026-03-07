@@ -21,11 +21,14 @@ import { Route as AuthenticatedAnalyticsRouteImport } from './routes/_authentica
 import { Route as AuthenticatedConversationsRouteImport } from './routes/_authenticated/conversations'
 import { Route as AuthenticatedChannelsRouteImport } from './routes/_authenticated/channels'
 import { Route as AuthenticatedAgentsRouteImport } from './routes/_authenticated/agents'
+import { Route as AuthenticatedApprovalsIndexRouteImport } from './routes/_authenticated/approvals/index'
+import { Route as AuthenticatedAdaptersIndexRouteImport } from './routes/_authenticated/adapters/index'
 import { Route as AuthenticatedJobsIdRouteImport } from './routes/_authenticated/jobs.$id'
 import { Route as AuthenticatedConversationsIdRouteImport } from './routes/_authenticated/conversations.$id'
 import { Route as AuthenticatedChannelsSlugRouteImport } from './routes/_authenticated/channels.$slug'
 import { Route as AuthenticatedAgentsNewRouteImport } from './routes/_authenticated/agents.new'
 import { Route as AuthenticatedAgentsIdRouteImport } from './routes/_authenticated/agents.$id'
+import { Route as AuthenticatedAgentsIdEvalRunsRunIdRouteImport } from './routes/_authenticated/agents.$id.eval-runs.$runId'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -115,6 +118,24 @@ const AuthenticatedAgentsIdRoute = AuthenticatedAgentsIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => AuthenticatedAgentsRoute,
 } as any)
+const AuthenticatedApprovalsIndexRoute =
+  AuthenticatedApprovalsIndexRouteImport.update({
+    id: '/approvals/',
+    path: '/approvals/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedAdaptersIndexRoute =
+  AuthenticatedAdaptersIndexRouteImport.update({
+    id: '/adapters/',
+    path: '/adapters/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedAgentsIdEvalRunsRunIdRoute =
+  AuthenticatedAgentsIdEvalRunsRunIdRouteImport.update({
+    id: '/agents/$id/eval-runs/$runId',
+    path: '/agents/$id/eval-runs/$runId',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
@@ -128,11 +149,14 @@ export interface FileRoutesByFullPath {
   '/jobs': typeof AuthenticatedJobsRouteWithChildren
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/approvals': typeof AuthenticatedApprovalsIndexRoute
+  '/adapters': typeof AuthenticatedAdaptersIndexRoute
   '/agents/$id': typeof AuthenticatedAgentsIdRoute
   '/agents/new': typeof AuthenticatedAgentsNewRoute
   '/channels/$slug': typeof AuthenticatedChannelsSlugRoute
   '/conversations/$id': typeof AuthenticatedConversationsIdRoute
   '/jobs/$id': typeof AuthenticatedJobsIdRoute
+  '/agents/$id/eval-runs/$runId': typeof AuthenticatedAgentsIdEvalRunsRunIdRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
@@ -146,11 +170,14 @@ export interface FileRoutesByTo {
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/': typeof AuthenticatedIndexRoute
+  '/approvals': typeof AuthenticatedApprovalsIndexRoute
+  '/adapters': typeof AuthenticatedAdaptersIndexRoute
   '/agents/$id': typeof AuthenticatedAgentsIdRoute
   '/agents/new': typeof AuthenticatedAgentsNewRoute
   '/channels/$slug': typeof AuthenticatedChannelsSlugRoute
   '/conversations/$id': typeof AuthenticatedConversationsIdRoute
   '/jobs/$id': typeof AuthenticatedJobsIdRoute
+  '/agents/$id/eval-runs/$runId': typeof AuthenticatedAgentsIdEvalRunsRunIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -166,11 +193,14 @@ export interface FileRoutesById {
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
+  '/_authenticated/approvals/': typeof AuthenticatedApprovalsIndexRoute
+  '/_authenticated/adapters/': typeof AuthenticatedAdaptersIndexRoute
   '/_authenticated/agents/$id': typeof AuthenticatedAgentsIdRoute
   '/_authenticated/agents/new': typeof AuthenticatedAgentsNewRoute
   '/_authenticated/channels/$slug': typeof AuthenticatedChannelsSlugRoute
   '/_authenticated/conversations/$id': typeof AuthenticatedConversationsIdRoute
   '/_authenticated/jobs/$id': typeof AuthenticatedJobsIdRoute
+  '/_authenticated/agents/$id/eval-runs/$runId': typeof AuthenticatedAgentsIdEvalRunsRunIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -186,11 +216,14 @@ export interface FileRouteTypes {
     | '/jobs'
     | '/notifications'
     | '/settings'
+    | '/approvals'
+    | '/adapters'
     | '/agents/$id'
     | '/agents/new'
     | '/channels/$slug'
     | '/conversations/$id'
     | '/jobs/$id'
+    | '/agents/$id/eval-runs/$runId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/login'
@@ -204,11 +237,14 @@ export interface FileRouteTypes {
     | '/notifications'
     | '/settings'
     | '/'
+    | '/approvals'
+    | '/adapters'
     | '/agents/$id'
     | '/agents/new'
     | '/channels/$slug'
     | '/conversations/$id'
     | '/jobs/$id'
+    | '/agents/$id/eval-runs/$runId'
   id:
     | '__root__'
     | '/_authenticated'
@@ -223,11 +259,14 @@ export interface FileRouteTypes {
     | '/_authenticated/notifications'
     | '/_authenticated/settings'
     | '/_authenticated/'
+    | '/_authenticated/approvals/'
+    | '/_authenticated/adapters/'
     | '/_authenticated/agents/$id'
     | '/_authenticated/agents/new'
     | '/_authenticated/channels/$slug'
     | '/_authenticated/conversations/$id'
     | '/_authenticated/jobs/$id'
+    | '/_authenticated/agents/$id/eval-runs/$runId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -356,6 +395,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAgentsIdRouteImport
       parentRoute: typeof AuthenticatedAgentsRoute
     }
+    '/_authenticated/approvals/': {
+      id: '/_authenticated/approvals/'
+      path: '/approvals'
+      fullPath: '/approvals'
+      preLoaderRoute: typeof AuthenticatedApprovalsIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/adapters/': {
+      id: '/_authenticated/adapters/'
+      path: '/adapters'
+      fullPath: '/adapters'
+      preLoaderRoute: typeof AuthenticatedAdaptersIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/agents/$id/eval-runs/$runId': {
+      id: '/_authenticated/agents/$id/eval-runs/$runId'
+      path: '/agents/$id/eval-runs/$runId'
+      fullPath: '/agents/$id/eval-runs/$runId'
+      preLoaderRoute: typeof AuthenticatedAgentsIdEvalRunsRunIdRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
   }
 }
 
@@ -421,6 +481,9 @@ interface AuthenticatedRouteChildren {
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
+  AuthenticatedApprovalsIndexRoute: typeof AuthenticatedApprovalsIndexRoute
+  AuthenticatedAdaptersIndexRoute: typeof AuthenticatedAdaptersIndexRoute
+  AuthenticatedAgentsIdEvalRunsRunIdRoute: typeof AuthenticatedAgentsIdEvalRunsRunIdRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
@@ -434,6 +497,9 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
+  AuthenticatedApprovalsIndexRoute: AuthenticatedApprovalsIndexRoute,
+  AuthenticatedAdaptersIndexRoute: AuthenticatedAdaptersIndexRoute,
+  AuthenticatedAgentsIdEvalRunsRunIdRoute: AuthenticatedAgentsIdEvalRunsRunIdRoute,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(

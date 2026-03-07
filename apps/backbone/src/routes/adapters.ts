@@ -58,6 +58,7 @@ connectorAdapterRoutes.patch("/adapters/:slug", async (c) => {
     description?: string;
     policy?: string;
     credential?: Record<string, unknown>;
+    enabled?: boolean;
   }>();
 
   const adapter = connectorRegistry.findAdapter(slug);
@@ -71,6 +72,7 @@ connectorAdapterRoutes.patch("/adapters/:slug", async (c) => {
       description: body.description,
       policy: body.policy,
       params: body.credential,
+      enabled: body.enabled,
     });
     return c.json(updated);
   } catch (err) {

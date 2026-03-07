@@ -75,6 +75,7 @@ export class ConnectorRegistry {
         name: (metadata.name as string) ?? slug,
         description: (metadata.description as string) ?? "",
         source,
+        enabled: (metadata.enabled as boolean) ?? true,
         dir: dirname(yamlPath),
         content: raw,
         metadata,
@@ -287,7 +288,7 @@ export class ConnectorRegistry {
   updateAdapter(
     scope: string,
     slug: string,
-    updates: { name?: string; description?: string; policy?: string; params?: Record<string, unknown> }
+    updates: { name?: string; description?: string; policy?: string; params?: Record<string, unknown>; enabled?: boolean }
   ): ResolvedAdapter {
     const adapterDir = join(this.resolveDir(scope), slug);
     const yamlPath = join(adapterDir, FILENAME);
@@ -303,6 +304,7 @@ export class ConnectorRegistry {
     if (updates.description !== undefined) config.description = updates.description;
     if (updates.policy !== undefined) config.policy = updates.policy;
     if (updates.params !== undefined) config.params = updates.params;
+    if (updates.enabled !== undefined) config.enabled = updates.enabled;
 
     // Warn about plain text credentials
     const credential = (config.credential ?? config.params) as Record<string, unknown> | undefined;

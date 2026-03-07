@@ -8,6 +8,7 @@ export interface Adapter {
   name: string;
   description: string;
   policy: string;
+  enabled: boolean;
   credential: Record<string, unknown>;
   options: Record<string, unknown>;
 }

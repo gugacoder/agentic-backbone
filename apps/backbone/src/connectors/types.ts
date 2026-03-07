@@ -44,6 +44,7 @@ export interface ResolvedAdapter {
   name: string;
   description: string;
   source: string;
+  enabled: boolean;
   dir: string;
   content: string;
   metadata: Record<string, unknown>;

@@ -12,6 +12,7 @@ import {
   TrendingUp,
   Settings,
   ShieldCheck,
+  Plug,
 } from "lucide-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -19,6 +20,7 @@ import {
   SidebarContent,
   SidebarGroup,
   SidebarGroupContent,
+  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
@@ -58,6 +60,7 @@ export function AppSidebar() {
   );
 
   const isApprovalsActive = !!matchRoute({ to: "/approvals", fuzzy: true });
+  const isAdaptersActive = !!matchRoute({ to: "/adapters", fuzzy: true });
 
   return (
     <Sidebar>
@@ -93,6 +96,23 @@ export function AppSidebar() {
                       {pendingCount > 99 ? "99+" : pendingCount}
                     </span>
                   )}
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel>Integracoes</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  isActive={isAdaptersActive}
+                  render={<Link to="/adapters" />}
+                >
+                  <Plug />
+                  <span>Adaptadores</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
