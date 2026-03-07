@@ -330,6 +330,7 @@ function ConversationChatPage() {
       <MessageList
         messages={allMessages}
         streamingContent={streamingContent}
+        sessionId={id}
       />
 
       {/* Input area */}

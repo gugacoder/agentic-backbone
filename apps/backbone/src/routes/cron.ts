@@ -129,8 +129,10 @@ cronRoutes.post("/cron/jobs/:agentId/:slug/run", async (c) => {
 // GET /cron/jobs/:agentId/:slug/runs
 cronRoutes.get("/cron/jobs/:agentId/:slug/runs", (c) => {
   const { slug } = c.req.param();
-  const limit = Number(c.req.query("limit")) || 50;
-  const offset = Number(c.req.query("offset")) || 0;
+  const limit = Number(c.req.query("limit")) || 20;
+  const page = Number(c.req.query("page")) || 1;
+  const offset = (page - 1) * limit;
 
-  return c.json(getCronRunHistory(slug, { limit, offset }));
+  const { rows, total } = getCronRunHistory(slug, { limit, offset });
+  return c.json({ runs: rows, total });
 });

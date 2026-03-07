@@ -1,6 +1,6 @@
 import { useState } from "react";
 import Markdown from "react-markdown";
-import { Copy, Check } from "lucide-react";
+import { Copy, Check, Activity } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { StreamingIndicator } from "./streaming-indicator";
@@ -14,9 +14,11 @@ export interface ChatMessage {
 interface MessageBubbleProps {
   message: ChatMessage;
   isStreaming?: boolean;
+  sessionId?: string;
+  onTrace?: (sessionId: string) => void;
 }
 
-export function MessageBubble({ message, isStreaming }: MessageBubbleProps) {
+export function MessageBubble({ message, isStreaming, sessionId, onTrace }: MessageBubbleProps) {
   const [copied, setCopied] = useState(false);
   const isUser = message.role === "user";
 
@@ -51,21 +53,36 @@ export function MessageBubble({ message, isStreaming }: MessageBubbleProps) {
         )}
 
         {!isStreaming && message.content && (
-          <Button
-            variant="ghost"
-            size="icon"
+          <div
             className={cn(
-              "absolute -top-3 size-6 opacity-0 transition-opacity group-hover:opacity-100",
+              "absolute -top-3 flex gap-0.5 opacity-0 transition-opacity group-hover:opacity-100",
               isUser ? "-left-2" : "-right-2",
             )}
-            onClick={handleCopy}
           >
-            {copied ? (
-              <Check className="size-3" />
-            ) : (
-              <Copy className="size-3" />
+            {!isUser && sessionId && onTrace && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="size-6"
+                title="Ver trace"
+                onClick={() => onTrace(sessionId)}
+              >
+                <Activity className="size-3" />
+              </Button>
             )}
-          </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-6"
+              onClick={handleCopy}
+            >
+              {copied ? (
+                <Check className="size-3" />
+              ) : (
+                <Copy className="size-3" />
+              )}
+            </Button>
+          </div>
         )}
       </div>
     </div>

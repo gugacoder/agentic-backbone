@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { ChevronDown, ChevronRight } from "lucide-react";
+import { ChevronDown, ChevronRight, Activity } from "lucide-react";
 import { cronRunHistoryQueryOptions, type CronRunEntry } from "@/api/cron";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { TraceDrawer } from "@/components/traces/trace-drawer";
 
 interface CronRunHistoryProps {
   agentId: string;
@@ -53,6 +54,10 @@ export function CronRunHistory({ agentId, jobSlug }: CronRunHistoryProps) {
   const { data, isLoading } = useQuery(
     cronRunHistoryQueryOptions(agentId, jobSlug, page),
   );
+  const [traceState, setTraceState] = useState<{ open: boolean; id: string }>({
+    open: false,
+    id: "",
+  });
 
   const runs = data?.runs ?? [];
   const total = data?.total ?? 0;
@@ -88,11 +93,16 @@ export function CronRunHistory({ agentId, jobSlug }: CronRunHistoryProps) {
               <TableHead>Duracao</TableHead>
               <TableHead>Tokens</TableHead>
               <TableHead>Custo</TableHead>
+              <TableHead className="w-10" />
             </TableRow>
           </TableHeader>
           <TableBody>
             {runs.map((run, i) => (
-              <RunRow key={`${run.ts}-${i}`} run={run} />
+              <RunRow
+                key={`${run.ts}-${i}`}
+                run={run}
+                onTrace={(id) => setTraceState({ open: true, id })}
+              />
             ))}
           </TableBody>
         </Table>
@@ -123,11 +133,24 @@ export function CronRunHistory({ agentId, jobSlug }: CronRunHistoryProps) {
           </div>
         </div>
       )}
+
+      <TraceDrawer
+        type="cron"
+        id={traceState.id}
+        open={traceState.open}
+        onClose={() => setTraceState((s) => ({ ...s, open: false }))}
+      />
     </div>
   );
 }
 
-function RunRow({ run }: { run: CronRunEntry }) {
+function RunRow({
+  run,
+  onTrace,
+}: {
+  run: CronRunEntry;
+  onTrace: (id: string) => void;
+}) {
   const [expanded, setExpanded] = useState(false);
   const badge = statusToBadge(run.status);
   const tokens = run.tokens;
@@ -160,10 +183,26 @@ function RunRow({ run }: { run: CronRunEntry }) {
             ? `$${run.cost_usd.toFixed(4)}`
             : "—"}
         </TableCell>
+        <TableCell className="w-10 px-2">
+          {run.id != null && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-7 text-muted-foreground hover:text-foreground"
+              title="Ver trace"
+              onClick={(e) => {
+                e.stopPropagation();
+                onTrace(String(run.id));
+              }}
+            >
+              <Activity className="size-3.5" />
+            </Button>
+          )}
+        </TableCell>
       </TableRow>
       {expanded && (run.preview || run.error) && (
         <TableRow>
-          <TableCell colSpan={6} className="bg-muted/50 px-4 py-3">
+          <TableCell colSpan={7} className="bg-muted/50 px-4 py-3">
             <pre className="whitespace-pre-wrap text-xs text-muted-foreground">
               {run.error ?? run.preview}
             </pre>

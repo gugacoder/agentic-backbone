@@ -1,8 +1,10 @@
 import { useState } from "react";
-import { ChevronDown, ChevronRight } from "lucide-react";
+import { ChevronDown, ChevronRight, Activity } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
+import { TraceDrawer } from "@/components/traces/trace-drawer";
 import type { HeartbeatLogEntry } from "@/api/agents";
 
 interface HeartbeatTimelineProps {
@@ -33,20 +35,30 @@ function formatDuration(ms: number): string {
   return `${seconds.toFixed(1)}s`;
 }
 
-function TimelineEntry({ entry }: { entry: HeartbeatLogEntry }) {
+function TimelineEntry({
+  entry,
+  onTrace,
+}: {
+  entry: HeartbeatLogEntry;
+  onTrace: (id: string) => void;
+}) {
   const [expanded, setExpanded] = useState(false);
   const config = statusMap[entry.status];
 
   return (
-    <button
-      type="button"
-      className="flex w-full items-start gap-3 rounded-md px-3 py-2.5 text-left transition-colors hover:bg-muted/50"
-      onClick={() => setExpanded(!expanded)}
-    >
-      <div className="mt-0.5 text-muted-foreground">
+    <div className="flex w-full items-start gap-3 rounded-md px-3 py-2.5 transition-colors hover:bg-muted/50">
+      <button
+        type="button"
+        className="mt-0.5 text-muted-foreground"
+        onClick={() => setExpanded(!expanded)}
+      >
         {expanded ? <ChevronDown className="size-3.5" /> : <ChevronRight className="size-3.5" />}
-      </div>
-      <div className="min-w-0 flex-1 space-y-1">
+      </button>
+      <button
+        type="button"
+        className="min-w-0 flex-1 space-y-1 text-left"
+        onClick={() => setExpanded(!expanded)}
+      >
         <div className="flex items-center gap-2">
           <Badge variant="outline" className={config.className}>
             {config.label}
@@ -63,12 +75,29 @@ function TimelineEntry({ entry }: { entry: HeartbeatLogEntry }) {
             {entry.preview}
           </p>
         )}
-      </div>
-    </button>
+      </button>
+      <Button
+        variant="ghost"
+        size="icon"
+        className="mt-0.5 size-7 shrink-0 text-muted-foreground hover:text-foreground"
+        title="Ver trace"
+        onClick={(e) => {
+          e.stopPropagation();
+          onTrace(entry.id);
+        }}
+      >
+        <Activity className="size-3.5" />
+      </Button>
+    </div>
   );
 }
 
 export function HeartbeatTimeline({ entries, loading }: HeartbeatTimelineProps) {
+  const [traceState, setTraceState] = useState<{ open: boolean; id: string }>({
+    open: false,
+    id: "",
+  });
+
   if (loading) {
     return (
       <div className="space-y-3">
@@ -90,12 +119,25 @@ export function HeartbeatTimeline({ entries, loading }: HeartbeatTimelineProps) 
   }
 
   return (
-    <ScrollArea className="h-[400px]">
-      <div className="divide-y">
-        {entries.map((entry) => (
-          <TimelineEntry key={entry.id} entry={entry} />
-        ))}
-      </div>
-    </ScrollArea>
+    <>
+      <ScrollArea className="h-[400px]">
+        <div className="divide-y">
+          {entries.map((entry) => (
+            <TimelineEntry
+              key={entry.id}
+              entry={entry}
+              onTrace={(id) => setTraceState({ open: true, id })}
+            />
+          ))}
+        </div>
+      </ScrollArea>
+
+      <TraceDrawer
+        type="heartbeat"
+        id={traceState.id}
+        open={traceState.open}
+        onClose={() => setTraceState((s) => ({ ...s, open: false }))}
+      />
+    </>
   );
 }

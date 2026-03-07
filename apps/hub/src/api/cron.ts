@@ -115,6 +115,7 @@ export async function deleteCronJob(agentId: string, slug: string) {
 }
 
 export interface CronRunEntry {
+  id?: number;
   ts: number;
   status: "ok" | "error" | "timeout" | "skipped";
   duration_ms: number;
