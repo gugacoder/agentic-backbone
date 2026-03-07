@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Outlet, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { Cpu, Search } from "lucide-react";
 import { PageHeader } from "@/components/shared/page-header";
@@ -89,6 +89,7 @@ function formatMemory(bytes: number): string {
 }
 
 function JobsPage() {
+  const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [agentFilter, setAgentFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
@@ -223,7 +224,7 @@ function JobsPage() {
                   <TableRow
                     key={job.id}
                     className="cursor-pointer"
-                    onClick={() => {}}
+                    onClick={() => navigate({ to: "/jobs/$id", params: { id: job.id } })}
                   >
                     <TableCell>
                       <Badge variant="outline" className={statusColors[job.status]}>
@@ -304,6 +305,8 @@ function JobsPage() {
           </div>
         </>
       )}
+
+      <Outlet />
     </div>
   );
 }

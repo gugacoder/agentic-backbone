@@ -30,3 +30,11 @@ export function jobQueryOptions(id: string) {
     queryFn: () => request<JobSummary>(`/jobs/${id}`),
   });
 }
+
+export async function killJob(id: string): Promise<void> {
+  await request(`/jobs/${id}/kill`, { method: "POST" });
+}
+
+export async function deleteJob(id: string): Promise<void> {
+  await request(`/jobs/${id}`, { method: "DELETE" });
+}

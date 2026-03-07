@@ -18,6 +18,7 @@ import { Route as AuthenticatedCronRouteImport } from './routes/_authenticated/c
 import { Route as AuthenticatedConversationsRouteImport } from './routes/_authenticated/conversations'
 import { Route as AuthenticatedChannelsRouteImport } from './routes/_authenticated/channels'
 import { Route as AuthenticatedAgentsRouteImport } from './routes/_authenticated/agents'
+import { Route as AuthenticatedJobsIdRouteImport } from './routes/_authenticated/jobs.$id'
 import { Route as AuthenticatedConversationsIdRouteImport } from './routes/_authenticated/conversations.$id'
 import { Route as AuthenticatedChannelsSlugRouteImport } from './routes/_authenticated/channels.$slug'
 import { Route as AuthenticatedAgentsNewRouteImport } from './routes/_authenticated/agents.new'
@@ -68,6 +69,11 @@ const AuthenticatedAgentsRoute = AuthenticatedAgentsRouteImport.update({
   path: '/agents',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedJobsIdRoute = AuthenticatedJobsIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => AuthenticatedJobsRoute,
+} as any)
 const AuthenticatedConversationsIdRoute =
   AuthenticatedConversationsIdRouteImport.update({
     id: '/$id',
@@ -98,12 +104,13 @@ export interface FileRoutesByFullPath {
   '/channels': typeof AuthenticatedChannelsRouteWithChildren
   '/conversations': typeof AuthenticatedConversationsRouteWithChildren
   '/cron': typeof AuthenticatedCronRoute
-  '/jobs': typeof AuthenticatedJobsRoute
+  '/jobs': typeof AuthenticatedJobsRouteWithChildren
   '/settings': typeof AuthenticatedSettingsRoute
   '/agents/$id': typeof AuthenticatedAgentsIdRoute
   '/agents/new': typeof AuthenticatedAgentsNewRoute
   '/channels/$slug': typeof AuthenticatedChannelsSlugRoute
   '/conversations/$id': typeof AuthenticatedConversationsIdRoute
+  '/jobs/$id': typeof AuthenticatedJobsIdRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
@@ -111,13 +118,14 @@ export interface FileRoutesByTo {
   '/channels': typeof AuthenticatedChannelsRouteWithChildren
   '/conversations': typeof AuthenticatedConversationsRouteWithChildren
   '/cron': typeof AuthenticatedCronRoute
-  '/jobs': typeof AuthenticatedJobsRoute
+  '/jobs': typeof AuthenticatedJobsRouteWithChildren
   '/settings': typeof AuthenticatedSettingsRoute
   '/': typeof AuthenticatedIndexRoute
   '/agents/$id': typeof AuthenticatedAgentsIdRoute
   '/agents/new': typeof AuthenticatedAgentsNewRoute
   '/channels/$slug': typeof AuthenticatedChannelsSlugRoute
   '/conversations/$id': typeof AuthenticatedConversationsIdRoute
+  '/jobs/$id': typeof AuthenticatedJobsIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -127,13 +135,14 @@ export interface FileRoutesById {
   '/_authenticated/channels': typeof AuthenticatedChannelsRouteWithChildren
   '/_authenticated/conversations': typeof AuthenticatedConversationsRouteWithChildren
   '/_authenticated/cron': typeof AuthenticatedCronRoute
-  '/_authenticated/jobs': typeof AuthenticatedJobsRoute
+  '/_authenticated/jobs': typeof AuthenticatedJobsRouteWithChildren
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/agents/$id': typeof AuthenticatedAgentsIdRoute
   '/_authenticated/agents/new': typeof AuthenticatedAgentsNewRoute
   '/_authenticated/channels/$slug': typeof AuthenticatedChannelsSlugRoute
   '/_authenticated/conversations/$id': typeof AuthenticatedConversationsIdRoute
+  '/_authenticated/jobs/$id': typeof AuthenticatedJobsIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -150,6 +159,7 @@ export interface FileRouteTypes {
     | '/agents/new'
     | '/channels/$slug'
     | '/conversations/$id'
+    | '/jobs/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/login'
@@ -164,6 +174,7 @@ export interface FileRouteTypes {
     | '/agents/new'
     | '/channels/$slug'
     | '/conversations/$id'
+    | '/jobs/$id'
   id:
     | '__root__'
     | '/_authenticated'
@@ -179,6 +190,7 @@ export interface FileRouteTypes {
     | '/_authenticated/agents/new'
     | '/_authenticated/channels/$slug'
     | '/_authenticated/conversations/$id'
+    | '/_authenticated/jobs/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -251,6 +263,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAgentsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/jobs/$id': {
+      id: '/_authenticated/jobs/$id'
+      path: '/$id'
+      fullPath: '/jobs/$id'
+      preLoaderRoute: typeof AuthenticatedJobsIdRouteImport
+      parentRoute: typeof AuthenticatedJobsRoute
+    }
     '/_authenticated/conversations/$id': {
       id: '/_authenticated/conversations/$id'
       path: '/$id'
@@ -322,12 +341,23 @@ const AuthenticatedConversationsRouteWithChildren =
     AuthenticatedConversationsRouteChildren,
   )
 
+interface AuthenticatedJobsRouteChildren {
+  AuthenticatedJobsIdRoute: typeof AuthenticatedJobsIdRoute
+}
+
+const AuthenticatedJobsRouteChildren: AuthenticatedJobsRouteChildren = {
+  AuthenticatedJobsIdRoute: AuthenticatedJobsIdRoute,
+}
+
+const AuthenticatedJobsRouteWithChildren =
+  AuthenticatedJobsRoute._addFileChildren(AuthenticatedJobsRouteChildren)
+
 interface AuthenticatedRouteChildren {
   AuthenticatedAgentsRoute: typeof AuthenticatedAgentsRouteWithChildren
   AuthenticatedChannelsRoute: typeof AuthenticatedChannelsRouteWithChildren
   AuthenticatedConversationsRoute: typeof AuthenticatedConversationsRouteWithChildren
   AuthenticatedCronRoute: typeof AuthenticatedCronRoute
-  AuthenticatedJobsRoute: typeof AuthenticatedJobsRoute
+  AuthenticatedJobsRoute: typeof AuthenticatedJobsRouteWithChildren
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
 }
@@ -337,7 +367,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedChannelsRoute: AuthenticatedChannelsRouteWithChildren,
   AuthenticatedConversationsRoute: AuthenticatedConversationsRouteWithChildren,
   AuthenticatedCronRoute: AuthenticatedCronRoute,
-  AuthenticatedJobsRoute: AuthenticatedJobsRoute,
+  AuthenticatedJobsRoute: AuthenticatedJobsRouteWithChildren,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
 }
