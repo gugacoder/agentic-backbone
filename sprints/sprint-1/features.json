@@ -149,7 +149,7 @@
     "id": "F-008",
     "name": "Pagina de detalhe do agente + tabs",
     "description": "Criar routes/_authenticated/agents.$id.tsx: fetch agente, layout com tabs horizontais (Visao Geral, Configuracao, Conversas, Memoria, Agenda). Tab ativa via search param ?tab=. Tabs nao implementadas ficam como placeholder. Header com breadcrumb, StatusBadge, botoes de acao.",
-    "status": "blocked",
+    "status": "passing",
     "priority": 8,
     "agent": "coder",
     "task": "vibe-code",
@@ -163,7 +163,8 @@
       "Header exibe breadcrumb Agentes > slug e StatusBadge",
       "Tabs placeholder exibem mensagem Em breve"
     ],
-    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-1/worktree/sprints/sprint-1/3-prps/PRP-02-dashboard-agentes.md"
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-1/worktree/sprints/sprint-1/3-prps/PRP-02-dashboard-agentes.md",
+    "completed_at": "2026-03-07T06:00:00Z"
   },
   {
     "id": "F-009",

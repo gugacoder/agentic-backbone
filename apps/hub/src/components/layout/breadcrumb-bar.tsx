@@ -13,6 +13,10 @@ const routeLabels: Record<string, string> = {
   "/settings": "Configuracoes",
 };
 
+const dynamicRoutePatterns: { pattern: RegExp; parent: string }[] = [
+  { pattern: /^\/agents\/[^/]+$/, parent: "Agentes" },
+];
+
 export function BreadcrumbBar() {
   const matches = useMatches();
   const theme = useUIStore((s) => s.theme);
@@ -21,7 +25,18 @@ export function BreadcrumbBar() {
   const crumbs: string[] = [];
   for (const match of matches) {
     const label = routeLabels[match.pathname];
-    if (label) crumbs.push(label);
+    if (label) {
+      crumbs.push(label);
+    } else {
+      for (const { pattern, parent } of dynamicRoutePatterns) {
+        if (pattern.test(match.pathname)) {
+          if (!crumbs.includes(parent)) crumbs.push(parent);
+          const segment = match.pathname.split("/").pop();
+          if (segment) crumbs.push(segment);
+          break;
+        }
+      }
+    }
   }
 
   const isDark =
