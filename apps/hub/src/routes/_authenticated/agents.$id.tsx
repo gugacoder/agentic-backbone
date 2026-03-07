@@ -171,7 +171,7 @@ function AgentDetailPage() {
           </div>
         </TabsContent>
         <TabsContent value="config">
-          <AgentConfigTabs agentId={id} subtab={subtab} />
+          <AgentConfigTabs agentId={id} agent={agent} subtab={subtab} />
         </TabsContent>
         <TabsContent value="conversations">
           <PlaceholderTab label="Conversas" />

@@ -118,6 +118,14 @@ export function extractHeartbeatConfig(agent: Agent & { heartbeat?: { enabled: b
   };
 }
 
+export async function duplicateAgent(id: string): Promise<Agent> {
+  return request<Agent>(`/agents/${id}/duplicate`, { method: "POST" });
+}
+
+export async function deleteAgent(id: string): Promise<void> {
+  await request(`/agents/${id}`, { method: "DELETE" });
+}
+
 export async function saveHeartbeatConfig(
   id: string,
   config: HeartbeatConfigData,

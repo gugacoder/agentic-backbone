@@ -296,7 +296,7 @@
     "id": "F-015",
     "name": "Acoes avancadas (duplicar, excluir agente)",
     "description": "Adicionar sub-tab Avancado na Configuracao: secao Zona Perigosa com botao Duplicar Agente (POST /agents/:id/duplicate, navega para novo) e botao Excluir Agente (ConfirmDialog com input de confirmacao do slug, DELETE /agents/:id, navega para /agents).",
-    "status": "pending",
+    "status": "passing",
     "priority": 15,
     "agent": "coder",
     "task": "vibe-code",
@@ -309,7 +309,8 @@
       "Excluir pede confirmacao com digitacao do slug",
       "Excluir remove agente e redireciona para /agents"
     ],
-    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-1/worktree/sprints/sprint-1/3-prps/PRP-03-gestao-agentes.md"
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-1/worktree/sprints/sprint-1/3-prps/PRP-03-gestao-agentes.md",
+    "completed_at": "2026-03-07T07:10:00Z"
   },
   {
     "id": "F-016",
