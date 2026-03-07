@@ -1,0 +1,449 @@
+[
+  {
+    "id": "F-075",
+    "name": "Tabelas de avaliacao + migracao DB",
+    "description": "Criar tabelas eval_sets, eval_cases, eval_runs e eval_results no SQLite do backbone com todos os indices especificados no PRP-19. Adicionar migracao no startup do backbone (db/migrations.ts ou equivalente). Validar: tabelas criadas ao iniciar o servidor, indices presentes, foreign keys com ON DELETE CASCADE funcionando.",
+    "status": "pending",
+    "priority": 1,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [],
+    "tests": [
+      "Tabelas eval_sets, eval_cases, eval_runs e eval_results existem no SQLite apos startup",
+      "Indices idx_eval_sets_agent, idx_eval_cases_set, idx_eval_runs_agent, idx_eval_runs_set, idx_eval_results_run criados",
+      "DELETE em eval_sets cascata deleta casos e runs associados",
+      "npm run typecheck passa sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-4/worktree/sprints/sprint-4/3-prps/PRP-19-avaliacao-qualidade-agentes.md"
+  },
+  {
+    "id": "F-076",
+    "name": "Endpoints CRUD eval sets e cases + API module Hub",
+    "description": "Criar routes/evaluation.ts no backbone com endpoints: GET/POST /agents/:id/eval-sets, GET/PATCH/DELETE /agents/:id/eval-sets/:setId, POST/PATCH/DELETE /agents/:id/eval-sets/:setId/cases/:caseId. Montar rotas no index.ts. Criar apps/hub/src/api/evaluation.ts com evalSetsQueryOptions, evalRunsQueryOptions e evalRunDetailQueryOptions usando queryOptions do TanStack Query.",
+    "status": "pending",
+    "priority": 2,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": ["F-075"],
+    "tests": [
+      "POST /agents/:id/eval-sets cria set e retorna 201",
+      "GET /agents/:id/eval-sets retorna lista de sets do agente",
+      "POST /agents/:id/eval-sets/:setId/cases adiciona caso ao set",
+      "DELETE /agents/:id/eval-sets/:setId deleta set e casos em cascata",
+      "apps/hub/src/api/evaluation.ts exporta evalSetsQueryOptions, evalRunsQueryOptions e evalRunDetailQueryOptions",
+      "npm run typecheck passa sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-4/worktree/sprints/sprint-4/3-prps/PRP-19-avaliacao-qualidade-agentes.md"
+  },
+  {
+    "id": "F-077",
+    "name": "Pipeline LLM-as-judge + endpoints de eval runs",
+    "description": "Adicionar endpoints POST /agents/:id/eval-sets/:setId/runs (202 Accepted + background), GET /agents/:id/eval-runs e GET /agents/:id/eval-runs/:runId no routes/evaluation.ts. Implementar background pipeline: cria eval_runs com status running, para cada eval_case chama runAgent() com o input (sem persistir sessao), chama LLM-as-judge com prompt fixo definido no PRP-19, insere eval_results com score/reasoning/passed, ao concluir atualiza eval_runs com score_avg/passed/failed/status:done.",
+    "status": "pending",
+    "priority": 3,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": ["F-076"],
+    "tests": [
+      "POST /eval-sets/:setId/runs retorna 202 Accepted imediatamente",
+      "eval_runs criado com status 'running' ao disparar",
+      "eval_results inseridos com score e reasoning para cada caso",
+      "eval_runs.status atualizado para 'done' apos todos os casos processados",
+      "score_avg, passed e failed calculados corretamente em eval_runs",
+      "GET /agents/:id/eval-runs retorna historico de runs",
+      "GET /agents/:id/eval-runs/:runId retorna detalhe com resultados",
+      "npm run typecheck passa sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-4/worktree/sprints/sprint-4/3-prps/PRP-19-avaliacao-qualidade-agentes.md"
+  },
+  {
+    "id": "F-078",
+    "name": "Aba Avaliacao na pagina do agente",
+    "description": "Criar rota routes/_authenticated/agents/$agentId/evaluation.tsx com EvalTab. Criar componentes: EvalSetCard (nome, qtd casos, ultimo score como badge colorido verde/amarelo/vermelho, botao Run, menu Editar/Remover), EvalSetDialog (sheet para criar/editar set com tabela inline de casos com campos input/expected/tags e botao Adicionar caso), EvalCaseTable, EvalScoreBadge. Adicionar aba 'Avaliacao' na pagina do agente existente.",
+    "status": "pending",
+    "priority": 4,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": ["F-077"],
+    "tests": [
+      "Aba 'Avaliacao' visivel na pagina /agents/:id",
+      "EvalSetCard exibe nome, quantidade de casos e ultimo score como badge colorido (verde >= 0.8, amarelo 0.5-0.79, vermelho < 0.5)",
+      "Botao Run no card dispara POST /eval-sets/:setId/runs",
+      "EvalSetDialog abre como sheet/dialog ao criar ou editar set",
+      "Tabela de casos no dialog permite adicionar, editar e remover casos",
+      "npm run build:hub e npm run typecheck passam sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-4/worktree/sprints/sprint-4/3-prps/PRP-19-avaliacao-qualidade-agentes.md"
+  },
+  {
+    "id": "F-079",
+    "name": "Pagina de detalhe de eval run",
+    "description": "Criar rota routes/_authenticated/agents/$agentId/eval-runs/$runId.tsx com EvalRunPage. Criar EvalResultTable com colunas Entrada/Esperado/Real/Score/Status. Linhas com score < 0.7 destacadas em vermelho. Clicar na linha expande reasoning do judge. Botao 'Exportar para golden set' em linhas reprovadas adiciona input+actual como novo caso editavel no eval set. Header da pagina exibe Score Geral, Total de Casos, Aprovados e Reprovados.",
+    "status": "pending",
+    "priority": 5,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": ["F-078"],
+    "tests": [
+      "Rota /agents/:id/eval-runs/:runId renderiza sem erros",
+      "Header exibe Score Geral, Casos totais, Aprovados e Reprovados",
+      "Linhas com score < 0.7 destacadas em vermelho",
+      "Clicar na linha expande campo reasoning",
+      "Botao 'Exportar para golden set' disponivel em linhas com score < 0.7",
+      "npm run build:hub e npm run typecheck passam sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-4/worktree/sprints/sprint-4/3-prps/PRP-19-avaliacao-qualidade-agentes.md"
+  },
+  {
+    "id": "F-080",
+    "name": "Tabela approval_requests + endpoints CRUD",
+    "description": "Criar tabela approval_requests no SQLite com campos id, agent_id, session_id, tool_name, action_label, payload, status, decided_by, decided_at, expires_at, created_at e indices especificados no PRP-20. Criar routes/approvals.ts com endpoints: GET /approval-requests (query: status, agent_id), GET /approval-requests/:id, POST /approval-requests/:id/approve, POST /approval-requests/:id/reject ({reason?}). Background job a cada minuto detecta pedidos expirados (expires_at < now com status pending) e marca como expired. Criar apps/hub/src/api/approvals.ts com pendingApprovalsQueryOptions e approvalHistoryQueryOptions.",
+    "status": "pending",
+    "priority": 6,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [],
+    "tests": [
+      "Tabela approval_requests criada com todos os campos e indices ao startup",
+      "GET /approval-requests retorna lista filtravel por status e agent_id",
+      "POST /approval-requests/:id/approve atualiza status, decided_by e decided_at",
+      "POST /approval-requests/:id/reject atualiza status e registra reason",
+      "Background job marca pedidos com expires_at passado e status pending como expired",
+      "apps/hub/src/api/approvals.ts exporta pendingApprovalsQueryOptions e approvalHistoryQueryOptions",
+      "npm run typecheck passa sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-4/worktree/sprints/sprint-4/3-prps/PRP-20-aprovacao-humana-hitl.md"
+  },
+  {
+    "id": "F-081",
+    "name": "Interceptor de tool HITL + frontmatter requires_approval + SSE",
+    "description": "Ler frontmatter requires_approval, approval_label e approval_timeout_seconds em TOOL.md no loader de tools existente. Implementar interceptor no fluxo de tool call: se requires_approval = true, criar registro em approval_requests (status: pending, expires_at = now + timeout), emitir evento SSE 'approval:pending' no event bus ({type, approvalId, agentId, actionLabel, expiresAt}), suspender execucao aguardando Promise que resolve quando status muda (approved/rejected/expired). Se approved: executar tool com payload original. Se rejected: retornar ApprovalRejectedError ao agente. Se expired: retornar ApprovalExpiredError. Hook useSSE do Hub deve tratar approval:pending invalidando ['approvals', 'pending'].",
+    "status": "pending",
+    "priority": 7,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": ["F-080"],
+    "tests": [
+      "Frontmatter requires_approval em TOOL.md lido corretamente pelo loader",
+      "Tool com requires_approval: true cria registro em approval_requests ao ser chamada",
+      "Execucao do agente fica suspensa apos criar o pedido de aprovacao",
+      "Evento SSE approval:pending emitido com approvalId, agentId, actionLabel e expiresAt",
+      "Apos POST /approve, tool executa normalmente com payload original",
+      "Apos POST /reject, agente recebe erro e informa usuario que acao foi cancelada",
+      "npm run typecheck passa sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-4/worktree/sprints/sprint-4/3-prps/PRP-20-aprovacao-humana-hitl.md"
+  },
+  {
+    "id": "F-082",
+    "name": "Pagina /approvals + badge no menu lateral",
+    "description": "Criar rota routes/_authenticated/approvals/index.tsx com ApprovalsPage. Criar componentes ApprovalCard (agent_id, action_label, timer regressivo ate expiracao, botao Ver detalhes expande payload JSON, botao Rejeitar com input de motivo, botao Aprovar) e ApprovalHistory (tabela com colunas Acao/Agente/Status/Decidido por/Data e filtros por status e agent_id). Badge no menu lateral com icone ShieldCheck exibindo contador de pendentes atualizado via SSE. Badge vermelho no sino da topbar ao haver pendentes; clicar navega para /approvals.",
+    "status": "pending",
+    "priority": 8,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": ["F-081"],
+    "tests": [
+      "Rota /approvals renderiza sem erros",
+      "ApprovalCard exibe action_label, agent_id e timer regressivo correto",
+      "Botao 'Ver detalhes' expande payload JSON formatado",
+      "Botao 'Rejeitar' abre input de motivo antes de confirmar",
+      "Botao 'Aprovar' chama POST /approval-requests/:id/approve",
+      "Aba Historico exibe decisoes com filtros por status e agent_id funcionais",
+      "Badge no menu lateral atualiza contador via SSE approval:pending",
+      "npm run build:hub e npm run typecheck passam sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-4/worktree/sprints/sprint-4/3-prps/PRP-20-aprovacao-humana-hitl.md"
+  },
+  {
+    "id": "F-083",
+    "name": "Aprovacao inline na pagina de conversa",
+    "description": "Criar componente ApprovalInlineActions (components/approvals/approval-inline-actions.tsx) exibido como mensagem de sistema na timeline da conversa ao receber SSE approval:pending com session_id correspondente. Exibe 'Aguardando aprovacao: {action_label}' com botoes Aprovar/Rejeitar inline. Apos decisao, mensagem de sistema indica resultado ('Acao aprovada' / 'Acao rejeitada'). Consulta approval_requests filtrando por session_id da conversa atual.",
+    "status": "pending",
+    "priority": 9,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": ["F-082"],
+    "tests": [
+      "ApprovalInlineActions aparece na timeline da conversa ao receber SSE approval:pending com session_id correspondente",
+      "Exibe mensagem 'Aguardando aprovacao: {action_label}' corretamente",
+      "Botoes Aprovar e Rejeitar inline funcionam e chamam os endpoints corretos",
+      "Apos aprovacao, mensagem de sistema 'Acao aprovada' exibida na timeline",
+      "Apos rejeicao, mensagem de sistema 'Acao rejeitada' exibida na timeline",
+      "npm run build:hub e npm run typecheck passam sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-4/worktree/sprints/sprint-4/3-prps/PRP-20-aprovacao-humana-hitl.md"
+  },
+  {
+    "id": "F-084",
+    "name": "Endpoints CRUD adaptadores + teste de conexao",
+    "description": "Criar routes/adapters.ts com endpoints: GET /adapters (credenciais mascaradas via maskSensitiveFields de utils/sensitive.ts), GET /adapters/:slug, POST /adapters (grava ADAPTER.yaml em context/shared ou context/system conforme scope), PATCH /adapters/:slug (atualiza arquivo existente), DELETE /adapters/:slug (remove arquivo), POST /adapters/:slug/test (instancia ConnectorDef e executa probe, retorna {ok, latencyMs, message} ou {ok: false, error}). Suporte a ${VAR} nos valores de credenciais — gravar literalmente. Montar rotas no index.ts. Criar apps/hub/src/api/adapters.ts com adaptersQueryOptions.",
+    "status": "pending",
+    "priority": 10,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [],
+    "tests": [
+      "GET /adapters retorna lista com campos password e api_key mascarados como '***'",
+      "POST /adapters grava ADAPTER.yaml em context/shared/adapters/{slug}/ quando scope=shared",
+      "POST /adapters grava ADAPTER.yaml em context/system/adapters/{slug}/ quando scope=system",
+      "PATCH /adapters/:slug atualiza arquivo ADAPTER.yaml existente",
+      "DELETE /adapters/:slug remove o arquivo do filesystem",
+      "POST /adapters/:slug/test retorna {ok: true, latencyMs} em conexao valida",
+      "POST /adapters/:slug/test retorna {ok: false, error} em conexao invalida",
+      "apps/hub/src/api/adapters.ts exporta adaptersQueryOptions",
+      "npm run typecheck passa sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-4/worktree/sprints/sprint-4/3-prps/PRP-21-gui-adaptadores.md"
+  },
+  {
+    "id": "F-085",
+    "name": "Pagina /adapters com listagem e filtros",
+    "description": "Criar rota routes/_authenticated/adapters/index.tsx com AdaptersPage. Item 'Adaptadores' com icone Plug no menu lateral em secao 'Integracoes'. Criar AdapterCard (slug, label, badge de tipo de conector, scope, toggle ativo/inativo via PATCH enabled, botao Testar com feedback inline spinner/checkmark/erro, menu [...] com Editar e Remover). Filtros horizontais no topo: Todos | MySQL | Postgres | Evolution | Twilio | HTTP. Botao '+ Novo Adaptador' abre AdapterDialog.",
+    "status": "pending",
+    "priority": 11,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": ["F-084"],
+    "tests": [
+      "Menu lateral exibe item 'Adaptadores' com icone Plug em secao Integracoes",
+      "Pagina /adapters lista todos os adaptadores como cards",
+      "Filtros por tipo de conector funcionam corretamente",
+      "Toggle ativo/inativo envia PATCH enabled ao backend",
+      "Botao Testar no card exibe spinner e depois checkmark verde ou X vermelho com erro",
+      "Menu [...] exibe opcoes Editar e Remover",
+      "npm run build:hub e npm run typecheck passam sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-4/worktree/sprints/sprint-4/3-prps/PRP-21-gui-adaptadores.md"
+  },
+  {
+    "id": "F-086",
+    "name": "AdapterDialog com formulario dinamico por conector",
+    "description": "Criar AdapterDialog (components/adapters/adapter-dialog.tsx) como Sheet (drawer lateral) com campos: connector (Select: MySQL/Postgres/Evolution/Twilio/HTTP), label, slug (auto-gerado a partir de label via slugify, editavel), scope (Select: shared/system), policy (Select: readonly/readwrite). Criar ConnectorForm (components/adapters/connector-form.tsx) com campos dinamicos por conector: MySQL/Postgres (host, porta, usuario, senha, banco, SSL), Evolution (URL, API Key, nome instancia), Twilio (Account SID, Auth Token, numero), HTTP (URL base, headers JSON, Bearer Token, timeout). Campos password: valor mascarado ao editar; botao 'Alterar' limpa para redigitar. Botao 'Testar conexao' com feedback inline antes de habilitar Salvar.",
+    "status": "pending",
+    "priority": 12,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": ["F-085"],
+    "tests": [
+      "AdapterDialog abre como sheet/drawer lateral ao clicar em Novo Adaptador ou Editar",
+      "ConnectorForm muda campos conforme tipo de conector selecionado no Select",
+      "Slug auto-gerado a partir do label digitado",
+      "Campos de senha exibem valor mascarado ao editar adaptador existente",
+      "Botao 'Alterar' ao lado do campo senha limpa o campo para redigitar",
+      "Botao 'Testar conexao' executa POST /adapters/:slug/test e exibe resultado inline",
+      "Botao 'Salvar' habilitado apos teste OK ou quando editando adaptador existente",
+      "npm run build:hub e npm run typecheck passam sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-4/worktree/sprints/sprint-4/3-prps/PRP-21-gui-adaptadores.md"
+  },
+  {
+    "id": "F-087",
+    "name": "Tabela message_feedback + garantia de message IDs + endpoints",
+    "description": "Criar tabela message_feedback no SQLite (id, session_id, message_id, agent_id, rating, reason, user_id, created_at, UNIQUE session_id+message_id) com indices especificados no PRP-22. Garantir que cada linha gravada em messages.jsonl tem campo id unico (ex: msg_{timestamp}_{random}) — adicionar geracao de ID no ponto de escrita em conversations/index.ts se nao existir. Criar routes/feedback.ts com endpoints: POST /conversations/:sessionId/messages/:messageId/feedback ({rating: up|down, reason?}), DELETE (desfaz), GET /agents/:id/quality (query: days, retorna metricas consolidadas), GET /agents/:id/quality/low-rated. Criar apps/hub/src/api/quality.ts com agentQualityQueryOptions e lowRatedQueryOptions.",
+    "status": "pending",
+    "priority": 13,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [],
+    "tests": [
+      "Tabela message_feedback criada ao startup com UNIQUE constraint em (session_id, message_id)",
+      "Mensagens gravadas em messages.jsonl tem campo id unico",
+      "POST feedback armazena rating e reason corretamente",
+      "Segundo POST com mesmo session_id+message_id substitui o feedback anterior (upsert ou UNIQUE conflict)",
+      "DELETE feedback remove a avaliacao",
+      "GET /agents/:id/quality retorna totalRatings, upCount, downCount, approvalRate e trend por dia",
+      "GET /agents/:id/quality/low-rated retorna mensagens com input e output reconstruidos do messages.jsonl",
+      "apps/hub/src/api/quality.ts exporta agentQualityQueryOptions e lowRatedQueryOptions",
+      "npm run typecheck passa sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-4/worktree/sprints/sprint-4/3-prps/PRP-22-feedback-loop-qualidade.md"
+  },
+  {
+    "id": "F-088",
+    "name": "Thumbs up/down na interface de conversa",
+    "description": "Criar componente MessageFeedback (components/conversations/message-feedback.tsx) exibido em cada mensagem do agente na pagina de conversa. Comportamento: botoes thumbs up/down aparecem no hover (desktop) ou sempre visiveis (mobile). Thumbs down abre FeedbackReasonPopover (components/conversations/feedback-reason-popover.tsx) com radio group de motivos em pt-BR (resposta_incorreta, sem_contexto, incompleta, tom_inadequado, outro). Motivo selecionado submete POST feedback. Thumbs up submete diretamente sem popover. Botao com rating ativo destacado; clicar novamente executa DELETE. Estado de feedback carregado com a conversa.",
+    "status": "pending",
+    "priority": 14,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": ["F-087"],
+    "tests": [
+      "Botoes thumbs up/down visiveis em mensagens do agente na conversa",
+      "Thumbs down abre popover com opcoes de motivo em portugues",
+      "Selecionar motivo submete POST /conversations/:sessionId/messages/:messageId/feedback",
+      "Thumbs up submete feedback diretamente sem popover",
+      "Botao com rating ativo fica destacado (preenchido)",
+      "Clicar em botao ja ativo executa DELETE (desfaz feedback)",
+      "Estado de feedback persistido: ao recarregar conversa, botoes refletem avaliacao existente",
+      "npm run build:hub e npm run typecheck passam sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-4/worktree/sprints/sprint-4/3-prps/PRP-22-feedback-loop-qualidade.md"
+  },
+  {
+    "id": "F-089",
+    "name": "Aba Qualidade na pagina do agente",
+    "description": "Criar rota routes/_authenticated/agents/$agentId/quality.tsx com QualityTab. Criar componentes: QualityOverviewCards (taxa de aprovacao, total de avaliacoes, boas/ruins), QualityTrendChart (LineChart de approvalRate por dia usando shadcn Chart/Recharts), TopReasonsChart (BarChart horizontal de count por reason), LowRatedTable (tabela com colunas entrada/saida/motivo/data). Filtro de periodo no topo: 7 dias, 30 dias, 90 dias (query param days). Adicionar aba 'Qualidade' na pagina do agente existente.",
+    "status": "pending",
+    "priority": 15,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": ["F-087"],
+    "tests": [
+      "Aba 'Qualidade' visivel na pagina /agents/:id",
+      "QualityOverviewCards exibe taxa de aprovacao calculada corretamente",
+      "QualityTrendChart renderiza LineChart com approvalRate por dia",
+      "TopReasonsChart renderiza BarChart horizontal de motivos de reprovacao",
+      "LowRatedTable lista mensagens mal-avaliadas com input e output",
+      "Filtro de periodo (7/30/90 dias) atualiza dados via query param days",
+      "npm run build:hub e npm run typecheck passam sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-4/worktree/sprints/sprint-4/3-prps/PRP-22-feedback-loop-qualidade.md"
+  },
+  {
+    "id": "F-090",
+    "name": "Export de mensagens mal-avaliadas para golden set",
+    "description": "Criar componente ExportToGoldenSetModal (components/quality/export-to-golden-set-modal.tsx). Botao 'Exportar para Golden Set' na LowRatedTable abre modal para selecionar eval set existente (via evalSetsQueryOptions do PRP-19) ou criar novo. Para cada item selecionado: POST /agents/:id/eval-sets/:setId/cases com input = pergunta do usuario e expected = vazio (operador preenche). Apos conclusao: redirecionar para aba Avaliacao do agente.",
+    "status": "pending",
+    "priority": 16,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": ["F-089", "F-076"],
+    "tests": [
+      "Botao 'Exportar para Golden Set' visivel na LowRatedTable",
+      "Modal exibe lista de eval sets existentes do agente",
+      "Modal permite criar novo eval set inline",
+      "Selecionar items e confirmar cria eval_cases via POST /eval-sets/:setId/cases",
+      "Casos criados tem input preenchido com pergunta do usuario e expected vazio",
+      "Apos exportacao, redireciona para aba Avaliacao do agente",
+      "npm run build:hub e npm run typecheck passam sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-4/worktree/sprints/sprint-4/3-prps/PRP-22-feedback-loop-qualidade.md"
+  },
+  {
+    "id": "F-091",
+    "name": "Tabelas de seguranca + regras pre-populadas",
+    "description": "Criar tabelas security_events e security_rules no SQLite com todos os campos e indices especificados no PRP-23. Inserir 5 regras pre-populadas na migracao com is_system = 1: ignore_instructions (high, blocked), system_prompt_leak (high, flagged), role_override (medium, flagged), jailbreak_dan (critical, blocked), data_exfiltration (high, blocked). Cada regra tem pattern como JSON array de strings de keyword.",
+    "status": "pending",
+    "priority": 17,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [],
+    "tests": [
+      "Tabelas security_events e security_rules criadas ao startup",
+      "5 regras pre-populadas presentes com is_system = 1 e enabled = 1",
+      "Regra ignore_instructions com severity high e action blocked",
+      "Regra jailbreak_dan com severity critical e action blocked",
+      "Indices idx_security_agent e idx_security_type criados",
+      "npm run typecheck passa sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-4/worktree/sprints/sprint-4/3-prps/PRP-23-seguranca-prompt-injection.md"
+  },
+  {
+    "id": "F-092",
+    "name": "Interceptor de mensagens + deteccao de anomalia",
+    "description": "Criar modulo apps/backbone/src/security/filter.ts com funcao checkMessageSecurity(input, agentId, sessionId). Algoritmo: normalizar input (lowercase, trim), para cada regra habilitada verificar keyword (JSON array) ou regex, calcular score de confianca, determinar action (blocked > flagged > allow). Para blocked e flagged: inserir em security_events com input_hash=SHA-256(input), input_excerpt=input.slice(0,200), pattern_matched, score. Integrar em conversations/index.ts antes de runAgent(): se blocked retornar mensagem de erro sem chamar agente; se flagged passar ao agente e logar. Background job a cada hora: se > 5 eventos high/critical por agente na ultima hora, emitir SSE security:alert.",
+    "status": "pending",
+    "priority": 18,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": ["F-091"],
+    "tests": [
+      "Mensagem contendo 'ignore previous instructions' eh bloqueada sem chamar runAgent()",
+      "Mensagem bloqueada retorna erro 'Mensagem nao permitida pelo sistema de seguranca.'",
+      "security_events inserido com input_hash SHA-256 e input_excerpt de 200 chars",
+      "Input nunca armazenado em plaintext — apenas hash e excerpt",
+      "Mensagem com padrao flagged passa ao agente e gera evento de log",
+      "Mensagem sem match passa normalmente sem gerar evento",
+      "SSE security:alert emitido quando > 5 eventos high/critical em 1h para o mesmo agente",
+      "npm run typecheck passa sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-4/worktree/sprints/sprint-4/3-prps/PRP-23-seguranca-prompt-injection.md"
+  },
+  {
+    "id": "F-093",
+    "name": "Endpoints API de seguranca",
+    "description": "Criar routes/security.ts com endpoints: GET /security/events (query: agent_id, severity, action, from, to, limit, offset), GET /security/summary (query: days, retorna totalEvents, byAction, bySeverity, byAgent, trend), GET /security/rules, POST /security/rules (is_system=0), PATCH /security/rules/:id (customizada ou toggle enabled de sistema), DELETE /security/rules/:id (apenas is_system=0). Criar apps/hub/src/api/security.ts com securitySummaryQueryOptions e securityEventsQueryOptions.",
+    "status": "pending",
+    "priority": 19,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": ["F-091"],
+    "tests": [
+      "GET /security/events com filtros agent_id, severity, action, from, to funcionais",
+      "GET /security/summary retorna totalEvents, byAction, bySeverity, byAgent e trend",
+      "GET /security/rules retorna todas as regras incluindo is_system",
+      "POST /security/rules cria regra customizada com is_system=0",
+      "PATCH /security/rules/:id permite toggle enabled em regras de sistema",
+      "DELETE /security/rules/:id falha para regras com is_system=1",
+      "apps/hub/src/api/security.ts exporta securitySummaryQueryOptions e securityEventsQueryOptions",
+      "npm run typecheck passa sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-4/worktree/sprints/sprint-4/3-prps/PRP-23-seguranca-prompt-injection.md"
+  },
+  {
+    "id": "F-094",
+    "name": "Dashboard /security no Hub",
+    "description": "Criar rota routes/_authenticated/security/index.tsx com SecurityPage. Item 'Seguranca' com icone ShieldAlert no menu lateral em secao 'Sistema'. Badge vermelho quando ha eventos critical nas ultimas 24h. Aba 'Eventos': SecuritySummaryCards (Bloqueados, Suspeitos, Total), SecurityTrendChart (BarChart empilhado blocked/flagged por dia), tabela de agentes mais visados, SecurityEventTable (log com filtros). Aba 'Regras': SecurityRulesTab com tabela de regras, toggle enabled, regras is_system marcadas como 'Sistema' (nao removiveis), botao '+ Nova Regra' abre SecurityRuleDialog (campos: nome, descricao, tipo regex/keyword, pattern, severidade, acao). Filtro de periodo: 7 dias, 30 dias.",
+    "status": "pending",
+    "priority": 20,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": ["F-093"],
+    "tests": [
+      "Menu lateral exibe item 'Seguranca' com icone ShieldAlert em secao Sistema",
+      "Badge vermelho no menu lateral quando ha eventos critical nas ultimas 24h",
+      "SecuritySummaryCards exibe Bloqueados, Suspeitos e Total corretos",
+      "SecurityTrendChart renderiza BarChart empilhado com blocked e flagged por dia",
+      "SecurityEventTable lista eventos com filtros por agente, tipo e acao",
+      "Aba Regras lista todas as regras com toggle enabled funcional",
+      "Regras is_system=1 marcadas como 'Sistema' e botao Remover desabilitado",
+      "SecurityRuleDialog abre ao clicar '+ Nova Regra' e cria regra customizada",
+      "npm run build:hub e npm run typecheck passam sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-4/worktree/sprints/sprint-4/3-prps/PRP-23-seguranca-prompt-injection.md"
+  },
+  {
+    "id": "F-095",
+    "name": "Endpoints GET /inbox e /inbox/metrics",
+    "description": "Criar routes/inbox.ts com endpoints: GET /inbox (query: channel, agent_id, status, limit=50, offset=0; agrega sessoes de todos os agentes e canais do SQLite, calcula status: operator se operatorId ativo, waiting se ultima mensagem role:user ha >5min, agent caso contrario; retorna sessions[], total, offset, limit) e GET /inbox/metrics (retorna totalActive, byChannel com avgResponseMs, byStatus, volumeByHour). Criar apps/hub/src/api/inbox.ts com inboxQueryOptions e inboxMetricsQueryOptions.",
+    "status": "pending",
+    "priority": 21,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [],
+    "tests": [
+      "GET /inbox retorna sessoes de todos os agentes e canais",
+      "Filtro por channel=whatsapp retorna apenas sessoes WhatsApp",
+      "Filtro por status=waiting retorna sessoes onde ultima mensagem do usuario tem mais de 5 minutos",
+      "Status 'operator' calculado corretamente quando operatorId presente na sessao",
+      "GET /inbox/metrics retorna totalActive, byChannel com count e avgResponseMs, byStatus e volumeByHour",
+      "apps/hub/src/api/inbox.ts exporta inboxQueryOptions e inboxMetricsQueryOptions",
+      "npm run typecheck passa sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-4/worktree/sprints/sprint-4/3-prps/PRP-24-inbox-unificado.md"
+  },
+  {
+    "id": "F-096",
+    "name": "Pagina /inbox com cards, filtros, metricas e SSE",
+    "description": "Criar rota routes/_authenticated/inbox/index.tsx com InboxPage. Item 'Inbox' com icone Inbox no menu lateral posicionado antes de 'Agentes'. Badge com contador de sessoes waiting atualizado via SSE channel:message. InboxMetricsCards: 4 cards (Conversas Ativas, Aguardando Resposta, Tempo Medio, Canal Mais Ativo). InboxFilters: selects Canal/Agente/Status refletidos em query params da URL. InboxConversationList com InboxConversationCard: horario relativo, agentLabel, ChannelBadge (WPP=verde, WEB=azul, VOZ=roxo), status badge (operator=laranja, waiting=vermelho pulsante), preview 80 chars, messageCount. Clicar navega para /conversations/:sessionId. SSE channel:message invalida queries inbox. Layout responsivo: mobile com chips horizontais.",
+    "status": "pending",
+    "priority": 22,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": ["F-095"],
+    "tests": [
+      "Menu lateral exibe item 'Inbox' antes de 'Agentes' com badge de sessoes waiting",
+      "InboxMetricsCards exibe 4 cards com valores corretos de totalActive, waiting, tempo medio e canal mais ativo",
+      "Filtros Canal/Agente/Status funcionais e refletidos em query params da URL",
+      "Reload da pagina restaura os filtros aplicados (URL compartilhavel)",
+      "InboxConversationCard exibe horario relativo, agentLabel, ChannelBadge, status badge, preview e messageCount",
+      "ChannelBadge exibe cor correta: verde para whatsapp, azul para web, roxo para voice",
+      "Sessoes com status waiting exibem badge vermelho pulsante",
+      "Clicar no card navega para /conversations/:sessionId",
+      "Lista atualiza ao receber evento SSE channel:message",
+      "npm run build:hub e npm run typecheck passam sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-4/worktree/sprints/sprint-4/3-prps/PRP-24-inbox-unificado.md"
+  }
+]
