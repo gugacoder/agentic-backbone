@@ -7,6 +7,7 @@ import {
   MessageSquare,
   Brain,
   Clock,
+  BookOpen,
   ChevronRight,
 } from "lucide-react";
 import {
@@ -22,6 +23,7 @@ import { AgentConfigTabs } from "@/components/agents/agent-config-tabs";
 import { AgentConversations } from "@/components/agents/agent-conversations";
 import { MemoryStatusPanel } from "@/components/agents/memory-status-panel";
 import { AgentCronTab } from "@/components/agents/agent-cron-tab";
+import { KnowledgeTab } from "@/components/agents/knowledge-tab";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { useSSEEvent } from "@/hooks/use-sse";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -32,6 +34,7 @@ const tabs = [
   { value: "config", label: "Configuracao", icon: Settings },
   { value: "conversations", label: "Conversas", icon: MessageSquare },
   { value: "memory", label: "Memoria", icon: Brain },
+  { value: "knowledge", label: "Knowledge", icon: BookOpen },
   { value: "cron", label: "Agenda", icon: Clock },
 ] as const;
 
@@ -181,6 +184,9 @@ function AgentDetailPage() {
         </TabsContent>
         <TabsContent value="memory">
           <MemoryStatusPanel agentId={id} />
+        </TabsContent>
+        <TabsContent value="knowledge">
+          <KnowledgeTab agentId={id} />
         </TabsContent>
         <TabsContent value="cron">
           <AgentCronTab agentId={id} />
