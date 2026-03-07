@@ -12,6 +12,7 @@ import {
 } from "../context/paths.js";
 import { getResourceDirs } from "../context/resolver.js";
 import { formatError } from "../utils/errors.js";
+import { maskSensitiveFields, warnPlainTextSecrets } from "../utils/sensitive.js";
 import type {
   ConnectorDef,
   ConnectorContext,
@@ -23,28 +24,8 @@ import type {
 const KIND: ResourceKind = "adapters";
 const FILENAME = "ADAPTER.yaml";
 
-// Fields that contain secrets — matched case-insensitively against credential keys
-const SENSITIVE_PATTERN = /key|secret|token|password|pass/i;
-
-/** Replaces sensitive credential values with "***" for API responses */
 function maskCredentials(adapter: ResolvedAdapter): ResolvedAdapter {
-  const masked: Record<string, unknown> = {};
-  for (const [k, v] of Object.entries(adapter.credential)) {
-    masked[k] = SENSITIVE_PATTERN.test(k) ? "***" : v;
-  }
-  return { ...adapter, credential: masked };
-}
-
-/** Warns when credential values are plain text instead of ${VAR} references */
-function warnPlainTextCredentials(credential: Record<string, unknown>, slug: string): void {
-  for (const [k, v] of Object.entries(credential)) {
-    if (!SENSITIVE_PATTERN.test(k)) continue;
-    if (typeof v === "string" && v !== "" && !/^\$\{.+\}$/.test(v)) {
-      console.warn(
-        `[adapters] credential field "${k}" in adapter "${slug}" written as plain text — use \${VAR} referencing .env`
-      );
-    }
-  }
+  return { ...adapter, credential: maskSensitiveFields(adapter.credential) };
 }
 
 export class ConnectorRegistry {
@@ -325,7 +306,7 @@ export class ConnectorRegistry {
 
     // Warn about plain text credentials
     const credential = (config.credential ?? config.params) as Record<string, unknown> | undefined;
-    if (credential) warnPlainTextCredentials(credential, slug);
+    if (credential) warnPlainTextSecrets(credential, `adapters:${slug}`);
 
     writeFileSync(yamlPath, yaml.dump(config, { lineWidth: -1, quotingType: '"' }));
 
