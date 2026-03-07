@@ -572,7 +572,7 @@
     "id": "F-028",
     "name": "Builder visual de agenda (CronScheduleBuilder)",
     "description": "Criar components/cron/cron-schedule-builder.tsx: RadioGroup para tipo (Intervalo, Diario, Semanal, Mensal, Personalizado), campos condicionais por tipo, gera cron expression internamente. Preview legivel via cronstrue, preview de proximas 5 execucoes via cron-parser. Validacao de cron expression no tipo Personalizado.",
-    "status": "blocked",
+    "status": "passing",
     "priority": 28,
     "agent": "coder",
     "task": "vibe-code",
@@ -588,7 +588,8 @@
       "Preview de proximas 5 execucoes no fuso do usuario",
       "Tipo Personalizado aceita cron manual com validacao"
     ],
-    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-1/worktree/sprints/sprint-1/3-prps/PRP-07-agendamento-cron.md"
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-1/worktree/sprints/sprint-1/3-prps/PRP-07-agendamento-cron.md",
+    "completed_at": "2026-03-07T13:00:00Z"
   },
   {
     "id": "F-029",
