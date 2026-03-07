@@ -2,6 +2,7 @@ import type { ConnectorDef, ConnectorContext } from "../types.js";
 import { credentialSchema, optionsSchema } from "./schemas.js";
 import { createWhatsAppCloudClient } from "./client.js";
 import { createWhatsAppCloudRoutes } from "./routes.js";
+import { createWhatsAppCloudTools } from "./tools/index.js";
 
 export const whatsappCloudConnector: ConnectorDef = {
   slug: "whatsapp-cloud",
@@ -14,8 +15,10 @@ export const whatsappCloudConnector: ConnectorDef = {
     return createWhatsAppCloudClient(cred, opts);
   },
 
-  createTools(_adapters) {
-    return null;
+  createTools(adapters) {
+    if (adapters.length === 0) return null;
+    const slugs = adapters.map((a) => a.slug) as [string, ...string[]];
+    return createWhatsAppCloudTools(slugs);
   },
 
   async start(ctx: ConnectorContext) {

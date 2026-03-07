@@ -33,17 +33,18 @@ export class WhatsAppCloudClient {
     return res.json();
   }
 
-  async sendText(to: string, body: string): Promise<void> {
-    await this.request("POST", `/${this.phoneNumberId}/messages`, {
+  async sendText(to: string, body: string): Promise<string> {
+    const data = await this.request("POST", `/${this.phoneNumberId}/messages`, {
       messaging_product: "whatsapp",
       to,
       type: "text",
       text: { body },
-    });
+    }) as { messages?: Array<{ id: string }> };
+    return data.messages?.[0]?.id ?? "";
   }
 
-  async sendTemplate(to: string, templateName: string, languageCode: string): Promise<void> {
-    await this.request("POST", `/${this.phoneNumberId}/messages`, {
+  async sendTemplate(to: string, templateName: string, languageCode: string): Promise<string> {
+    const data = await this.request("POST", `/${this.phoneNumberId}/messages`, {
       messaging_product: "whatsapp",
       to,
       type: "template",
@@ -51,13 +52,14 @@ export class WhatsAppCloudClient {
         name: templateName,
         language: { code: languageCode },
       },
-    });
+    }) as { messages?: Array<{ id: string }> };
+    return data.messages?.[0]?.id ?? "";
   }
 
-  async getMediaUrl(mediaId: string): Promise<string> {
-    const data = await this.request("GET", `/${mediaId}`) as { url?: string };
+  async getMediaUrl(mediaId: string): Promise<{ url: string; mimeType: string }> {
+    const data = await this.request("GET", `/${mediaId}`) as { url?: string; mime_type?: string };
     if (!data.url) throw new Error(`No URL returned for media ${mediaId}`);
-    return data.url;
+    return { url: data.url, mimeType: data.mime_type ?? "" };
   }
 
   async markAsRead(messageId: string): Promise<void> {

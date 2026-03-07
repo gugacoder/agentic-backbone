@@ -197,7 +197,7 @@
     "id": "F-106",
     "name": "WhatsApp Cloud: tools send_whatsapp_text, send_whatsapp_template, get_whatsapp_media",
     "description": "Criar tools/send-text.ts (send_whatsapp_text: {to, body} -> {ok, messageId}), tools/send-template.ts (send_whatsapp_template: {to, templateName, languageCode?} -> {ok, messageId}), tools/get-media.ts (get_whatsapp_media: {mediaId} -> {url, mimeType}). Criar tools/index.ts exportando createWhatsAppCloudTools(slugs). Seguir o padrao one-tool-per-file do projeto.",
-    "status": "pending",
+    "status": "passing",
     "priority": 10,
     "agent": "coder",
     "task": "vibe-code",
@@ -211,7 +211,8 @@
       "createWhatsAppCloudTools exportado de tools/index.ts",
       "`npm run typecheck` passa sem erros"
     ],
-    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-5/worktree/sprints/sprint-5/3-prps/PRP-27-whatsapp-cloud-api.md"
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-5/worktree/sprints/sprint-5/3-prps/PRP-27-whatsapp-cloud-api.md",
+    "completed_at": "2026-03-07T23:39:41.806Z"
   },
   {
     "id": "F-107",
