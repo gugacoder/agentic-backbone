@@ -3,6 +3,7 @@ import { mysqlConnector } from "./mysql/index.js";
 import { postgresConnector } from "./postgres/index.js";
 import { evolutionConnector } from "./evolution/index.js";
 import { twilioConnector } from "./twilio/index.js";
+import { whatsappCloudConnector } from "./whatsapp-cloud/index.js";
 
 export const connectorRegistry = new ConnectorRegistry();
 
@@ -13,5 +14,6 @@ connectorRegistry.register(postgresConnector);
 // --- Communication connectors (with lifecycle) ---
 connectorRegistry.register(evolutionConnector);
 connectorRegistry.register(twilioConnector);
+connectorRegistry.register(whatsappCloudConnector);
 
 export type { ConnectorDef, ConnectorContext, ConnectorHealth, ResolvedAdapter, AdapterInstance } from "./types.js";

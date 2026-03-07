@@ -131,7 +131,7 @@
     "id": "F-103",
     "name": "LGPD: telas Hub — dashboard, pedidos de direitos, log de consentimento",
     "description": "Criar rotas /lgpd (dashboard), /lgpd/rights-requests e /lgpd/consent-log no Hub. Dashboard: 4 cards de resumo (agentes mapeados, tipos de dados, pedidos abertos, ultima atualizacao), tabela Mapa de Dados expansivel por agente com DataMapEditDialog (selects de data_type e legal_basis, textarea finalidade, campo retencao). Pedidos: lista com filtros de status e tipo, modal de detalhes com campo de resposta e botao de mudanca de status. Log: tabela com filtros de agente/canal/periodo. Botao 'Exportar relatorio' gera download JSON via POST /lgpd/report.",
-    "status": "blocked",
+    "status": "in_progress",
     "priority": 7,
     "agent": "coder",
     "task": "vibe-code",
@@ -147,13 +147,14 @@
       "Pagina /lgpd inacessivel para usuario sem permissao (redireciona ou exibe erro)",
       "`npm run build:hub` e `npm run typecheck` passam sem erros"
     ],
-    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-5/worktree/sprints/sprint-5/3-prps/PRP-26-lgpd-compliance-dashboard.md"
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-5/worktree/sprints/sprint-5/3-prps/PRP-26-lgpd-compliance-dashboard.md",
+    "retries": 1
   },
   {
     "id": "F-104",
     "name": "WhatsApp Cloud: estrutura do conector + client + schemas",
     "description": "Criar src/connectors/whatsapp-cloud/ com index.ts (ConnectorDef), client.ts (WhatsAppCloudClient para Graph API v19+ com metodos sendText, sendTemplate, getMediaUrl, markAsRead) e schemas.ts (Zod: credential: access_token, phone_number_id, webhook_verify_token, business_account_id, app_secret; options: api_version, auto_reply_read). Registrar conector no registry existente. Seguir exatamente o padrao do conector evolution.",
-    "status": "pending",
+    "status": "passing",
     "priority": 8,
     "agent": "coder",
     "task": "vibe-code",
@@ -166,7 +167,8 @@
       "Coexiste com conector evolution sem conflito de nomes",
       "`npm run typecheck` passa sem erros"
     ],
-    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-5/worktree/sprints/sprint-5/3-prps/PRP-27-whatsapp-cloud-api.md"
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-5/worktree/sprints/sprint-5/3-prps/PRP-27-whatsapp-cloud-api.md",
+    "completed_at": "2026-03-07T23:55:00.000Z"
   },
   {
     "id": "F-105",
