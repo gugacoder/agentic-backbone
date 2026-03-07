@@ -2,7 +2,7 @@
   "wave": 3,
   "sprint": 3,
   "decision": "go",
-  "decision_rationale": "GO inequivoco. Das 57 discoveries acumuladas (Sprints 1+2+3), 26 foram implementadas e 6 estao parciais. Restam 25 nao implementadas, das quais 6 tem score 10 (incluindo D-030 custos por agente e G-030 dashboard granular), 17 tem score 9, e 20 tem score 8. O Sprint 3 adiciona 21 novas discoveries focadas na evolucao de 'plataforma operacional' para 'plataforma de inteligencia operacional': custos granulares, analytics de tendencia, trace de raciocinio, knowledge base RAG, takeover de conversa, e orquestracao multi-agente. O mercado brasileiro de IA agentica cresce 31% ao ano (IDC: US$ 3,4 bi em 2026), com estrategias multi-LLM economizando 60-90% em custos. RAG enterprise cresce para USD 11 bi. Multi-agent orchestration tem 1.445% mais consultas (Gartner). Nenhum concorrente combina agentes autonomos + observabilidade operacional + RAG + custos granulares + self-hosted + pt-BR. A decisao GO eh clara: discoveries criticas de alto score com evidencias de mercado robustas e infraestrutura backend parcialmente pronta para suportar implementacao.",
+  "decision_rationale": "GO inequivoco. Das 67 discoveries acumuladas (Sprints 1+2+3), 31 foram implementadas e 6 estao parciais (D-004 governanca, D-009 auditabilidade, D-012 multi-agente, D-014 custos, G-008 auditabilidade, G-012 onboarding). Restam 36 com implemented_at null, das quais 22 tem score acima de 7 — incluindo 2 com score 10 (D-030 custos por agente, G-030 dashboard granular) e 8 com score 9 (D-014, D-024, D-031, D-032, G-014, G-024, G-031, G-032). O criterio de STOP ('maioria abaixo de 3 E nenhuma acima de 7') nao se aplica de forma alguma. O Sprint 3 evolui o Hub de plataforma operacional para plataforma de inteligencia operacional: custos granulares por agente/operacao, analytics de tendencia temporal, trace de raciocinio com tool calls, knowledge base RAG com upload de documentos, takeover de conversa humano, e orquestracao multi-agente. Mercado brasileiro de IA agentica cresce 31% ao ano (IDC: US$ 3,4 bi em 2026). RAG enterprise USD 11 bi (Techment). Multi-agent orchestration +1.445% em consultas (Gartner). Nenhum concorrente combina agentes autonomos + observabilidade operacional + RAG + custos granulares + self-hosted + pt-BR. Infraestrutura backend parcialmente pronta (pipeline embeddings, spawn.jsonl, token usage) reduz esforco de implementacao.",
   "discoveries": [
     {
       "id": "D-001",
@@ -34,7 +34,7 @@
     {
       "id": "D-004",
       "type": "pain",
-      "description": "Ausencia de governanca sobre respostas autonomas — risco de respostas inadequadas ou vazamento de dados",
+      "description": "Ausencia de governanca sobre respostas autonomas — risco de respostas inadequadas ou vazamento de dados (parcial: toggle + active hours, sem filtro de conteudo/approval)",
       "score": 8,
       "discovered_at": 1,
       "last_reclassified_at": 3,
@@ -79,7 +79,7 @@
     {
       "id": "D-009",
       "type": "pain",
-      "description": "Impossibilidade de auditar historico completo das acoes autonomas do agente para compliance",
+      "description": "Impossibilidade de auditar historico completo das acoes autonomas do agente para compliance (parcial: historico heartbeat/cron/jobs, sem audit log unificado)",
       "score": 8,
       "discovered_at": 1,
       "last_reclassified_at": 3,
@@ -106,7 +106,7 @@
     {
       "id": "D-012",
       "type": "pain",
-      "description": "Falta de gestao multi-agente unificada — cada agente em silo, sem visao de conjunto",
+      "description": "Falta de gestao multi-agente unificada — cada agente em silo, sem visao de conjunto (parcial: lista + dashboard, sem orquestracao/handoff)",
       "score": 7,
       "discovered_at": 1,
       "last_reclassified_at": 3,
@@ -124,7 +124,7 @@
     {
       "id": "D-014",
       "type": "pain",
-      "description": "Falta de visibilidade sobre custos e consumo de tokens LLM — surpresas na fatura bloqueiam adocao",
+      "description": "Falta de visibilidade sobre custos e consumo de tokens LLM — surpresas na fatura bloqueiam adocao (parcial: custo total do dia, sem breakdown por agente/operacao)",
       "score": 9,
       "discovered_at": 2,
       "last_reclassified_at": 3,
@@ -367,7 +367,7 @@
     {
       "id": "G-008",
       "type": "gain",
-      "description": "Auditabilidade completa — historico de tudo que o agente fez, quando e por que",
+      "description": "Auditabilidade completa — historico de tudo que o agente fez, quando e por que (parcial: historico heartbeat/cron/jobs, sem trace de raciocinio)",
       "score": 8,
       "discovered_at": 1,
       "last_reclassified_at": 3,
@@ -403,7 +403,7 @@
     {
       "id": "G-012",
       "type": "gain",
-      "description": "Onboarding rapido — do zero ao primeiro agente operando em minutos, nao semanas",
+      "description": "Onboarding rapido — do zero ao primeiro agente operando em minutos, nao semanas (parcial: create agent form, sem templates/wizard)",
       "score": 8,
       "discovered_at": 1,
       "last_reclassified_at": 3,
