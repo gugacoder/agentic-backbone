@@ -24,8 +24,8 @@ import { listAgents } from "./agents/registry.js";
 import { listChannels } from "./channels/registry.js";
 import { initHooks, wireEventBusToHooks, triggerHook } from "./hooks/index.js";
 import { startJobSweeper, stopJobSweeper, shutdownAllJobs } from "./jobs/engine.js";
-import { modules } from "./modules/index.js";
-import { startModules, stopModules } from "./modules/loader.js";
+import { connectorRegistry } from "./connectors/index.js";
+import { eventBus } from "./events/index.js";
 import { initChannelAdapters, channelAdapterRegistry } from "./channel-adapters/index.js";
 
 import type { ServerType } from "@hono/node-server";
@@ -48,11 +48,19 @@ async function bootstrap() {
 
   await initChannelAdapters();
 
-  // Modules must be started BEFORE app.route() — Hono copies routes on mount,
+  // Connectors must be started BEFORE app.route() — Hono copies routes on mount,
   // so routes added after .route() won't propagate to the app.
-  await startModules(modules, routes);
-  const moduleNames = modules.map((m) => m.name).join(", ") || "(none)";
-  console.log(`[backbone] modules: ${moduleNames}`);
+  await connectorRegistry.startAll(routes, {
+    eventBus,
+    log: (msg: string) => console.log(`[connectors] ${msg}`),
+    env: process.env as Record<string, string | undefined>,
+    registerChannelAdapter(slug, factory) {
+      channelAdapterRegistry.register(slug, factory);
+      console.log(`[connectors] registered channel-adapter: ${slug}`);
+    },
+  });
+  const connectorNames = connectorRegistry.list().map((c) => c.slug).join(", ") || "(none)";
+  console.log(`[backbone] connectors: ${connectorNames}`);
 
   // Mount routes AFTER modules registered their routes on the `routes` Hono instance
   app.route("/api/v1/ai", routes);
@@ -158,7 +166,7 @@ async function onShutdown(signal: string) {
     stopJobSweeper();
     shutdownAllJobs();
     await channelAdapterRegistry.shutdownAll();
-    await stopModules();
+    await connectorRegistry.stopAll();
 
     if (server) {
       await new Promise<void>((resolve, reject) => {

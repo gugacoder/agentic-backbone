@@ -1,9 +1,9 @@
-import { createJobTools } from "../jobs/tools.js";
-import { createMemoryAiTools } from "../memory/ai-tools.js";
-import { createCronTools } from "../cron/tools.js";
-import { createAdapterTools } from "../adapters/tools.js";
-import { createMessageTools } from "../channels/tools.js";
-import { createTwilioTools } from "../modules/twilio/tools.js";
+import { createJobTools } from "../jobs/tools/index.js";
+import { createMemoryAiTools } from "../memory/tools/index.js";
+import { createCronTools } from "../cron/tools/index.js";
+import { createMessageTools } from "../channels/tools/index.js";
+import { createEmitTool, createSysinfoTool } from "../tools/tools/index.js";
+import { connectorRegistry } from "../connectors/index.js";
 
 type AgentMode = "heartbeat" | "conversation" | "cron" | "memory";
 
@@ -27,16 +27,16 @@ export function composeAgentTools(
   Object.assign(tools, createMemoryAiTools(agentId));
   Object.assign(tools, createCronTools());
 
-  const adapterTools = createAdapterTools(agentId);
-  if (adapterTools) Object.assign(tools, adapterTools);
+  const connectorTools = connectorRegistry.composeTools(agentId);
+  if (connectorTools) Object.assign(tools, connectorTools);
 
   const messageTools = createMessageTools(agentId, {
     recipientId: opts?.userId,
   });
   if (messageTools) Object.assign(tools, messageTools);
 
-  const twilioTools = createTwilioTools();
-  if (twilioTools) Object.assign(tools, twilioTools);
+  Object.assign(tools, createEmitTool(agentId));
+  Object.assign(tools, createSysinfoTool());
 
   return Object.keys(tools).length > 0 ? tools : undefined;
 }

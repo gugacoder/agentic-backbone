@@ -5,8 +5,7 @@ import { systemRoutes } from "./system.js";
 import { agentRoutes } from "./agents.js";
 import { channelRoutes } from "./channels.js";
 import { skillRoutes } from "./skills.js";
-import { toolRoutes } from "./tools.js";
-import { adapterRoutes } from "./adapters.js";
+import { connectorAdapterRoutes } from "./adapters.js";
 import { conversationRoutes } from "./conversations.js";
 import { userRoutes } from "./users.js";
 import { settingsRoutes } from "./settings.js";
@@ -18,7 +17,7 @@ import { getHeartbeatStatus } from "../heartbeat/index.js";
 import { listAgents } from "../agents/registry.js";
 import { listChannels } from "../channels/registry.js";
 import { sseHub } from "../events/sse.js";
-import { getModuleHealth } from "../modules/loader.js";
+import { connectorRegistry } from "../connectors/index.js";
 
 export const routes = new Hono();
 
@@ -37,7 +36,7 @@ routes.get("/health", (c) =>
       type: ch.type,
       listeners: sseHub.getClientCount(ch.slug),
     })),
-    modules: getModuleHealth(),
+    connectors: connectorRegistry.healthAll(),
   })
 );
 
@@ -107,8 +106,7 @@ routes.route("/", systemRoutes);
 routes.route("/", agentRoutes);
 routes.route("/", channelRoutes);
 routes.route("/", skillRoutes);
-routes.route("/", toolRoutes);
-routes.route("/", adapterRoutes);
+routes.route("/", connectorAdapterRoutes);
 routes.route("/", conversationRoutes);
 routes.route("/", userRoutes);
 routes.route("/", settingsRoutes);

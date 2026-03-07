@@ -137,7 +137,7 @@ Uses Vercel AI SDK (`ai@^6`) via OpenRouter. Configured in `context/system/llm.j
 1. Creates Hono app, registers routes, JWT auth middleware
 2. Scans `context/agents/*/AGENT.md` → agent registry
 3. Scans `context/users/*/channels/*/CHANNEL.md` → channel registry
-4. Loads modules (Evolution if `EVOLUTION_URL` set)
+4. Starts connectors (Evolution if `EVOLUTION_URL` set, Twilio if voice channels exist)
 5. Starts heartbeat scheduler (registers enabled agents)
 6. Starts cron scheduler (registers agent cron jobs)
 7. Initializes hooks, watchers (hot reload)
@@ -161,9 +161,8 @@ Uses Vercel AI SDK (`ai@^6`) via OpenRouter. Configured in `context/system/llm.j
 | `memory/` | Semantic search: OpenAI embeddings → SQLite + sqlite-vec. Hybrid vector/FTS5. Periodic memory flush (every 20 messages) |
 | `skills/` | Skill loading, runtime eligibility filtering (env vars, binaries, OS), prompt assembly |
 | `tools/` | Tool loading from TOOL.md, prompt assembly |
-| `adapters/` | Outbound adapter registry with factory pattern |
-| `channel-adapters/` | Inbound channel adapter registry — discovery, SSE push, inbound message routing |
-| `modules/` | Pluggable `BackboneModule` interface. Currently: Evolution (WhatsApp) — conditionally loaded |
+| `connectors/` | Unified connector system — built-in TypeScript connectors (mysql, postgres, evolution, twilio) with client factories, tools, schemas, and optional routes/channel-adapters |
+| `channel-adapters/` | Inbound channel adapter registry — SSE push, inbound message routing |
 | `watchers/` | chokidar hot-reload: `AGENT.md` → refreshes registry + heartbeat; `CHANNEL.md` → refreshes channels; `ADAPTER.yaml` → emits event. 300ms debounce |
 | `users/` | User CRUD — filesystem-based (USER.md with frontmatter), permission model |
 | `context/` | Path resolution (`paths.ts`), resource resolver with precedence chain (`resolver.ts`), prompt assembly (`index.ts`), frontmatter parser |
@@ -176,7 +175,7 @@ Markdown-centric persistent state store with YAML frontmatter:
 
 | Scope | Path | Contents |
 |---|---|---|
-| Shared (lowest precedence) | `shared/{skills,tools,adapters,connectors}/` | Available to all agents |
+| Shared (lowest precedence) | `shared/{skills,tools,adapters}/` | Available to all agents |
 | System (mid precedence) | `system/{skills,tools,adapters}/` | System-scoped resources, `SOUL.md` (default), `llm.json` |
 | Agent (highest precedence) | `agents/:owner.:slug/` | `AGENT.md`, `SOUL.md`, `HEARTBEAT.md`, `CONVERSATION.md`, `MEMORY.md`, `cron/`, conversations, skills, tools |
 | Users | `users/:slug/USER.md` | User config + permissions |
@@ -215,9 +214,16 @@ Alternative agent runtime using Vercel AI SDK against OpenRouter:
 - Tool repair: `createToolCallRepairHandler()` for malformed tool call JSON
 - Built-in tools: `Read`, `Glob`, `Grep`, `Bash`, `Write`, `Edit`, `MultiEdit`, `ApplyPatch`, `AskUser`, `WebSearch`, `WebFetch`, `CodeSearch`, `Task`, `Batch`, `ListDir`
 
-### Connectors (`context/shared/connectors/`)
+### Connector Pattern (`src/connectors/`)
 
-Database/API connectors — each has a `CONNECTOR.md` (metadata) + engine files (`adapter.mjs`, `exec.mjs`). Available: `mysql`, `postgres`, `evolution`. Resolved by `resolveConnectorDir()`.
+Connectors are built-in TypeScript modules in `src/connectors/{slug}/`. Each connector:
+- Exports a `ConnectorDef` with client factory, zod schemas, and optionally tools/routes/channel-adapter
+- **One tool per file** — each tool lives in its own file inside `src/connectors/{slug}/tools/{tool-name}.ts`. This way, listing the files in a `tools/` folder immediately reveals all available tools for that connector. A `tools/index.ts` compositor imports all tool files and exports a single `create*Tools(slugs)` function.
+- Adapters (instances) are YAML files in `context/{shared,system,agent}/adapters/{slug}/ADAPTER.yaml`
+- ADAPTER.yaml contains: `connector`, `credential` (connection params), `options` (connector config), `policy` (readonly/readwrite)
+- Supports env var interpolation: `${VAR}`
+
+Available connectors: `mysql` (query/mutate tools), `postgres` (query/mutate tools), `evolution` (WhatsApp gateway with probe/state/routes/channel-adapter), `twilio` (voice calls with TwiML webhook routes/channel-adapter).
 
 ### SSE Event Types
 

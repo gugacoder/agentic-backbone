@@ -18,7 +18,6 @@ import {
 import { getHeartbeatHistory, getHeartbeatStats } from "../heartbeat/log.js";
 import { getAgentMemoryManager } from "../memory/manager.js";
 import { loadAllSkills } from "../skills/loader.js";
-import { loadAgentTools } from "../tools/loader.js";
 import { loadAgentServices, findService } from "../services/loader.js";
 import { executeServiceDirect } from "../services/executor.js";
 import { assemblePrompt } from "../context/index.js";
@@ -281,16 +280,6 @@ agentRoutes.get("/agents/:id/skills", (c) => {
   if (denied) return denied;
   const skills = loadAllSkills(agentId);
   return c.json(skills);
-});
-
-// --- Agent Tools ---
-
-agentRoutes.get("/agents/:id/tools", (c) => {
-  const agentId = c.req.param("id");
-  const denied = assertAgentOwnership(c, agentId);
-  if (denied) return denied;
-  const tools = loadAgentTools(agentId);
-  return c.json(tools);
 });
 
 // --- Agent Services ---

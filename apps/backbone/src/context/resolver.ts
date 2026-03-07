@@ -1,6 +1,5 @@
 import { readdirSync, existsSync } from "node:fs";
 import { join } from "node:path";
-import yaml from "js-yaml";
 import { parseFrontmatter, readContextFile } from "./frontmatter.js";
 import {
   type ResourceKind,
@@ -87,90 +86,12 @@ export function resolveResources(
   return result;
 }
 
-// --- YAML resource scanning (for ADAPTER.yaml) ---
-
-function scanYamlResourceDir(
-  dir: string,
-  filename: string,
-  source: string
-): ResolvedResource[] {
-  if (!existsSync(dir)) return [];
-
-  const entries: ResolvedResource[] = [];
-  for (const slug of readdirSync(dir)) {
-    const yamlPath = join(dir, slug, filename);
-    if (!existsSync(yamlPath)) continue;
-    const raw = readContextFile(yamlPath);
-    const parsed = yaml.load(raw);
-    const metadata = (parsed && typeof parsed === "object" ? parsed : {}) as Record<string, unknown>;
-    entries.push({ slug, path: yamlPath, source, metadata, content: raw });
-  }
-  return entries;
-}
-
-function resolveYamlResources(
-  agentId: string,
-  kind: ResourceKind,
-  filename: string
-): Map<string, ResolvedResource> {
-  const result = new Map<string, ResolvedResource>();
-  for (const { dir, source } of getResourceDirs(agentId, kind)) {
-    for (const entry of scanYamlResourceDir(dir, filename, source)) {
-      result.set(entry.slug, entry);
-    }
-  }
-  return result;
-}
-
 // --- Convenience resolvers ---
 
 export function resolveSkills(
   agentId: string
 ): Map<string, ResolvedResource> {
   return resolveResources(agentId, "skills", "SKILL.md");
-}
-
-export function resolveTools(
-  agentId: string
-): Map<string, ResolvedResource> {
-  return resolveResources(agentId, "tools", "TOOL.md");
-}
-
-export function resolveAdapters(
-  agentId: string
-): Map<string, ResolvedResource> {
-  return resolveYamlResources(agentId, "adapters", "ADAPTER.yaml");
-}
-
-// --- Connector resolution ---
-
-export function resolveConnectorDir(connectorSlug: string): string | null {
-  // Search precedence: shared → system
-  const shared = join(sharedResourceDir("connectors"), connectorSlug);
-  if (existsSync(shared)) return shared;
-
-  const system = join(systemResourceDir("connectors"), connectorSlug);
-  if (existsSync(system)) return system;
-
-  return null;
-}
-
-// --- Direct adapter lookup (no agent context needed) ---
-
-export function findAdapter(slug: string): ResolvedResource | null {
-  const filename = "ADAPTER.yaml";
-
-  // Search: shared → system (covers all non-agent adapters)
-  for (const dir of [sharedResourceDir("adapters"), systemResourceDir("adapters")]) {
-    const yamlPath = join(dir, slug, filename);
-    if (!existsSync(yamlPath)) continue;
-    const raw = readContextFile(yamlPath);
-    const parsed = yaml.load(raw);
-    const metadata = (parsed && typeof parsed === "object" ? parsed : {}) as Record<string, unknown>;
-    return { slug, path: yamlPath, source: "shared", metadata, content: raw };
-  }
-
-  return null;
 }
 
 // --- Soul resolution (agent → system fallback) ---

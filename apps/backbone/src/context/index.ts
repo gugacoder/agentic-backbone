@@ -6,8 +6,7 @@ import {
 } from "./resolver.js";
 import { parseFrontmatter } from "./frontmatter.js";
 import { buildSkillsSnapshot } from "../skills/prompt.js";
-import { formatToolsPrompt } from "../tools/prompt.js";
-import { formatAdaptersPrompt } from "../adapters/prompt.js";
+import { connectorRegistry } from "../connectors/index.js";
 import { formatServicesPrompt } from "../services/prompt.js";
 import { getAgentMemoryManager } from "../memory/manager.js";
 import { agentDir } from "./paths.js";
@@ -80,16 +79,13 @@ export async function assemblePrompt(
   // 5. Skills
   system += buildSkillsSnapshot(agentId).prompt;
 
-  // 6. Tools
-  system += formatToolsPrompt(agentId);
+  // 6. Adapters
+  system += connectorRegistry.formatPrompt(agentId);
 
-  // 7. Adapters
-  system += formatAdaptersPrompt(agentId);
-
-  // 8. Services
+  // 7. Services
   system += formatServicesPrompt(agentId);
 
-  // 9. Semantic memory (data-driven: requires userMessage + OPENAI_API_KEY)
+  // 8. Semantic memory (data-driven: requires userMessage + OPENAI_API_KEY)
   if (opts.userMessage && process.env.OPENAI_API_KEY) {
     try {
       const mgr = getAgentMemoryManager(agentId);
@@ -106,10 +102,10 @@ export async function assemblePrompt(
     }
   }
 
-  // 10. Mode instructions (generic tag)
+  // 9. Mode instructions (generic tag)
   system += `<instructions>\n${instructions}\n</instructions>\n\n`;
 
-  // 11. Tail
+  // 10. Tail
   system += "Follow the instructions strictly.\n";
 
   return {
