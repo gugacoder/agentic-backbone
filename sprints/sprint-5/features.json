@@ -66,7 +66,7 @@
     "id": "F-100",
     "name": "Webhook: telas Hub — aba Webhooks e historico de eventos",
     "description": "Criar aba 'Webhooks' na pagina do agente (/agents/:id) com rota routes/_authenticated/agents/$agentId/webhooks.tsx. Componentes: WebhooksTab, WebhookCard (nome, URL copiavel, toggle enabled, status do ultimo evento, menu Editar/Revogar), WebhookCreateDialog (campos Nome, Descricao, Filtro event_type; exibe URL+secret apos criacao com aviso de one-time), WebhookEventsTable (tabela Data/Event Type/Status badge/Payload expandivel/Error, paginacao 50/pagina, botao Reprocessar para failed). Usar queryOptions de api/webhooks.ts.",
-    "status": "blocked",
+    "status": "passing",
     "priority": 4,
     "agent": "coder",
     "task": "vibe-code",
@@ -83,7 +83,8 @@
       "URL do webhook e copiavel diretamente da GUI",
       "`npm run build:hub` e `npm run typecheck` passam sem erros"
     ],
-    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-5/worktree/sprints/sprint-5/3-prps/PRP-25-webhook-inbound-triggers.md"
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-5/worktree/sprints/sprint-5/3-prps/PRP-25-webhook-inbound-triggers.md",
+    "completed_at": "2026-03-07T23:25:00.000Z"
   },
   {
     "id": "F-101",

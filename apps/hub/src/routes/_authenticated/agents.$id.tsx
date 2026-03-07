@@ -11,6 +11,7 @@ import {
   ChevronRight,
   FlaskConical,
   Star,
+  Webhook,
 } from "lucide-react";
 import {
   agentQueryOptions,
@@ -28,6 +29,7 @@ import { AgentCronTab } from "@/components/agents/agent-cron-tab";
 import { KnowledgeTab } from "@/components/agents/knowledge-tab";
 import { EvalTab } from "@/components/agents/eval-tab";
 import { QualityTab } from "@/components/quality/quality-tab";
+import { WebhooksTab } from "@/components/webhooks/webhooks-tab";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { useSSEEvent } from "@/hooks/use-sse";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -42,6 +44,7 @@ const tabs = [
   { value: "cron", label: "Agenda", icon: Clock },
   { value: "evaluation", label: "Avaliacao", icon: FlaskConical },
   { value: "quality", label: "Qualidade", icon: Star },
+  { value: "webhooks", label: "Webhooks", icon: Webhook },
 ] as const;
 
 type TabValue = (typeof tabs)[number]["value"];
@@ -207,6 +210,9 @@ function AgentDetailPage() {
         </TabsContent>
         <TabsContent value="quality">
           <QualityTab agentId={id} days={days ?? 30} />
+        </TabsContent>
+        <TabsContent value="webhooks">
+          <WebhooksTab agentId={id} />
         </TabsContent>
       </Tabs>
     </div>

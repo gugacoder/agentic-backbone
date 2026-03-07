@@ -154,6 +154,29 @@ webhookRoutes.get("/agents/:agentId/webhooks/:webhookId/events", (c) => {
   return c.json(rows.map(formatEvent));
 });
 
+// POST /agents/:agentId/webhooks/:webhookId/events/:eventId/reprocess
+webhookRoutes.post("/agents/:agentId/webhooks/:webhookId/events/:eventId/reprocess", (c) => {
+  const { agentId, webhookId, eventId } = c.req.param();
+
+  const event = db
+    .prepare("SELECT * FROM webhook_events WHERE id = ? AND webhook_id = ? AND agent_id = ?")
+    .get(eventId, webhookId, agentId) as WebhookEventRow | undefined;
+
+  if (!event) return c.json({ error: "not found" }, 404);
+
+  // Reset to pending and re-trigger
+  db.prepare(
+    `UPDATE webhook_events SET status = 'pending', error = NULL, processed_at = NULL WHERE id = ?`
+  ).run(eventId);
+
+  const payload = JSON.parse(event.payload);
+  executeWebhookAsync(eventId, agentId, payload).catch((err) => {
+    console.error(`[webhook] reprocess error for event ${eventId}:`, err);
+  });
+
+  return c.json({ eventId });
+});
+
 // ── Async agent execution ───────────────────────────────────
 
 async function executeWebhookAsync(eventId: string, agentId: string, payload: unknown): Promise<void> {
