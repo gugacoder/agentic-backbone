@@ -239,7 +239,7 @@
     "id": "F-108",
     "name": "Multi-agent DB: tabela agent_handoffs + colunas em sessions + frontmatter",
     "description": "Criar tabela agent_handoffs (supervisor_id, member_id, label, trigger_intent, priority, enabled, created_at; unique index supervisor+member). Adicionar colunas orchestration_path TEXT e current_agent_id TEXT na tabela sessions via ALTER TABLE seguro (verificar existencia antes). Estender parser de agentes para reconhecer campos role (supervisor) e members: [] no frontmatter do AGENT.md. Todos como migracao no startup do backbone.",
-    "status": "pending",
+    "status": "passing",
     "priority": 12,
     "agent": "coder",
     "task": "vibe-code",
@@ -251,7 +251,8 @@
       "Parser de agentes le campo role e members do frontmatter do AGENT.md",
       "`npm run typecheck` passa sem erros"
     ],
-    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-5/worktree/sprints/sprint-5/3-prps/PRP-28-multi-agent-orchestration.md"
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-5/worktree/sprints/sprint-5/3-prps/PRP-28-multi-agent-orchestration.md",
+    "completed_at": "2026-03-07T23:46:19.811Z"
   },
   {
     "id": "F-109",

@@ -406,4 +406,23 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_lgpd_rights_status ON lgpd_rights_requests(status);
 `);
 
+db.exec(`
+  CREATE TABLE IF NOT EXISTS agent_handoffs (
+    id             INTEGER PRIMARY KEY AUTOINCREMENT,
+    supervisor_id  TEXT NOT NULL,
+    member_id      TEXT NOT NULL,
+    label          TEXT NOT NULL,
+    trigger_intent TEXT NOT NULL,
+    priority       INTEGER DEFAULT 0,
+    enabled        INTEGER DEFAULT 1,
+    created_at     TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+  CREATE UNIQUE INDEX IF NOT EXISTS idx_handoffs_sup_member ON agent_handoffs(supervisor_id, member_id);
+  CREATE INDEX IF NOT EXISTS idx_handoffs_supervisor ON agent_handoffs(supervisor_id);
+`);
+
+// Idempotent migration: add orchestration columns to sessions
+try { db.exec(`ALTER TABLE sessions ADD COLUMN orchestration_path TEXT`); } catch {}
+try { db.exec(`ALTER TABLE sessions ADD COLUMN current_agent_id TEXT`); } catch {}
+
 export { db };

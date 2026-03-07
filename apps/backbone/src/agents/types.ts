@@ -20,4 +20,6 @@ export interface AgentConfig {
   heartbeat: HeartbeatConfig;
   metadata: Record<string, unknown>;
   description: string;
+  role?: string;
+  members?: string[];
 }

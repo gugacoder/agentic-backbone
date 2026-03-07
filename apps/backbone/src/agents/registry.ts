@@ -27,6 +27,11 @@ function parseAgentConfig(agentId: string): AgentConfig | null {
 
   const enabled = metadata.enabled === true;
 
+  const role = typeof metadata.role === "string" ? metadata.role : undefined;
+  const members = Array.isArray(metadata.members)
+    ? (metadata.members as string[]).filter((m) => typeof m === "string")
+    : undefined;
+
   return {
     id: (metadata.id as string) ?? agentId,
     owner: (metadata.owner as string) ?? owner,
@@ -36,6 +41,8 @@ function parseAgentConfig(agentId: string): AgentConfig | null {
     heartbeat,
     metadata,
     description: content.trim(),
+    role,
+    members,
   };
 }
 
