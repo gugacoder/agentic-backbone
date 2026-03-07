@@ -89,7 +89,7 @@
     "id": "F-079",
     "name": "Pagina de detalhe de eval run",
     "description": "Criar rota routes/_authenticated/agents/$agentId/eval-runs/$runId.tsx com EvalRunPage. Criar EvalResultTable com colunas Entrada/Esperado/Real/Score/Status. Linhas com score < 0.7 destacadas em vermelho. Clicar na linha expande reasoning do judge. Botao 'Exportar para golden set' em linhas reprovadas adiciona input+actual como novo caso editavel no eval set. Header da pagina exibe Score Geral, Total de Casos, Aprovados e Reprovados.",
-    "status": "pending",
+    "status": "passing",
     "priority": 5,
     "agent": "coder",
     "task": "vibe-code",
@@ -104,7 +104,8 @@
       "Botao 'Exportar para golden set' disponivel em linhas com score < 0.7",
       "npm run build:hub e npm run typecheck passam sem erros"
     ],
-    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-4/worktree/sprints/sprint-4/3-prps/PRP-19-avaliacao-qualidade-agentes.md"
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-4/worktree/sprints/sprint-4/3-prps/PRP-19-avaliacao-qualidade-agentes.md",
+    "completed_at": "2026-03-07T20:22:39Z"
   },
   {
     "id": "F-080",

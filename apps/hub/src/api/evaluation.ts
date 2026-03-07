@@ -24,6 +24,8 @@ export interface EvalResult {
   id: number;
   run_id: number;
   case_id: number;
+  input: string;
+  expected: string;
   actual: string;
   score: number;
   reasoning?: string;

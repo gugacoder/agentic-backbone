@@ -283,7 +283,13 @@ evaluationRoutes.get("/agents/:id/eval-runs/:runId", (c: Context) => {
   if (!run) return c.json({ error: "not found" }, 404);
 
   const results = db
-    .prepare("SELECT * FROM eval_results WHERE run_id = ? ORDER BY id ASC")
+    .prepare(`
+      SELECT er.*, ec.input, ec.expected
+      FROM eval_results er
+      JOIN eval_cases ec ON ec.id = er.case_id
+      WHERE er.run_id = ?
+      ORDER BY er.id ASC
+    `)
     .all(runId);
   return c.json({ ...(run as object), results });
 });
