@@ -15,6 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { AnalyticsSummaryCards } from "@/components/analytics/analytics-summary-cards";
+import { AnalyticsTrendChart } from "@/components/analytics/analytics-trend-chart";
 import { analyticsOverviewQueryOptions } from "@/api/analytics";
 import { agentsQueryOptions } from "@/api/agents";
 
@@ -133,7 +134,14 @@ function AnalyticsPage() {
           description="Nao ha dados de analytics para o periodo selecionado."
         />
       ) : (
-        <AnalyticsSummaryCards data={data} />
+        <>
+          <AnalyticsSummaryCards data={data} />
+          <AnalyticsTrendChart
+            from={from}
+            to={to}
+            agentId={queryParams.agentId}
+          />
+        </>
       )}
     </div>
   );
