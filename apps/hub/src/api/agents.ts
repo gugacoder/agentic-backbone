@@ -61,3 +61,17 @@ export async function toggleAgentEnabled(id: string): Promise<void> {
 export async function triggerHeartbeat(id: string): Promise<void> {
   await request(`/agents/${id}/heartbeat/trigger`, { method: "POST" });
 }
+
+export interface CreateAgentPayload {
+  slug: string;
+  owner: string;
+  description?: string;
+  enabled?: boolean;
+}
+
+export async function createAgent(payload: CreateAgentPayload): Promise<Agent> {
+  return request<Agent>("/agents", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}

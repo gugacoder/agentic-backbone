@@ -212,7 +212,7 @@
     "id": "F-011",
     "name": "Formulario de criacao de agente",
     "description": "Criar routes/_authenticated/agents.new.tsx e components/agents/agent-form.tsx: formulario com campos slug (kebab-case, validacao), owner (select), descricao, enabled (switch). POST /agents, redirect para /agents/:id?tab=config apos sucesso.",
-    "status": "pending",
+    "status": "passing",
     "priority": 11,
     "agent": "coder",
     "task": "vibe-code",
@@ -226,7 +226,8 @@
       "Sucesso redireciona para /agents/:id?tab=config",
       "Botao cancelar volta para /agents"
     ],
-    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-1/worktree/sprints/sprint-1/3-prps/PRP-03-gestao-agentes.md"
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-1/worktree/sprints/sprint-1/3-prps/PRP-03-gestao-agentes.md",
+    "completed_at": "2026-03-07T06:30:00Z"
   },
   {
     "id": "F-012",

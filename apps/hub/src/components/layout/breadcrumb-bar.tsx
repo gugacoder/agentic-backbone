@@ -13,7 +13,8 @@ const routeLabels: Record<string, string> = {
   "/settings": "Configuracoes",
 };
 
-const dynamicRoutePatterns: { pattern: RegExp; parent: string }[] = [
+const dynamicRoutePatterns: { pattern: RegExp; parent: string; label?: string }[] = [
+  { pattern: /^\/agents\/new$/, parent: "Agentes", label: "Novo Agente" },
   { pattern: /^\/agents\/[^/]+$/, parent: "Agentes" },
 ];
 
@@ -28,10 +29,10 @@ export function BreadcrumbBar() {
     if (label) {
       crumbs.push(label);
     } else {
-      for (const { pattern, parent } of dynamicRoutePatterns) {
+      for (const { pattern, parent, label } of dynamicRoutePatterns) {
         if (pattern.test(match.pathname)) {
           if (!crumbs.includes(parent)) crumbs.push(parent);
-          const segment = match.pathname.split("/").pop();
+          const segment = label ?? match.pathname.split("/").pop();
           if (segment) crumbs.push(segment);
           break;
         }
