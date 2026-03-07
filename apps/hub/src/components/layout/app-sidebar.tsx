@@ -12,6 +12,7 @@ import {
   TrendingUp,
   Settings,
   ShieldCheck,
+  ShieldAlert,
   Plug,
 } from "lucide-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -27,6 +28,7 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { pendingApprovalsQueryOptions } from "@/api/approvals";
+import { securitySummaryQueryOptions } from "@/api/security";
 import { useSSEEvent, type SystemEvent } from "@/hooks/use-sse";
 
 const navItems = [
@@ -49,6 +51,10 @@ export function AppSidebar() {
   const { data: pending } = useQuery(pendingApprovalsQueryOptions());
   const pendingCount = pending?.length ?? 0;
 
+  const { data: securitySummary } = useQuery(securitySummaryQueryOptions(1));
+  const hasCriticalEvents =
+    (securitySummary?.bySeverity.find((s) => s.severity === "critical")?.count ?? 0) > 0;
+
   useSSEEvent(
     "approval:pending",
     useCallback(
@@ -61,6 +67,7 @@ export function AppSidebar() {
 
   const isApprovalsActive = !!matchRoute({ to: "/approvals", fuzzy: true });
   const isAdaptersActive = !!matchRoute({ to: "/adapters", fuzzy: true });
+  const isSecurityActive = !!matchRoute({ to: "/security", fuzzy: true });
 
   return (
     <Sidebar>
@@ -113,6 +120,26 @@ export function AppSidebar() {
                 >
                   <Plug />
                   <span>Adaptadores</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel>Sistema</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  isActive={isSecurityActive}
+                  render={<Link to="/security" />}
+                >
+                  <ShieldAlert />
+                  <span className="flex-1">Seguranca</span>
+                  {hasCriticalEvents && (
+                    <span className="ml-auto inline-flex h-2 w-2 rounded-full bg-destructive" />
+                  )}
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
