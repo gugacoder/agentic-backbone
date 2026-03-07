@@ -3,11 +3,11 @@ import { request } from "@/lib/api";
 
 export interface Channel {
   slug: string;
-  name: string;
-  type: string;
   owner: string;
-  listeners: string[];
-  connected: boolean;
+  type: string;
+  metadata: Record<string, unknown>;
+  description: string;
+  listeners: number;
 }
 
 export function channelsQueryOptions() {

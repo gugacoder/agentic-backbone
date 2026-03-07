@@ -402,7 +402,7 @@
     "id": "F-020",
     "name": "Lista de canais + ChannelCard",
     "description": "Substituir placeholder /channels: fetch canais, grid de ChannelCards com nome, tipo (badge com icone), owner, listeners, status conexao (StatusBadge). Filtro por tipo. Botao Novo Canal. Click navega para /channels/:slug.",
-    "status": "pending",
+    "status": "passing",
     "priority": 20,
     "agent": "coder",
     "task": "vibe-code",
@@ -416,7 +416,8 @@
       "Filtro por tipo funciona",
       "Click no card navega para /channels/:slug"
     ],
-    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-1/worktree/sprints/sprint-1/3-prps/PRP-05-canais-whatsapp.md"
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-1/worktree/sprints/sprint-1/3-prps/PRP-05-canais-whatsapp.md",
+    "completed_at": "2026-03-07T09:00:00Z"
   },
   {
     "id": "F-021",
