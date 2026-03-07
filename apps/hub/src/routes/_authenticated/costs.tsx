@@ -18,6 +18,7 @@ import { CostSummaryCards } from "@/components/costs/cost-summary-cards";
 import { CostTrendChart } from "@/components/costs/cost-trend-chart";
 import { CostByAgentChart } from "@/components/costs/cost-by-agent-chart";
 import { CostByOperationChart } from "@/components/costs/cost-by-operation-chart";
+import { BudgetAlertList } from "@/components/costs/budget-alert-list";
 import { costSummaryQueryOptions, costTrendQueryOptions } from "@/api/costs";
 import { agentsQueryOptions } from "@/api/agents";
 
@@ -171,6 +172,9 @@ function CostsPage() {
           </div>
         </>
       )}
+
+      {/* Budget Alerts */}
+      <BudgetAlertList />
     </div>
   );
 }
