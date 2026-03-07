@@ -11,6 +11,7 @@ import { triggerHook } from "../hooks/index.js";
 import { composeAgentTools } from "../agent/tools.js";
 import { collectAgentResult } from "../utils/agent-stream.js";
 import { formatError } from "../utils/errors.js";
+import { emitNotification } from "../notifications/index.js";
 
 const HEARTBEAT_OK = "HEARTBEAT_OK";
 const ACK_MAX_CHARS = 300;
@@ -208,6 +209,14 @@ async function tick(agentId: string): Promise<void> {
     state.lastStatus = "failed";
     console.error(`[heartbeat:${agentId}] failed:`, err);
     emitHeartbeatResult(agentId, "failed", { reason, durationMs });
+    emitNotification({
+      type: "heartbeat_error",
+      severity: "error",
+      agentId,
+      title: `Heartbeat falhou: ${agentId}`,
+      body: reason,
+      metadata: { durationMs },
+    });
   } finally {
     state.running = false;
   }

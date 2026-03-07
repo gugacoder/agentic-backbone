@@ -7,6 +7,7 @@ import { logCronRun } from "./log.js";
 import { collectAgentResult } from "../utils/agent-stream.js";
 import type { CronJob } from "./types.js";
 import { formatError } from "../utils/errors.js";
+import { emitNotification } from "../notifications/index.js";
 
 const EXECUTION_TIMEOUT_MS = 10 * 60 * 1000;
 
@@ -37,6 +38,15 @@ export async function executeCronJob(job: CronJob): Promise<CronExecutionResult>
       status: "error",
       durationMs,
       error,
+    });
+
+    emitNotification({
+      type: "cron_error",
+      severity: "error",
+      agentId: job.agentId,
+      title: `Cron job falhou: ${job.agentId}/${job.slug}`,
+      body: error,
+      metadata: { jobSlug: job.slug, durationMs },
     });
 
     return { status: "error", error, durationMs };
@@ -124,6 +134,15 @@ async function executeMessagePayload(
     inputTokens: usageData?.inputTokens,
     outputTokens: usageData?.outputTokens,
     costUsd: usageData?.totalCostUsd,
+  });
+
+  emitNotification({
+    type: "cron_ok",
+    severity: "info",
+    agentId: job.agentId,
+    title: `Cron job concluido: ${job.agentId}/${job.slug}`,
+    body: summary,
+    metadata: { jobSlug: job.slug, durationMs },
   });
 
   return { status: "ok", summary, usage: usageData, durationMs };

@@ -21,6 +21,7 @@
     "pg": "^8.18.0",
     "pidusage": "^4.0.1",
     "sqlite-vec": "^0.1.7-alpha.2",
+    "web-push": "^3.6.7",
     "zod": "^3"
   },
   "devDependencies": {
@@ -29,6 +30,7 @@
     "@types/node": "^22",
     "@types/pg": "^8.18.0",
     "@types/pidusage": "^2.0.5",
+    "@types/web-push": "^3.6.4",
     "tsx": "^4",
     "typescript": "^5"
   }
