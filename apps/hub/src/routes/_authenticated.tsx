@@ -5,6 +5,7 @@ import { AppSidebar } from "@/components/layout/app-sidebar";
 import { BottomNav } from "@/components/layout/bottom-nav";
 import { BreadcrumbBar } from "@/components/layout/breadcrumb-bar";
 import { useSSE } from "@/hooks/use-sse";
+import { PushPermissionBanner } from "@/components/notifications/push-permission-banner";
 
 export const Route = createFileRoute("/_authenticated")({
   component: AuthenticatedLayout,
@@ -23,6 +24,7 @@ function AuthenticatedLayout() {
       <AppSidebar />
       <SidebarInset>
         <BreadcrumbBar />
+        <PushPermissionBanner />
         <div className="flex-1 overflow-auto p-4 pb-18 md:pb-4">
           <Outlet />
         </div>

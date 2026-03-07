@@ -62,6 +62,20 @@ export async function deleteNotification(id: number) {
   });
 }
 
+export function vapidKeyQueryOptions() {
+  return queryOptions({
+    queryKey: ["push", "vapid-key"],
+    queryFn: async () => {
+      try {
+        return await request<{ publicKey: string }>("/push/vapid-key");
+      } catch {
+        return null;
+      }
+    },
+    staleTime: Infinity,
+  });
+}
+
 export async function subscribeToPush(subscription: {
   endpoint: string;
   keys: { p256dh: string; auth: string };

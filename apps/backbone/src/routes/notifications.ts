@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import { db } from "../db/index.js";
 import { eventBus } from "../events/index.js";
+import { isVapidConfigured } from "../notifications/push.js";
 
 export const notificationRoutes = new Hono();
 
@@ -73,6 +74,16 @@ notificationRoutes.delete("/notifications/:id", (c) => {
   const result = db.prepare("DELETE FROM notifications WHERE id = ?").run(id);
   if (result.changes === 0) return c.json({ error: "not found" }, 404);
   return c.json({ status: "ok" });
+});
+
+// ── Push Config ──────────────────────────────────────────
+
+// GET /push/vapid-key — return VAPID public key (or 404 if not configured)
+notificationRoutes.get("/push/vapid-key", (c) => {
+  if (!isVapidConfigured()) {
+    return c.json({ error: "VAPID not configured" }, 404);
+  }
+  return c.json({ publicKey: process.env.VAPID_PUBLIC_KEY });
 });
 
 // ── Push Subscriptions ───────────────────────────────────

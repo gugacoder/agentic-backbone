@@ -43,6 +43,7 @@ export default defineConfig(({ mode }) => {
           ],
         },
         workbox: {
+          importScripts: ["/push-handler.js"],
           runtimeCaching: [
             {
               urlPattern: /^\/api\//,
