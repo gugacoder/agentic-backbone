@@ -20,3 +20,32 @@ export function usersQueryOptions() {
     queryFn: () => request<User[]>("/users"),
   });
 }
+
+export interface CreateUserPayload {
+  slug: string;
+  displayName: string;
+  password: string;
+  email?: string;
+  permissions?: Partial<UserPermissions>;
+}
+
+export interface UpdateUserPayload {
+  displayName?: string;
+  email?: string;
+  password?: string;
+  permissions?: Partial<UserPermissions>;
+}
+
+export function createUser(payload: CreateUserPayload) {
+  return request<User>("/users", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export function updateUser(slug: string, payload: UpdateUserPayload) {
+  return request<User>(`/users/${encodeURIComponent(slug)}`, {
+    method: "PATCH",
+    body: JSON.stringify(payload),
+  });
+}
