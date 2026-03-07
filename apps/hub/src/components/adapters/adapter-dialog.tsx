@@ -224,6 +224,7 @@ export function AdapterDialog({ open, onOpenChange, editingAdapter }: Props) {
                 <SelectItem value="evolution">Evolution</SelectItem>
                 <SelectItem value="twilio">Twilio</SelectItem>
                 <SelectItem value="http">HTTP</SelectItem>
+                <SelectItem value="whatsapp-cloud">WhatsApp Cloud</SelectItem>
               </SelectContent>
             </Select>
           </div>

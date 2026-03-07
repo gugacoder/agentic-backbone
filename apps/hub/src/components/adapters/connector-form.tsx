@@ -4,7 +4,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 
-export type ConnectorType = "mysql" | "postgres" | "evolution" | "twilio" | "http";
+export type ConnectorType = "mysql" | "postgres" | "evolution" | "twilio" | "http" | "whatsapp-cloud";
 
 export interface ConnectorCredential {
   // MySQL / Postgres
@@ -27,6 +27,12 @@ export interface ConnectorCredential {
   headers?: string;
   bearerToken?: string;
   timeoutMs?: number;
+  // WhatsApp Cloud
+  access_token?: string;
+  app_secret?: string;
+  phone_number_id?: string;
+  waba_id?: string;
+  verify_token?: string;
 }
 
 // Sentinel value used when a masked password is not changed
@@ -202,6 +208,56 @@ export function ConnectorForm({ connector, credential, maskedFields, onChange, o
             value={credential.phoneNumber ?? ""}
             onChange={(e) => set("phoneNumber", e.target.value)}
             placeholder="+5511999999999"
+          />
+        </div>
+      </div>
+    );
+  }
+
+  if (connector === "whatsapp-cloud") {
+    return (
+      <div className="space-y-3">
+        <PasswordField
+          id="cf-access-token"
+          label="Access Token"
+          value={credential.access_token ?? ""}
+          masked={isMasked("access_token")}
+          onChange={(v) => set("access_token", v)}
+          onClear={() => onUnmask("access_token")}
+        />
+        <PasswordField
+          id="cf-app-secret"
+          label="App Secret"
+          value={credential.app_secret ?? ""}
+          masked={isMasked("app_secret")}
+          onChange={(v) => set("app_secret", v)}
+          onClear={() => onUnmask("app_secret")}
+        />
+        <div className="space-y-1.5">
+          <Label htmlFor="cf-phone-id">Phone Number ID</Label>
+          <Input
+            id="cf-phone-id"
+            value={credential.phone_number_id ?? ""}
+            onChange={(e) => set("phone_number_id", e.target.value)}
+            placeholder="123456789"
+          />
+        </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="cf-waba-id">WABA ID</Label>
+          <Input
+            id="cf-waba-id"
+            value={credential.waba_id ?? ""}
+            onChange={(e) => set("waba_id", e.target.value)}
+            placeholder="123456789"
+          />
+        </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="cf-verify-token">Verify Token</Label>
+          <Input
+            id="cf-verify-token"
+            value={credential.verify_token ?? ""}
+            onChange={(e) => set("verify_token", e.target.value)}
+            placeholder="meu-token-secreto"
           />
         </div>
       </div>

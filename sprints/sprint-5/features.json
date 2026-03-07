@@ -218,7 +218,7 @@
     "id": "F-107",
     "name": "WhatsApp Cloud: GUI Hub — URL do webhook no detalhe do adapter",
     "description": "Na GUI de adapters existente (/adapters), quando connector === 'whatsapp-cloud', adicionar bloco informativo exibindo: 'Webhook URL: {backboneUrl}/connectors/whatsapp-cloud/{adapterId}/webhook' com instrucao para configurar no Meta Business Manager e botao 'Copiar URL'. Campos access_token, app_secret mascarados com maskSensitiveFields de utils/sensitive.ts. Nenhuma nova pagina necessaria, apenas adicionar bloco ao componente de detalhe existente.",
-    "status": "pending",
+    "status": "passing",
     "priority": 11,
     "agent": "coder",
     "task": "vibe-code",
@@ -232,7 +232,8 @@
       "Outros conectores nao sao afetados",
       "`npm run build:hub` e `npm run typecheck` passam sem erros"
     ],
-    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-5/worktree/sprints/sprint-5/3-prps/PRP-27-whatsapp-cloud-api.md"
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-5/worktree/sprints/sprint-5/3-prps/PRP-27-whatsapp-cloud-api.md",
+    "completed_at": "2026-03-07T23:55:00.000Z"
   },
   {
     "id": "F-108",
