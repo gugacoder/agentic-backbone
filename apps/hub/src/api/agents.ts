@@ -126,6 +126,19 @@ export async function deleteAgent(id: string): Promise<void> {
   await request(`/agents/${id}`, { method: "DELETE" });
 }
 
+export interface MemoryStatus {
+  fileCount: number;
+  chunkCount: number;
+  lastSync?: string;
+}
+
+export function agentMemoryStatusQueryOptions(id: string) {
+  return queryOptions({
+    queryKey: ["agents", id, "memory", "status"],
+    queryFn: () => request<MemoryStatus>(`/agents/${id}/memory/status`),
+  });
+}
+
 export async function saveHeartbeatConfig(
   id: string,
   config: HeartbeatConfigData,

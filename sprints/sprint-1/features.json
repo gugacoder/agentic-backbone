@@ -487,7 +487,7 @@
     "id": "F-024",
     "name": "Status da memoria + MEMORY.md viewer",
     "description": "Substituir placeholder tab Memoria em agents.$id.tsx. Secao Status: 2 cards numericos (arquivos indexados, chunks), timestamp ultima sync. Secao Fatos: fetch MEMORY.md via GET /agents/:id/files/MEMORY.md, renderizar markdown somente-leitura, empty state se vazio. Criar components/agents/memory-status-panel.tsx.",
-    "status": "pending",
+    "status": "passing",
     "priority": 24,
     "agent": "coder",
     "task": "vibe-code",
@@ -500,7 +500,8 @@
       "MEMORY.md vazio exibe empty state orientativo",
       "Cards numericos formatados corretamente"
     ],
-    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-1/worktree/sprints/sprint-1/3-prps/PRP-06-memoria-semantica.md"
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-1/worktree/sprints/sprint-1/3-prps/PRP-06-memoria-semantica.md",
+    "completed_at": "2026-03-07T11:00:00Z"
   },
   {
     "id": "F-025",
