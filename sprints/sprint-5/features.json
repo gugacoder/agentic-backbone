@@ -44,7 +44,7 @@
     "id": "F-099",
     "name": "Webhook: execucao assincrona do agente ao receber evento",
     "description": "Apos registrar evento webhook com status `pending`, disparar execucao assincrona do agente sem bloquear a resposta HTTP. Injetar prompt `<webhook_event>{payload JSON}</webhook_event>`. Modo de execucao: `webhook` (similar a conversation, sem SSE ao chamador). Atualizar webhook_events.status para `done` ou `failed` ao concluir, preenchendo processed_at e error. Executar com runAgent() usando o agente referenciado pelo webhook.",
-    "status": "pending",
+    "status": "passing",
     "priority": 3,
     "agent": "coder",
     "task": "vibe-code",
@@ -59,7 +59,8 @@
       "processed_at preenchido ao concluir",
       "`npm run typecheck` passa sem erros"
     ],
-    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-5/worktree/sprints/sprint-5/3-prps/PRP-25-webhook-inbound-triggers.md"
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-5/worktree/sprints/sprint-5/3-prps/PRP-25-webhook-inbound-triggers.md",
+    "completed_at": "2026-03-07T23:12:59.155Z"
   },
   {
     "id": "F-100",

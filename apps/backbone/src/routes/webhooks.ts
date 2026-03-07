@@ -1,6 +1,9 @@
 import { Hono } from "hono";
 import { createHmac, randomUUID, timingSafeEqual } from "node:crypto";
 import { db } from "../db/index.js";
+import { runAgent } from "../agent/index.js";
+import { assemblePrompt } from "../context/index.js";
+import { getAgent } from "../agents/registry.js";
 
 export const webhookRoutes = new Hono();
 
@@ -151,6 +154,43 @@ webhookRoutes.get("/agents/:agentId/webhooks/:webhookId/events", (c) => {
   return c.json(rows.map(formatEvent));
 });
 
+// ── Async agent execution ───────────────────────────────────
+
+async function executeWebhookAsync(eventId: string, agentId: string, payload: unknown): Promise<void> {
+  const agent = getAgent(agentId);
+  if (!agent) {
+    db.prepare(
+      `UPDATE webhook_events SET status = 'failed', error = ?, processed_at = datetime('now') WHERE id = ?`
+    ).run(`Agent ${agentId} not found`, eventId);
+    return;
+  }
+
+  const prompt = `<webhook_event>${JSON.stringify(payload)}</webhook_event>`;
+
+  try {
+    // Try conversation mode; if no instructions, run with bare prompt
+    const assembled = await assemblePrompt(agentId, "conversation", { userMessage: prompt });
+
+    const runOptions = assembled
+      ? { role: "webhook" as const, system: assembled.system }
+      : { role: "webhook" as const };
+
+    // Consume the async generator to drive execution to completion
+    for await (const _event of runAgent(assembled ? assembled.userMessage : prompt, runOptions)) {
+      // fire-and-forget: consume events but do nothing with them
+    }
+
+    db.prepare(
+      `UPDATE webhook_events SET status = 'done', processed_at = datetime('now') WHERE id = ?`
+    ).run(eventId);
+  } catch (err) {
+    const error = err instanceof Error ? err.message : String(err);
+    db.prepare(
+      `UPDATE webhook_events SET status = 'failed', error = ?, processed_at = datetime('now') WHERE id = ?`
+    ).run(error, eventId);
+  }
+}
+
 // ── Public endpoint with HMAC-SHA256 validation ────────────
 
 // POST /webhooks/:agentId/:webhookId
@@ -215,10 +255,10 @@ webhookRoutes.post("/webhooks/:agentId/:webhookId", async (c) => {
      VALUES (?, ?, ?, ?, ?, 'pending')`
   ).run(eventId, webhookId, agentId, JSON.stringify(headersObj), JSON.stringify(payload));
 
-  // Update event to done (fire-and-forget, no async agent exec in F-098)
-  db.prepare(
-    `UPDATE webhook_events SET status = 'done', processed_at = datetime('now') WHERE id = ?`
-  ).run(eventId);
+  // Fire-and-forget: execute agent asynchronously without blocking the HTTP response
+  executeWebhookAsync(eventId, agentId, payload).catch((err) => {
+    console.error(`[webhook] unhandled error for event ${eventId}:`, err);
+  });
 
   return c.json({ eventId });
 });
