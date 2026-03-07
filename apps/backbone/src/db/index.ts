@@ -336,4 +336,33 @@ for (const rule of systemRules) {
   insertRule.run(rule);
 }
 
+db.exec(`
+  CREATE TABLE IF NOT EXISTS webhooks (
+    id          TEXT PRIMARY KEY,
+    agent_id    TEXT NOT NULL,
+    name        TEXT NOT NULL,
+    secret      TEXT NOT NULL,
+    enabled     INTEGER NOT NULL DEFAULT 1,
+    description TEXT,
+    filters     TEXT,
+    created_at  TEXT NOT NULL DEFAULT (datetime('now')),
+    updated_at  TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+  CREATE INDEX IF NOT EXISTS idx_webhooks_agent ON webhooks(agent_id);
+
+  CREATE TABLE IF NOT EXISTS webhook_events (
+    id           TEXT PRIMARY KEY,
+    webhook_id   TEXT NOT NULL REFERENCES webhooks(id) ON DELETE CASCADE,
+    agent_id     TEXT NOT NULL,
+    received_at  TEXT NOT NULL DEFAULT (datetime('now')),
+    headers      TEXT NOT NULL,
+    payload      TEXT NOT NULL,
+    status       TEXT NOT NULL DEFAULT 'pending',
+    error        TEXT,
+    processed_at TEXT
+  );
+  CREATE INDEX IF NOT EXISTS idx_webhook_events_webhook ON webhook_events(webhook_id);
+  CREATE INDEX IF NOT EXISTS idx_webhook_events_status ON webhook_events(status);
+`);
+
 export { db };
