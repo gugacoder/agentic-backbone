@@ -147,4 +147,21 @@ db.exec(`
   );
 `);
 
+db.exec(`
+  CREATE TABLE IF NOT EXISTS knowledge_docs (
+    id           INTEGER PRIMARY KEY AUTOINCREMENT,
+    agent_id     TEXT NOT NULL,
+    filename     TEXT NOT NULL,
+    slug         TEXT NOT NULL,
+    content_type TEXT NOT NULL,
+    size_bytes   INTEGER NOT NULL,
+    chunks       INTEGER NOT NULL DEFAULT 0,
+    status       TEXT NOT NULL DEFAULT 'processing',
+    error        TEXT,
+    created_at   TEXT NOT NULL DEFAULT (datetime('now')),
+    UNIQUE(agent_id, slug)
+  );
+  CREATE INDEX IF NOT EXISTS idx_knowledge_docs_agent ON knowledge_docs(agent_id);
+`);
+
 export { db };
