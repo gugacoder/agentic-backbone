@@ -1,6 +1,9 @@
 import { useMatches } from "@tanstack/react-router";
+import { Moon, Sun } from "lucide-react";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
+import { useUIStore } from "@/lib/store";
 
 const routeLabels: Record<string, string> = {
   "/agents": "Agentes",
@@ -12,11 +15,21 @@ const routeLabels: Record<string, string> = {
 
 export function BreadcrumbBar() {
   const matches = useMatches();
+  const theme = useUIStore((s) => s.theme);
+  const setTheme = useUIStore((s) => s.setTheme);
 
   const crumbs: string[] = [];
   for (const match of matches) {
     const label = routeLabels[match.pathname];
     if (label) crumbs.push(label);
+  }
+
+  const isDark =
+    theme === "dark" ||
+    (theme === "system" && typeof window !== "undefined" && window.matchMedia("(prefers-color-scheme: dark)").matches);
+
+  function toggleTheme() {
+    setTheme(isDark ? "light" : "dark");
   }
 
   return (
@@ -35,6 +48,11 @@ export function BreadcrumbBar() {
           </nav>
         </>
       )}
+      <div className="ml-auto">
+        <Button variant="ghost" size="icon" onClick={toggleTheme} aria-label="Alternar tema">
+          {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+        </Button>
+      </div>
     </header>
   );
 }

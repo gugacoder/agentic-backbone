@@ -4,6 +4,7 @@ import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/app-sidebar";
 import { BottomNav } from "@/components/layout/bottom-nav";
 import { BreadcrumbBar } from "@/components/layout/breadcrumb-bar";
+import { useSSE } from "@/hooks/use-sse";
 
 export const Route = createFileRoute("/_authenticated")({
   component: AuthenticatedLayout,
@@ -11,6 +12,7 @@ export const Route = createFileRoute("/_authenticated")({
 
 function AuthenticatedLayout() {
   const token = useAuthStore((s) => s.token);
+  useSSE({ enabled: !!token });
 
   if (!token) {
     return <Navigate to="/login" />;

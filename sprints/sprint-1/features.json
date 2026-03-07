@@ -84,7 +84,7 @@
     "id": "F-005",
     "name": "SSE hook + Query client + UI store",
     "description": "Criar lib/query-client.ts (QueryClient com staleTime 30s), hooks/use-sse.ts (conecta em /system/events, reconexao com backoff, invalida queries por tipo de evento), lib/store.ts (useUIStore Zustand com sidebarOpen e theme com persist).",
-    "status": "pending",
+    "status": "passing",
     "priority": 5,
     "agent": "coder",
     "task": "vibe-code",
@@ -97,7 +97,8 @@
       "Evento heartbeat:status invalida query de stats do agente",
       "Tema dark/light funciona via toggle e persiste entre reloads"
     ],
-    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-1/worktree/sprints/sprint-1/3-prps/PRP-01-scaffold-hub.md"
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-1/worktree/sprints/sprint-1/3-prps/PRP-01-scaffold-hub.md",
+    "completed_at": "2026-03-07T05:10:00Z"
   },
   {
     "id": "F-006",
