@@ -35,8 +35,11 @@ import {
 import {
   conversationQueryOptions,
   conversationMessagesQueryOptions,
+  sessionQueryOptions,
   renameConversation,
   deleteConversation,
+  takeoverConversation,
+  releaseConversation,
   type ConversationMessage,
 } from "@/api/conversations";
 import { agentsQueryOptions } from "@/api/agents";
@@ -45,10 +48,25 @@ import { MessageInput } from "@/components/chat/message-input";
 import type { ChatMessage } from "@/components/chat/message-bubble";
 import { streamMessage, type ChatStreamEvent } from "@/lib/chat-stream";
 import { useAuthStore } from "@/lib/auth";
+import { TakeoverButton } from "@/components/conversations/takeover-button";
+import { TakeoverBanner } from "@/components/conversations/takeover-banner";
 
 export const Route = createFileRoute("/_authenticated/conversations/$id")({
   component: ConversationChatPage,
 });
+
+function getCurrentUserSlug(): string | null {
+  const token = useAuthStore.getState().token;
+  if (!token) return null;
+  try {
+    const parts = token.split(".");
+    if (parts.length < 2) return null;
+    const payload = JSON.parse(atob(parts[1]!)) as { sub?: string };
+    return payload.sub ?? null;
+  } catch {
+    return null;
+  }
+}
 
 function ConversationChatPage() {
   const { id } = Route.useParams();
@@ -62,6 +80,7 @@ function ConversationChatPage() {
     conversationMessagesQueryOptions(id),
   );
   const { data: agents } = useQuery(agentsQueryOptions());
+  const { data: session } = useQuery(sessionQueryOptions(id));
 
   const [localMessages, setLocalMessages] = useState<ChatMessage[]>([]);
   const [streamingContent, setStreamingContent] = useState<string | undefined>(
@@ -91,6 +110,25 @@ function ConversationChatPage() {
     },
   });
 
+  const takeoverMutation = useMutation({
+    mutationFn: () => takeoverConversation(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["conversations", id, "session"] });
+    },
+  });
+
+  const releaseMutation = useMutation({
+    mutationFn: () => releaseConversation(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["conversations", id, "session"] });
+    },
+  });
+
+  const currentUserSlug = getCurrentUserSlug();
+  const isUnderTakeover = session?.takeover_by != null;
+  const isCurrentOperator =
+    isUnderTakeover && session?.takeover_by === currentUserSlug;
+
   function handleRenameOpen() {
     setRenameValue(conversation?.title ?? "");
     setRenameOpen(true);
@@ -112,6 +150,7 @@ function ConversationChatPage() {
       role: m.role,
       content: m.content,
       timestamp: m.timestamp,
+      metadata: m.metadata,
     }),
   );
 
@@ -121,6 +160,44 @@ function ConversationChatPage() {
     async (content: string) => {
       if (!content.trim() || isStreaming) return;
 
+      if (isCurrentOperator) {
+        // Operator mode: add message optimistically as operator style, skip streaming display
+        const operatorMsg: ChatMessage = {
+          role: "assistant",
+          content: content.trim(),
+          metadata: { operator: true, operatorSlug: currentUserSlug ?? "Operador" },
+        };
+        setLocalMessages((prev) => [...prev, operatorMsg]);
+        setInputValue("");
+        setIsStreaming(true);
+
+        const controller = new AbortController();
+        abortRef.current = controller;
+
+        try {
+          await streamMessage(
+            id,
+            content.trim(),
+            () => {
+              // Ignore events — operator message already shown optimistically
+            },
+            controller.signal,
+          );
+        } catch (err) {
+          if ((err as Error).name === "AbortError") {
+            // aborted, nothing to do
+          }
+        } finally {
+          setIsStreaming(false);
+          abortRef.current = null;
+          queryClient.invalidateQueries({
+            queryKey: ["conversations", id, "messages"],
+          });
+        }
+        return;
+      }
+
+      // Normal mode
       const userMsg: ChatMessage = { role: "user", content: content.trim() };
       setLocalMessages((prev) => [...prev, userMsg]);
       setInputValue("");
@@ -179,7 +256,7 @@ function ConversationChatPage() {
         queryClient.invalidateQueries({ queryKey: ["conversations"] });
       }
     },
-    [id, isStreaming, queryClient],
+    [id, isStreaming, isCurrentOperator, currentUserSlug, queryClient],
   );
 
   function handleAbort() {
@@ -243,6 +320,14 @@ function ConversationChatPage() {
           <Bot className="mr-1 size-3" />
           {agentLabel}
         </Badge>
+
+        {!isUnderTakeover && (
+          <TakeoverButton
+            sessionId={id}
+            onTakeover={() => takeoverMutation.mutate()}
+            isPending={takeoverMutation.isPending}
+          />
+        )}
 
         <DropdownMenu>
           <DropdownMenuTrigger
@@ -325,6 +410,16 @@ function ConversationChatPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Takeover banner */}
+      {isUnderTakeover && session?.takeover_by && session?.takeover_at && (
+        <TakeoverBanner
+          takenOverBy={session.takeover_by}
+          takenOverAt={session.takeover_at}
+          onRelease={() => releaseMutation.mutate()}
+          isPending={releaseMutation.isPending}
+        />
+      )}
 
       {/* Message area */}
       <MessageList

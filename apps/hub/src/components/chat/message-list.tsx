@@ -3,6 +3,7 @@ import { ArrowDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MessageBubble, type ChatMessage } from "./message-bubble";
 import { TraceDrawer } from "@/components/traces/trace-drawer";
+import { OperatorMessage } from "@/components/conversations/operator-message";
 
 interface MessageListProps {
   messages: ChatMessage[];
@@ -51,14 +52,18 @@ export function MessageList({ messages, streamingContent, sessionId }: MessageLi
         onScroll={checkScroll}
       >
         <div className="mx-auto flex max-w-3xl flex-col gap-3">
-          {messages.map((msg, i) => (
-            <MessageBubble
-              key={i}
-              message={msg}
-              sessionId={sessionId}
-              onTrace={() => setTraceOpen(true)}
-            />
-          ))}
+          {messages.map((msg, i) =>
+            msg.metadata?.operator === true ? (
+              <OperatorMessage key={i} message={msg} />
+            ) : (
+              <MessageBubble
+                key={i}
+                message={msg}
+                sessionId={sessionId}
+                onTrace={() => setTraceOpen(true)}
+              />
+            )
+          )}
 
           {streamingContent !== undefined && (
             <MessageBubble

@@ -51,6 +51,7 @@ export interface ConversationMessage {
   role: "user" | "assistant";
   content: string;
   timestamp?: string;
+  metadata?: Record<string, unknown>;
 }
 
 export function conversationMessagesQueryOptions(id: string) {
