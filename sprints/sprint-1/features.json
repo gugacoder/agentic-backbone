@@ -104,7 +104,7 @@
     "id": "F-006",
     "name": "PWA + paginas placeholder + componentes shared",
     "description": "Configurar vite-plugin-pwa (manifest, service worker). Criar paginas placeholder para todas as rotas (agents, conversations, channels, cron, settings) com redirect index->agents. Criar componentes shared: page-header, empty-state, status-badge, confirm-dialog. Criar stubs de API query factories em api/.",
-    "status": "blocked",
+    "status": "passing",
     "priority": 6,
     "agent": "coder",
     "task": "vibe-code",
@@ -119,7 +119,8 @@
       "npm run build:hub gera build de producao sem erros",
       "Componentes shared (PageHeader, EmptyState, StatusBadge, ConfirmDialog) importaveis"
     ],
-    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-1/worktree/sprints/sprint-1/3-prps/PRP-01-scaffold-hub.md"
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-1/worktree/sprints/sprint-1/3-prps/PRP-01-scaffold-hub.md",
+    "completed_at": "2026-03-07T05:20:00Z"
   },
   {
     "id": "F-007",

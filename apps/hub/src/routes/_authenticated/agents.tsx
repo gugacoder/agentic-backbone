@@ -1,4 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { Bot } from "lucide-react";
+import { PageHeader } from "@/components/shared/page-header";
+import { EmptyState } from "@/components/shared/empty-state";
 
 export const Route = createFileRoute("/_authenticated/agents")({
   component: AgentsPage,
@@ -6,9 +9,13 @@ export const Route = createFileRoute("/_authenticated/agents")({
 
 function AgentsPage() {
   return (
-    <div>
-      <h1 className="text-2xl font-semibold">Agentes</h1>
-      <p className="mt-2 text-muted-foreground">Em breve</p>
+    <div className="space-y-6">
+      <PageHeader title="Agentes" description="Gerencie seus agentes de IA" />
+      <EmptyState
+        icon={<Bot />}
+        title="Nenhum agente configurado"
+        description="Em breve voce podera visualizar e gerenciar seus agentes aqui."
+      />
     </div>
   );
 }
