@@ -75,3 +75,27 @@ export async function createAgent(payload: CreateAgentPayload): Promise<Agent> {
     body: JSON.stringify(payload),
   });
 }
+
+export interface AgentFileResponse {
+  filename: string;
+  content: string;
+}
+
+export function agentFileQueryOptions(id: string, filename: string) {
+  return queryOptions({
+    queryKey: ["agents", id, "files", filename],
+    queryFn: () => request<AgentFileResponse>(`/agents/${id}/files/${filename}`),
+    retry: false,
+  });
+}
+
+export async function saveAgentFile(
+  id: string,
+  filename: string,
+  content: string,
+): Promise<void> {
+  await request(`/agents/${id}/files/${filename}`, {
+    method: "PUT",
+    body: JSON.stringify({ content }),
+  });
+}

@@ -18,6 +18,7 @@ import type { HeartbeatLogEntry } from "@/api/agents";
 import { AgentMetrics } from "@/components/agents/agent-metrics";
 import { HeartbeatTimeline } from "@/components/agents/heartbeat-timeline";
 import { AgentActions } from "@/components/agents/agent-actions";
+import { AgentConfigTabs } from "@/components/agents/agent-config-tabs";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { useSSEEvent } from "@/hooks/use-sse";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -35,6 +36,7 @@ type TabValue = (typeof tabs)[number]["value"];
 
 interface AgentSearchParams {
   tab?: TabValue;
+  subtab?: string;
 }
 
 export const Route = createFileRoute("/_authenticated/agents/$id")({
@@ -42,13 +44,14 @@ export const Route = createFileRoute("/_authenticated/agents/$id")({
     tab: tabs.some((t) => t.value === search.tab)
       ? (search.tab as TabValue)
       : undefined,
+    subtab: typeof search.subtab === "string" ? search.subtab : undefined,
   }),
   component: AgentDetailPage,
 });
 
 function AgentDetailPage() {
   const { id } = Route.useParams();
-  const { tab } = Route.useSearch();
+  const { tab, subtab } = Route.useSearch();
   const navigate = useNavigate();
 
   const activeTab = tab ?? "overview";
@@ -168,7 +171,7 @@ function AgentDetailPage() {
           </div>
         </TabsContent>
         <TabsContent value="config">
-          <PlaceholderTab label="Configuracao" />
+          <AgentConfigTabs agentId={id} subtab={subtab} />
         </TabsContent>
         <TabsContent value="conversations">
           <PlaceholderTab label="Conversas" />

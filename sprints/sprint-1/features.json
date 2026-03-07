@@ -233,7 +233,7 @@
     "id": "F-012",
     "name": "Editor markdown + sub-tabs de configuracao",
     "description": "Substituir placeholder tab Configuracao: sub-tabs verticais (Identidade=SOUL.md, Conversa=CONVERSATION.md, Heartbeat=HEARTBEAT.md). Criar components/shared/markdown-editor.tsx: textarea monospace, toggle preview (react-markdown), auto-save debounce 2s via PUT /agents/:id/files/*, indicador de estado salvo/salvando/erro.",
-    "status": "blocked",
+    "status": "passing",
     "priority": 12,
     "agent": "coder",
     "task": "vibe-code",
@@ -248,7 +248,8 @@
       "Preview markdown renderiza headers, listas, codigo, links",
       "Toggle preview funciona"
     ],
-    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-1/worktree/sprints/sprint-1/3-prps/PRP-03-gestao-agentes.md"
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-1/worktree/sprints/sprint-1/3-prps/PRP-03-gestao-agentes.md",
+    "completed_at": "2026-03-07T06:40:00Z"
   },
   {
     "id": "F-013",
