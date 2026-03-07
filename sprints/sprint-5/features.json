@@ -258,7 +258,7 @@
     "id": "F-109",
     "name": "Multi-agent: CRUD endpoints de handoffs + API Hub",
     "description": "Criar apps/backbone/src/routes/handoffs.ts com GET/POST /agents/:agentId/handoffs, PATCH/DELETE /agents/:agentId/handoffs/:id. POST body: {memberId, label, triggerIntent, priority}. Montar rotas no index.ts. Criar apps/hub/src/api/handoffs.ts com handoffsQueryOptions.",
-    "status": "blocked",
+    "status": "passing",
     "priority": 13,
     "agent": "coder",
     "task": "vibe-code",
@@ -272,7 +272,8 @@
       "DELETE remove handoff",
       "`npm run typecheck` passa sem erros"
     ],
-    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-5/worktree/sprints/sprint-5/3-prps/PRP-28-multi-agent-orchestration.md"
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-5/worktree/sprints/sprint-5/3-prps/PRP-28-multi-agent-orchestration.md",
+    "completed_at": "2026-03-07T23:55:00.000Z"
   },
   {
     "id": "F-110",
