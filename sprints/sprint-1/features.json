@@ -21,7 +21,7 @@
     "id": "F-002",
     "name": "Tailwind CSS 4 + shadcn/ui + CSS tokens",
     "description": "Instalar Tailwind CSS 4 + @tailwindcss/vite. Inicializar shadcn/ui com componentes base (button, card, input, label, badge, switch, select, dialog, dropdown-menu, tabs, table, tooltip, separator, sheet, sidebar, scroll-area, skeleton). Definir CSS tokens semanticos em index.css com suporte a dark mode via class strategy.",
-    "status": "blocked",
+    "status": "passing",
     "priority": 2,
     "agent": "coder",
     "task": "vibe-code",
@@ -34,7 +34,8 @@
       "Dark mode funciona via classe dark no html",
       "Nenhuma cor Tailwind direta (bg-blue-500 etc.) no codigo fonte"
     ],
-    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-1/worktree/sprints/sprint-1/3-prps/PRP-01-scaffold-hub.md"
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-1/worktree/sprints/sprint-1/3-prps/PRP-01-scaffold-hub.md",
+    "completed_at": "2026-03-07T04:35:00Z"
   },
   {
     "id": "F-003",
