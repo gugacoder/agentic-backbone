@@ -80,6 +80,13 @@ export interface ApprovalPendingEvent {
   expiresAt: string;
 }
 
+export interface SecurityAlertEvent {
+  ts: number;
+  agentId: string;
+  eventCount: number;
+  windowMinutes: number;
+}
+
 export interface BackboneEventMap {
   "heartbeat:status": HeartbeatStatusEvent;
   "channel:message": ChannelMessageEvent;
@@ -91,6 +98,7 @@ export interface BackboneEventMap {
   "notification:new": NotificationNewEvent;
   "session:takeover": SessionTakeoverEvent;
   "approval:pending": ApprovalPendingEvent;
+  "security:alert": SecurityAlertEvent;
 }
 
 // --- Typed Event Bus ---

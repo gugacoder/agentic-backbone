@@ -1,7 +1,7 @@
 import type { Context } from "hono";
 import { streamSSE } from "hono/streaming";
 import { eventBus } from "./index.js";
-import type { HeartbeatStatusEvent, ChannelMessageEvent, RegistryChangeEvent, CronJobEvent, JobStatusEvent, NotificationNewEvent, SessionTakeoverEvent, ApprovalPendingEvent } from "./index.js";
+import type { HeartbeatStatusEvent, ChannelMessageEvent, RegistryChangeEvent, CronJobEvent, JobStatusEvent, NotificationNewEvent, SessionTakeoverEvent, ApprovalPendingEvent, SecurityAlertEvent } from "./index.js";
 
 // --- Types ---
 
@@ -108,6 +108,10 @@ class SSEHub {
 
     eventBus.on("approval:pending", (evt: ApprovalPendingEvent) => {
       this.broadcast("system", "approval:pending", evt);
+    });
+
+    eventBus.on("security:alert", (evt: SecurityAlertEvent) => {
+      this.broadcast("system", "security:alert", evt);
     });
 
     // Forward all module events to SSE (dynamic keys: module:{name}:{event})

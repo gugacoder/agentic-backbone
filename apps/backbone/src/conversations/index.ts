@@ -15,6 +15,7 @@ import { triggerHook } from "../hooks/index.js";
 import { trackCost } from "../db/costs.js";
 import { trackConversation } from "../db/analytics.js";
 import type { UsageData } from "../agent/index.js";
+import { checkMessageSecurity } from "../security/filter.js";
 
 export { readMessages };
 
@@ -259,6 +260,20 @@ export async function* sendMessage(
     sessionId,
     message,
   });
+
+  // Security filter — check before running agent
+  const securityResult = await checkMessageSecurity(message, agentId, sessionId);
+  if (securityResult.action === "blocked") {
+    const errorMsg = "Mensagem nao permitida pelo sistema de seguranca.";
+    appendMessage(agentId, sessionId, {
+      ts: new Date().toISOString(),
+      role: "assistant",
+      content: errorMsg,
+    });
+    yield { type: "result", content: errorMsg };
+    return;
+  }
+  // flagged: continue to agent, already logged in security_events
 
   const assembled = await assemblePrompt(agentId, "conversation", { userMessage: message });
   if (!assembled) {
