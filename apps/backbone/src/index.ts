@@ -26,7 +26,7 @@ import { initHooks, wireEventBusToHooks, triggerHook } from "./hooks/index.js";
 import { startJobSweeper, stopJobSweeper, shutdownAllJobs } from "./jobs/engine.js";
 import { connectorRegistry } from "./connectors/index.js";
 import { eventBus } from "./events/index.js";
-import { initChannelAdapters, channelAdapterRegistry } from "./channel-adapters/index.js";
+import { initChannelAdapters, channelAdapterRegistry } from "./channels/delivery/index.js";
 
 import type { ServerType } from "@hono/node-server";
 

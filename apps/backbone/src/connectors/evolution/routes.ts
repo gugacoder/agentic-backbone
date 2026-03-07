@@ -3,7 +3,7 @@ import type { EvolutionProbe } from "./probe.js";
 import type { EvolutionStateTracker } from "./state.js";
 import type { EvolutionActions, ActionResult } from "./actions.js";
 import { findChannelByMetadata } from "../../channels/lookup.js";
-import { routeInboundMessage } from "../../channel-adapters/inbound-router.js";
+import { routeInboundMessage } from "../../channels/delivery/inbound-router.js";
 
 interface RouteDeps {
   probe: EvolutionProbe;

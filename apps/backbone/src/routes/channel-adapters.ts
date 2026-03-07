@@ -1,8 +1,8 @@
 import { Hono } from "hono";
-import { channelAdapterRegistry } from "../channel-adapters/index.js";
-import { routeInboundMessage } from "../channel-adapters/inbound-router.js";
+import { channelAdapterRegistry } from "../channels/delivery/index.js";
+import { routeInboundMessage } from "../channels/delivery/inbound-router.js";
 import { findChannelByMetadata } from "../channels/lookup.js";
-import type { InboundMessage } from "../channel-adapters/types.js";
+import type { InboundMessage } from "../channels/delivery/types.js";
 
 export const channelAdapterRoutes = new Hono();
 

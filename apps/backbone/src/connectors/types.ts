@@ -1,6 +1,6 @@
 import type { Hono } from "hono";
 import type { z } from "zod";
-import type { ChannelAdapter, ChannelAdapterFactory } from "../channel-adapters/types.js";
+import type { ChannelAdapter, ChannelAdapterFactory } from "../channels/delivery/types.js";
 import type { BackboneEventBus } from "../events/index.js";
 
 // --- Connector Health ---

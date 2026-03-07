@@ -1,6 +1,6 @@
 import { eventBus } from "../events/index.js";
-import { getChannel } from "../channels/registry.js";
-import { channelAdapterRegistry } from "../channel-adapters/index.js";
+import { getChannel } from "./registry.js";
+import { channelAdapterRegistry } from "./delivery/index.js";
 
 export async function deliverToChannel(
   channelId: string,
