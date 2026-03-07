@@ -3,7 +3,7 @@
     "id": "F-001",
     "name": "Setup Vite + React 19 + TanStack Router",
     "description": "Criar apps/hub/ com Vite 6, React 19, TanStack Router (com plugin Vite), TypeScript. Configurar package.json, vite.config.ts (proxy /api para backbone), tsconfig.json (path alias @/*). Entry point main.tsx + App.tsx com RouterProvider.",
-    "status": "pending",
+    "status": "passing",
     "priority": 1,
     "agent": "coder",
     "task": "vibe-code",
@@ -14,17 +14,20 @@
       "vite.config.ts tem proxy /api para backbone e plugin TanStackRouterVite",
       "tsconfig.json com strict: true, target ES2022, path alias @/*"
     ],
-    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-1/worktree/sprints/sprint-1/3-prps/PRP-01-scaffold-hub.md"
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-1/worktree/sprints/sprint-1/3-prps/PRP-01-scaffold-hub.md",
+    "completed_at": "2026-03-07T04:25:00Z"
   },
   {
     "id": "F-002",
     "name": "Tailwind CSS 4 + shadcn/ui + CSS tokens",
     "description": "Instalar Tailwind CSS 4 + @tailwindcss/vite. Inicializar shadcn/ui com componentes base (button, card, input, label, badge, switch, select, dialog, dropdown-menu, tabs, table, tooltip, separator, sheet, sidebar, scroll-area, skeleton). Definir CSS tokens semanticos em index.css com suporte a dark mode via class strategy.",
-    "status": "pending",
+    "status": "blocked",
     "priority": 2,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-001"],
+    "dependencies": [
+      "F-001"
+    ],
     "tests": [
       "index.css contem @import tailwindcss e CSS tokens semanticos",
       "Componentes shadcn/ui importaveis (Button, Card, Input etc.)",
@@ -37,11 +40,14 @@
     "id": "F-003",
     "name": "Auth store + API client + Login page",
     "description": "Criar lib/api.ts (request<T> com JWT injection e interceptacao 401), lib/auth.ts (useAuthStore Zustand com persist em localStorage, login/logout), routes/login.tsx (formulario email/senha, validacao, feedback de erro, redirect apos sucesso).",
-    "status": "pending",
+    "status": "blocked",
     "priority": 3,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-001", "F-002"],
+    "dependencies": [
+      "F-001",
+      "F-002"
+    ],
     "tests": [
       "Login com SYSUSER/SYSPASS redireciona para /agents",
       "Login com credenciais invalidas exibe erro inline",
@@ -55,11 +61,13 @@
     "id": "F-004",
     "name": "Layout responsivo (sidebar + bottom nav)",
     "description": "Criar routes/__root.tsx (root layout com QueryClientProvider), routes/_authenticated.tsx (auth guard, layout com sidebar/bottom nav), components/layout/app-sidebar.tsx (sidebar desktop com shadcn Sidebar), components/layout/bottom-nav.tsx (bottom nav mobile), components/layout/breadcrumb-bar.tsx (top bar com breadcrumbs e menu hamburger).",
-    "status": "pending",
+    "status": "blocked",
     "priority": 4,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-003"],
+    "dependencies": [
+      "F-003"
+    ],
     "tests": [
       "Layout exibe sidebar em desktop (>= 768px)",
       "Layout exibe bottom nav em mobile (< 768px)",
@@ -73,11 +81,13 @@
     "id": "F-005",
     "name": "SSE hook + Query client + UI store",
     "description": "Criar lib/query-client.ts (QueryClient com staleTime 30s), hooks/use-sse.ts (conecta em /system/events, reconexao com backoff, invalida queries por tipo de evento), lib/store.ts (useUIStore Zustand com sidebarOpen e theme com persist).",
-    "status": "pending",
+    "status": "blocked",
     "priority": 5,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-003"],
+    "dependencies": [
+      "F-003"
+    ],
     "tests": [
       "SSE conecta ao backbone e exibe connected: true",
       "Reconexao automatica apos desconexao",
@@ -90,11 +100,14 @@
     "id": "F-006",
     "name": "PWA + paginas placeholder + componentes shared",
     "description": "Configurar vite-plugin-pwa (manifest, service worker). Criar paginas placeholder para todas as rotas (agents, conversations, channels, cron, settings) com redirect index->agents. Criar componentes shared: page-header, empty-state, status-badge, confirm-dialog. Criar stubs de API query factories em api/.",
-    "status": "pending",
+    "status": "blocked",
     "priority": 6,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-004", "F-005"],
+    "dependencies": [
+      "F-004",
+      "F-005"
+    ],
     "tests": [
       "PWA instalavel com manifest e service worker",
       "Todas as rotas placeholder renderizam titulo da secao",
@@ -108,11 +121,13 @@
     "id": "F-007",
     "name": "Lista de agentes + AgentCard",
     "description": "Substituir placeholder /agents: fetch agentes e stats, grid responsivo de AgentCards (1/2/3 cols), busca por nome, filtro ativo/inativo, toggle enabled via switch no card, click navega para /agents/:id. SSE heartbeat:status atualiza card em tempo real com icone pulsante.",
-    "status": "pending",
+    "status": "blocked",
     "priority": 7,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-006"],
+    "dependencies": [
+      "F-006"
+    ],
     "tests": [
       "Pagina /agents lista todos os agentes do backbone",
       "Cards mostram nome, owner, status, ultima atividade, custo",
@@ -128,11 +143,13 @@
     "id": "F-008",
     "name": "Pagina de detalhe do agente + tabs",
     "description": "Criar routes/_authenticated/agents.$id.tsx: fetch agente, layout com tabs horizontais (Visao Geral, Configuracao, Conversas, Memoria, Agenda). Tab ativa via search param ?tab=. Tabs nao implementadas ficam como placeholder. Header com breadcrumb, StatusBadge, botoes de acao.",
-    "status": "pending",
+    "status": "blocked",
     "priority": 8,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-007"],
+    "dependencies": [
+      "F-007"
+    ],
     "tests": [
       "Click no AgentCard navega para /agents/:id",
       "5 tabs renderizam (Visao Geral, Configuracao, Conversas, Memoria, Agenda)",
@@ -146,11 +163,13 @@
     "id": "F-009",
     "name": "Metricas de heartbeat",
     "description": "Criar components/agents/agent-metrics.tsx: grid de 4 cards numericos (total execucoes, por status ok/skipped/error, custo total USD, duracao media). Fetch via agentStatsQueryOptions. SSE heartbeat:status invalida query de stats.",
-    "status": "pending",
+    "status": "blocked",
     "priority": 9,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-008"],
+    "dependencies": [
+      "F-008"
+    ],
     "tests": [
       "Tab Visao Geral exibe 4 cards de metricas",
       "Numeros formatados com separador de milhar",
@@ -163,11 +182,13 @@
     "id": "F-010",
     "name": "Timeline de heartbeat + acoes do agente",
     "description": "Criar components/agents/heartbeat-timeline.tsx: lista dos ultimos 20 heartbeats com timestamp, status badge, duracao, preview expandivel. SSE prepend nova entry. Acoes: toggle heartbeat (switch), trigger manual (botao), nova conversa (cria sessao e navega).",
-    "status": "pending",
+    "status": "blocked",
     "priority": 10,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-009"],
+    "dependencies": [
+      "F-009"
+    ],
     "tests": [
       "Timeline mostra ultimos heartbeats com status e preview",
       "Preview expandivel com click",
@@ -182,11 +203,13 @@
     "id": "F-011",
     "name": "Formulario de criacao de agente",
     "description": "Criar routes/_authenticated/agents.new.tsx e components/agents/agent-form.tsx: formulario com campos slug (kebab-case, validacao), owner (select), descricao, enabled (switch). POST /agents, redirect para /agents/:id?tab=config apos sucesso.",
-    "status": "pending",
+    "status": "blocked",
     "priority": 11,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-008"],
+    "dependencies": [
+      "F-008"
+    ],
     "tests": [
       "Formulario em /agents/new cria agente no backbone",
       "Slug invalido mostra erro de validacao",
@@ -200,11 +223,13 @@
     "id": "F-012",
     "name": "Editor markdown + sub-tabs de configuracao",
     "description": "Substituir placeholder tab Configuracao: sub-tabs verticais (Identidade=SOUL.md, Conversa=CONVERSATION.md, Heartbeat=HEARTBEAT.md). Criar components/shared/markdown-editor.tsx: textarea monospace, toggle preview (react-markdown), auto-save debounce 2s via PUT /agents/:id/files/*, indicador de estado salvo/salvando/erro.",
-    "status": "pending",
+    "status": "blocked",
     "priority": 12,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-011"],
+    "dependencies": [
+      "F-011"
+    ],
     "tests": [
       "Sub-tabs Identidade, Conversa, Heartbeat renderizam",
       "Sub-tab ativa persiste na URL via ?subtab=identity",
@@ -219,11 +244,13 @@
     "id": "F-013",
     "name": "Configuracao visual de heartbeat",
     "description": "Criar components/agents/heartbeat-config.tsx: campos visuais para heartbeat enabled (switch), intervalo (slider + input, 10-3600s), horario ativo inicio/fim (time inputs), dias da semana (checkbox group). Fetch GET /agents/:id/heartbeat, save via PATCH. Preview legivel da configuracao. Botao Salvar explicito.",
-    "status": "pending",
+    "status": "blocked",
     "priority": 13,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-012"],
+    "dependencies": [
+      "F-012"
+    ],
     "tests": [
       "Campos visuais de heartbeat renderizam com valores atuais",
       "Preview mostra descricao legivel da configuracao",
@@ -237,11 +264,13 @@
     "id": "F-014",
     "name": "Gestao de skills e tools",
     "description": "Adicionar sub-tabs Skills e Tools na Configuracao. Criar components/shared/resource-assigner.tsx: lista de items com toggle de atribuicao, agrupamento por escopo (shared/system/agent), nome, descricao, badge de escopo. Fetch skills disponiveis e atribuidas, assign/unassign via POST.",
-    "status": "pending",
+    "status": "blocked",
     "priority": 14,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-012"],
+    "dependencies": [
+      "F-012"
+    ],
     "tests": [
       "Sub-tab Skills lista skills disponiveis e atribuidas",
       "Toggle atribui/remove skill do agente",
@@ -254,11 +283,13 @@
     "id": "F-015",
     "name": "Acoes avancadas (duplicar, excluir agente)",
     "description": "Adicionar sub-tab Avancado na Configuracao: secao Zona Perigosa com botao Duplicar Agente (POST /agents/:id/duplicate, navega para novo) e botao Excluir Agente (ConfirmDialog com input de confirmacao do slug, DELETE /agents/:id, navega para /agents).",
-    "status": "pending",
+    "status": "blocked",
     "priority": 15,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-012"],
+    "dependencies": [
+      "F-012"
+    ],
     "tests": [
       "Sub-tab Avancado exibe zona perigosa",
       "Duplicar agente cria novo e redireciona para detalhe",
@@ -271,11 +302,13 @@
     "id": "F-016",
     "name": "Lista de conversas",
     "description": "Substituir placeholder /conversations: fetch sessoes, lista vertical com badge agente, titulo, preview ultima msg, timestamp relativo. Busca por titulo, filtro por agente (select). Botao Nova Conversa (dialog escolher agente, POST /conversations, navega para chat).",
-    "status": "pending",
+    "status": "blocked",
     "priority": 16,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-006"],
+    "dependencies": [
+      "F-006"
+    ],
     "tests": [
       "Pagina /conversations lista sessoes do backbone",
       "Cada item mostra agente, titulo, preview, timestamp",
@@ -289,11 +322,13 @@
     "id": "F-017",
     "name": "Chat view com streaming",
     "description": "Criar routes/_authenticated/conversations.$id.tsx: fetch sessao e historico, MessageList com auto-scroll, MessageBubble (assistant esquerda/user direita, markdown via react-markdown com syntax highlight), streaming via streamMessage() de chat-stream.ts (concatenar text events, result substitui), StreamingIndicator com cursor piscante, AbortController.",
-    "status": "pending",
+    "status": "blocked",
     "priority": 17,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-016"],
+    "dependencies": [
+      "F-016"
+    ],
     "tests": [
       "Historico de mensagens carrega ao abrir conversa",
       "Mensagens exibem bubbles (assistant esquerda, user direita)",
@@ -309,11 +344,13 @@
     "id": "F-018",
     "name": "Input de mensagem + abort",
     "description": "Criar components/chat/message-input.tsx: textarea expansivel (1-5 linhas, auto-resize), Enter envia / Shift+Enter nova linha, botao enviar (desabilitado se vazio ou streaming), durante streaming botao muda para Parar (chama onAbort), focus automatico, placeholder pt-BR.",
-    "status": "pending",
+    "status": "blocked",
     "priority": 18,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-017"],
+    "dependencies": [
+      "F-017"
+    ],
     "tests": [
       "Mensagem enviada aparece como bubble do usuario imediatamente",
       "Enter envia, Shift+Enter insere nova linha",
@@ -328,11 +365,13 @@
     "id": "F-019",
     "name": "Gerenciamento de sessoes",
     "description": "Menu dropdown no header do chat: Renomear (dialog + PATCH), Exportar (GET /export + download), Excluir (ConfirmDialog + DELETE, navega para /conversations). Substituir placeholder tab Conversas em agents.$id.tsx com lista filtrada por agente.",
-    "status": "pending",
+    "status": "blocked",
     "priority": 19,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-017"],
+    "dependencies": [
+      "F-017"
+    ],
     "tests": [
       "Renomear conversa atualiza titulo na UI",
       "Exportar conversa baixa arquivo",
@@ -345,11 +384,13 @@
     "id": "F-020",
     "name": "Lista de canais + ChannelCard",
     "description": "Substituir placeholder /channels: fetch canais, grid de ChannelCards com nome, tipo (badge com icone), owner, listeners, status conexao (StatusBadge). Filtro por tipo. Botao Novo Canal. Click navega para /channels/:slug.",
-    "status": "pending",
+    "status": "blocked",
     "priority": 20,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-006"],
+    "dependencies": [
+      "F-006"
+    ],
     "tests": [
       "Pagina /channels lista canais do backbone",
       "Cards mostram tipo com icone diferenciado (chat, whatsapp, voice)",
@@ -363,11 +404,13 @@
     "id": "F-021",
     "name": "Detalhe do canal + status + config",
     "description": "Criar routes/_authenticated/channels.$slug.tsx: fetch canal, tabs (Status, Configuracao, Mensagens). Tab Status: info adapter, status conexao, botoes reconectar/desconectar, atribuicao a agente. Tab Configuracao: form edicao + botao excluir com ConfirmDialog. Tab ativa via ?tab=.",
-    "status": "pending",
+    "status": "blocked",
     "priority": 21,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-020"],
+    "dependencies": [
+      "F-020"
+    ],
     "tests": [
       "Pagina /channels/:slug exibe detalhe com tabs",
       "Tab Status mostra info do adapter e status conexao",
@@ -381,11 +424,13 @@
     "id": "F-022",
     "name": "Setup WhatsApp (wizard QR Code)",
     "description": "Criar components/channels/whatsapp-setup.tsx: wizard 3 passos. Passo 1: input nome instancia, POST /adapters com connector evolution. Passo 2: renderizar QR code (qrcode.react), polling condicional 5s para status, auto-refresh QR 30s. Passo 3: exibir numero pareado e status conectado, botao Concluir.",
-    "status": "pending",
+    "status": "blocked",
     "priority": 22,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-021"],
+    "dependencies": [
+      "F-021"
+    ],
     "tests": [
       "Wizard exibe 3 passos sequenciais",
       "Passo 1 cria instancia Evolution via POST /adapters",
@@ -400,11 +445,13 @@
     "id": "F-023",
     "name": "Feed de mensagens do canal",
     "description": "Substituir placeholder tab Mensagens. Criar components/channels/channel-message-feed.tsx: conecta SSE /channels/:slug/events, timeline vertical com mensagens inbound/outbound, icone de direcao, remetente, conteudo, timestamp. Auto-scroll com novas mensagens.",
-    "status": "pending",
+    "status": "blocked",
     "priority": 23,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-021"],
+    "dependencies": [
+      "F-021"
+    ],
     "tests": [
       "Feed conecta ao SSE do canal",
       "Mensagens exibem direcao (inbound/outbound) com icone",
@@ -418,11 +465,13 @@
     "id": "F-024",
     "name": "Status da memoria + MEMORY.md viewer",
     "description": "Substituir placeholder tab Memoria em agents.$id.tsx. Secao Status: 2 cards numericos (arquivos indexados, chunks), timestamp ultima sync. Secao Fatos: fetch MEMORY.md via GET /agents/:id/files/MEMORY.md, renderizar markdown somente-leitura, empty state se vazio. Criar components/agents/memory-status-panel.tsx.",
-    "status": "pending",
+    "status": "blocked",
     "priority": 24,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-008"],
+    "dependencies": [
+      "F-008"
+    ],
     "tests": [
       "Tab Memoria exibe contagem de arquivos e chunks",
       "MEMORY.md renderiza em markdown",
@@ -435,11 +484,13 @@
     "id": "F-025",
     "name": "Busca semantica",
     "description": "Secao Busca Semantica na tab Memoria. Criar components/agents/memory-search-box.tsx: input com debounce 500ms, POST /agents/:id/memory/search com { query, limit: 10 }. Criar components/agents/memory-search-result.tsx: lista com arquivo (badge), snippet (expandivel), score (barra visual), fonte (badge vetor/texto). Loading e empty states.",
-    "status": "pending",
+    "status": "blocked",
     "priority": 25,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-024"],
+    "dependencies": [
+      "F-024"
+    ],
     "tests": [
       "Input de busca com placeholder pt-BR",
       "Debounce de 500ms evita requests excessivos",
@@ -454,11 +505,13 @@
     "id": "F-026",
     "name": "Controles de sincronizacao e reset",
     "description": "Botao Sincronizar no MemoryStatusPanel: POST /agents/:id/memory/sync, loading state, toast sucesso, invalida query status. Botao Limpar Memoria: ConfirmDialog com mensagem destrutiva, POST /agents/:id/memory/reset, invalida queries, toast sucesso. Botao variante destructive.",
-    "status": "pending",
+    "status": "blocked",
     "priority": 26,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-024"],
+    "dependencies": [
+      "F-024"
+    ],
     "tests": [
       "Botao Sincronizar reindexar base e atualiza contagem",
       "Loading state durante sincronizacao",
@@ -472,11 +525,13 @@
     "id": "F-027",
     "name": "Lista de cron jobs",
     "description": "Substituir placeholder /cron: fetch jobs, tabela com colunas agente (badge), nome, agenda legivel (cronstrue pt-BR), status (badge), proxima execucao (cron-parser), ultima execucao. Filtro por agente e ativo/inativo. Botao play por linha para executar manualmente. Botao Novo Job.",
-    "status": "pending",
+    "status": "blocked",
     "priority": 27,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-006"],
+    "dependencies": [
+      "F-006"
+    ],
     "tests": [
       "Pagina /cron lista todos os cron jobs",
       "Tabela mostra agenda legivel (nao cron expression crua)",
@@ -491,11 +546,13 @@
     "id": "F-028",
     "name": "Builder visual de agenda (CronScheduleBuilder)",
     "description": "Criar components/cron/cron-schedule-builder.tsx: RadioGroup para tipo (Intervalo, Diario, Semanal, Mensal, Personalizado), campos condicionais por tipo, gera cron expression internamente. Preview legivel via cronstrue, preview de proximas 5 execucoes via cron-parser. Validacao de cron expression no tipo Personalizado.",
-    "status": "pending",
+    "status": "blocked",
     "priority": 28,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-027"],
+    "dependencies": [
+      "F-027"
+    ],
     "tests": [
       "RadioGroup com 5 tipos de agenda renderiza",
       "Tipo Intervalo: input N + select minutos/horas gera cron correto",
@@ -511,11 +568,13 @@
     "id": "F-029",
     "name": "Formulario de criacao/edicao de cron job",
     "description": "Criar components/cron/cron-job-form.tsx: dialog/drawer com campos agente (select, pre-selecionado se vindo do agente), nome slug (kebab-case), instrucoes (textarea), agenda (CronScheduleBuilder), ativo (switch). Criacao via POST /cron/jobs, edicao via PATCH. Validacao completa.",
-    "status": "pending",
+    "status": "blocked",
     "priority": 29,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-028"],
+    "dependencies": [
+      "F-028"
+    ],
     "tests": [
       "Dialog de criacao abre com Novo Job",
       "Select de agente lista agentes disponiveis",
@@ -531,11 +590,13 @@
     "id": "F-030",
     "name": "Historico de execucoes + tab Agenda no agente",
     "description": "Criar components/cron/cron-run-history.tsx: tabela paginada (20/pag) com data/hora, status badge, duracao, tokens, custo, preview expandivel. Detalhe do job com resumo e acoes (executar, editar, ativar/desativar, excluir com confirmacao). Substituir placeholder tab Agenda em agents.$id.tsx: mesma tabela filtrada por agente, botao Novo Job pre-seleciona agente.",
-    "status": "pending",
+    "status": "blocked",
     "priority": 30,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-029"],
+    "dependencies": [
+      "F-029"
+    ],
     "tests": [
       "Historico mostra status, duracao, tokens, custo e preview",
       "Preview expandivel com click",
