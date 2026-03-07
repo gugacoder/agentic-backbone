@@ -25,6 +25,8 @@ export interface Session {
   channel_id: string | null;
   sdk_session_id: string | null;
   title: string | null;
+  takeover_by: string | null;
+  takeover_at: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -36,7 +38,7 @@ const insertSession = db.prepare(
 );
 
 const selectSession = db.prepare(
-  `SELECT session_id, user_id, agent_id, channel_id, sdk_session_id, title, created_at, updated_at
+  `SELECT session_id, user_id, agent_id, channel_id, sdk_session_id, title, takeover_by, takeover_at, created_at, updated_at
    FROM sessions WHERE session_id = ?`
 );
 
@@ -46,27 +48,27 @@ const setSdkSessionId = db.prepare(
 );
 
 const selectAllSessions = db.prepare(
-  `SELECT session_id, user_id, agent_id, channel_id, sdk_session_id, title, created_at, updated_at
+  `SELECT session_id, user_id, agent_id, channel_id, sdk_session_id, title, takeover_by, takeover_at, created_at, updated_at
    FROM sessions ORDER BY updated_at DESC`
 );
 
 const selectSessionsByUser = db.prepare(
-  `SELECT session_id, user_id, agent_id, channel_id, sdk_session_id, title, created_at, updated_at
+  `SELECT session_id, user_id, agent_id, channel_id, sdk_session_id, title, takeover_by, takeover_at, created_at, updated_at
    FROM sessions WHERE user_id = ? ORDER BY updated_at DESC`
 );
 
 const selectSessionsByUserAndAgent = db.prepare(
-  `SELECT session_id, user_id, agent_id, channel_id, sdk_session_id, title, created_at, updated_at
+  `SELECT session_id, user_id, agent_id, channel_id, sdk_session_id, title, takeover_by, takeover_at, created_at, updated_at
    FROM sessions WHERE user_id = ? AND agent_id = ? ORDER BY updated_at DESC`
 );
 
 const selectSessionsByAgent = db.prepare(
-  `SELECT session_id, user_id, agent_id, channel_id, sdk_session_id, title, created_at, updated_at
+  `SELECT session_id, user_id, agent_id, channel_id, sdk_session_id, title, takeover_by, takeover_at, created_at, updated_at
    FROM sessions WHERE agent_id = ? ORDER BY updated_at DESC`
 );
 
 const findSessionByChannelKey = db.prepare(
-  `SELECT session_id, user_id, agent_id, channel_id, sdk_session_id, title, created_at, updated_at
+  `SELECT session_id, user_id, agent_id, channel_id, sdk_session_id, title, takeover_by, takeover_at, created_at, updated_at
    FROM sessions WHERE agent_id = ? AND user_id = ? AND channel_id = ?
    ORDER BY updated_at DESC LIMIT 1`
 );
@@ -109,6 +111,8 @@ export function createSession(userId: string, agentId = "system.main", channelId
     channel_id: channelId ?? null,
     sdk_session_id: null,
     title: null,
+    takeover_by: null,
+    takeover_at: null,
     created_at: now,
     updated_at: now,
   };
@@ -176,6 +180,49 @@ export async function* sendMessage(
   const agent = getAgent(agentId);
   if (!agent) {
     throw new Error(`Agent ${agentId} not found`);
+  }
+
+  // Takeover: session is under operator control
+  if (session.takeover_by !== null) {
+    const isOperator = userId === session.takeover_by;
+
+    if (isOperator) {
+      // Operator message: saved as assistant with operator metadata, no agent
+      appendMessage(agentId, sessionId, {
+        ts: new Date().toISOString(),
+        role: "assistant",
+        content: message,
+        metadata: { operator: true, operatorSlug: userId },
+      });
+
+      await triggerHook({
+        ts: Date.now(),
+        hookEvent: "message:sent",
+        userId,
+        sessionId,
+        content: message,
+      });
+
+      yield { type: "result", content: message };
+      return;
+    } else {
+      // External user message during takeover: saved normally, no agent
+      appendMessage(agentId, sessionId, {
+        ts: new Date().toISOString(),
+        role: "user",
+        content: message,
+      });
+
+      await triggerHook({
+        ts: Date.now(),
+        hookEvent: "message:received",
+        userId,
+        sessionId,
+        message,
+      });
+
+      return;
+    }
   }
 
   // Persist user message

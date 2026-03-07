@@ -29,6 +29,10 @@ try { db.exec(`ALTER TABLE sessions ADD COLUMN agent_id TEXT DEFAULT 'system.mai
 // Idempotent migration: add channel_id column
 try { db.exec(`ALTER TABLE sessions ADD COLUMN channel_id TEXT DEFAULT NULL`); } catch {}
 
+// Idempotent migration: add takeover columns
+try { db.exec(`ALTER TABLE sessions ADD COLUMN takeover_by TEXT DEFAULT NULL`); } catch {}
+try { db.exec(`ALTER TABLE sessions ADD COLUMN takeover_at TEXT DEFAULT NULL`); } catch {}
+
 db.exec(`
   CREATE TABLE IF NOT EXISTS heartbeat_log (
     id                     INTEGER PRIMARY KEY AUTOINCREMENT,

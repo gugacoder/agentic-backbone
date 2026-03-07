@@ -12,6 +12,7 @@ export interface PersistentMessage {
   ts: string;
   role: "user" | "assistant" | "system";
   content: string;
+  metadata?: Record<string, unknown>;
 }
 
 // --- Paths ---
