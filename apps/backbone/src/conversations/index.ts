@@ -13,6 +13,7 @@ import { composeAgentTools } from "../agent/tools.js";
 import { getAgent } from "../agents/registry.js";
 import { triggerHook } from "../hooks/index.js";
 import { trackCost } from "../db/costs.js";
+import { trackConversation } from "../db/analytics.js";
 import type { UsageData } from "../agent/index.js";
 
 export { readMessages };
@@ -255,6 +256,14 @@ export async function* sendMessage(
       costUsd: usageData.totalCostUsd,
     });
   }
+
+  const durationMs = Date.now() - agentStartMs;
+  trackConversation({
+    agentId,
+    messagesIn: 1,
+    messagesOut: fullText ? 1 : 0,
+    durationMs,
+  });
 
   // Persist assistant message
   if (fullText) {

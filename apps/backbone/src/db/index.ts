@@ -113,6 +113,30 @@ db.exec(`
 `);
 
 db.exec(`
+  CREATE TABLE IF NOT EXISTS analytics_daily (
+    id                  INTEGER PRIMARY KEY AUTOINCREMENT,
+    date                TEXT NOT NULL,
+    agent_id            TEXT NOT NULL,
+    heartbeats_total    INTEGER NOT NULL DEFAULT 0,
+    heartbeats_ok       INTEGER NOT NULL DEFAULT 0,
+    heartbeats_error    INTEGER NOT NULL DEFAULT 0,
+    heartbeats_skipped  INTEGER NOT NULL DEFAULT 0,
+    conversations       INTEGER NOT NULL DEFAULT 0,
+    messages_in         INTEGER NOT NULL DEFAULT 0,
+    messages_out        INTEGER NOT NULL DEFAULT 0,
+    cron_total          INTEGER NOT NULL DEFAULT 0,
+    cron_ok             INTEGER NOT NULL DEFAULT 0,
+    cron_error          INTEGER NOT NULL DEFAULT 0,
+    response_ms_sum     REAL NOT NULL DEFAULT 0,
+    response_ms_count   INTEGER NOT NULL DEFAULT 0,
+    avg_response_ms     REAL,
+    UNIQUE(date, agent_id)
+  );
+  CREATE INDEX IF NOT EXISTS idx_analytics_daily_date ON analytics_daily(date);
+  CREATE INDEX IF NOT EXISTS idx_analytics_daily_agent ON analytics_daily(agent_id);
+`);
+
+db.exec(`
   CREATE TABLE IF NOT EXISTS budget_alerts (
     id          INTEGER PRIMARY KEY AUTOINCREMENT,
     scope       TEXT NOT NULL,

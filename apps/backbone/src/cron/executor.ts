@@ -9,6 +9,7 @@ import type { CronJob } from "./types.js";
 import { formatError } from "../utils/errors.js";
 import { emitNotification } from "../notifications/index.js";
 import { trackCost } from "../db/costs.js";
+import { trackCron } from "../db/analytics.js";
 
 const EXECUTION_TIMEOUT_MS = 10 * 60 * 1000;
 
@@ -50,6 +51,7 @@ export async function executeCronJob(job: CronJob): Promise<CronExecutionResult>
       metadata: { jobSlug: job.slug, durationMs },
     });
 
+    trackCron({ agentId: job.agentId, status: "error", durationMs });
     return { status: "error", error, durationMs };
   }
 }
@@ -146,6 +148,8 @@ async function executeMessagePayload(
       costUsd: usageData.totalCostUsd,
     });
   }
+
+  trackCron({ agentId: job.agentId, status: "ok", durationMs });
 
   emitNotification({
     type: "cron_ok",
