@@ -54,6 +54,16 @@ export interface JobStatusEvent {
   tail?: string;
 }
 
+export interface NotificationNewEvent {
+  ts: number;
+  id: number;
+  type: string;
+  severity: "info" | "warning" | "error";
+  agentId?: string;
+  title: string;
+  body?: string;
+}
+
 export interface BackboneEventMap {
   "heartbeat:status": HeartbeatStatusEvent;
   "channel:message": ChannelMessageEvent;
@@ -62,6 +72,7 @@ export interface BackboneEventMap {
   "registry:adapters": RegistryChangeEvent;
   "cron:job": CronJobEvent;
   "job:status": JobStatusEvent;
+  "notification:new": NotificationNewEvent;
 }
 
 // --- Typed Event Bus ---

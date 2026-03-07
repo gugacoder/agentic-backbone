@@ -68,4 +68,32 @@ db.exec(`
     ON cron_run_log (job_slug, ts DESC);
 `);
 
+db.exec(`
+  CREATE TABLE IF NOT EXISTS notifications (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    ts         TEXT NOT NULL DEFAULT (datetime('now')),
+    type       TEXT NOT NULL,
+    severity   TEXT NOT NULL,
+    agent_id   TEXT,
+    title      TEXT NOT NULL,
+    body       TEXT,
+    read       INTEGER NOT NULL DEFAULT 0,
+    metadata   TEXT
+  );
+  CREATE INDEX IF NOT EXISTS idx_notifications_ts ON notifications(ts DESC);
+  CREATE INDEX IF NOT EXISTS idx_notifications_read ON notifications(read);
+  CREATE INDEX IF NOT EXISTS idx_notifications_type ON notifications(type);
+`);
+
+db.exec(`
+  CREATE TABLE IF NOT EXISTS push_subscriptions (
+    id           INTEGER PRIMARY KEY AUTOINCREMENT,
+    endpoint     TEXT NOT NULL UNIQUE,
+    keys_p256dh  TEXT NOT NULL,
+    keys_auth    TEXT NOT NULL,
+    user_slug    TEXT,
+    created_at   TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+`);
+
 export { db };
