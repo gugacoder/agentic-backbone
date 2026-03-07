@@ -4,6 +4,7 @@ import {
   MessageSquare,
   Radio,
   Calendar,
+  Cpu,
   Settings,
 } from "lucide-react";
 import {
@@ -22,6 +23,7 @@ const navItems = [
   { label: "Conversas", icon: MessageSquare, to: "/conversations" as const },
   { label: "Canais", icon: Radio, to: "/channels" as const },
   { label: "Agenda", icon: Calendar, to: "/cron" as const },
+  { label: "Jobs", icon: Cpu, to: "/jobs" as const },
   { label: "Configuracoes", icon: Settings, to: "/settings" as const },
 ] as const;
 
