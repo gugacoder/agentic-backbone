@@ -41,7 +41,7 @@
     "id": "F-003",
     "name": "Auth store + API client + Login page",
     "description": "Criar lib/api.ts (request<T> com JWT injection e interceptacao 401), lib/auth.ts (useAuthStore Zustand com persist em localStorage, login/logout), routes/login.tsx (formulario email/senha, validacao, feedback de erro, redirect apos sucesso).",
-    "status": "blocked",
+    "status": "passing",
     "priority": 3,
     "agent": "coder",
     "task": "vibe-code",
@@ -56,7 +56,8 @@
       "request<T> injeta Authorization header automaticamente",
       "Resposta 401 limpa token e redireciona para /login"
     ],
-    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-1/worktree/sprints/sprint-1/3-prps/PRP-01-scaffold-hub.md"
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-1/worktree/sprints/sprint-1/3-prps/PRP-01-scaffold-hub.md",
+    "completed_at": "2026-03-07T04:36:00Z"
   },
   {
     "id": "F-004",
