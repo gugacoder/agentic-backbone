@@ -253,4 +253,87 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_feedback_session ON message_feedback(session_id);
 `);
 
+db.exec(`
+  CREATE TABLE IF NOT EXISTS security_events (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    agent_id        TEXT NOT NULL,
+    session_id      TEXT,
+    event_type      TEXT NOT NULL,
+    severity        TEXT NOT NULL,
+    action          TEXT NOT NULL,
+    input_hash      TEXT NOT NULL,
+    input_excerpt   TEXT,
+    pattern_matched TEXT,
+    score           REAL,
+    created_at      TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+  CREATE INDEX IF NOT EXISTS idx_security_agent ON security_events(agent_id, created_at);
+  CREATE INDEX IF NOT EXISTS idx_security_type ON security_events(event_type, action);
+
+  CREATE TABLE IF NOT EXISTS security_rules (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    name        TEXT NOT NULL UNIQUE,
+    description TEXT,
+    pattern     TEXT NOT NULL,
+    rule_type   TEXT NOT NULL,
+    severity    TEXT NOT NULL DEFAULT 'medium',
+    action      TEXT NOT NULL DEFAULT 'flagged',
+    is_system   INTEGER NOT NULL DEFAULT 0,
+    enabled     INTEGER NOT NULL DEFAULT 1,
+    created_at  TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+`);
+
+// Pre-populate system security rules (idempotent via INSERT OR IGNORE)
+const systemRules = [
+  {
+    name: "ignore_instructions",
+    description: "Detects attempts to override agent instructions",
+    pattern: JSON.stringify(["ignore previous", "ignore your instructions", "ignore all instructions", "esqueca suas instrucoes", "ignore tudo"]),
+    rule_type: "keyword",
+    severity: "high",
+    action: "blocked",
+  },
+  {
+    name: "system_prompt_leak",
+    description: "Detects attempts to extract the system prompt",
+    pattern: JSON.stringify(["repeat your system prompt", "what are your instructions", "show me your soul", "mostre seu prompt"]),
+    rule_type: "keyword",
+    severity: "high",
+    action: "flagged",
+  },
+  {
+    name: "role_override",
+    description: "Detects attempts to redefine the agent role",
+    pattern: JSON.stringify(["you are now", "act as", "pretend you are", "voce agora eh", "finja que"]),
+    rule_type: "keyword",
+    severity: "medium",
+    action: "flagged",
+  },
+  {
+    name: "jailbreak_dan",
+    description: "Detects DAN-style jailbreak attempts",
+    pattern: JSON.stringify(["DAN", "do anything now", "jailbreak", "developer mode"]),
+    rule_type: "keyword",
+    severity: "critical",
+    action: "blocked",
+  },
+  {
+    name: "data_exfiltration",
+    description: "Detects attempts to exfiltrate data",
+    pattern: JSON.stringify(["list all users", "show database", "dump your memory", "listar todos os usuarios"]),
+    rule_type: "keyword",
+    severity: "high",
+    action: "blocked",
+  },
+];
+
+const insertRule = db.prepare(`
+  INSERT OR IGNORE INTO security_rules (name, description, pattern, rule_type, severity, action, is_system)
+  VALUES (@name, @description, @pattern, @rule_type, @severity, @action, 1)
+`);
+for (const rule of systemRules) {
+  insertRule.run(rule);
+}
+
 export { db };
