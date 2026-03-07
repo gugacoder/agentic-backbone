@@ -187,6 +187,10 @@ export function getJob(jobId: string): JobSummary | null {
   return session ? toSummary(session) : null;
 }
 
+export function getJobSession(jobId: string): JobSession | null {
+  return runningJobs.get(jobId) ?? finishedJobs.get(jobId) ?? null;
+}
+
 export function listJobs(agentId?: string): JobSummary[] {
   const all = [...runningJobs.values(), ...finishedJobs.values()];
   const filtered = agentId ? all.filter((j) => j.agentId === agentId) : all;
