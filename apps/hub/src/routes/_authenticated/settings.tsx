@@ -8,6 +8,7 @@ import { EmptyState } from "@/components/shared/empty-state";
 import { LlmPlanCard } from "@/components/settings/llm-plan-card";
 import { WebSearchSettings } from "@/components/settings/web-search-settings";
 import { SystemInfo } from "@/components/settings/system-info";
+import { UsersList } from "@/components/users/users-list";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { llmSettingsQueryOptions, activateLlmPlan } from "@/api/settings";
@@ -73,11 +74,7 @@ function SettingsPage() {
         </TabsContent>
 
         <TabsContent value="users">
-          <EmptyState
-            icon={<Users />}
-            title="Usuarios"
-            description="Gestao de usuarios em breve."
-          />
+          <UsersList />
         </TabsContent>
 
         <TabsContent value="system">
