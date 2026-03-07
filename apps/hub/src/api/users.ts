@@ -49,3 +49,24 @@ export function updateUser(slug: string, payload: UpdateUserPayload) {
     body: JSON.stringify(payload),
   });
 }
+
+export function deleteUser(slug: string) {
+  return request<{ status: string }>(`/users/${encodeURIComponent(slug)}`, {
+    method: "DELETE",
+  });
+}
+
+export interface UserAgent {
+  id: string;
+  slug: string;
+  enabled: boolean;
+  description: string;
+}
+
+export function userAgentsQueryOptions(slug: string) {
+  return queryOptions({
+    queryKey: ["users", slug, "agents"],
+    queryFn: () => request<UserAgent[]>(`/users/${encodeURIComponent(slug)}/agents`),
+    enabled: !!slug,
+  });
+}

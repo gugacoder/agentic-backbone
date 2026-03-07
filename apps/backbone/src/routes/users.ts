@@ -7,6 +7,7 @@ import {
   updateUser,
   deleteUser,
 } from "../users/manager.js";
+import { listAgents } from "../agents/registry.js";
 import { getAuthUser, requireSysuser } from "./auth-helpers.js";
 
 export const userRoutes = new Hono();
@@ -96,6 +97,25 @@ userRoutes.patch("/users/:slug", async (c) => {
   const updated = updateUser(slug, body);
   if (!updated) return c.json({ error: "not found" }, 404);
   return c.json(updated);
+});
+
+// --- User Agents (sysuser only) ---
+
+userRoutes.get("/users/:slug/agents", (c) => {
+  const denied = requireSysuser(c);
+  if (denied) return denied;
+  const slug = c.req.param("slug");
+  const user = getUser(slug);
+  if (!user) return c.json({ error: "not found" }, 404);
+  const agents = listAgents().filter((a) => a.owner === slug);
+  return c.json(
+    agents.map((a) => ({
+      id: a.id,
+      slug: a.slug,
+      enabled: a.enabled,
+      description: a.description?.slice(0, 100) || "",
+    })),
+  );
 });
 
 // --- Delete User (sysuser only) ---

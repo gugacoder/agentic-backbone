@@ -1,5 +1,6 @@
 import { useState, useCallback } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,9 +13,12 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import {
   createUser,
   updateUser,
+  deleteUser,
+  userAgentsQueryOptions,
   type User,
 } from "@/api/users";
 import { ApiError } from "@/lib/api";
@@ -111,7 +115,27 @@ export function UserForm({
     onError: handleError,
   });
 
-  const isPending = createMutation.isPending || updateMutation.isPending;
+  const deleteMutation = useMutation({
+    mutationFn: () => deleteUser(user!.slug),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+      toast.success("Usuario excluido com sucesso");
+      handleOpenChange(false);
+      onSuccess?.();
+    },
+    onError: handleError,
+  });
+
+  const agentsQuery = useQuery({
+    ...userAgentsQueryOptions(user?.slug ?? ""),
+    enabled: isEditing && !!user?.slug && user.slug !== "system",
+  });
+  const agentCount = agentsQuery.data?.length ?? 0;
+
+  const isPending =
+    createMutation.isPending || updateMutation.isPending || deleteMutation.isPending;
+
+  const isSystemUser = user?.slug === "system";
 
   function validate(): boolean {
     const errs: Record<string, string> = {};
@@ -370,7 +394,13 @@ export function UserForm({
               <p className="text-sm text-destructive">{backendError}</p>
             )}
 
-            <div className="flex gap-3 pt-2">
+            {isEditing && !isSystemUser && agentCount > 0 && (
+              <p className="text-sm text-muted-foreground">
+                Este usuario possui {agentCount} agente{agentCount !== 1 ? "s" : ""}.
+              </p>
+            )}
+
+            <div className="flex items-center gap-3 pt-2">
               <Button type="submit" disabled={isPending}>
                 {isPending
                   ? isEditing
@@ -387,6 +417,27 @@ export function UserForm({
               >
                 Cancelar
               </Button>
+
+              {isEditing && !isSystemUser && (
+                <div className="ml-auto">
+                  <ConfirmDialog
+                    title="Excluir usuario"
+                    description={`Tem certeza que deseja excluir o usuario ${user!.slug}?${agentCount > 0 ? ` Este usuario possui ${agentCount} agente${agentCount !== 1 ? "s" : ""}.` : ""}`}
+                    onConfirm={() => deleteMutation.mutate()}
+                    destructive
+                  >
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="sm"
+                      disabled={isPending}
+                    >
+                      <Trash2 className="mr-1 h-4 w-4" />
+                      Excluir
+                    </Button>
+                  </ConfirmDialog>
+                </div>
+              )}
             </div>
           </form>
         </ScrollArea>
