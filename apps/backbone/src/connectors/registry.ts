@@ -1,4 +1,4 @@
-import { existsSync, readdirSync, readFileSync, writeFileSync, rmSync } from "node:fs";
+import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync, rmSync } from "node:fs";
 import { join, dirname } from "node:path";
 import type { Hono } from "hono";
 import yaml from "js-yaml";
@@ -324,11 +324,97 @@ export class ConnectorRegistry {
     return true;
   }
 
+  // --- Create adapter ---
+
+  createAdapter(
+    scope: "shared" | "system",
+    slug: string,
+    data: {
+      connector: string;
+      label?: string;
+      policy?: string;
+      credential?: Record<string, unknown>;
+      options?: Record<string, unknown>;
+    }
+  ): ResolvedAdapter {
+    const adapterDir = join(this.resolveDir(scope), slug);
+    const yamlPath = join(adapterDir, FILENAME);
+
+    if (existsSync(yamlPath)) {
+      throw new Error(`Adapter "${slug}" already exists in scope "${scope}"`);
+    }
+
+    const config: Record<string, unknown> = {
+      connector: data.connector,
+      name: data.label ?? slug,
+      policy: data.policy ?? "readonly",
+    };
+    if (data.credential) config.credential = data.credential;
+    if (data.options) config.options = data.options;
+
+    if (data.credential) warnPlainTextSecrets(data.credential, `adapters:${slug}`);
+
+    mkdirSync(adapterDir, { recursive: true });
+    writeFileSync(yamlPath, yaml.dump(config, { lineWidth: -1, quotingType: '"' }));
+
+    const created = this.getAdapter(scope, slug);
+    if (!created) throw new Error(`Failed to read adapter after create`);
+    return created;
+  }
+
+  // --- Test adapter connection ---
+
+  async testAdapter(slug: string): Promise<{ ok: boolean; latencyMs?: number; message?: string; error?: string }> {
+    const adapter = this.findAdapter(slug);
+    if (!adapter) {
+      return { ok: false, error: `Adapter "${slug}" not found` };
+    }
+
+    const connectorDef = this.connectors.get(adapter.connector);
+    if (!connectorDef) {
+      return { ok: false, error: `Connector "${adapter.connector}" not registered` };
+    }
+
+    const start = Date.now();
+    try {
+      let credential: unknown;
+      let options: unknown;
+      try {
+        credential = connectorDef.credentialSchema.parse(adapter.credential);
+        options = connectorDef.optionsSchema.parse(adapter.options);
+      } catch (err) {
+        return { ok: false, error: `Invalid credential/options: ${formatError(err)}` };
+      }
+
+      const client = connectorDef.createClient(credential, options) as Record<string, unknown>;
+
+      if (typeof client["query"] === "function") {
+        await (client["query"] as (sql: string) => Promise<unknown>)("SELECT 1");
+      }
+
+      if (typeof (client as any).close === "function") {
+        await (client as any).close().catch(() => {});
+      }
+
+      return { ok: true, latencyMs: Date.now() - start, message: "Conexao bem-sucedida" };
+    } catch (err) {
+      return { ok: false, error: formatError(err) };
+    }
+  }
+
   // --- Direct adapter lookup (no agent context) ---
 
+  findAdapterMasked(slug: string): ResolvedAdapter | null {
+    const adapter = this.findAdapter(slug);
+    return adapter ? maskCredentials(adapter) : null;
+  }
+
   findAdapter(slug: string): ResolvedAdapter | null {
-    for (const dir of [sharedResourceDir(KIND), systemResourceDir(KIND)]) {
-      const entries = this.scanAdaptersInDir(dir, "shared");
+    for (const [dir, source] of [
+      [sharedResourceDir(KIND), "shared"] as const,
+      [systemResourceDir(KIND), "system"] as const,
+    ]) {
+      const entries = this.scanAdaptersInDir(dir, source);
       const found = entries.find((a) => a.slug === slug);
       if (found) return found;
     }
