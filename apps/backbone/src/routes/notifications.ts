@@ -10,6 +10,7 @@ export const notificationRoutes = new Hono();
 notificationRoutes.get("/notifications", (c) => {
   const unread = c.req.query("unread");
   const type = c.req.query("type");
+  const agentId = c.req.query("agent_id");
   const limit = Math.min(parseInt(c.req.query("limit") ?? "50", 10), 200);
   const offset = parseInt(c.req.query("offset") ?? "0", 10);
 
@@ -22,6 +23,10 @@ notificationRoutes.get("/notifications", (c) => {
   if (type) {
     conditions.push("type = ?");
     params.push(type);
+  }
+  if (agentId) {
+    conditions.push("agent_id = ?");
+    params.push(agentId);
   }
 
   const where = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";

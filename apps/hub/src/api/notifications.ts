@@ -16,12 +16,14 @@ export interface Notification {
 export function notificationsQueryOptions(params?: {
   unread?: boolean;
   type?: string;
+  agent_id?: string;
   limit?: number;
   offset?: number;
 }) {
   const searchParams = new URLSearchParams();
   if (params?.unread) searchParams.set("unread", "true");
   if (params?.type) searchParams.set("type", params.type);
+  if (params?.agent_id) searchParams.set("agent_id", params.agent_id);
   if (params?.limit) searchParams.set("limit", String(params.limit));
   if (params?.offset) searchParams.set("offset", String(params.offset));
   const qs = searchParams.toString();
