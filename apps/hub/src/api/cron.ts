@@ -69,3 +69,41 @@ export async function runCronJobManually(agentId: string, slug: string) {
     { method: "POST" }
   );
 }
+
+export interface CreateCronJobPayload {
+  agentId: string;
+  slug: string;
+  name: string;
+  enabled: boolean;
+  schedule: CronSchedule;
+  payload: CronPayload;
+  description?: string;
+}
+
+export async function createCronJob(payload: CreateCronJobPayload) {
+  return request<CronJob>("/cron/jobs", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+}
+
+export interface UpdateCronJobPayload {
+  name?: string;
+  enabled?: boolean;
+  schedule?: CronSchedule;
+  payload?: CronPayload;
+  description?: string;
+}
+
+export async function updateCronJob(
+  agentId: string,
+  slug: string,
+  payload: UpdateCronJobPayload
+) {
+  return request<CronJob>(`/cron/jobs/${agentId}/${slug}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+}

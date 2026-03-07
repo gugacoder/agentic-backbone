@@ -1,12 +1,13 @@
 import { useState, useMemo, useCallback } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Calendar, Play, Search, Plus } from "lucide-react";
+import { Calendar, Play, Search, Plus, Pencil } from "lucide-react";
 import cronstrue from "cronstrue/i18n";
 import { CronExpressionParser } from "cron-parser";
 import { PageHeader } from "@/components/shared/page-header";
 import { EmptyState } from "@/components/shared/empty-state";
 import { StatusBadge } from "@/components/shared/status-badge";
+import { CronJobForm } from "@/components/cron/cron-job-form";
 import {
   cronJobsQueryOptions,
   runCronJobManually,
@@ -117,6 +118,8 @@ function CronPage() {
   const [search, setSearch] = useState("");
   const [agentFilter, setAgentFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+  const [formOpen, setFormOpen] = useState(false);
+  const [editingJob, setEditingJob] = useState<CronJob | undefined>(undefined);
 
   const { data: jobs, isLoading } = useQuery(
     cronJobsQueryOptions({ includeDisabled: true })
@@ -183,7 +186,13 @@ function CronPage() {
         title="Agenda"
         description="Tarefas agendadas dos agentes"
         actions={
-          <Button size="sm" disabled>
+          <Button
+            size="sm"
+            onClick={() => {
+              setEditingJob(undefined);
+              setFormOpen(true);
+            }}
+          >
             <Plus className="mr-1 size-4" />
             Novo Job
           </Button>
@@ -263,7 +272,7 @@ function CronPage() {
                 <TableHead>Status</TableHead>
                 <TableHead>Proxima execucao</TableHead>
                 <TableHead>Ultima execucao</TableHead>
-                <TableHead className="w-[60px]" />
+                <TableHead className="w-[90px]" />
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -273,6 +282,10 @@ function CronPage() {
                   job={job}
                   agentName={agentNameMap[job.agentId]}
                   onRun={handleRun}
+                  onEdit={(j) => {
+                    setEditingJob(j);
+                    setFormOpen(true);
+                  }}
                   isRunning={
                     runMutation.isPending &&
                     runMutation.variables?.agentId === job.agentId &&
@@ -284,6 +297,15 @@ function CronPage() {
           </Table>
         </div>
       )}
+
+      <CronJobForm
+        open={formOpen}
+        onOpenChange={(open) => {
+          setFormOpen(open);
+          if (!open) setEditingJob(undefined);
+        }}
+        job={editingJob}
+      />
     </div>
   );
 }
@@ -292,11 +314,13 @@ function CronJobRow({
   job,
   agentName,
   onRun,
+  onEdit,
   isRunning,
 }: {
   job: CronJob;
   agentName?: string;
   onRun: (agentId: string, slug: string) => void;
+  onEdit: (job: CronJob) => void;
   isRunning: boolean;
 }) {
   const nextRun = computeNextRun(job);
@@ -360,18 +384,31 @@ function CronJobRow({
         )}
       </TableCell>
       <TableCell>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="size-8"
-          onClick={(e) => {
-            e.stopPropagation();
-            onRun(job.agentId, job.slug);
-          }}
-          disabled={isRunning}
-        >
-          <Play className={`size-4 ${isRunning ? "animate-pulse" : ""}`} />
-        </Button>
+        <div className="flex gap-1">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="size-8"
+            onClick={(e) => {
+              e.stopPropagation();
+              onEdit(job);
+            }}
+          >
+            <Pencil className="size-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="size-8"
+            onClick={(e) => {
+              e.stopPropagation();
+              onRun(job.agentId, job.slug);
+            }}
+            disabled={isRunning}
+          >
+            <Play className={`size-4 ${isRunning ? "animate-pulse" : ""}`} />
+          </Button>
+        </div>
       </TableCell>
     </TableRow>
   );

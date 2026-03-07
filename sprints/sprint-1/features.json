@@ -595,7 +595,7 @@
     "id": "F-029",
     "name": "Formulario de criacao/edicao de cron job",
     "description": "Criar components/cron/cron-job-form.tsx: dialog/drawer com campos agente (select, pre-selecionado se vindo do agente), nome slug (kebab-case), instrucoes (textarea), agenda (CronScheduleBuilder), ativo (switch). Criacao via POST /cron/jobs, edicao via PATCH. Validacao completa.",
-    "status": "blocked",
+    "status": "passing",
     "priority": 29,
     "agent": "coder",
     "task": "vibe-code",
@@ -611,13 +611,14 @@
       "Edicao carrega valores existentes",
       "Sucesso fecha dialog e invalida queries"
     ],
-    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-1/worktree/sprints/sprint-1/3-prps/PRP-07-agendamento-cron.md"
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-1/worktree/sprints/sprint-1/3-prps/PRP-07-agendamento-cron.md",
+    "completed_at": "2026-03-07T13:30:00Z"
   },
   {
     "id": "F-030",
     "name": "Historico de execucoes + tab Agenda no agente",
     "description": "Criar components/cron/cron-run-history.tsx: tabela paginada (20/pag) com data/hora, status badge, duracao, tokens, custo, preview expandivel. Detalhe do job com resumo e acoes (executar, editar, ativar/desativar, excluir com confirmacao). Substituir placeholder tab Agenda em agents.$id.tsx: mesma tabela filtrada por agente, botao Novo Job pre-seleciona agente.",
-    "status": "blocked",
+    "status": "failing",
     "priority": 30,
     "agent": "coder",
     "task": "vibe-code",
