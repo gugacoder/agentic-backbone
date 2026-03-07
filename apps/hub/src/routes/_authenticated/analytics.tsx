@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/select";
 import { AnalyticsSummaryCards } from "@/components/analytics/analytics-summary-cards";
 import { AnalyticsTrendChart } from "@/components/analytics/analytics-trend-chart";
+import { AgentRankingTable } from "@/components/analytics/agent-ranking-table";
 import { analyticsOverviewQueryOptions } from "@/api/analytics";
 import { agentsQueryOptions } from "@/api/agents";
 
@@ -141,6 +142,7 @@ function AnalyticsPage() {
             to={to}
             agentId={queryParams.agentId}
           />
+          <AgentRankingTable from={from} to={to} />
         </>
       )}
     </div>
