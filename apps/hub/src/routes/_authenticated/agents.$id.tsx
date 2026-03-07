@@ -19,6 +19,7 @@ import { AgentMetrics } from "@/components/agents/agent-metrics";
 import { HeartbeatTimeline } from "@/components/agents/heartbeat-timeline";
 import { AgentActions } from "@/components/agents/agent-actions";
 import { AgentConfigTabs } from "@/components/agents/agent-config-tabs";
+import { AgentConversations } from "@/components/agents/agent-conversations";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { useSSEEvent } from "@/hooks/use-sse";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -174,7 +175,7 @@ function AgentDetailPage() {
           <AgentConfigTabs agentId={id} agent={agent} subtab={subtab} />
         </TabsContent>
         <TabsContent value="conversations">
-          <PlaceholderTab label="Conversas" />
+          <AgentConversations agentId={id} agentSlug={agent.slug} />
         </TabsContent>
         <TabsContent value="memory">
           <PlaceholderTab label="Memoria" />

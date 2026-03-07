@@ -4,14 +4,39 @@ import {
   Link,
   useNavigate,
 } from "@tanstack/react-router";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Bot, ChevronRight } from "lucide-react";
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
+import {
+  ArrowLeft,
+  Bot,
+  ChevronRight,
+  MoreVertical,
+  Pencil,
+  Download,
+  Trash2,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Input } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   conversationQueryOptions,
   conversationMessagesQueryOptions,
+  renameConversation,
+  deleteConversation,
   type ConversationMessage,
 } from "@/api/conversations";
 import { agentsQueryOptions } from "@/api/agents";
@@ -19,6 +44,7 @@ import { MessageList } from "@/components/chat/message-list";
 import { MessageInput } from "@/components/chat/message-input";
 import type { ChatMessage } from "@/components/chat/message-bubble";
 import { streamMessage, type ChatStreamEvent } from "@/lib/chat-stream";
+import { useAuthStore } from "@/lib/auth";
 
 export const Route = createFileRoute("/_authenticated/conversations/$id")({
   component: ConversationChatPage,
@@ -44,6 +70,37 @@ function ConversationChatPage() {
   const [isStreaming, setIsStreaming] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
   const [inputValue, setInputValue] = useState("");
+  const [renameOpen, setRenameOpen] = useState(false);
+  const [renameValue, setRenameValue] = useState("");
+  const [deleteOpen, setDeleteOpen] = useState(false);
+
+  const renameMutation = useMutation({
+    mutationFn: (title: string) => renameConversation(id, title),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["conversations", id] });
+      queryClient.invalidateQueries({ queryKey: ["conversations"] });
+      setRenameOpen(false);
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: () => deleteConversation(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["conversations"] });
+      navigate({ to: "/conversations" });
+    },
+  });
+
+  function handleRenameOpen() {
+    setRenameValue(conversation?.title ?? "");
+    setRenameOpen(true);
+  }
+
+  function handleExport() {
+    const token = useAuthStore.getState().token;
+    const url = `/api/v1/ai/conversations/${id}/export${token ? `?token=${encodeURIComponent(token)}` : ""}`;
+    window.open(url, "_blank");
+  }
 
   const agentLabel =
     agents?.find((a) => a.id === conversation?.agentId)?.slug ??
@@ -186,7 +243,88 @@ function ConversationChatPage() {
           <Bot className="mr-1 size-3" />
           {agentLabel}
         </Badge>
+
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            render={
+              <Button variant="ghost" size="icon" className="size-8 shrink-0">
+                <MoreVertical className="size-4" />
+              </Button>
+            }
+          />
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onSelect={handleRenameOpen}>
+              <Pencil className="mr-2 size-4" />
+              Renomear
+            </DropdownMenuItem>
+            <DropdownMenuItem onSelect={handleExport}>
+              <Download className="mr-2 size-4" />
+              Exportar
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onSelect={() => setDeleteOpen(true)}
+              className="text-destructive focus:text-destructive"
+            >
+              <Trash2 className="mr-2 size-4" />
+              Excluir
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
+
+      {/* Rename dialog */}
+      <Dialog open={renameOpen} onOpenChange={setRenameOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Renomear conversa</DialogTitle>
+          </DialogHeader>
+          <Input
+            value={renameValue}
+            onChange={(e) => setRenameValue(e.target.value)}
+            placeholder="Titulo da conversa"
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && renameValue.trim()) {
+                renameMutation.mutate(renameValue.trim());
+              }
+            }}
+          />
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRenameOpen(false)}>
+              Cancelar
+            </Button>
+            <Button
+              onClick={() => renameMutation.mutate(renameValue.trim())}
+              disabled={!renameValue.trim() || renameMutation.isPending}
+            >
+              Salvar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete confirmation dialog */}
+      <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Excluir conversa</DialogTitle>
+            <DialogDescription>
+              Esta conversa sera removida permanentemente.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteOpen(false)}>
+              Cancelar
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => deleteMutation.mutate()}
+              disabled={deleteMutation.isPending}
+            >
+              Excluir
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Message area */}
       <MessageList

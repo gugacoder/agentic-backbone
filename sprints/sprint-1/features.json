@@ -382,7 +382,7 @@
     "id": "F-019",
     "name": "Gerenciamento de sessoes",
     "description": "Menu dropdown no header do chat: Renomear (dialog + PATCH), Exportar (GET /export + download), Excluir (ConfirmDialog + DELETE, navega para /conversations). Substituir placeholder tab Conversas em agents.$id.tsx com lista filtrada por agente.",
-    "status": "pending",
+    "status": "passing",
     "priority": 19,
     "agent": "coder",
     "task": "vibe-code",
@@ -395,7 +395,8 @@
       "Excluir conversa pede confirmacao e redireciona para lista",
       "Tab Conversas no agente mostra conversas filtradas pelo agente"
     ],
-    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-1/worktree/sprints/sprint-1/3-prps/PRP-04-chat-conversas.md"
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-1/worktree/sprints/sprint-1/3-prps/PRP-04-chat-conversas.md",
+    "completed_at": "2026-03-07T08:30:00Z"
   },
   {
     "id": "F-020",
