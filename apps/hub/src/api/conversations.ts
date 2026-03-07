@@ -23,6 +23,20 @@ export function conversationQueryOptions(id: string) {
   });
 }
 
+export interface ConversationMessage {
+  role: "user" | "assistant";
+  content: string;
+  timestamp?: string;
+}
+
+export function conversationMessagesQueryOptions(id: string) {
+  return queryOptions({
+    queryKey: ["conversations", id, "messages"],
+    queryFn: () =>
+      request<ConversationMessage[]>(`/conversations/${id}/messages`),
+  });
+}
+
 export async function createConversation(agentId: string): Promise<Conversation> {
   return request<Conversation>("/conversations", {
     method: "POST",

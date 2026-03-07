@@ -17,6 +17,7 @@ import { Route as AuthenticatedCronRouteImport } from './routes/_authenticated/c
 import { Route as AuthenticatedConversationsRouteImport } from './routes/_authenticated/conversations'
 import { Route as AuthenticatedChannelsRouteImport } from './routes/_authenticated/channels'
 import { Route as AuthenticatedAgentsRouteImport } from './routes/_authenticated/agents'
+import { Route as AuthenticatedConversationsIdRouteImport } from './routes/_authenticated/conversations.$id'
 import { Route as AuthenticatedAgentsNewRouteImport } from './routes/_authenticated/agents.new'
 import { Route as AuthenticatedAgentsIdRouteImport } from './routes/_authenticated/agents.$id'
 
@@ -60,6 +61,12 @@ const AuthenticatedAgentsRoute = AuthenticatedAgentsRouteImport.update({
   path: '/agents',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedConversationsIdRoute =
+  AuthenticatedConversationsIdRouteImport.update({
+    id: '/$id',
+    path: '/$id',
+    getParentRoute: () => AuthenticatedConversationsRoute,
+  } as any)
 const AuthenticatedAgentsNewRoute = AuthenticatedAgentsNewRouteImport.update({
   id: '/new',
   path: '/new',
@@ -76,22 +83,24 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/agents': typeof AuthenticatedAgentsRouteWithChildren
   '/channels': typeof AuthenticatedChannelsRoute
-  '/conversations': typeof AuthenticatedConversationsRoute
+  '/conversations': typeof AuthenticatedConversationsRouteWithChildren
   '/cron': typeof AuthenticatedCronRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/agents/$id': typeof AuthenticatedAgentsIdRoute
   '/agents/new': typeof AuthenticatedAgentsNewRoute
+  '/conversations/$id': typeof AuthenticatedConversationsIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/agents': typeof AuthenticatedAgentsRouteWithChildren
   '/channels': typeof AuthenticatedChannelsRoute
-  '/conversations': typeof AuthenticatedConversationsRoute
+  '/conversations': typeof AuthenticatedConversationsRouteWithChildren
   '/cron': typeof AuthenticatedCronRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/agents/$id': typeof AuthenticatedAgentsIdRoute
   '/agents/new': typeof AuthenticatedAgentsNewRoute
+  '/conversations/$id': typeof AuthenticatedConversationsIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -100,11 +109,12 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/_authenticated/agents': typeof AuthenticatedAgentsRouteWithChildren
   '/_authenticated/channels': typeof AuthenticatedChannelsRoute
-  '/_authenticated/conversations': typeof AuthenticatedConversationsRoute
+  '/_authenticated/conversations': typeof AuthenticatedConversationsRouteWithChildren
   '/_authenticated/cron': typeof AuthenticatedCronRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/agents/$id': typeof AuthenticatedAgentsIdRoute
   '/_authenticated/agents/new': typeof AuthenticatedAgentsNewRoute
+  '/_authenticated/conversations/$id': typeof AuthenticatedConversationsIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -118,6 +128,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/agents/$id'
     | '/agents/new'
+    | '/conversations/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -129,6 +140,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/agents/$id'
     | '/agents/new'
+    | '/conversations/$id'
   id:
     | '__root__'
     | '/'
@@ -141,6 +153,7 @@ export interface FileRouteTypes {
     | '/_authenticated/settings'
     | '/_authenticated/agents/$id'
     | '/_authenticated/agents/new'
+    | '/_authenticated/conversations/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -207,6 +220,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAgentsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/conversations/$id': {
+      id: '/_authenticated/conversations/$id'
+      path: '/$id'
+      fullPath: '/conversations/$id'
+      preLoaderRoute: typeof AuthenticatedConversationsIdRouteImport
+      parentRoute: typeof AuthenticatedConversationsRoute
+    }
     '/_authenticated/agents/new': {
       id: '/_authenticated/agents/new'
       path: '/new'
@@ -237,10 +257,24 @@ const AuthenticatedAgentsRouteChildren: AuthenticatedAgentsRouteChildren = {
 const AuthenticatedAgentsRouteWithChildren =
   AuthenticatedAgentsRoute._addFileChildren(AuthenticatedAgentsRouteChildren)
 
+interface AuthenticatedConversationsRouteChildren {
+  AuthenticatedConversationsIdRoute: typeof AuthenticatedConversationsIdRoute
+}
+
+const AuthenticatedConversationsRouteChildren: AuthenticatedConversationsRouteChildren =
+  {
+    AuthenticatedConversationsIdRoute: AuthenticatedConversationsIdRoute,
+  }
+
+const AuthenticatedConversationsRouteWithChildren =
+  AuthenticatedConversationsRoute._addFileChildren(
+    AuthenticatedConversationsRouteChildren,
+  )
+
 interface AuthenticatedRouteChildren {
   AuthenticatedAgentsRoute: typeof AuthenticatedAgentsRouteWithChildren
   AuthenticatedChannelsRoute: typeof AuthenticatedChannelsRoute
-  AuthenticatedConversationsRoute: typeof AuthenticatedConversationsRoute
+  AuthenticatedConversationsRoute: typeof AuthenticatedConversationsRouteWithChildren
   AuthenticatedCronRoute: typeof AuthenticatedCronRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
 }
@@ -248,7 +282,7 @@ interface AuthenticatedRouteChildren {
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAgentsRoute: AuthenticatedAgentsRouteWithChildren,
   AuthenticatedChannelsRoute: AuthenticatedChannelsRoute,
-  AuthenticatedConversationsRoute: AuthenticatedConversationsRoute,
+  AuthenticatedConversationsRoute: AuthenticatedConversationsRouteWithChildren,
   AuthenticatedCronRoute: AuthenticatedCronRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
 }
