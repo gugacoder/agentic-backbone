@@ -629,4 +629,61 @@ db.exec(`
   );
 `);
 
+// F-161: Billing tables
+db.exec(`
+  CREATE TABLE IF NOT EXISTS billing_config (
+    id                  TEXT PRIMARY KEY DEFAULT 'default',
+    currency            TEXT NOT NULL DEFAULT 'BRL',
+    default_markup_pct  REAL NOT NULL DEFAULT 0.0,
+    agency_name         TEXT,
+    agency_document     TEXT,
+    agency_address      TEXT,
+    agency_bank_info    TEXT,
+    agency_logo_url     TEXT,
+    invoice_footer      TEXT,
+    updated_at          TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+
+  CREATE TABLE IF NOT EXISTS tenant_billing (
+    id                  TEXT PRIMARY KEY,
+    tenant_id           TEXT NOT NULL,
+    period_year         INTEGER NOT NULL,
+    period_month        INTEGER NOT NULL,
+    tokens_input        INTEGER NOT NULL DEFAULT 0,
+    tokens_output       INTEGER NOT NULL DEFAULT 0,
+    tokens_total        INTEGER NOT NULL DEFAULT 0,
+    cost_base           REAL NOT NULL DEFAULT 0.0,
+    markup_pct          REAL NOT NULL DEFAULT 0.0,
+    cost_with_markup    REAL NOT NULL DEFAULT 0.0,
+    status              TEXT NOT NULL DEFAULT 'draft',
+    finalized_at        TEXT,
+    created_at          TEXT NOT NULL DEFAULT (datetime('now')),
+    UNIQUE(tenant_id, period_year, period_month)
+  );
+  CREATE INDEX IF NOT EXISTS idx_tenant_billing_tenant ON tenant_billing(tenant_id);
+  CREATE INDEX IF NOT EXISTS idx_tenant_billing_period ON tenant_billing(period_year, period_month);
+
+  CREATE TABLE IF NOT EXISTS tenant_billing_detail (
+    id                  TEXT PRIMARY KEY,
+    billing_id          TEXT NOT NULL REFERENCES tenant_billing(id) ON DELETE CASCADE,
+    agent_id            TEXT NOT NULL,
+    agent_label         TEXT NOT NULL,
+    model               TEXT NOT NULL,
+    operation_type      TEXT NOT NULL,
+    tokens_input        INTEGER NOT NULL DEFAULT 0,
+    tokens_output       INTEGER NOT NULL DEFAULT 0,
+    tokens_total        INTEGER NOT NULL DEFAULT 0,
+    cost_base           REAL NOT NULL DEFAULT 0.0,
+    invocations         INTEGER NOT NULL DEFAULT 0
+  );
+  CREATE INDEX IF NOT EXISTS idx_billing_detail_billing ON tenant_billing_detail(billing_id);
+  CREATE INDEX IF NOT EXISTS idx_billing_detail_agent ON tenant_billing_detail(agent_id);
+
+  CREATE TABLE IF NOT EXISTS tenant_markup_override (
+    tenant_id           TEXT PRIMARY KEY,
+    markup_pct          REAL NOT NULL,
+    updated_at          TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+`);
+
 export { db };
