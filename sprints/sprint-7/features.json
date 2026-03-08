@@ -21,7 +21,7 @@
     "id": "F-145",
     "name": "Circuit-breaker: CircuitBreakerManager — módulo src/circuit-breaker/",
     "description": "Criar módulo `src/circuit-breaker/` com index.ts (CircuitBreakerManager singleton), config.ts (CRUD de circuit_breaker_config), monitor.ts (contagem de falhas, cálculo de error rate, verificação de limites), schemas.ts (Zod). CircuitBreakerManager implementa: canExecute(agentId) retornando {allowed, reason}, recordOutcome(agentId, success), activateKillSwitch/deactivateKillSwitch, getState/getAllStates, resume. Kill-switch mantido in-memory para resposta <1s, persistido via events para recovery. Trip logic: consecutiveFails >= max OU error_rate > threshold OU actions >= limit. Ao trip: registra evento, emite no EventBus, envia notificação push (PWA). Auto-resume após cooldown se configurado.",
-    "status": "blocked",
+    "status": "passing",
     "priority": 2,
     "agent": "coder",
     "task": "vibe-code",
@@ -36,13 +36,14 @@
       "Auto-resume funciona após cooldown_min minutos",
       "`npm run typecheck` passa sem erros"
     ],
-    "prp_path": "sprints/sprint-7/3-prps/PRP-42-kill-switch-circuit-breaker.md"
+    "prp_path": "sprints/sprint-7/3-prps/PRP-42-kill-switch-circuit-breaker.md",
+    "completed_at": "2026-03-08T14:51:38Z"
   },
   {
     "id": "F-146",
     "name": "Circuit-breaker: API endpoints",
     "description": "Implementar endpoints em `src/routes/`: GET /agents/:id/circuit-breaker (estado atual), PUT /agents/:id/circuit-breaker/config (atualizar configuração), POST /agents/:id/circuit-breaker/kill (ativar kill-switch), POST /agents/:id/circuit-breaker/resume (desativar/resume), GET /agents/:id/circuit-breaker/events (histórico paginado), GET /system/circuit-breaker (estado de todos os agentes). Validação via Zod schemas. Auth JWT obrigatório.",
-    "status": "blocked",
+    "status": "pending",
     "priority": 3,
     "agent": "coder",
     "task": "vibe-code",
@@ -63,7 +64,7 @@
     "id": "F-147",
     "name": "Circuit-breaker: Integração heartbeat/cron/webhooks + SSE",
     "description": "Inserir check canExecute(agentId) no início de heartbeat/scheduler.ts (antes de runAgent), cron/scheduler.ts (antes de executar job) e handler de webhooks (antes de processar). Se allowed:false: bloqueia execução, registra evento action_blocked com contexto. Inserir recordOutcome(agentId, success) ao final de cada execução. Emitir eventos SSE: circuit_breaker:tripped, circuit_breaker:resumed, circuit_breaker:kill_switch no canal /system/events com payloads tipados.",
-    "status": "blocked",
+    "status": "pending",
     "priority": 4,
     "agent": "coder",
     "task": "vibe-code",
@@ -208,7 +209,7 @@
     "id": "F-154",
     "name": "Fleet: API endpoints /fleet, /fleet/batch, /fleet/summary",
     "description": "Implementar endpoints: GET /fleet (visão consolidada de todos os agentes com métricas de saúde, consumo, atividade, circuit-breaker — query params: owner, status, sortBy, sortDir), POST /fleet/batch (operação em lote: enable, disable, trigger_heartbeat, activate_kill_switch, deactivate_kill_switch — resposta individual por agente), GET /fleet/summary (cards: totalAgents, activeAgents, pausedAgents, errorAgents, killedAgents, totalTokensToday, totalCostToday, avgHealthRate, activeAlerts). Agrega dados de AgentRegistry, heartbeat_log, circuit_breaker e custos.",
-    "status": "blocked",
+    "status": "pending",
     "priority": 11,
     "agent": "coder",
     "task": "vibe-code",

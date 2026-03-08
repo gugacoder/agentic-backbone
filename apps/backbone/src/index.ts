@@ -32,6 +32,7 @@ import { CONTEXT_DIR } from "./context/index.js";
 import { encryptAllYamlFiles } from "./context/encryptor.js";
 import { loadPlans } from "./settings/llm.js";
 import { initBenchmarkTrigger } from "./benchmarks/index.js";
+import { initCircuitBreaker } from "./circuit-breaker/index.js";
 
 import type { ServerType } from "@hono/node-server";
 
@@ -58,6 +59,7 @@ async function bootstrap() {
   wireEventBusToHooks();
 
   initBenchmarkTrigger();
+  initCircuitBreaker();
 
   await initChannelAdapters();
 

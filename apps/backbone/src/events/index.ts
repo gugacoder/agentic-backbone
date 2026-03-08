@@ -101,6 +101,27 @@ export interface ConfigVersionChangedEvent {
   versionTo: string;
 }
 
+export interface CircuitBreakerTrippedEvent {
+  ts: number;
+  agentId: string;
+  reason: string;
+  trippedAt: string;
+}
+
+export interface CircuitBreakerResumedEvent {
+  ts: number;
+  agentId: string;
+  actor: string | null;
+  resumedAt: string;
+}
+
+export interface CircuitBreakerKillSwitchEvent {
+  ts: number;
+  agentId: string;
+  active: boolean;
+  actor: string;
+}
+
 export interface BackboneEventMap {
   "heartbeat:status": HeartbeatStatusEvent;
   "channel:message": ChannelMessageEvent;
@@ -115,6 +136,9 @@ export interface BackboneEventMap {
   "security:alert": SecurityAlertEvent;
   "agent:quota-exceeded": AgentQuotaExceededEvent;
   "config:version_changed": ConfigVersionChangedEvent;
+  "circuit_breaker:tripped": CircuitBreakerTrippedEvent;
+  "circuit_breaker:resumed": CircuitBreakerResumedEvent;
+  "circuit_breaker:kill_switch": CircuitBreakerKillSwitchEvent;
 }
 
 // --- Typed Event Bus ---
