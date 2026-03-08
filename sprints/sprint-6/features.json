@@ -104,7 +104,7 @@
     "id": "F-139",
     "name": "Benchmarking: Schema DB + Integracao com Config Versioning",
     "description": "Criar tabelas `benchmark_runs` e `benchmark_cases` no SQLite com indexes e migracao automatica. Implementar gatilho automatico: subscrever no evento `config:version_changed` do EventBus; ao detectar mudanca em SOUL.md ou CONVERSATION.md, verificar `auto_benchmark` no frontmatter do agente e golden sets disponiveis, entao agendar benchmark run em background. Execucao: para cada caso do golden set, executar agente com versao atual, enviar ao LLM-as-judge existente, armazenar em `benchmark_cases`. Calcular delta, detectar regressao (delta < regression_threshold), emitir alerta via EventBus + notificacao push PWA. Configuracao por agente via frontmatter AGENT.md (auto_benchmark, eval_set_id, regression_threshold, alert_on_regression).",
-    "status": "failing",
+    "status": "passing",
     "priority": 6,
     "agent": "coder",
     "task": "vibe-code",
@@ -118,7 +118,8 @@
       "Benchmark em background nao bloqueia operacao normal do agente",
       "`npm run typecheck` passa sem erros"
     ],
-    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-6/worktree/sprints/sprint-6/3-prps/PRP-40-agent-performance-benchmarking.md"
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-6/worktree/sprints/sprint-6/3-prps/PRP-40-agent-performance-benchmarking.md",
+    "completed_at": "2026-03-08T09:00:00Z"
   },
   {
     "id": "F-142",
@@ -204,7 +205,7 @@
     "id": "F-140",
     "name": "Benchmarking: API Endpoints",
     "description": "Implementar endpoints: GET /agents/:id/benchmarks (listar runs com paginacao), POST /agents/:id/benchmarks (trigger manual com evalSetId e compareWithVersion opcionais, response 202 com benchmarkId), GET /agents/:id/benchmarks/:runId (detalhes completos da run), GET /agents/:id/benchmarks/:runId/cases (casos individuais com score_before/after/delta/judge_reasoning), GET /agents/:id/benchmarks/trend (tendencia de score por versao, query param limit default 10).",
-    "status": "blocked",
+    "status": "pending",
     "priority": 11,
     "agent": "coder",
     "task": "vibe-code",
@@ -347,7 +348,7 @@
     "id": "F-137",
     "name": "Workflow Builder: Hub — Canvas React Flow + Editor de Condicoes",
     "description": "Implementar canvas visual usando @xyflow/react na rota /workflows/:id. Layout: painel esquerdo com lista de agentes (arrastar para canvas), canvas central com zoom/pan, painel direito contextual. No de agente: avatar, nome, badge 'Entrada', handles de conexao. Aresta de handoff: label, cor por tipo (keyword=azul, intent=roxo, schedule=verde, channel=laranja, fallback=cinza), painel de edicao ao clicar. Painel de edicao de aresta: select de tipo, campos dinamicos por tipo (text/select/time picker/checkbox). Toolbar: 'Salvar rascunho' (PUT), 'Aplicar ao vivo' (POST apply com confirmacao). Pagina /workflows com cards de workflows e botao 'Novo Workflow'. Dependencia: @xyflow/react.",
-    "status": "blocked",
+    "status": "pending",
     "priority": 18,
     "agent": "coder",
     "task": "vibe-code",

@@ -510,4 +510,44 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_mcp_tool_calls_adapter ON mcp_tool_calls(adapter_id);
 `);
 
+db.exec(`
+  CREATE TABLE IF NOT EXISTS benchmark_runs (
+    id              TEXT PRIMARY KEY,
+    agent_id        TEXT NOT NULL,
+    trigger         TEXT NOT NULL,
+    version_from    TEXT,
+    version_to      TEXT NOT NULL,
+    eval_set_id     TEXT NOT NULL,
+    status          TEXT NOT NULL DEFAULT 'pending',
+    score_before    REAL,
+    score_after     REAL,
+    delta           REAL,
+    regression      INTEGER NOT NULL DEFAULT 0,
+    cases_total     INTEGER,
+    cases_passed    INTEGER,
+    cases_failed    INTEGER,
+    started_at      TEXT,
+    completed_at    TEXT,
+    created_at      TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+  CREATE INDEX IF NOT EXISTS idx_benchmark_runs_agent ON benchmark_runs(agent_id);
+  CREATE INDEX IF NOT EXISTS idx_benchmark_runs_status ON benchmark_runs(status);
+  CREATE INDEX IF NOT EXISTS idx_benchmark_runs_created ON benchmark_runs(created_at);
+
+  CREATE TABLE IF NOT EXISTS benchmark_cases (
+    id              TEXT PRIMARY KEY,
+    benchmark_id    TEXT NOT NULL REFERENCES benchmark_runs(id) ON DELETE CASCADE,
+    case_id         TEXT NOT NULL,
+    input           TEXT NOT NULL,
+    expected        TEXT NOT NULL,
+    response_before TEXT,
+    response_after  TEXT NOT NULL,
+    score_before    REAL,
+    score_after     REAL,
+    delta           REAL,
+    judge_reasoning TEXT
+  );
+  CREATE INDEX IF NOT EXISTS idx_benchmark_cases_benchmark ON benchmark_cases(benchmark_id);
+`);
+
 export { db };
