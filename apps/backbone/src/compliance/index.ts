@@ -13,6 +13,20 @@ import type {
   ChecklistItemUpdate,
   RiskLevel,
 } from "./schemas.js";
+import { explainDecision } from "./decision-explainer.js";
+import {
+  generateReport,
+  getReport,
+  listReportsByAgent,
+  listReportsByType,
+  listAllReports,
+} from "./reports.js";
+import type {
+  ReportType,
+  ComplianceReport,
+  GenerateReportOpts,
+} from "./reports.js";
+import type { DecisionExplanation } from "./decision-explainer.js";
 
 export type {
   Classification,
@@ -20,9 +34,23 @@ export type {
   ChecklistItem,
   ChecklistItemUpdate,
   RiskLevel,
+  ReportType,
+  ComplianceReport,
+  GenerateReportOpts,
+  DecisionExplanation,
 };
 
 export { CHECKLIST_KEYS_BY_LEVEL, ALL_CHECKLIST_ITEMS } from "./schemas.js";
+
+export const complianceReports = {
+  generate: generateReport,
+  get: getReport,
+  listByAgent: listReportsByAgent,
+  listByType: listReportsByType,
+  listAll: listAllReports,
+};
+
+export const decisionExplainer = { explain: explainDecision };
 
 export const complianceManager = {
   /**

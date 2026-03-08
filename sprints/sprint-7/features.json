@@ -152,7 +152,7 @@
     "id": "F-151",
     "name": "Compliance: Decision Explainer + geração de relatórios",
     "description": "Criar decision-explainer.ts: gera DecisionExplanation a partir de trace timeline existente (input, decision, reasoning, toolsUsed, instructionVersion, memoryContext, humanApproval). Criar reports.ts: gera relatórios tipo audit (decisões + HITL + instruções), dpia (template pré-preenchido), human_oversight (logs HITL exportáveis), decision_explanation (explicação individual). Relatórios em JSON estruturado, persistidos em compliance_reports. Template DPIA com campos pré-preenchidos baseado no agente.",
-    "status": "blocked",
+    "status": "passing",
     "priority": 8,
     "agent": "coder",
     "task": "vibe-code",
@@ -166,7 +166,8 @@
       "Relatórios persistidos em compliance_reports com tipo e período",
       "`npm run typecheck` passa sem erros"
     ],
-    "prp_path": "sprints/sprint-7/3-prps/PRP-43-eu-ai-act-compliance-toolkit.md"
+    "prp_path": "sprints/sprint-7/3-prps/PRP-43-eu-ai-act-compliance-toolkit.md",
+    "completed_at": "2026-03-08T15:31:09Z"
   },
   {
     "id": "F-152",
