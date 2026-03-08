@@ -84,7 +84,7 @@
     "id": "F-136",
     "name": "Workflow Builder: API Backend — CRUD + Apply + Simulate",
     "description": "Implementar API de workflows com persistencia em `context/agents/{owner}.{slug}/workflows/{workflowId}.json`. Endpoints: GET /workflows (listar), POST /workflows (criar), GET /workflows/:id (obter), PUT /workflows/:id (atualizar), DELETE /workflows/:id (deletar), POST /workflows/:id/apply (gera/atualiza frontmatter `handoff` nos AGENT.md dos nos participantes), POST /workflows/:id/simulate (simula roteamento com input de texto e retorna caminho percorrido + condicao satisfeita + reasoning). Tipos de condicao: keyword (regex), intent (lista ORed), sentiment, schedule (time range + days), channel, fallback.",
-    "status": "failing",
+    "status": "passing",
     "priority": 5,
     "agent": "coder",
     "task": "vibe-code",
@@ -97,7 +97,8 @@
       "Todos os tipos de condicao (keyword, intent, schedule, channel, fallback) funcionam na simulacao",
       "`npm run typecheck` passa sem erros"
     ],
-    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-6/worktree/sprints/sprint-6/3-prps/PRP-39-visual-workflow-builder.md"
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-6/worktree/sprints/sprint-6/3-prps/PRP-39-visual-workflow-builder.md",
+    "completed_at": "2026-03-08T08:00:00Z"
   },
   {
     "id": "F-139",
@@ -162,7 +163,7 @@
     "id": "F-134",
     "name": "Email: Tools (send-reply, get-thread, create-draft) + API Endpoints de Status",
     "description": "Implementar tools em `src/connectors/email/tools/`: send-reply (envia email com threading correto), get-thread (busca thread por Message-ID), create-draft (cria rascunho sem enviar). Implementar endpoints: POST /adapters/email/:adapterId/test (testa conectividade IMAP e SMTP separados com latencia), GET /adapters/email/:adapterId/status (status do polling, ultima execucao, emails processados hoje, last error).",
-    "status": "blocked",
+    "status": "pending",
     "priority": 9,
     "agent": "coder",
     "task": "vibe-code",
