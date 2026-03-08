@@ -15,11 +15,13 @@ import {
   ShieldAlert,
   Plug,
   Inbox,
+  UserCircle,
 } from "lucide-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
@@ -32,6 +34,7 @@ import { pendingApprovalsQueryOptions } from "@/api/approvals";
 import { securitySummaryQueryOptions } from "@/api/security";
 import { inboxQueryOptions } from "@/api/inbox";
 import { useSSEEvent, type SystemEvent } from "@/hooks/use-sse";
+import { useAuthStore } from "@/lib/auth";
 
 const navItemsBefore = [
   { label: "Dashboard", icon: LayoutDashboard, to: "/" as const },
@@ -52,6 +55,8 @@ const navItemsAfter = [
 export function AppSidebar() {
   const matchRoute = useMatchRoute();
   const queryClient = useQueryClient();
+  const user = useAuthStore((s) => s.user);
+  const isAccountActive = !!matchRoute({ to: "/account" });
 
   const { data: pending } = useQuery(pendingApprovalsQueryOptions());
   const pendingCount = pending?.length ?? 0;
@@ -193,6 +198,16 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+      <SidebarFooter>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton isActive={isAccountActive} render={<Link to="/account" />}>
+              <UserCircle />
+              <span className="flex-1 truncate">{user?.displayName ?? "Minha Conta"}</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarFooter>
     </Sidebar>
   );
 }
