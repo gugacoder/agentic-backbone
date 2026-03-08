@@ -28,6 +28,8 @@ export interface Session {
   title: string | null;
   takeover_by: string | null;
   takeover_at: string | null;
+  orchestration_path: string | null;
+  current_agent_id: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -53,7 +55,7 @@ const insertSession = db.prepare(
 );
 
 const selectSession = db.prepare(
-  `SELECT session_id, user_id, agent_id, channel_id, sdk_session_id, title, takeover_by, takeover_at, created_at, updated_at
+  `SELECT session_id, user_id, agent_id, channel_id, sdk_session_id, title, takeover_by, takeover_at, orchestration_path, current_agent_id, created_at, updated_at
    FROM sessions WHERE session_id = ?`
 );
 
@@ -63,27 +65,27 @@ const setSdkSessionId = db.prepare(
 );
 
 const selectAllSessions = db.prepare(
-  `SELECT session_id, user_id, agent_id, channel_id, sdk_session_id, title, takeover_by, takeover_at, created_at, updated_at
+  `SELECT session_id, user_id, agent_id, channel_id, sdk_session_id, title, takeover_by, takeover_at, orchestration_path, current_agent_id, created_at, updated_at
    FROM sessions ORDER BY updated_at DESC`
 );
 
 const selectSessionsByUser = db.prepare(
-  `SELECT session_id, user_id, agent_id, channel_id, sdk_session_id, title, takeover_by, takeover_at, created_at, updated_at
+  `SELECT session_id, user_id, agent_id, channel_id, sdk_session_id, title, takeover_by, takeover_at, orchestration_path, current_agent_id, created_at, updated_at
    FROM sessions WHERE user_id = ? ORDER BY updated_at DESC`
 );
 
 const selectSessionsByUserAndAgent = db.prepare(
-  `SELECT session_id, user_id, agent_id, channel_id, sdk_session_id, title, takeover_by, takeover_at, created_at, updated_at
+  `SELECT session_id, user_id, agent_id, channel_id, sdk_session_id, title, takeover_by, takeover_at, orchestration_path, current_agent_id, created_at, updated_at
    FROM sessions WHERE user_id = ? AND agent_id = ? ORDER BY updated_at DESC`
 );
 
 const selectSessionsByAgent = db.prepare(
-  `SELECT session_id, user_id, agent_id, channel_id, sdk_session_id, title, takeover_by, takeover_at, created_at, updated_at
+  `SELECT session_id, user_id, agent_id, channel_id, sdk_session_id, title, takeover_by, takeover_at, orchestration_path, current_agent_id, created_at, updated_at
    FROM sessions WHERE agent_id = ? ORDER BY updated_at DESC`
 );
 
 const findSessionByChannelKey = db.prepare(
-  `SELECT session_id, user_id, agent_id, channel_id, sdk_session_id, title, takeover_by, takeover_at, created_at, updated_at
+  `SELECT session_id, user_id, agent_id, channel_id, sdk_session_id, title, takeover_by, takeover_at, orchestration_path, current_agent_id, created_at, updated_at
    FROM sessions WHERE agent_id = ? AND user_id = ? AND channel_id = ?
    ORDER BY updated_at DESC LIMIT 1`
 );

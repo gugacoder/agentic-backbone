@@ -12,6 +12,7 @@ import {
   FlaskConical,
   Star,
   Webhook,
+  GitMerge,
 } from "lucide-react";
 import {
   agentQueryOptions,
@@ -30,6 +31,7 @@ import { KnowledgeTab } from "@/components/agents/knowledge-tab";
 import { EvalTab } from "@/components/agents/eval-tab";
 import { QualityTab } from "@/components/quality/quality-tab";
 import { WebhooksTab } from "@/components/webhooks/webhooks-tab";
+import { HandoffsTab } from "@/components/handoffs/handoffs-tab";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { useSSEEvent } from "@/hooks/use-sse";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -45,6 +47,7 @@ const tabs = [
   { value: "evaluation", label: "Avaliacao", icon: FlaskConical },
   { value: "quality", label: "Qualidade", icon: Star },
   { value: "webhooks", label: "Webhooks", icon: Webhook },
+  { value: "handoffs", label: "Handoffs", icon: GitMerge },
 ] as const;
 
 type TabValue = (typeof tabs)[number]["value"];
@@ -213,6 +216,9 @@ function AgentDetailPage() {
         </TabsContent>
         <TabsContent value="webhooks">
           <WebhooksTab agentId={id} />
+        </TabsContent>
+        <TabsContent value="handoffs">
+          <HandoffsTab agentId={id} />
         </TabsContent>
       </Tabs>
     </div>

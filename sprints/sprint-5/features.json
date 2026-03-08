@@ -303,7 +303,7 @@
     "id": "F-111",
     "name": "Multi-agent: telas Hub — aba Handoffs e badges no Inbox",
     "description": "Nova aba 'Handoffs' na pagina do agente com HandoffsTab (aviso se agente nao e supervisor, lista de handoffs com toggle enabled, drag-and-drop para reordenar prioridade), HandoffCard, HandoffCreateDialog (select de agente membro, label, textarea de intencao, prioridade). No Inbox e Conversation view: badge por mensagem indicando qual agente respondeu (quando agentId presente), painel lateral com orchestrationPath da sessao.",
-    "status": "blocked",
+    "status": "passing",
     "priority": 15,
     "agent": "coder",
     "task": "vibe-code",
@@ -319,7 +319,8 @@
       "Painel lateral exibe orchestrationPath da sessao",
       "`npm run build:hub` e `npm run typecheck` passam sem erros"
     ],
-    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-5/worktree/sprints/sprint-5/3-prps/PRP-28-multi-agent-orchestration.md"
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-5/worktree/sprints/sprint-5/3-prps/PRP-28-multi-agent-orchestration.md",
+    "completed_at": "2026-03-08T00:10:00.000Z"
   },
   {
     "id": "F-112",

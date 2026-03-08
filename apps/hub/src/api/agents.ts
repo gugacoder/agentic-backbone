@@ -8,6 +8,8 @@ export interface Agent {
   enabled: boolean;
   description?: string;
   heartbeatEnabled?: boolean;
+  role?: string;
+  members?: string[];
 }
 
 export interface AgentStats {
