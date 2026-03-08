@@ -3,7 +3,7 @@
     "id": "F-144",
     "name": "Circuit-breaker: Tabelas circuit_breaker_config + circuit_breaker_events + migração DB",
     "description": "Criar tabelas `circuit_breaker_config` (agent_id PK, enabled, max_consecutive_fails, error_rate_threshold, error_rate_window_min, max_actions_per_hour, max_actions_per_day, cooldown_min, auto_resume, updated_at) e `circuit_breaker_events` (id PK, agent_id, event_type, trigger_reason, context, actor, created_at) no SQLite. Indexes em agent_id, created_at e event_type. Migração automática no startup. Seguir padrão existente em `apps/backbone/src/db/`.",
-    "status": "pending",
+    "status": "passing",
     "priority": 1,
     "agent": "coder",
     "task": "vibe-code",
@@ -14,17 +14,20 @@
       "Migração é idempotente (rodar duas vezes não gera erro)",
       "`npm run typecheck` passa sem erros"
     ],
-    "prp_path": "sprints/sprint-7/3-prps/PRP-42-kill-switch-circuit-breaker.md"
+    "prp_path": "sprints/sprint-7/3-prps/PRP-42-kill-switch-circuit-breaker.md",
+    "completed_at": "2026-03-08T14:45:00Z"
   },
   {
     "id": "F-145",
     "name": "Circuit-breaker: CircuitBreakerManager — módulo src/circuit-breaker/",
     "description": "Criar módulo `src/circuit-breaker/` com index.ts (CircuitBreakerManager singleton), config.ts (CRUD de circuit_breaker_config), monitor.ts (contagem de falhas, cálculo de error rate, verificação de limites), schemas.ts (Zod). CircuitBreakerManager implementa: canExecute(agentId) retornando {allowed, reason}, recordOutcome(agentId, success), activateKillSwitch/deactivateKillSwitch, getState/getAllStates, resume. Kill-switch mantido in-memory para resposta <1s, persistido via events para recovery. Trip logic: consecutiveFails >= max OU error_rate > threshold OU actions >= limit. Ao trip: registra evento, emite no EventBus, envia notificação push (PWA). Auto-resume após cooldown se configurado.",
-    "status": "pending",
+    "status": "blocked",
     "priority": 2,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-144"],
+    "dependencies": [
+      "F-144"
+    ],
     "tests": [
       "canExecute retorna allowed:false quando kill-switch ativo",
       "canExecute retorna allowed:false quando circuit-breaker tripped",
@@ -39,11 +42,13 @@
     "id": "F-146",
     "name": "Circuit-breaker: API endpoints",
     "description": "Implementar endpoints em `src/routes/`: GET /agents/:id/circuit-breaker (estado atual), PUT /agents/:id/circuit-breaker/config (atualizar configuração), POST /agents/:id/circuit-breaker/kill (ativar kill-switch), POST /agents/:id/circuit-breaker/resume (desativar/resume), GET /agents/:id/circuit-breaker/events (histórico paginado), GET /system/circuit-breaker (estado de todos os agentes). Validação via Zod schemas. Auth JWT obrigatório.",
-    "status": "pending",
+    "status": "blocked",
     "priority": 3,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-145"],
+    "dependencies": [
+      "F-145"
+    ],
     "tests": [
       "GET /agents/:id/circuit-breaker retorna estado com config, contadores e status",
       "PUT /agents/:id/circuit-breaker/config atualiza configuração e persiste",
@@ -58,11 +63,13 @@
     "id": "F-147",
     "name": "Circuit-breaker: Integração heartbeat/cron/webhooks + SSE",
     "description": "Inserir check canExecute(agentId) no início de heartbeat/scheduler.ts (antes de runAgent), cron/scheduler.ts (antes de executar job) e handler de webhooks (antes de processar). Se allowed:false: bloqueia execução, registra evento action_blocked com contexto. Inserir recordOutcome(agentId, success) ao final de cada execução. Emitir eventos SSE: circuit_breaker:tripped, circuit_breaker:resumed, circuit_breaker:kill_switch no canal /system/events com payloads tipados.",
-    "status": "pending",
+    "status": "blocked",
     "priority": 4,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-145"],
+    "dependencies": [
+      "F-145"
+    ],
     "tests": [
       "Heartbeat bloqueado quando kill-switch ativo — execução não ocorre",
       "Cron job bloqueado quando circuit-breaker tripped",
@@ -78,11 +85,13 @@
     "id": "F-148",
     "name": "Circuit-breaker: Hub — seção na página do agente + badges na lista",
     "description": "Na página /agents/:id: seção circuit-breaker com botão kill-switch (vermelho, confirmação), indicador visual de status (verde/amarelo/vermelho), contadores em tempo real (falhas consecutivas, ações/hora, ações/dia com progress bars), formulário de configuração editável, tabela das últimas 20 eventos. Na lista /agents: badge de escudo (verde/amarelo/vermelho) por agente, destaque visual para kill-switch ativo. Atualização via SSE /system/events (circuit_breaker:*) sem polling.",
-    "status": "pending",
+    "status": "blocked",
     "priority": 5,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-146"],
+    "dependencies": [
+      "F-146"
+    ],
     "tests": [
       "Botão kill-switch visível na página do agente com confirmação",
       "Status atualiza em tempo real via SSE ao ativar kill-switch",
@@ -115,11 +124,14 @@
     "id": "F-150",
     "name": "Compliance: ComplianceManager — classificação + checklist auto-gerado",
     "description": "Criar módulo `src/compliance/` com index.ts (ComplianceManager), classification.ts (CRUD classificação de risco), checklist.ts (CRUD e auto-geração de items), schemas.ts (Zod). Ao classificar agente como high-risk: gerar 10 items de checklist automaticamente (human_oversight, decision_transparency, kill_switch, etc). Limited-risk: 4 items. Minimal-risk: 1 item. Reclassificação ajusta items (adiciona/remove). Items agrupados por category: transparency, oversight, documentation, data_governance, risk_management.",
-    "status": "pending",
+    "status": "blocked",
     "priority": 7,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-149", "F-145"],
+    "dependencies": [
+      "F-149",
+      "F-145"
+    ],
     "tests": [
       "Classificar agente como high-risk gera 10 items de checklist automaticamente",
       "Classificar como limited-risk gera 4 items, minimal-risk gera 1 item",
@@ -134,11 +146,13 @@
     "id": "F-151",
     "name": "Compliance: Decision Explainer + geração de relatórios",
     "description": "Criar decision-explainer.ts: gera DecisionExplanation a partir de trace timeline existente (input, decision, reasoning, toolsUsed, instructionVersion, memoryContext, humanApproval). Criar reports.ts: gera relatórios tipo audit (decisões + HITL + instruções), dpia (template pré-preenchido), human_oversight (logs HITL exportáveis), decision_explanation (explicação individual). Relatórios em JSON estruturado, persistidos em compliance_reports. Template DPIA com campos pré-preenchidos baseado no agente.",
-    "status": "pending",
+    "status": "blocked",
     "priority": 8,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-150"],
+    "dependencies": [
+      "F-150"
+    ],
     "tests": [
       "Decision Explainer gera explicação legível a partir de trace existente",
       "Relatório de auditoria inclui decisões, logs de HITL e versões de instruções",
@@ -152,11 +166,13 @@
     "id": "F-152",
     "name": "Compliance: API endpoints",
     "description": "Implementar endpoints: GET /agents/:id/compliance (visão completa), GET/PUT /agents/:id/compliance/classification (classificação de risco), GET /agents/:id/compliance/checklist (items), PUT /agents/:id/compliance/checklist/:itemKey (atualizar item), POST /agents/:id/compliance/reports (gerar relatório), GET /agents/:id/compliance/reports (listar), GET /agents/:id/compliance/reports/:reportId (detalhes), POST /agents/:id/compliance/explain (explicação de decisão), GET /compliance/overview (visão geral), GET /compliance/dpia-template. Auth JWT obrigatório.",
-    "status": "pending",
+    "status": "blocked",
     "priority": 9,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-151"],
+    "dependencies": [
+      "F-151"
+    ],
     "tests": [
       "PUT /agents/:id/compliance/classification atualiza classificação e gera checklist",
       "GET /agents/:id/compliance/checklist retorna items com status",
@@ -171,11 +187,13 @@
     "id": "F-153",
     "name": "Compliance: Hub — painel /compliance + compliance do agente",
     "description": "Página /compliance: overview cards (agentes por risco, taxa conformidade), tabela de agentes (risco, % checklist, próxima revisão), alertas de items não-conformes e revisões vencidas, botão Gerar Relatório de Sistema. Página /agents/:id/compliance: selector de risco com justificativa, checklist interativo agrupado por categoria (toggle status + evidência), barra de progresso, lista de relatórios + gerar novo, explicabilidade (busca por trace). Integração bidirecional com LGPD Dashboard (links + items compartilhados).",
-    "status": "pending",
+    "status": "blocked",
     "priority": 10,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-152"],
+    "dependencies": [
+      "F-152"
+    ],
     "tests": [
       "Painel /compliance lista agentes com nível de risco e taxa de conformidade",
       "Classificação de risco editável na página do agente",
@@ -190,11 +208,13 @@
     "id": "F-154",
     "name": "Fleet: API endpoints /fleet, /fleet/batch, /fleet/summary",
     "description": "Implementar endpoints: GET /fleet (visão consolidada de todos os agentes com métricas de saúde, consumo, atividade, circuit-breaker — query params: owner, status, sortBy, sortDir), POST /fleet/batch (operação em lote: enable, disable, trigger_heartbeat, activate_kill_switch, deactivate_kill_switch — resposta individual por agente), GET /fleet/summary (cards: totalAgents, activeAgents, pausedAgents, errorAgents, killedAgents, totalTokensToday, totalCostToday, avgHealthRate, activeAlerts). Agrega dados de AgentRegistry, heartbeat_log, circuit_breaker e custos.",
-    "status": "pending",
+    "status": "blocked",
     "priority": 11,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-145"],
+    "dependencies": [
+      "F-145"
+    ],
     "tests": [
       "GET /fleet retorna todos os agentes com métricas consolidadas",
       "Filtro por owner e status funciona e são combináveis",
@@ -209,11 +229,13 @@
     "id": "F-155",
     "name": "Fleet: Eventos SSE fleet:agent_status e fleet:alert",
     "description": "Emitir novos eventos no canal /system/events: fleet:agent_status ({agentId, status, health, consumption}) a cada heartbeat completo ou mudança de estado (enable/disable/trip), fleet:alert ({agentId, alertType, message}) ao detectar problema (3+ heartbeats falhados, circuit-breaker trip). Eventos emitidos apenas em mudanças reais — atualizações incrementais para o cliente SSE.",
-    "status": "pending",
+    "status": "blocked",
     "priority": 12,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-154"],
+    "dependencies": [
+      "F-154"
+    ],
     "tests": [
       "Evento fleet:agent_status emitido após heartbeat completo",
       "Evento fleet:agent_status emitido ao enable/disable agente",
@@ -227,11 +249,13 @@
     "id": "F-156",
     "name": "Fleet: Hub — página /fleet com grid, filtros e operações em lote",
     "description": "Página /fleet: header com 4 cards de resumo (Total, Ativos, Problemas, Custo Hoje), barra de filtros (Owner, Status, busca por nome), botões de ordenação. Grid desktop: tabela densa com checkbox, nome, owner, status badge, saúde %, tokens, custo, último heartbeat, alertas, ações dropdown. Cards mobile: card por agente com info compacta. Seleção multi-agent habilita barra de ações em lote (Enable, Disable, Kill, Trigger Heartbeat). SSE: conecta /system/events, atualiza ao receber fleet:* e circuit_breaker:*. Status badges: Ativo (verde), Pausado (cinza), Alerta (amarelo), Parado (vermelho), Erro (laranja).",
-    "status": "pending",
+    "status": "blocked",
     "priority": 13,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-155"],
+    "dependencies": [
+      "F-155"
+    ],
     "tests": [
       "Página /fleet lista todos os agentes com métricas",
       "Cards de resumo exibem totais corretos",
@@ -265,11 +289,13 @@
     "id": "F-158",
     "name": "OTel: Instrumentação de runAgent(), tool calls e MCP calls",
     "description": "Criar instrumentor.ts: wrapper instrumentedRunAgent() que cria span gen_ai.{mode} com atributos GenAI Semantic Conventions (gen_ai.system, gen_ai.request.model, gen_ai.usage.*). Tool calls geram child spans gen_ai.tool_call (name, duration_ms, status). MCP calls geram child spans gen_ai.mcp_call (adapter_id, server_label). Spans tipos: chat (CLIENT), heartbeat (CLIENT), cron (CLIENT), tool_call (INTERNAL), mcp_call (CLIENT). Contexto de propagação: trace_id vinculado a session ID ou heartbeat/cron run ID. Sampling rate aplicado conforme config.",
-    "status": "pending",
+    "status": "blocked",
     "priority": 15,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-157"],
+    "dependencies": [
+      "F-157"
+    ],
     "tests": [
       "Conversas geram spans gen_ai.chat com atributos corretos",
       "Heartbeats geram spans gen_ai.heartbeat com resultado",
@@ -285,11 +311,13 @@
     "id": "F-159",
     "name": "OTel: API endpoints settings/otel",
     "description": "Implementar endpoints: GET /settings/otel (config atual), PUT /settings/otel (atualizar — reinicializa SDK sem restart), POST /settings/otel/test (envia span de teste ao endpoint e verifica aceitação — retorna success, message, latencyMs), GET /settings/otel/status (connected, spansExported, errors, lastExportAt). Auth JWT obrigatório. Validação via Zod.",
-    "status": "pending",
+    "status": "blocked",
     "priority": 16,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-157"],
+    "dependencies": [
+      "F-157"
+    ],
     "tests": [
       "GET /settings/otel retorna configuração atual",
       "PUT /settings/otel atualiza e reinicializa SDK sem restart",
@@ -303,11 +331,13 @@
     "id": "F-160",
     "name": "OTel: Hub — página /settings/otel com presets",
     "description": "Página /settings/otel: toggle habilitar exportação, campo endpoint URL (placeholder localhost:4318), key-value editor de headers (password), slider sampling rate 0-100%, multi-select filtro por agente, multi-select filtro por tipo operação, botão Testar Conexão (feedback visual sucesso/erro + latência), status card (spans exportados, erros, último export). Presets (botões que preenchem endpoint+headers): Grafana Cloud, Datadog (DD-API-KEY), New Relic (Api-Key), Langfuse, Local Jaeger.",
-    "status": "pending",
+    "status": "blocked",
     "priority": 17,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-159"],
+    "dependencies": [
+      "F-159"
+    ],
     "tests": [
       "Toggle habilitar/desabilitar funciona",
       "Presets preenchem endpoint e headers corretamente",
@@ -339,11 +369,13 @@
     "id": "F-162",
     "name": "Billing: BillingManager — consolidação, invoice JSON, export CSV",
     "description": "Criar módulo `src/billing/` com index.ts (BillingManager, registro de cron consolidação dia 1 02:00), config.ts (CRUD billing_config), consolidator.ts (agrega consumo existente por tenant: soma tokens por agente/modelo/operação, calcula custo base, aplica markup override>default, upsert tenant_billing+detail), invoice.ts (gera Invoice JSON com dados agência, breakdown, totais), export.ts (CSV: tenant, agente, modelo, operação, tokens, custo, markup, custo final), schemas.ts (Zod).",
-    "status": "pending",
+    "status": "blocked",
     "priority": 19,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-161"],
+    "dependencies": [
+      "F-161"
+    ],
     "tests": [
       "Consolidação agrega tokens e custos por tenant/agente/modelo corretamente",
       "Markup override do tenant tem prioridade sobre default",
@@ -358,11 +390,13 @@
     "id": "F-163",
     "name": "Billing: API endpoints",
     "description": "Implementar endpoints: GET/PUT /billing/config, GET /billing/tenants (?year, ?month), GET /billing/tenants/:tenantId, GET /billing/tenants/:tenantId/months/:year/:month, POST /billing/tenants/:tenantId/months/:year/:month/finalize, GET /billing/tenants/:tenantId/invoice/:year/:month, GET /billing/tenants/:tenantId/export/:year/:month (CSV download), POST /billing/consolidate (manual), GET/PUT /billing/tenants/:tenantId/markup, GET /billing/profitability (?months default 6). Auth JWT obrigatório.",
-    "status": "pending",
+    "status": "blocked",
     "priority": 20,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-162"],
+    "dependencies": [
+      "F-162"
+    ],
     "tests": [
       "GET /billing/tenants retorna lista com resumo mensal",
       "POST /billing/consolidate dispara consolidação manual",
@@ -378,11 +412,13 @@
     "id": "F-164",
     "name": "Billing: Hub — painel /billing + detalhes tenant + config agência",
     "description": "Página /billing: cards resumo (Receita, Custo Base, Lucro, Margem), tabela de tenants (nome, tokens, custo, markup, status), gráfico tendência custo vs receita 6 meses, selector mês/ano. Página /billing/tenants/:id: resumo mês, breakdown por agente, comparativo mês anterior (delta %), ações (Finalizar, Invoice, CSV), campo markup override. Página /billing/config: campos agência (nome, CNPJ, endereço, banco, logo upload), markup padrão slider, rodapé invoice, moeda BRL.",
-    "status": "pending",
+    "status": "blocked",
     "priority": 21,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-163"],
+    "dependencies": [
+      "F-163"
+    ],
     "tests": [
       "Painel /billing lista tenants com métricas de consumo",
       "Gráfico de tendência exibe custo vs receita",
@@ -415,11 +451,13 @@
     "id": "F-166",
     "name": "Outreach: OutreachManager — regras, triggers e executor com throttle",
     "description": "Criar módulo `src/outreach/` com index.ts (OutreachManager, registro de listeners no EventBus), rules.ts (CRUD outreach_rules), triggers.ts (listeners: webhook:received avalia condition, schedule via croner com memoryCondition opcional via busca semântica, job:status avalia pattern), executor.ts (checkThrottle cooldown+maxPerDay, resolveTemplate com {variables}, sendToRecipient via canal correto, logOutreach, emite SSE outreach:sent), schemas.ts (Zod). Cada envio cria sessão no inbox unificado.",
-    "status": "pending",
+    "status": "blocked",
     "priority": 23,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-165"],
+    "dependencies": [
+      "F-165"
+    ],
     "tests": [
       "Trigger webhook dispara ao receber webhook matching",
       "Trigger schedule dispara no horário configurado",
@@ -436,11 +474,13 @@
     "id": "F-167",
     "name": "Outreach: API endpoints",
     "description": "Implementar endpoints: GET /agents/:id/outreach/rules, POST /agents/:id/outreach/rules (criar regra), PUT /agents/:id/outreach/rules/:ruleId, DELETE /agents/:id/outreach/rules/:ruleId, POST /agents/:id/outreach/rules/:ruleId/test (simula envio sem enviar — retorna wouldSend, resolvedMessage, throttleStatus), GET /agents/:id/outreach/log (histórico paginado), GET /agents/:id/outreach/stats (totalRules, activeRules, last30Days sent/delivered/failed/throttled, byRecipientType). Auth JWT obrigatório.",
-    "status": "pending",
+    "status": "blocked",
     "priority": 24,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-166"],
+    "dependencies": [
+      "F-166"
+    ],
     "tests": [
       "CRUD de regras funciona (criar, listar, atualizar, deletar)",
       "POST test simula envio e retorna resultado sem enviar de fato",
@@ -454,11 +494,13 @@
     "id": "F-168",
     "name": "Outreach: Hub — página /agents/:id/outreach com regras, teste e histórico",
     "description": "Página /agents/:id/outreach: lista de regras (label, trigger badge, recipient ícone+ID, enabled toggle, sent/failed últimos 7d), botão Nova Regra (formulário: label, trigger type select, config dinâmica por tipo, recipient type select com ícones, recipient ID com autocomplete para usuários, message template textarea com hint variáveis, cooldown horas, max por dia), botão Testar por regra, toggle enable/disable. Aba /outreach/log: tabela (data, regra, destinatário, mensagem truncada, status badge), filtros (regra, status, período), click expande detalhes (mensagem, trigger context, link inbox). Badge na página /agents/:id: 'Outreach: X regras ativas' com ícone megafone.",
-    "status": "pending",
+    "status": "blocked",
     "priority": 25,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-167"],
+    "dependencies": [
+      "F-167"
+    ],
     "tests": [
       "Lista de regras exibida com informações corretas",
       "Formulário Nova Regra cria regra com campos dinâmicos por trigger type",

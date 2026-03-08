@@ -550,4 +550,33 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_benchmark_cases_benchmark ON benchmark_cases(benchmark_id);
 `);
 
+db.exec(`
+  CREATE TABLE IF NOT EXISTS circuit_breaker_config (
+    agent_id              TEXT PRIMARY KEY,
+    enabled               INTEGER NOT NULL DEFAULT 1,
+    max_consecutive_fails INTEGER NOT NULL DEFAULT 5,
+    error_rate_threshold  REAL NOT NULL DEFAULT 0.5,
+    error_rate_window_min INTEGER NOT NULL DEFAULT 10,
+    max_actions_per_hour  INTEGER NOT NULL DEFAULT 100,
+    max_actions_per_day   INTEGER NOT NULL DEFAULT 1000,
+    cooldown_min          INTEGER NOT NULL DEFAULT 30,
+    auto_resume           INTEGER NOT NULL DEFAULT 0,
+    updated_at            TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+
+  CREATE TABLE IF NOT EXISTS circuit_breaker_events (
+    id              TEXT PRIMARY KEY,
+    agent_id        TEXT NOT NULL,
+    event_type      TEXT NOT NULL,
+    trigger_reason  TEXT,
+    context         TEXT,
+    actor           TEXT,
+    created_at      TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_cb_events_agent   ON circuit_breaker_events(agent_id);
+  CREATE INDEX IF NOT EXISTS idx_cb_events_created ON circuit_breaker_events(created_at);
+  CREATE INDEX IF NOT EXISTS idx_cb_events_type    ON circuit_breaker_events(event_type);
+`);
+
 export { db };
