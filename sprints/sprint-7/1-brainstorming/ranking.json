@@ -1,0 +1,22 @@
+[
+  { "id": "D-062", "type": "pain", "score": 9, "sprint": 7, "implemented": false, "summary": "Falha silenciosa e cascata — sem kill-switch ou circuit-breaker por agente" },
+  { "id": "D-063", "type": "pain", "score": 9, "sprint": 7, "implemented": false, "summary": "EU AI Act aplicavel agosto 2026 — sem toolkit de conformidade" },
+  { "id": "G-062", "type": "gain", "score": 9, "sprint": 7, "implemented": false, "summary": "Kill-switch e circuit-breaker por agente" },
+  { "id": "G-063", "type": "gain", "score": 9, "sprint": 7, "implemented": false, "summary": "EU AI Act Compliance Toolkit" },
+  { "id": "D-064", "type": "pain", "score": 8, "sprint": 7, "implemented": false, "summary": "Gestao de frota de agentes em escala — sem Fleet Dashboard" },
+  { "id": "D-065", "type": "pain", "score": 8, "sprint": 7, "implemented": false, "summary": "OpenTelemetry nao exportavel — 3o sprint pendente" },
+  { "id": "D-066", "type": "pain", "score": 8, "sprint": 7, "implemented": false, "summary": "Sem billing e invoicing por cliente para agencias" },
+  { "id": "D-067", "type": "pain", "score": 8, "sprint": 7, "implemented": false, "summary": "Agentes apenas reativos — sem outreach proativo por evento de negocio" },
+  { "id": "G-064", "type": "gain", "score": 8, "sprint": 7, "implemented": false, "summary": "Fleet Management Dashboard" },
+  { "id": "G-065", "type": "gain", "score": 8, "sprint": 7, "implemented": false, "summary": "OpenTelemetry Export com GenAI Semantic Conventions" },
+  { "id": "G-066", "type": "gain", "score": 8, "sprint": 7, "implemented": false, "summary": "Billing e Invoicing por Tenant para agencias" },
+  { "id": "G-067", "type": "gain", "score": 8, "sprint": 7, "implemented": false, "summary": "Outreach Proativo por Agente" },
+  { "id": "D-068", "type": "pain", "score": 7, "sprint": 7, "implemented": false, "summary": "Export de relatorios PDF/CSV — 4o sprint pendente" },
+  { "id": "D-069", "type": "pain", "score": 7, "sprint": 7, "implemented": false, "summary": "Sem marketplace de templates de agente" },
+  { "id": "D-070", "type": "pain", "score": 7, "sprint": 7, "implemented": false, "summary": "WhatsApp Business Calling sem suporte" },
+  { "id": "D-071", "type": "pain", "score": 7, "sprint": 7, "implemented": false, "summary": "Google Workspace nao integrado — 4o sprint pendente" },
+  { "id": "G-068", "type": "gain", "score": 7, "sprint": 7, "implemented": false, "summary": "Export de Relatorios PDF/CSV ANPD-ready" },
+  { "id": "G-069", "type": "gain", "score": 7, "sprint": 7, "implemented": false, "summary": "Template Marketplace com import 1-clique" },
+  { "id": "G-070", "type": "gain", "score": 7, "sprint": 7, "implemented": false, "summary": "WhatsApp Business Calling com transcricao em tempo real" },
+  { "id": "G-071", "type": "gain", "score": 7, "sprint": 7, "implemented": false, "summary": "Google Workspace Integration via OAuth2" }
+]
