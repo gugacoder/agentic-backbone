@@ -230,7 +230,7 @@
     "id": "F-143",
     "name": "Hub + API: Visão Sysadmin — Agentes de Todos os Usuários",
     "description": "Quando usuário logado tem role=sysadmin, a listagem de agentes no Hub exibe todos os agentes de todos os owners. Backend: GET /agents aceita ?scope=all (apenas sysadmin, retorna 403 caso contrário) usando listAgents() do registry sem filtro de owner. Hub: verificar role no useAuthStore, chamar ?scope=all se sysadmin, exibir badge com owner do agente na listagem (ID já contém owner.slug). Adicionar badge visual Admin no header quando sysadmin.",
-    "status": "pending",
+    "status": "passing",
     "priority": 12,
     "agent": "coder",
     "task": "vibe-code",
@@ -244,7 +244,8 @@
       "Badge Admin aparece no header quando logado como sysadmin",
       "npm run build:hub passa sem erros"
     ],
-    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-6/worktree/sprints/sprint-6/3-prps/PRP-41-hub-user-area-sysadmin.md"
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-6/worktree/sprints/sprint-6/3-prps/PRP-41-hub-user-area-sysadmin.md",
+    "completed_at": "2026-03-08T06:40:40Z"
   },
   {
     "id": "F-125",
@@ -398,7 +399,7 @@
     "id": "F-141",
     "name": "Benchmarking: Hub — Dashboard de Benchmark Runs + Badge de Saude",
     "description": "Criar pagina /agents/:id/benchmarks com: linha do tempo de runs (ponto por run, cor verde/vermelho/cinza), tabela de runs (versao, data, score antes/depois, delta com badge colorido, status), botao 'Rodar benchmark agora', select de golden set se multiplos disponiveis, alerta visual se ultima run detectou regressao. Pagina de detalhes /agents/:id/benchmarks/:runId com: resumo (scores, delta, casos totais/passados/falhos), tabela de casos com botao 'Ver detalhes', modal de detalhes (input completo, expected, resposta antes, resposta depois, scores, reasoning do judge). Badge de saude em /agents/:id: vermelho 'Regressao detectada' / verde 'Score melhorou' / neutro 'Sem benchmark'.",
-    "status": "blocked",
+    "status": "pending",
     "priority": 20,
     "agent": "coder",
     "task": "vibe-code",
