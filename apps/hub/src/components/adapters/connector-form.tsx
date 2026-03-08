@@ -1,10 +1,30 @@
+import { useState } from "react";
+import { Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 
-export type ConnectorType = "mysql" | "postgres" | "evolution" | "twilio" | "http" | "whatsapp-cloud";
+export type ConnectorType = "mysql" | "postgres" | "evolution" | "twilio" | "http" | "whatsapp-cloud" | "mcp";
+
+// MCP-specific options (transport config, not credentials)
+export interface McpOptions {
+  transport: "stdio" | "http";
+  command?: string;
+  args?: string[];
+  env?: Record<string, string>;
+  url?: string;
+  server_label?: string;
+  allowed_tools?: string[];
+}
 
 export interface ConnectorCredential {
   // MySQL / Postgres
@@ -33,6 +53,8 @@ export interface ConnectorCredential {
   phone_number_id?: string;
   waba_id?: string;
   verify_token?: string;
+  // MCP
+  api_key?: string;
 }
 
 // Sentinel value used when a masked password is not changed
@@ -77,9 +99,11 @@ interface Props {
   maskedFields: Set<string>;
   onChange: (cred: ConnectorCredential) => void;
   onUnmask: (field: string) => void;
+  mcpOptions?: McpOptions;
+  onMcpOptionsChange?: (opts: McpOptions) => void;
 }
 
-export function ConnectorForm({ connector, credential, maskedFields, onChange, onUnmask }: Props) {
+export function ConnectorForm({ connector, credential, maskedFields, onChange, onUnmask, mcpOptions, onMcpOptionsChange }: Props) {
   function set(key: keyof ConnectorCredential, value: string | number | boolean) {
     onChange({ ...credential, [key]: value });
   }
@@ -304,6 +328,216 @@ export function ConnectorForm({ connector, credential, maskedFields, onChange, o
           onChange={(e) => set("timeoutMs", Number(e.target.value))}
         />
       </div>
+    </div>
+  );
+}
+
+// ---- MCP Sub-components ----
+
+function McpEnvEditor({
+  env,
+  onChange,
+}: {
+  env: Record<string, string>;
+  onChange: (env: Record<string, string>) => void;
+}) {
+  const entries = Object.entries(env);
+  const [newKey, setNewKey] = useState("");
+  const [newVal, setNewVal] = useState("");
+
+  function addEntry() {
+    if (!newKey.trim()) return;
+    onChange({ ...env, [newKey.trim()]: newVal });
+    setNewKey("");
+    setNewVal("");
+  }
+
+  function removeEntry(key: string) {
+    const next = { ...env };
+    delete next[key];
+    onChange(next);
+  }
+
+  return (
+    <div className="space-y-2">
+      {entries.map(([k, v]) => (
+        <div key={k} className="flex gap-2 items-center">
+          <Input value={k} readOnly className="font-mono text-xs flex-1" />
+          <Input value={v} readOnly className="font-mono text-xs flex-1" />
+          <Button type="button" variant="ghost" size="icon" onClick={() => removeEntry(k)}>
+            <Trash2 className="h-3.5 w-3.5" />
+          </Button>
+        </div>
+      ))}
+      <div className="flex gap-2 items-center">
+        <Input
+          value={newKey}
+          onChange={(e) => setNewKey(e.target.value)}
+          placeholder="CHAVE"
+          className="font-mono text-xs flex-1"
+        />
+        <Input
+          value={newVal}
+          onChange={(e) => setNewVal(e.target.value)}
+          placeholder="valor"
+          className="font-mono text-xs flex-1"
+        />
+        <Button type="button" variant="outline" size="icon" onClick={addEntry}>
+          <Plus className="h-3.5 w-3.5" />
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+function McpArgsEditor({
+  args,
+  onChange,
+}: {
+  args: string[];
+  onChange: (args: string[]) => void;
+}) {
+  const [newArg, setNewArg] = useState("");
+
+  function addArg() {
+    if (!newArg.trim()) return;
+    onChange([...args, newArg.trim()]);
+    setNewArg("");
+  }
+
+  function removeArg(i: number) {
+    onChange(args.filter((_, idx) => idx !== i));
+  }
+
+  return (
+    <div className="space-y-2">
+      {args.map((a, i) => (
+        <div key={i} className="flex gap-2 items-center">
+          <Input value={a} readOnly className="font-mono text-xs flex-1" />
+          <Button type="button" variant="ghost" size="icon" onClick={() => removeArg(i)}>
+            <Trash2 className="h-3.5 w-3.5" />
+          </Button>
+        </div>
+      ))}
+      <div className="flex gap-2 items-center">
+        <Input
+          value={newArg}
+          onChange={(e) => setNewArg(e.target.value)}
+          placeholder="argumento"
+          className="font-mono text-xs flex-1"
+          onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addArg())}
+        />
+        <Button type="button" variant="outline" size="icon" onClick={addArg}>
+          <Plus className="h-3.5 w-3.5" />
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+export function McpConnectorForm({
+  credential,
+  maskedFields,
+  onChange,
+  onUnmask,
+  options,
+  onOptionsChange,
+}: {
+  credential: ConnectorCredential;
+  maskedFields: Set<string>;
+  onChange: (cred: ConnectorCredential) => void;
+  onUnmask: (field: string) => void;
+  options: McpOptions;
+  onOptionsChange: (opts: McpOptions) => void;
+}) {
+  function isMasked(field: string) {
+    return maskedFields.has(field);
+  }
+
+  function setOpt<K extends keyof McpOptions>(key: K, value: McpOptions[K]) {
+    onOptionsChange({ ...options, [key]: value });
+  }
+
+  const transport = options.transport ?? "stdio";
+
+  return (
+    <div className="space-y-4">
+      {/* Transport */}
+      <div className="space-y-1.5">
+        <Label>Transporte</Label>
+        <Select
+          value={transport}
+          onValueChange={(v) => setOpt("transport", v as "stdio" | "http")}
+        >
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="stdio">stdio (processo local)</SelectItem>
+            <SelectItem value="http">HTTP / SSE</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Server label */}
+      <div className="space-y-1.5">
+        <Label htmlFor="mcp-label">Nome do servidor</Label>
+        <Input
+          id="mcp-label"
+          value={options.server_label ?? ""}
+          onChange={(e) => setOpt("server_label", e.target.value)}
+          placeholder="GitHub MCP"
+        />
+      </div>
+
+      {transport === "stdio" ? (
+        <>
+          <div className="space-y-1.5">
+            <Label htmlFor="mcp-command">Comando</Label>
+            <Input
+              id="mcp-command"
+              value={options.command ?? ""}
+              onChange={(e) => setOpt("command", e.target.value)}
+              placeholder="npx"
+              className="font-mono text-sm"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label>Argumentos</Label>
+            <McpArgsEditor
+              args={options.args ?? []}
+              onChange={(a) => setOpt("args", a)}
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label>Variáveis de ambiente</Label>
+            <McpEnvEditor
+              env={options.env ?? {}}
+              onChange={(e) => setOpt("env", e)}
+            />
+          </div>
+        </>
+      ) : (
+        <>
+          <div className="space-y-1.5">
+            <Label htmlFor="mcp-url">URL do servidor MCP</Label>
+            <Input
+              id="mcp-url"
+              value={options.url ?? ""}
+              onChange={(e) => setOpt("url", e.target.value)}
+              placeholder="https://mcp.example.com/sse"
+            />
+          </div>
+          <PasswordField
+            id="mcp-apikey"
+            label="API Key (opcional)"
+            value={credential.api_key ?? ""}
+            masked={isMasked("api_key")}
+            onChange={(v) => onChange({ ...credential, api_key: v })}
+            onClear={() => onUnmask("api_key")}
+          />
+        </>
+      )}
     </div>
   );
 }

@@ -16,6 +16,7 @@ import {
   Gauge,
   History,
   Layers,
+  Plug,
 } from "lucide-react";
 import {
   agentQueryOptions,
@@ -40,6 +41,7 @@ import { HandoffsTab } from "@/components/handoffs/handoffs-tab";
 import { QuotasTab } from "@/components/quotas/quotas-tab";
 import { VersionsTab } from "@/components/versions/versions-tab";
 import { SandboxTab } from "@/components/sandbox/sandbox-tab";
+import { McpToolsTab } from "@/components/mcp/mcp-tools-tab";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { useSSEEvent } from "@/hooks/use-sse";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -59,6 +61,7 @@ const tabs = [
   { value: "quotas", label: "Quotas", icon: Gauge },
   { value: "versions", label: "Versoes", icon: History },
   { value: "sandbox", label: "Sandbox", icon: Layers },
+  { value: "mcp-tools", label: "MCP Tools", icon: Plug },
 ] as const;
 
 type TabValue = (typeof tabs)[number]["value"];
@@ -256,6 +259,9 @@ function AgentDetailPage() {
         </TabsContent>
         <TabsContent value="sandbox">
           <SandboxTab agentId={id} />
+        </TabsContent>
+        <TabsContent value="mcp-tools">
+          <McpToolsTab agentId={id} />
         </TabsContent>
       </Tabs>
     </div>

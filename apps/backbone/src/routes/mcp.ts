@@ -179,6 +179,44 @@ mcpRoutes.post("/agents/:id/mcp-connect", async (c) => {
 });
 
 // ---------------------------------------------------------------------------
+// POST /adapters/:slug/mcp-test
+// Test MCP connection for an adapter and return available tools.
+// Does not require an agent context — uses the adapter directly.
+// ---------------------------------------------------------------------------
+
+mcpRoutes.post("/adapters/:slug/mcp-test", async (c) => {
+  const slug = c.req.param("slug");
+
+  const adapter = connectorRegistry.findAdapter(slug);
+  if (!adapter || adapter.connector !== "mcp") {
+    return c.json({ ok: false, error: `MCP adapter "${slug}" not found` }, 404);
+  }
+
+  const credResult = credentialSchema.safeParse(adapter.credential);
+  const optsResult = optionsSchema.safeParse(adapter.options);
+
+  if (!credResult.success || !optsResult.success) {
+    return c.json({ ok: false, error: "Invalid adapter config" }, 422);
+  }
+
+  try {
+    await mcpClientPool.connect(slug, credResult.data, optsResult.data);
+    const tools = mcpClientPool.getCachedTools(slug);
+    return c.json({
+      ok: true,
+      adapterSlug: slug,
+      serverLabel: optsResult.data.server_label,
+      tools: tools.map((t) => ({ name: t.name, description: t.description })),
+    });
+  } catch (err) {
+    return c.json(
+      { ok: false, error: err instanceof Error ? err.message : String(err) },
+      500,
+    );
+  }
+});
+
+// ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 

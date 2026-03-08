@@ -19,8 +19,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ConnectorForm, MASKED } from "@/components/adapters/connector-form";
-import type { ConnectorType, ConnectorCredential } from "@/components/adapters/connector-form";
+import { ConnectorForm, McpConnectorForm, MASKED } from "@/components/adapters/connector-form";
+import type { ConnectorType, ConnectorCredential, McpOptions } from "@/components/adapters/connector-form";
 import { request } from "@/lib/api";
 import type { Adapter } from "@/api/adapters";
 
@@ -76,6 +76,8 @@ export function AdapterDialog({ open, onOpenChange, editingAdapter }: Props) {
   const [policy, setPolicy] = useState<"readonly" | "readwrite">("readwrite");
   const [credential, setCredential] = useState<ConnectorCredential>({});
   const [maskedFields, setMaskedFields] = useState<Set<string>>(new Set());
+  const [mcpOptions, setMcpOptions] = useState<McpOptions>({ transport: "stdio", args: [], env: {} });
+  const [mcpTools, setMcpTools] = useState<Array<{ name: string; description: string }>>([]);
 
   const [testState, setTestState] = useState<TestState>("idle");
   const [testError, setTestError] = useState("");
@@ -94,6 +96,18 @@ export function AdapterDialog({ open, onOpenChange, editingAdapter }: Props) {
       const cred = (editingAdapter.credential ?? {}) as Record<string, unknown>;
       setCredential(cred as ConnectorCredential);
       setMaskedFields(detectMaskedFields(cred));
+      if (editingAdapter.connector === "mcp") {
+        const opts = (editingAdapter.options ?? {}) as Partial<McpOptions>;
+        setMcpOptions({
+          transport: opts.transport ?? "stdio",
+          command: opts.command,
+          args: opts.args ?? [],
+          env: opts.env ?? {},
+          url: opts.url,
+          server_label: opts.server_label,
+          allowed_tools: opts.allowed_tools ?? [],
+        });
+      }
     } else {
       setConnector("mysql");
       setLabel("");
@@ -103,10 +117,12 @@ export function AdapterDialog({ open, onOpenChange, editingAdapter }: Props) {
       setPolicy("readwrite");
       setCredential({});
       setMaskedFields(new Set());
+      setMcpOptions({ transport: "stdio", args: [], env: {} });
     }
     setTestState("idle");
     setTestError("");
     setTestOk(false);
+    setMcpTools([]);
   }, [open, isEditing, editingAdapter]);
 
   // Auto-generate slug from label
@@ -128,6 +144,10 @@ export function AdapterDialog({ open, onOpenChange, editingAdapter }: Props) {
     setMaskedFields(new Set());
     setTestState("idle");
     setTestOk(false);
+    setMcpTools([]);
+    if (value === "mcp") {
+      setMcpOptions({ transport: "stdio", args: [], env: {} });
+    }
   }
 
   function handleUnmask(field: string) {
@@ -141,24 +161,42 @@ export function AdapterDialog({ open, onOpenChange, editingAdapter }: Props) {
   async function handleTest() {
     setTestState("loading");
     setTestError("");
+    setMcpTools([]);
     try {
-      // If creating new adapter, create it temporarily then test, or just POST test with current data
-      // The spec says: POST /adapters/:slug/test — adapter must exist.
-      // For new adapters, we save first then test.
+      // For new adapters, save first then test.
       if (!isEditing) {
         await saveMutation.mutateAsync(false);
       }
-      const result = await request<{ ok: boolean; latencyMs?: number; message?: string; error?: string }>(
-        `/adapters/${slug}/test`,
-        { method: "POST" },
-      );
-      if (result.ok) {
-        setTestState("ok");
-        setTestOk(true);
+
+      if (connector === "mcp") {
+        // MCP-specific test that actually connects and returns tools
+        const result = await request<{
+          ok: boolean;
+          tools?: Array<{ name: string; description: string }>;
+          error?: string;
+        }>(`/adapters/${slug}/mcp-test`, { method: "POST" });
+        if (result.ok) {
+          setTestState("ok");
+          setTestOk(true);
+          setMcpTools(result.tools ?? []);
+        } else {
+          setTestState("error");
+          setTestError(result.error ?? "Falha na conexao MCP");
+          setTestOk(false);
+        }
       } else {
-        setTestState("error");
-        setTestError(result.error ?? "Falha na conexao");
-        setTestOk(false);
+        const result = await request<{ ok: boolean; latencyMs?: number; message?: string; error?: string }>(
+          `/adapters/${slug}/test`,
+          { method: "POST" },
+        );
+        if (result.ok) {
+          setTestState("ok");
+          setTestOk(true);
+        } else {
+          setTestState("error");
+          setTestError(result.error ?? "Falha na conexao");
+          setTestOk(false);
+        }
       }
     } catch (e) {
       setTestState("error");
@@ -170,15 +208,16 @@ export function AdapterDialog({ open, onOpenChange, editingAdapter }: Props) {
   const saveMutation = useMutation({
     mutationFn: async (closeAfter: boolean) => {
       const credPayload = buildCredentialPayload(credential, maskedFields);
+      const optionsPayload = connector === "mcp" ? mcpOptions : {};
       if (isEditing) {
         await request(`/adapters/${editingAdapter!.slug}`, {
           method: "PATCH",
-          body: JSON.stringify({ label, slug, scope, policy, credential: credPayload }),
+          body: JSON.stringify({ label, slug, scope, policy, credential: credPayload, options: optionsPayload }),
         });
       } else {
         await request("/adapters", {
           method: "POST",
-          body: JSON.stringify({ slug, connector, label, scope, policy, credential: credPayload, options: {} }),
+          body: JSON.stringify({ slug, connector, label, scope, policy, credential: credPayload, options: optionsPayload }),
         });
       }
       if (closeAfter) {
@@ -225,6 +264,7 @@ export function AdapterDialog({ open, onOpenChange, editingAdapter }: Props) {
                 <SelectItem value="twilio">Twilio</SelectItem>
                 <SelectItem value="http">HTTP</SelectItem>
                 <SelectItem value="whatsapp-cloud">WhatsApp Cloud</SelectItem>
+                <SelectItem value="mcp">MCP Server</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -282,14 +322,27 @@ export function AdapterDialog({ open, onOpenChange, editingAdapter }: Props) {
 
           {/* Dynamic connector fields */}
           <div className="border-t pt-4 space-y-1">
-            <p className="text-sm font-medium mb-3">Credenciais</p>
-            <ConnectorForm
-              connector={connector}
-              credential={credential}
-              maskedFields={maskedFields}
-              onChange={setCredential}
-              onUnmask={handleUnmask}
-            />
+            <p className="text-sm font-medium mb-3">
+              {connector === "mcp" ? "Configuração MCP" : "Credenciais"}
+            </p>
+            {connector === "mcp" ? (
+              <McpConnectorForm
+                credential={credential}
+                maskedFields={maskedFields}
+                onChange={setCredential}
+                onUnmask={handleUnmask}
+                options={mcpOptions}
+                onOptionsChange={setMcpOptions}
+              />
+            ) : (
+              <ConnectorForm
+                connector={connector}
+                credential={credential}
+                maskedFields={maskedFields}
+                onChange={setCredential}
+                onUnmask={handleUnmask}
+              />
+            )}
           </div>
 
           {/* Test connection */}
@@ -312,6 +365,26 @@ export function AdapterDialog({ open, onOpenChange, editingAdapter }: Props) {
             )}
             {testState === "error" && testError && (
               <p className="text-xs text-destructive text-center">{testError}</p>
+            )}
+            {/* MCP tools discovered after test */}
+            {connector === "mcp" && mcpTools.length > 0 && (
+              <div className="mt-3 space-y-1.5">
+                <p className="text-xs font-medium text-muted-foreground">
+                  {mcpTools.length} ferramenta(s) descoberta(s):
+                </p>
+                <div className="rounded-md border divide-y max-h-40 overflow-y-auto">
+                  {mcpTools.map((t) => (
+                    <div key={t.name} className="px-3 py-2">
+                      <p className="text-xs font-mono font-medium">{t.name}</p>
+                      {t.description && (
+                        <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">
+                          {t.description}
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
             )}
           </div>
         </div>
