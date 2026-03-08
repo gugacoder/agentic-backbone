@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useSSEEvent } from "@/hooks/use-sse";
+import { useAuthStore } from "@/lib/auth";
 
 type FilterValue = "all" | "active" | "inactive";
 
@@ -28,7 +29,10 @@ function AgentsPage() {
   const [filter, setFilter] = useState<FilterValue>("all");
   const [heartbeatMap, setHeartbeatMap] = useState<Record<string, HeartbeatLive>>({});
 
-  const { data: agents, isLoading } = useQuery(agentsQueryOptions());
+  const userRole = useAuthStore((s) => s.user?.role);
+  const isSysadmin = userRole === "sysuser";
+
+  const { data: agents, isLoading } = useQuery(agentsQueryOptions(isSysadmin ? "all" : undefined));
 
   const statsQueries = useQueries({
     queries: (agents ?? []).map((a) => agentStatsQueryOptions(a.id)),

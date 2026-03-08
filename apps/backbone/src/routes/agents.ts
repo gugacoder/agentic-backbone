@@ -43,6 +43,13 @@ function assertAgentOwnership(
 
 agentRoutes.get("/agents", (c) => {
   const auth = getAuthUser(c);
+  const scope = c.req.query("scope");
+  if (scope === "all") {
+    if (auth.role !== "sysuser") {
+      return c.json({ error: "forbidden" }, 403);
+    }
+    return c.json(listAgents());
+  }
   return c.json(filterByOwner(listAgents(), auth));
 });
 

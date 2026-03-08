@@ -142,6 +142,8 @@ export function createSession(userId: string, agentId = "system.main", channelId
     title: null,
     takeover_by: null,
     takeover_at: null,
+    orchestration_path: null,
+    current_agent_id: null,
     created_at: now,
     updated_at: now,
   };

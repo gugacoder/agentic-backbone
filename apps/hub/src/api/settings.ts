@@ -82,3 +82,94 @@ export function systemEnvQueryOptions() {
     queryFn: () => request<SystemEnv>("/system/env"),
   });
 }
+
+// ── Routing ──────────────────────────────────────────────────
+
+export interface RoutingConditions {
+  mode?: string;
+  prompt_tokens_lte?: number;
+  prompt_tokens_gte?: number;
+  tools_count_gte?: number;
+  tools_count_lte?: number;
+  tags_any?: string[];
+  channel_type?: string;
+}
+
+export interface RoutingRule {
+  id: string;
+  description?: string;
+  conditions: RoutingConditions;
+  model: string;
+  priority: number;
+}
+
+export interface RoutingConfig {
+  enabled: boolean;
+  rules: RoutingRule[];
+}
+
+export interface RoutingStats {
+  agentId: string;
+  period: { from: string; to: string };
+  totalExecutions: number;
+  modelDistribution: Record<string, { count: number; pct: number }>;
+  estimatedSavings: {
+    without_routing_usd: number;
+    with_routing_usd: number;
+    saved_usd: number;
+    saved_pct: number;
+  };
+  ruleHits: Record<string, number>;
+  globalRoutingEnabled: boolean;
+}
+
+export interface SimulateRoutingRequest {
+  agentId?: string;
+  mode: string;
+  estimatedPromptTokens?: number;
+  toolsCount?: number;
+  channelType?: string;
+  tags?: string[];
+  role?: string;
+}
+
+export interface SimulateRoutingResponse {
+  selectedModel: string;
+  matchedRule: string | null;
+  fallback: boolean;
+}
+
+export function routingConfigQueryOptions() {
+  return queryOptions({
+    queryKey: ["settings", "routing"],
+    queryFn: () => request<RoutingConfig>("/settings/routing"),
+  });
+}
+
+export function updateRoutingConfig(config: RoutingConfig) {
+  return request<RoutingConfig>("/settings/routing", {
+    method: "PUT",
+    body: JSON.stringify(config),
+  });
+}
+
+export function agentRoutingStatsQueryOptions(
+  agentId: string,
+  params?: { from?: string; to?: string },
+) {
+  const search = new URLSearchParams();
+  if (params?.from) search.set("from", params.from);
+  if (params?.to) search.set("to", params.to);
+  const qs = search.toString() ? `?${search.toString()}` : "";
+  return queryOptions({
+    queryKey: ["agents", agentId, "routing-stats", params],
+    queryFn: () => request<RoutingStats>(`/agents/${agentId}/routing-stats${qs}`),
+  });
+}
+
+export function simulateRouting(body: SimulateRoutingRequest) {
+  return request<SimulateRoutingResponse>("/settings/routing/simulate", {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+}

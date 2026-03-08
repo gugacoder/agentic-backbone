@@ -1,0 +1,106 @@
+name: premium
+title: Premium
+description: Modelos de alta capacidade. Opus para tarefas complexas, Sonnet para uso geral, Flash para tarefas leves.
+
+slugs:
+  small.low:
+    class: small
+    effort: low
+    llm:
+      model: google/gemini-2.0-flash-001
+      parameters: {}
+    tags: [triagem, classificacao]
+    title: Pequeno direto
+    description: Flash para tarefas simples
+
+  small.mid:
+    class: small
+    effort: mid
+    llm:
+      model: google/gemini-2.0-flash-001
+      parameters:
+        thinking: adaptive
+    tags: [triagem, raciocinio-leve]
+    title: Pequeno com raciocinio
+    description: Flash com raciocinio adaptativo
+
+  small.high:
+    class: small
+    effort: high
+    llm:
+      model: google/gemini-2.0-flash-001
+      parameters:
+        thinking: adaptive
+    tags: [triagem, raciocinio-completo]
+    title: Pequeno com raciocinio completo
+    description: Flash com raciocinio forcado
+
+  medium.low:
+    class: medium
+    effort: low
+    llm:
+      model: anthropic/claude-sonnet-4
+      parameters: {}
+    tags: [conversacao, tool-calling]
+    title: Medio direto
+    description: Sonnet sem thinking
+
+  medium.mid:
+    class: medium
+    effort: mid
+    llm:
+      model: anthropic/claude-sonnet-4
+      parameters:
+        thinking: adaptive
+    tags: [conversacao, tool-calling, raciocinio-moderado]
+    title: Medio com raciocinio
+    description: Sonnet com thinking adaptativo
+
+  medium.high:
+    class: medium
+    effort: high
+    llm:
+      model: anthropic/claude-sonnet-4
+      parameters:
+        thinking: adaptive
+    tags: [conversacao, raciocinio-completo]
+    title: Medio com raciocinio completo
+    description: Sonnet com thinking completo
+
+  large.low:
+    class: large
+    effort: low
+    llm:
+      model: anthropic/claude-opus-4
+      parameters: {}
+    tags: [analise, sintese, profundo]
+    title: Grande direto
+    description: Opus sem thinking — maximo de capacidade
+
+  large.mid:
+    class: large
+    effort: mid
+    llm:
+      model: anthropic/claude-opus-4
+      parameters:
+        thinking: adaptive
+    tags: [analise, sintese, raciocinio-profundo]
+    title: Grande com raciocinio
+    description: Opus com thinking adaptativo
+
+  large.high:
+    class: large
+    effort: high
+    llm:
+      model: anthropic/claude-opus-4
+      parameters:
+        thinking: adaptive
+    tags: [analise, sintese, raciocinio-maximo]
+    title: Grande com raciocinio maximo
+    description: Opus com thinking completo — maximo absoluto
+
+roles:
+  conversation: medium.mid
+  heartbeat: small.low
+  memory: small.mid
+  cron: medium.low

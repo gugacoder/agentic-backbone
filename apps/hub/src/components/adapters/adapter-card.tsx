@@ -30,6 +30,8 @@ const CONNECTOR_LABELS: Record<string, string> = {
   twilio: "Twilio",
   http: "HTTP",
   "whatsapp-cloud": "WhatsApp Cloud",
+  mcp: "MCP Server",
+  email: "Email (IMAP/SMTP)",
 };
 
 function WhatsAppWebhookInfo({ adapterId }: { adapterId: string }) {

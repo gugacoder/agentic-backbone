@@ -1,7 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { FileText, MessageSquare, Heart, Sparkles, Wrench, Shield } from "lucide-react";
+import { FileText, MessageSquare, Heart, Sparkles, Wrench, Shield, GitBranch } from "lucide-react";
 import { agentFileQueryOptions, saveAgentFile } from "@/api/agents";
 import type { Agent } from "@/api/agents";
 import {
@@ -17,6 +17,7 @@ import {
 import { MarkdownEditor } from "@/components/shared/markdown-editor";
 import { HeartbeatConfig } from "@/components/agents/heartbeat-config";
 import { AgentAdvancedPanel } from "@/components/agents/agent-advanced-panel";
+import { AgentRoutingSettings } from "@/components/routing/agent-routing-settings";
 import { ResourceAssigner } from "@/components/shared/resource-assigner";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
@@ -30,6 +31,7 @@ const subtabs = [
   { value: "heartbeat", label: "Heartbeat", icon: Heart, kind: "file" as const, filename: "HEARTBEAT.md" },
   { value: "skills", label: "Skills", icon: Sparkles, kind: "resource" as const },
   { value: "tools", label: "Tools", icon: Wrench, kind: "resource" as const },
+  { value: "routing", label: "Routing", icon: GitBranch, kind: "routing" as const },
   { value: "advanced", label: "Avancado", icon: Shield, kind: "advanced" as const },
 ] as const;
 
@@ -101,6 +103,9 @@ export function AgentConfigTabs({ agentId, agent, subtab }: AgentConfigTabsProps
         )}
         {activeSubtab === "tools" && (
           <ToolsPanel agentId={agentId} />
+        )}
+        {activeSubtab === "routing" && (
+          <AgentRoutingSettings agentId={agentId} />
         )}
         {activeSubtab === "advanced" && (
           <AgentAdvancedPanel agent={agent} />

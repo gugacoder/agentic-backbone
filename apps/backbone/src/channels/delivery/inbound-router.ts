@@ -16,7 +16,8 @@ function sanitizeContent(raw: string): string {
 
 export async function routeInboundMessage(
   channelId: string,
-  message: InboundMessage
+  message: InboundMessage,
+  onComplete?: (sessionId: string, agentId: string) => Promise<void>
 ): Promise<void> {
   const channel = getChannel(channelId);
   if (!channel) {
@@ -68,6 +69,9 @@ export async function routeInboundMessage(
     });
     for await (const _event of dispatcher) {
       // consumed by dispatcher — delivery happens at each step_finish
+    }
+    if (onComplete) {
+      await onComplete(sessionId, agentId);
     }
   } catch (err) {
     console.error(`[inbound-router] ERROR in sendMessage:`, err);

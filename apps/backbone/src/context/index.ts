@@ -4,7 +4,7 @@ import {
   resolveModeInstructions,
   type InteractionMode,
 } from "./resolver.js";
-import { parseFrontmatter } from "./frontmatter.js";
+import { parseFrontmatter } from "./readers.js";
 import { buildSkillsSnapshot } from "../skills/prompt.js";
 import { connectorRegistry } from "../connectors/index.js";
 import { formatServicesPrompt } from "../services/prompt.js";

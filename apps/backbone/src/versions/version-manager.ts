@@ -2,6 +2,7 @@ import { join } from "node:path";
 import { mkdirSync, writeFileSync, readdirSync, unlinkSync } from "node:fs";
 import { db } from "../db/index.js";
 import { agentDir } from "../context/paths.js";
+import { eventBus } from "../events/index.js";
 
 const DEFAULT_KEEP = 50;
 
@@ -62,6 +63,13 @@ export function createVersion(
   );
 
   pruneVersions(agentId, fileName, DEFAULT_KEEP);
+
+  eventBus.emit("config:version_changed", {
+    agentId,
+    file: fileName,
+    versionFrom: versionNum > 1 ? String(versionNum - 1) : null,
+    versionTo: String(versionNum),
+  });
 
   return versionNum;
 }

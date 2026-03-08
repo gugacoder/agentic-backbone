@@ -94,6 +94,13 @@ export interface AgentQuotaExceededEvent {
   value: number;
 }
 
+export interface ConfigVersionChangedEvent {
+  agentId: string;
+  file: string;
+  versionFrom: string | null;
+  versionTo: string;
+}
+
 export interface BackboneEventMap {
   "heartbeat:status": HeartbeatStatusEvent;
   "channel:message": ChannelMessageEvent;
@@ -107,6 +114,7 @@ export interface BackboneEventMap {
   "approval:pending": ApprovalPendingEvent;
   "security:alert": SecurityAlertEvent;
   "agent:quota-exceeded": AgentQuotaExceededEvent;
+  "config:version_changed": ConfigVersionChangedEvent;
 }
 
 // --- Typed Event Bus ---

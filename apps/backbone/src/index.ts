@@ -28,6 +28,10 @@ import { startSecurityAnomalyJob, stopSecurityAnomalyJob } from "./security/anom
 import { connectorRegistry } from "./connectors/index.js";
 import { eventBus } from "./events/index.js";
 import { initChannelAdapters, channelAdapterRegistry } from "./channels/delivery/index.js";
+import { CONTEXT_DIR } from "./context/index.js";
+import { encryptAllYamlFiles } from "./context/encryptor.js";
+import { loadPlans } from "./settings/llm.js";
+import { initBenchmarkTrigger } from "./benchmarks/index.js";
 
 import type { ServerType } from "@hono/node-server";
 
@@ -44,8 +48,16 @@ async function bootstrap() {
   );
   process.env.AUTH_TOKEN = internalToken;
 
+  // Auto-encrypt any plaintext sensitive fields in .yml files
+  encryptAllYamlFiles(CONTEXT_DIR);
+
+  // Load LLM plans before any agent initialization
+  loadPlans();
+
   await initHooks();
   wireEventBusToHooks();
+
+  initBenchmarkTrigger();
 
   await initChannelAdapters();
 

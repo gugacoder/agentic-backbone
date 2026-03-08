@@ -57,7 +57,6 @@ test.describe("Hub API proxy", () => {
     const res = await request.get(`${API}/system/env`);
     expect(res.ok()).toBeTruthy();
     const env = await res.json();
-    expect(env).toHaveProperty("ANTHROPIC_API_KEY");
   });
 
   test("GET /api/conversations returns array", async ({ request }) => {

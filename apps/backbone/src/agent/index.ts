@@ -1,10 +1,17 @@
 import { runAgent as runProxyAgent, type AgentEvent, type UsageData } from "@agentic-backbone/ai-sdk";
-import { resolveModel, resolveEffort, resolveThinking } from "../settings/llm.js";
+import {
+  resolveModelResult,
+  resolveParameters,
+  type RoutingContext,
+  type RoutingRule,
+  type ModelResult,
+} from "../settings/llm.js";
 import { loadWebSearchConfig } from "../settings/web-search.js";
 import { readFileSync, appendFileSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
 
 export type { AgentEvent, UsageData };
+export type { RoutingContext, RoutingRule, ModelResult };
 
 const LOG_PATH = join(process.cwd(), "data", "agent-runs.jsonl");
 
@@ -24,12 +31,16 @@ export async function* runAgent(
     role?: string;
     tools?: Record<string, any>;
     system?: string;
+    routingContext?: RoutingContext;
+    agentRoutingRules?: RoutingRule[];
+    onRoutingResolved?: (result: ModelResult) => void;
   }
 ): AsyncGenerator<AgentEvent> {
   const role = options?.role ?? "conversation";
-  const model = resolveModel(role);
-  const effort = resolveEffort();
-  const thinking = resolveThinking();
+  const routingResult = resolveModelResult(role, options?.routingContext, options?.agentRoutingRules);
+  const model = routingResult.model;
+  options?.onRoutingResolved?.(routingResult);
+  const params = resolveParameters(role);
   const webSearch = loadWebSearchConfig();
 
   const systemLen = options?.system?.length ?? 0;
@@ -40,6 +51,7 @@ export async function* runAgent(
     ts: new Date().toISOString(),
     role,
     model,
+    routingRule: routingResult.ruleName,
     systemChars: systemLen,
     promptChars: prompt.length,
     hasIdentity: options?.system?.includes("<identity>") ?? false,
@@ -71,8 +83,7 @@ export async function* runAgent(
     maxTurns: 100,
     ...(options?.system ? { system: options.system } : {}),
     providerConfig: {
-      ...(effort ? { effort } : {}),
-      ...(thinking ? { thinking } : {}),
+      ...params,
       webSearch: webSearch.provider,
       ...(braveApiKey ? { braveApiKey } : {}),
     },

@@ -1,13 +1,14 @@
 import { useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Cpu, Search, Users, Server, Settings } from "lucide-react";
+import { Cpu, Search, Users, Server, Plug, GitBranch } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/shared/page-header";
-import { EmptyState } from "@/components/shared/empty-state";
 import { LlmPlanCard } from "@/components/settings/llm-plan-card";
 import { WebSearchSettings } from "@/components/settings/web-search-settings";
 import { SystemInfo } from "@/components/settings/system-info";
+import { McpServerSettings } from "@/components/settings/mcp-server-settings";
+import { RoutingSettings } from "@/components/routing/routing-settings";
 import { UsersList } from "@/components/users/users-list";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -16,8 +17,10 @@ import { llmSettingsQueryOptions, activateLlmPlan } from "@/api/settings";
 const settingsTabs = [
   { value: "llm", label: "LLM", icon: Cpu },
   { value: "web-search", label: "Web Search", icon: Search },
+  { value: "routing", label: "Model Routing", icon: GitBranch },
   { value: "users", label: "Usuarios", icon: Users },
   { value: "system", label: "Sistema", icon: Server },
+  { value: "mcp-server", label: "MCP Server", icon: Plug },
 ] as const;
 
 type SettingsTab = (typeof settingsTabs)[number]["value"];
@@ -79,6 +82,14 @@ function SettingsPage() {
 
         <TabsContent value="system">
           <SystemInfo />
+        </TabsContent>
+
+        <TabsContent value="routing">
+          <RoutingSettings />
+        </TabsContent>
+
+        <TabsContent value="mcp-server">
+          <McpServerSettings />
         </TabsContent>
       </Tabs>
     </div>

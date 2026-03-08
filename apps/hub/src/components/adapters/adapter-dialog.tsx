@@ -19,8 +19,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ConnectorForm, MASKED } from "@/components/adapters/connector-form";
-import type { ConnectorType, ConnectorCredential } from "@/components/adapters/connector-form";
+import { ConnectorForm, McpConnectorForm, EmailConnectorForm, MASKED } from "@/components/adapters/connector-form";
+import type { ConnectorType, ConnectorCredential, McpOptions, EmailOptions } from "@/components/adapters/connector-form";
 import { request } from "@/lib/api";
 import type { Adapter } from "@/api/adapters";
 
@@ -58,6 +58,11 @@ function buildCredentialPayload(
 
 type TestState = "idle" | "loading" | "ok" | "error";
 
+interface EmailTestResult {
+  imap?: { ok: boolean; latencyMs?: number; mailbox?: string; unreadCount?: number; error?: string };
+  smtp?: { ok: boolean; latencyMs?: number; error?: string };
+}
+
 interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -76,10 +81,23 @@ export function AdapterDialog({ open, onOpenChange, editingAdapter }: Props) {
   const [policy, setPolicy] = useState<"readonly" | "readwrite">("readwrite");
   const [credential, setCredential] = useState<ConnectorCredential>({});
   const [maskedFields, setMaskedFields] = useState<Set<string>>(new Set());
+  const [mcpOptions, setMcpOptions] = useState<McpOptions>({ transport: "stdio", args: [], env: {} });
+  const [mcpTools, setMcpTools] = useState<Array<{ name: string; description: string }>>([]);
+  const [emailOptions, setEmailOptions] = useState<EmailOptions>({
+    mailbox: "INBOX",
+    poll_interval_seconds: 60,
+    mark_seen: true,
+    reply_prefix: "",
+    from_name: "",
+    sender_whitelist: "",
+    subject_filter: "",
+    auto_reply: true,
+  });
 
   const [testState, setTestState] = useState<TestState>("idle");
   const [testError, setTestError] = useState("");
   const [testOk, setTestOk] = useState(false);
+  const [emailTestResult, setEmailTestResult] = useState<EmailTestResult | null>(null);
 
   // Reset form when opening / changing editing target
   useEffect(() => {
@@ -94,6 +112,34 @@ export function AdapterDialog({ open, onOpenChange, editingAdapter }: Props) {
       const cred = (editingAdapter.credential ?? {}) as Record<string, unknown>;
       setCredential(cred as ConnectorCredential);
       setMaskedFields(detectMaskedFields(cred));
+      if (editingAdapter.connector === "mcp") {
+        const opts = (editingAdapter.options ?? {}) as Partial<McpOptions>;
+        setMcpOptions({
+          transport: opts.transport ?? "stdio",
+          command: opts.command,
+          args: opts.args ?? [],
+          env: opts.env ?? {},
+          url: opts.url,
+          server_label: opts.server_label,
+          allowed_tools: opts.allowed_tools ?? [],
+        });
+      }
+      if (editingAdapter.connector === "email") {
+        const opts = (editingAdapter.options ?? {}) as Partial<EmailOptions>;
+        setEmailOptions({
+          agent_id: opts.agent_id,
+          mailbox: opts.mailbox ?? "INBOX",
+          poll_interval_seconds: opts.poll_interval_seconds ?? 60,
+          mark_seen: opts.mark_seen ?? true,
+          reply_prefix: opts.reply_prefix ?? "",
+          from_name: opts.from_name ?? "",
+          sender_whitelist: Array.isArray((opts as Record<string, unknown>).sender_whitelist)
+            ? ((opts as Record<string, unknown>).sender_whitelist as string[]).join("\n")
+            : (opts.sender_whitelist ?? ""),
+          subject_filter: opts.subject_filter ?? "",
+          auto_reply: opts.auto_reply ?? true,
+        });
+      }
     } else {
       setConnector("mysql");
       setLabel("");
@@ -103,10 +149,23 @@ export function AdapterDialog({ open, onOpenChange, editingAdapter }: Props) {
       setPolicy("readwrite");
       setCredential({});
       setMaskedFields(new Set());
+      setMcpOptions({ transport: "stdio", args: [], env: {} });
+      setEmailOptions({
+        mailbox: "INBOX",
+        poll_interval_seconds: 60,
+        mark_seen: true,
+        reply_prefix: "",
+        from_name: "",
+        sender_whitelist: "",
+        subject_filter: "",
+        auto_reply: true,
+      });
     }
     setTestState("idle");
     setTestError("");
     setTestOk(false);
+    setMcpTools([]);
+    setEmailTestResult(null);
   }, [open, isEditing, editingAdapter]);
 
   // Auto-generate slug from label
@@ -128,6 +187,23 @@ export function AdapterDialog({ open, onOpenChange, editingAdapter }: Props) {
     setMaskedFields(new Set());
     setTestState("idle");
     setTestOk(false);
+    setMcpTools([]);
+    setEmailTestResult(null);
+    if (value === "mcp") {
+      setMcpOptions({ transport: "stdio", args: [], env: {} });
+    }
+    if (value === "email") {
+      setEmailOptions({
+        mailbox: "INBOX",
+        poll_interval_seconds: 60,
+        mark_seen: true,
+        reply_prefix: "",
+        from_name: "",
+        sender_whitelist: "",
+        subject_filter: "",
+        auto_reply: true,
+      });
+    }
   }
 
   function handleUnmask(field: string) {
@@ -141,24 +217,60 @@ export function AdapterDialog({ open, onOpenChange, editingAdapter }: Props) {
   async function handleTest() {
     setTestState("loading");
     setTestError("");
+    setMcpTools([]);
+    setEmailTestResult(null);
     try {
-      // If creating new adapter, create it temporarily then test, or just POST test with current data
-      // The spec says: POST /adapters/:slug/test — adapter must exist.
-      // For new adapters, we save first then test.
+      // For new adapters, save first then test.
       if (!isEditing) {
         await saveMutation.mutateAsync(false);
       }
-      const result = await request<{ ok: boolean; latencyMs?: number; message?: string; error?: string }>(
-        `/adapters/${slug}/test`,
-        { method: "POST" },
-      );
-      if (result.ok) {
-        setTestState("ok");
-        setTestOk(true);
+
+      if (connector === "mcp") {
+        // MCP-specific test that actually connects and returns tools
+        const result = await request<{
+          ok: boolean;
+          tools?: Array<{ name: string; description: string }>;
+          error?: string;
+        }>(`/adapters/${slug}/mcp-test`, { method: "POST" });
+        if (result.ok) {
+          setTestState("ok");
+          setTestOk(true);
+          setMcpTools(result.tools ?? []);
+        } else {
+          setTestState("error");
+          setTestError(result.error ?? "Falha na conexao MCP");
+          setTestOk(false);
+        }
+      } else if (connector === "email") {
+        // Email-specific test: separate IMAP + SMTP results
+        const result = await request<EmailTestResult>(`/adapters/email/${slug}/test`, { method: "POST" });
+        setEmailTestResult(result);
+        const allOk = (result.imap?.ok ?? false) && (result.smtp?.ok ?? false);
+        if (allOk) {
+          setTestState("ok");
+          setTestOk(true);
+        } else {
+          setTestState("error");
+          const errs = [
+            !result.imap?.ok ? `IMAP: ${result.imap?.error ?? "falhou"}` : null,
+            !result.smtp?.ok ? `SMTP: ${result.smtp?.error ?? "falhou"}` : null,
+          ].filter(Boolean);
+          setTestError(errs.join(" | "));
+          setTestOk(false);
+        }
       } else {
-        setTestState("error");
-        setTestError(result.error ?? "Falha na conexao");
-        setTestOk(false);
+        const result = await request<{ ok: boolean; latencyMs?: number; message?: string; error?: string }>(
+          `/adapters/${slug}/test`,
+          { method: "POST" },
+        );
+        if (result.ok) {
+          setTestState("ok");
+          setTestOk(true);
+        } else {
+          setTestState("error");
+          setTestError(result.error ?? "Falha na conexao");
+          setTestOk(false);
+        }
       }
     } catch (e) {
       setTestState("error");
@@ -170,15 +282,29 @@ export function AdapterDialog({ open, onOpenChange, editingAdapter }: Props) {
   const saveMutation = useMutation({
     mutationFn: async (closeAfter: boolean) => {
       const credPayload = buildCredentialPayload(credential, maskedFields);
+      let optionsPayload: Record<string, unknown> = {};
+      if (connector === "mcp") {
+        optionsPayload = mcpOptions as unknown as Record<string, unknown>;
+      } else if (connector === "email") {
+        // Convert sender_whitelist from newline-separated string to array
+        const whitelist = (emailOptions.sender_whitelist ?? "")
+          .split("\n")
+          .map((s) => s.trim())
+          .filter(Boolean);
+        optionsPayload = {
+          ...emailOptions,
+          sender_whitelist: whitelist,
+        };
+      }
       if (isEditing) {
         await request(`/adapters/${editingAdapter!.slug}`, {
           method: "PATCH",
-          body: JSON.stringify({ label, slug, scope, policy, credential: credPayload }),
+          body: JSON.stringify({ label, slug, scope, policy, credential: credPayload, options: optionsPayload }),
         });
       } else {
         await request("/adapters", {
           method: "POST",
-          body: JSON.stringify({ slug, connector, label, scope, policy, credential: credPayload, options: {} }),
+          body: JSON.stringify({ slug, connector, label, scope, policy, credential: credPayload, options: optionsPayload }),
         });
       }
       if (closeAfter) {
@@ -225,6 +351,8 @@ export function AdapterDialog({ open, onOpenChange, editingAdapter }: Props) {
                 <SelectItem value="twilio">Twilio</SelectItem>
                 <SelectItem value="http">HTTP</SelectItem>
                 <SelectItem value="whatsapp-cloud">WhatsApp Cloud</SelectItem>
+                <SelectItem value="mcp">MCP Server</SelectItem>
+                <SelectItem value="email">Email (IMAP/SMTP)</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -282,14 +410,36 @@ export function AdapterDialog({ open, onOpenChange, editingAdapter }: Props) {
 
           {/* Dynamic connector fields */}
           <div className="border-t pt-4 space-y-1">
-            <p className="text-sm font-medium mb-3">Credenciais</p>
-            <ConnectorForm
-              connector={connector}
-              credential={credential}
-              maskedFields={maskedFields}
-              onChange={setCredential}
-              onUnmask={handleUnmask}
-            />
+            <p className="text-sm font-medium mb-3">
+              {connector === "mcp" ? "Configuração MCP" : connector === "email" ? "Configuração Email" : "Credenciais"}
+            </p>
+            {connector === "mcp" ? (
+              <McpConnectorForm
+                credential={credential}
+                maskedFields={maskedFields}
+                onChange={setCredential}
+                onUnmask={handleUnmask}
+                options={mcpOptions}
+                onOptionsChange={setMcpOptions}
+              />
+            ) : connector === "email" ? (
+              <EmailConnectorForm
+                credential={credential}
+                maskedFields={maskedFields}
+                onChange={setCredential}
+                onUnmask={handleUnmask}
+                options={emailOptions}
+                onOptionsChange={setEmailOptions}
+              />
+            ) : (
+              <ConnectorForm
+                connector={connector}
+                credential={credential}
+                maskedFields={maskedFields}
+                onChange={setCredential}
+                onUnmask={handleUnmask}
+              />
+            )}
           </div>
 
           {/* Test connection */}
@@ -307,11 +457,66 @@ export function AdapterDialog({ open, onOpenChange, editingAdapter }: Props) {
               {testState === "error" && <XCircle className="mr-2 h-4 w-4 text-destructive" />}
               {testState === "loading" ? "Testando..." : "Testar conexão"}
             </Button>
-            {testState === "ok" && (
+            {testState === "ok" && connector !== "email" && (
               <p className="text-xs text-green-600 text-center">Conexão bem-sucedida</p>
             )}
-            {testState === "error" && testError && (
+            {testState === "error" && testError && connector !== "email" && (
               <p className="text-xs text-destructive text-center">{testError}</p>
+            )}
+            {/* Email test: IMAP + SMTP results */}
+            {connector === "email" && emailTestResult && (
+              <div className="mt-2 space-y-2">
+                {emailTestResult.imap && (
+                  <div className={`rounded-md border px-3 py-2 text-xs flex items-start gap-2 ${emailTestResult.imap.ok ? "border-green-200 bg-green-50 dark:bg-green-950/20" : "border-red-200 bg-red-50 dark:bg-red-950/20"}`}>
+                    {emailTestResult.imap.ok
+                      ? <CheckCircle2 className="h-3.5 w-3.5 text-green-500 shrink-0 mt-0.5" />
+                      : <XCircle className="h-3.5 w-3.5 text-destructive shrink-0 mt-0.5" />}
+                    <div>
+                      <span className="font-medium">IMAP</span>
+                      {emailTestResult.imap.ok ? (
+                        <span className="text-muted-foreground"> — {emailTestResult.imap.latencyMs}ms{emailTestResult.imap.unreadCount !== undefined ? `, ${emailTestResult.imap.unreadCount} nao lidos` : ""}</span>
+                      ) : (
+                        <span className="text-destructive"> — {emailTestResult.imap.error ?? "falhou"}</span>
+                      )}
+                    </div>
+                  </div>
+                )}
+                {emailTestResult.smtp && (
+                  <div className={`rounded-md border px-3 py-2 text-xs flex items-start gap-2 ${emailTestResult.smtp.ok ? "border-green-200 bg-green-50 dark:bg-green-950/20" : "border-red-200 bg-red-50 dark:bg-red-950/20"}`}>
+                    {emailTestResult.smtp.ok
+                      ? <CheckCircle2 className="h-3.5 w-3.5 text-green-500 shrink-0 mt-0.5" />
+                      : <XCircle className="h-3.5 w-3.5 text-destructive shrink-0 mt-0.5" />}
+                    <div>
+                      <span className="font-medium">SMTP</span>
+                      {emailTestResult.smtp.ok ? (
+                        <span className="text-muted-foreground"> — {emailTestResult.smtp.latencyMs}ms</span>
+                      ) : (
+                        <span className="text-destructive"> — {emailTestResult.smtp.error ?? "falhou"}</span>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+            {/* MCP tools discovered after test */}
+            {connector === "mcp" && mcpTools.length > 0 && (
+              <div className="mt-3 space-y-1.5">
+                <p className="text-xs font-medium text-muted-foreground">
+                  {mcpTools.length} ferramenta(s) descoberta(s):
+                </p>
+                <div className="rounded-md border divide-y max-h-40 overflow-y-auto">
+                  {mcpTools.map((t) => (
+                    <div key={t.name} className="px-3 py-2">
+                      <p className="text-xs font-mono font-medium">{t.name}</p>
+                      {t.description && (
+                        <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">
+                          {t.description}
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
             )}
           </div>
         </div>

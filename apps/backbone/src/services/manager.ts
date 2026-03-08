@@ -16,7 +16,8 @@ import {
 import {
   parseFrontmatter,
   serializeFrontmatter,
-} from "../context/frontmatter.js";
+} from "../context/readers.js";
+import { ServiceMdSchema } from "../context/schemas.js";
 import { resolveServices, type ResolvedResource } from "../context/resolver.js";
 
 const KIND: ResourceKind = "services";
@@ -58,13 +59,18 @@ export function createService(input: CreateServiceInput): ResolvedResource {
 
   mkdirSync(serviceDir, { recursive: true });
 
-  const meta: Record<string, unknown> = {
+  const metaRaw: Record<string, unknown> = {
     name: input.name,
     description: input.description ?? "",
     "skip-agent": input.skipAgent ?? false,
     enabled: true,
     ...input.metadata,
   };
+  const result = ServiceMdSchema.safeParse(metaRaw);
+  if (!result.success) {
+    throw new Error(`Invalid service metadata: ${result.error.message}`);
+  }
+  const meta = result.data;
 
   const body = input.body ?? `# ${input.name}\n`;
   writeFileSync(mdPath, serializeFrontmatter(meta, body));
@@ -73,7 +79,7 @@ export function createService(input: CreateServiceInput): ResolvedResource {
     slug: input.slug,
     path: mdPath,
     source: input.scope,
-    metadata: meta,
+    metadata: meta as Record<string, unknown>,
     content: body,
   };
 }

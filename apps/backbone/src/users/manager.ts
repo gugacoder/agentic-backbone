@@ -1,14 +1,13 @@
 import {
   existsSync,
   readdirSync,
-  readFileSync,
   mkdirSync,
-  writeFileSync,
   rmSync,
 } from "node:fs";
 import { join } from "node:path";
 import { usersDir, userDir } from "../context/paths.js";
-import { parseFrontmatter } from "../context/frontmatter.js";
+import { readMarkdown, writeMarkdown, readYaml, writeYaml } from "../context/readers.js";
+import { UserMdSchema, CredentialYmlSchema } from "../context/schemas.js";
 import {
   type UserConfig,
   type UserPermissions,
@@ -17,30 +16,40 @@ import {
 } from "./types.js";
 import { hashPassword } from "./password.js";
 
+function credentialPath(slug: string): string {
+  return join(userDir(slug), "credential.yml");
+}
+
 function parseUserConfig(slug: string): UserConfig | null {
   const mdPath = join(userDir(slug), "USER.md");
   if (!existsSync(mdPath)) return null;
 
-  const raw = readFileSync(mdPath, "utf-8");
-  const { metadata } = parseFrontmatter(raw);
+  const { metadata: rawMetadata } = readMarkdown(mdPath);
+  const mdResult = UserMdSchema.safeParse(rawMetadata);
+  if (!mdResult.success) {
+    console.warn(`[users] invalid USER.md for ${slug}:`, mdResult.error.issues);
+    return null;
+  }
+  const md = mdResult.data;
+
+  // Email comes from credential.yml now
+  let email = md.email;
+  const credPath = credentialPath(slug);
+  if (existsSync(credPath)) {
+    const credResult = CredentialYmlSchema.safeParse(readYaml(credPath));
+    if (credResult.success) {
+      email = credResult.data.email;
+    }
+  }
 
   return {
-    slug: (metadata.slug as string) ?? slug,
-    displayName: (metadata.displayName as string) ?? slug,
-    email: (metadata.email as string) ?? "",
+    slug: md.slug ?? slug,
+    displayName: md.displayName ?? slug,
+    email,
     permissions: {
-      canCreateAgents:
-        metadata.canCreateAgents !== undefined
-          ? Boolean(metadata.canCreateAgents)
-          : DEFAULT_PERMISSIONS.canCreateAgents,
-      canCreateChannels:
-        metadata.canCreateChannels !== undefined
-          ? Boolean(metadata.canCreateChannels)
-          : DEFAULT_PERMISSIONS.canCreateChannels,
-      maxAgents:
-        typeof metadata.maxAgents === "number"
-          ? metadata.maxAgents
-          : DEFAULT_PERMISSIONS.maxAgents,
+      canCreateAgents: md.canCreateAgents,
+      canCreateChannels: md.canCreateChannels,
+      maxAgents: md.maxAgents,
     },
   };
 }
@@ -77,13 +86,12 @@ export function userExists(slug: string): boolean {
 export function getUserWithPasswordHash(
   slug: string
 ): { config: UserConfig; passwordHash: string } | null {
-  const mdPath = join(userDir(slug), "USER.md");
-  if (!existsSync(mdPath)) return null;
+  const credPath = credentialPath(slug);
+  if (!existsSync(credPath)) return null;
 
-  const raw = readFileSync(mdPath, "utf-8");
-  const { metadata } = parseFrontmatter(raw);
-
-  const passwordHash = metadata.passwordHash as string | undefined;
+  const credResult = CredentialYmlSchema.safeParse(readYaml(credPath));
+  if (!credResult.success) return null;
+  const passwordHash = credResult.data.password;
   if (!passwordHash) return null;
 
   const config = parseUserConfig(slug);
@@ -107,19 +115,21 @@ export function createUser(
   const passwordHash = hashPassword(password);
   const userEmail = email ?? "";
 
-  const frontmatterLines = [
-    "---",
-    `slug: ${slug}`,
-    `displayName: ${displayName}`,
-    `email: ${userEmail}`,
-    `passwordHash: "${passwordHash}"`,
-    `canCreateAgents: ${perms.canCreateAgents}`,
-    `canCreateChannels: ${perms.canCreateChannels}`,
-    `maxAgents: ${perms.maxAgents}`,
-    "---",
-  ];
+  // USER.md — profile (no secrets)
+  writeMarkdown(join(dir, "USER.md"), {
+    slug,
+    displayName,
+    canCreateAgents: perms.canCreateAgents,
+    canCreateChannels: perms.canCreateChannels,
+    maxAgents: perms.maxAgents,
+  }, `# ${displayName}\n`);
 
-  writeFileSync(join(dir, "USER.md"), `${frontmatterLines.join("\n")}\n\n# ${displayName}\n`);
+  // credential.yml — secrets (auto-encrypted)
+  writeYaml(credentialPath(slug), {
+    type: "user-password",
+    email: userEmail,
+    password: passwordHash,
+  });
 
   return { slug, displayName, email: userEmail, permissions: perms };
 }
@@ -143,30 +153,23 @@ export function updateUser(
   const email = updates.email ?? current.email;
   const perms = { ...current.permissions, ...updates.permissions };
 
-  // Preserve existing passwordHash or compute new one
-  const raw = readFileSync(mdPath, "utf-8");
-  const { metadata } = parseFrontmatter(raw);
-  const passwordHash = updates.password
-    ? hashPassword(updates.password)
-    : (metadata.passwordHash as string) ?? "";
+  // Update USER.md (profile only)
+  writeMarkdown(mdPath, {
+    slug,
+    displayName,
+    canCreateAgents: perms.canCreateAgents,
+    canCreateChannels: perms.canCreateChannels,
+    maxAgents: perms.maxAgents,
+  }, `# ${displayName}\n`);
 
-  const frontmatterLines = [
-    "---",
-    `slug: ${slug}`,
-    `displayName: ${displayName}`,
-    `email: ${email}`,
-  ];
-  if (passwordHash) {
-    frontmatterLines.push(`passwordHash: "${passwordHash}"`);
-  }
-  frontmatterLines.push(
-    `canCreateAgents: ${perms.canCreateAgents}`,
-    `canCreateChannels: ${perms.canCreateChannels}`,
-    `maxAgents: ${perms.maxAgents}`,
-    "---"
-  );
+  // Update credential.yml
+  const credPath = credentialPath(slug);
+  const cred = existsSync(credPath) ? readYaml(credPath) : { type: "user-password" };
 
-  writeFileSync(mdPath, `${frontmatterLines.join("\n")}\n\n# ${displayName}\n`);
+  if (updates.email !== undefined) cred.email = updates.email;
+  if (updates.password) cred.password = hashPassword(updates.password);
+
+  writeYaml(credPath, cred);
 
   return { slug, displayName, email, permissions: perms };
 }

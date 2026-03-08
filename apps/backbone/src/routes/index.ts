@@ -30,6 +30,13 @@ import { handoffRoutes } from "./handoffs.js";
 import { quotaRoutes } from "./quotas.js";
 import { versionRoutes } from "./versions.js";
 import { draftRoutes } from "./drafts.js";
+import { ratingRoutes } from "./ratings.js";
+import { workflowRoutes } from "./workflows.js";
+import { mcpRoutes } from "./mcp.js";
+import { emailRoutes } from "./email.js";
+import { routingRoutes } from "./routing.js";
+import { benchmarkRoutes } from "./benchmarks.js";
+import { initMcpServerRoutes } from "../mcp-server/index.js";
 import { getHeartbeatStatus } from "../heartbeat/index.js";
 import { listAgents } from "../agents/registry.js";
 import { listChannels } from "../channels/registry.js";
@@ -148,3 +155,12 @@ routes.route("/", handoffRoutes);
 routes.route("/", quotaRoutes);
 routes.route("/", versionRoutes);
 routes.route("/", draftRoutes);
+routes.route("/", ratingRoutes);
+routes.route("/", workflowRoutes);
+routes.route("/", mcpRoutes);
+routes.route("/", emailRoutes);
+routes.route("/", routingRoutes);
+routes.route("/", benchmarkRoutes);
+
+// MCP Server — registers GET /mcp/sse + POST /mcp/message directly on routes
+initMcpServerRoutes(routes);
