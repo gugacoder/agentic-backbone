@@ -45,6 +45,8 @@ npm run test:e2e                       # Playwright end-to-end
 
 Test credentials come from `.env`: `SYSUSER` / `SYSPASS`.
 
+**IMPORTANT**: Always use `npm run` commands, never run apps directly (tsx, node, etc). The npm scripts use `dotenv-cli` to properly expand env vars like `${PREFIX}`. Hub proxy to backbone (`/api` → `:BACKBONE_PORT`) is already configured in `vite.config.ts` and only works when started via `npm run dev:all`.
+
 ---
 
 ## Environment Variables
