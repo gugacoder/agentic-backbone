@@ -527,7 +527,7 @@
     "id": "F-122",
     "name": "Agent Sandbox: view de comparacao side-by-side",
     "description": "Nova rota /agents/:id/drafts/:draftId/compare com DraftCompareView: campo de input para mensagem de teste, botao 'Executar comparacao' (POST /compare), layout 2 colunas 'Producao' | 'Rascunho {label}', cada coluna exibe resposta completa do agente, diferenca de palavras destacada visualmente em amarelo (diff simples de palavras entre as duas respostas).",
-    "status": "blocked",
+    "status": "passing",
     "priority": 25,
     "agent": "coder",
     "task": "vibe-code",
@@ -542,7 +542,8 @@
       "Coluna do rascunho exibe o label do rascunho no cabecalho",
       "`npm run build:hub` e `npm run typecheck` passam sem erros"
     ],
-    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-5/worktree/sprints/sprint-5/3-prps/PRP-31-agent-sandbox.md"
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-5/worktree/sprints/sprint-5/3-prps/PRP-31-agent-sandbox.md",
+    "completed_at": "2026-03-08T01:00:13.462Z"
   },
   {
     "id": "F-116",
