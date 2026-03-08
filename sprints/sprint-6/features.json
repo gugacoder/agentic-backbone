@@ -428,7 +428,7 @@
     "id": "F-138",
     "name": "Workflow Builder: Hub — Painel de Simulacao + Secao Workflows no Agente",
     "description": "Adicionar painel lateral de simulacao no canvas: input de texto, select de canal, botao 'Simular', resultado com caminho percorrido (nos destacados no canvas), condicao que passou e agente selecionado com reasoning textual. Adicionar secao 'Workflows' na pagina /agents/:id listando workflows em que o agente participa, com link para o canvas de cada workflow e papel do agente (entrada/intermediario/destino).",
-    "status": "pending",
+    "status": "passing",
     "priority": 21,
     "agent": "coder",
     "task": "vibe-code",
@@ -442,6 +442,7 @@
       "Link para o canvas abre o workflow correto",
       "`npm run build:hub` e `npm run typecheck` passam sem erros"
     ],
-    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-6/worktree/sprints/sprint-6/3-prps/PRP-39-visual-workflow-builder.md"
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-6/worktree/sprints/sprint-6/3-prps/PRP-39-visual-workflow-builder.md",
+    "completed_at": "2026-03-08T13:55:19Z"
   }
 ]

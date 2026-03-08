@@ -22,6 +22,7 @@ import {
   BarChart3,
   TrendingDown,
   TrendingUp,
+  Network,
 } from "lucide-react";
 import {
   agentQueryOptions,
@@ -51,6 +52,7 @@ import { McpToolsTab } from "@/components/mcp/mcp-tools-tab";
 import { RoutingAnalyticsTab } from "@/components/routing/routing-analytics-tab";
 import { EmailChannelsTab } from "@/components/email/email-channels-tab";
 import { BenchmarkTab } from "@/components/agents/benchmark-tab";
+import { WorkflowsTab } from "@/components/agents/workflows-tab";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { useSSEEvent } from "@/hooks/use-sse";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -74,6 +76,7 @@ const tabs = [
   { value: "routing", label: "Routing", icon: GitBranch },
   { value: "channels", label: "Canais", icon: Mail },
   { value: "benchmarks", label: "Benchmarks", icon: BarChart3 },
+  { value: "workflows", label: "Workflows", icon: Network },
 ] as const;
 
 type TabValue = (typeof tabs)[number]["value"];
@@ -320,6 +323,9 @@ function AgentDetailPage() {
         </TabsContent>
         <TabsContent value="benchmarks">
           <BenchmarkTab agentId={id} />
+        </TabsContent>
+        <TabsContent value="workflows">
+          <WorkflowsTab agentId={id} />
         </TabsContent>
       </Tabs>
     </div>

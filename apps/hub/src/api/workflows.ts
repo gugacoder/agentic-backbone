@@ -88,3 +88,34 @@ export async function deleteWorkflow(id: string): Promise<void> {
 export async function applyWorkflow(id: string): Promise<ApplyResult> {
   return request<ApplyResult>(`/workflows/${id}/apply`, { method: "POST" });
 }
+
+export interface SimulateRequest {
+  input: string;
+  startNodeId: string;
+  channelType?: string;
+}
+
+export interface SimulateResult {
+  path: string[];
+  matchedEdge: string | null;
+  matchedCondition: EdgeCondition | null;
+  selectedAgent: string | null;
+  reasoning: string;
+}
+
+export async function simulateWorkflow(id: string, payload: SimulateRequest): Promise<SimulateResult> {
+  return request<SimulateResult>(`/workflows/${id}/simulate`, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export function agentWorkflowsQueryOptions(agentId: string) {
+  return queryOptions({
+    queryKey: ["workflows", "agent", agentId],
+    queryFn: async () => {
+      const workflows = await request<Workflow[]>("/workflows");
+      return workflows.filter((wf) => wf.nodes.some((n) => n.agentId === agentId));
+    },
+  });
+}

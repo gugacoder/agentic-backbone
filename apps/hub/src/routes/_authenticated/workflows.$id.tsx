@@ -21,7 +21,7 @@ import {
   EdgeLabelRenderer,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import { Bot, ChevronLeft, Save, Zap, AlertCircle, X, Trash2 } from "lucide-react";
+import { Bot, ChevronLeft, Save, Zap, AlertCircle, X, Trash2, Play, CheckCircle, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -45,9 +45,9 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Checkbox } from "@/components/ui/checkbox";
-import { workflowQueryOptions, updateWorkflow, applyWorkflow } from "@/api/workflows";
+import { workflowQueryOptions, updateWorkflow, applyWorkflow, simulateWorkflow } from "@/api/workflows";
 import { agentsQueryOptions } from "@/api/agents";
-import type { WorkflowNode, WorkflowEdge, ConditionType, EdgeCondition } from "@/api/workflows";
+import type { WorkflowNode, WorkflowEdge, ConditionType, EdgeCondition, SimulateResult } from "@/api/workflows";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/workflows/$id")({
@@ -90,13 +90,18 @@ interface AgentNodeData {
   label: string;
   agentId: string;
   isEntry?: boolean;
+  highlighted?: boolean;
 }
 
 function AgentNode({ data, selected }: NodeProps & { data: AgentNodeData }) {
   return (
     <div
       className={`rounded-xl border-2 bg-card px-4 py-3 shadow-md transition-shadow ${
-        selected ? "border-primary shadow-lg" : "border-border"
+        data.highlighted
+          ? "border-green-500 shadow-green-200 shadow-lg dark:shadow-green-900/30"
+          : selected
+          ? "border-primary shadow-lg"
+          : "border-border"
       } min-w-[160px]`}
     >
       <Handle
@@ -444,6 +449,171 @@ function NodeEditorPanel({ node, onUpdate, onDelete, onClose }: NodeEditorPanelP
   );
 }
 
+// ─── Painel de Simulacao ─────────────────────────────────────────────────
+
+const CHANNEL_OPTIONS = [
+  { value: "hub", label: "Hub (Chat)" },
+  { value: "whatsapp", label: "WhatsApp" },
+  { value: "email", label: "Email" },
+  { value: "telegram", label: "Telegram" },
+];
+
+interface SimulationPanelProps {
+  workflowId: string;
+  entryNodeId: string | null;
+  onClose: () => void;
+  onResult: (result: SimulateResult, path: string[]) => void;
+}
+
+function SimulationPanel({ workflowId, entryNodeId, onClose, onResult }: SimulationPanelProps) {
+  const [input, setInput] = useState("");
+  const [channelType, setChannelType] = useState("hub");
+  const [result, setResult] = useState<SimulateResult | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  async function handleSimulate() {
+    if (!input.trim() || !entryNodeId) return;
+    setLoading(true);
+    try {
+      const res = await simulateWorkflow(workflowId, {
+        input: input.trim(),
+        startNodeId: entryNodeId,
+        channelType,
+      });
+      setResult(res);
+      onResult(res, res.path);
+    } catch {
+      toast.error("Erro ao simular workflow");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="flex h-full flex-col gap-4 p-4">
+      <div className="flex items-center justify-between">
+        <span className="text-sm font-semibold">Simular roteamento</span>
+        <Button variant="ghost" size="icon" className="h-6 w-6" onClick={onClose}>
+          <X className="h-4 w-4" />
+        </Button>
+      </div>
+
+      <div className="space-y-1.5">
+        <Label>Mensagem de teste</Label>
+        <textarea
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          placeholder="Ex: Quero saber o preco do produto premium"
+          rows={3}
+          className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring resize-none"
+        />
+      </div>
+
+      <div className="space-y-1.5">
+        <Label>Canal de origem</Label>
+        <Select value={channelType} onValueChange={(v) => v && setChannelType(v)}>
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {CHANNEL_OPTIONS.map((c) => (
+              <SelectItem key={c.value} value={c.value}>
+                {c.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {!entryNodeId && (
+        <p className="text-xs text-destructive">
+          Marque um no como "Entrada" no canvas para simular
+        </p>
+      )}
+
+      <Button
+        onClick={handleSimulate}
+        disabled={!input.trim() || !entryNodeId || loading}
+        size="sm"
+      >
+        <Play className="mr-2 h-4 w-4" />
+        {loading ? "Simulando..." : "Simular"}
+      </Button>
+
+      {result && (
+        <>
+          <Separator />
+          <div className="space-y-3">
+            <div className="space-y-1">
+              <span className="text-xs font-semibold uppercase text-muted-foreground">
+                Caminho percorrido
+              </span>
+              <div className="flex flex-wrap items-center gap-1">
+                {result.path.map((nodeId, i) => (
+                  <span key={nodeId} className="flex items-center gap-1">
+                    <span className="rounded bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800 dark:bg-green-900/30 dark:text-green-400">
+                      {nodeId}
+                    </span>
+                    {i < result.path.length - 1 && (
+                      <ChevronRight className="h-3 w-3 text-muted-foreground" />
+                    )}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            {result.selectedAgent && (
+              <div className="space-y-1">
+                <span className="text-xs font-semibold uppercase text-muted-foreground">
+                  Agente selecionado
+                </span>
+                <div className="flex items-center gap-2 rounded-md border border-green-200 bg-green-50 px-3 py-2 dark:border-green-900 dark:bg-green-900/20">
+                  <CheckCircle className="h-4 w-4 shrink-0 text-green-600" />
+                  <span className="text-sm font-medium text-green-800 dark:text-green-400">
+                    {result.selectedAgent}
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {result.matchedCondition && (
+              <div className="space-y-1">
+                <span className="text-xs font-semibold uppercase text-muted-foreground">
+                  Condicao satisfeita
+                </span>
+                <div className="rounded-md border border-border bg-muted/30 px-3 py-2 text-xs">
+                  <span
+                    className="mr-2 inline-block h-2 w-2 rounded-full"
+                    style={{
+                      backgroundColor:
+                        CONDITION_COLORS[result.matchedCondition.type as ConditionType],
+                    }}
+                  />
+                  <strong>{CONDITION_LABELS[result.matchedCondition.type as ConditionType]}</strong>
+                  {result.matchedCondition.value && (
+                    <span className="ml-1 text-muted-foreground">
+                      — {result.matchedCondition.value}
+                    </span>
+                  )}
+                </div>
+              </div>
+            )}
+
+            <div className="space-y-1">
+              <span className="text-xs font-semibold uppercase text-muted-foreground">
+                Raciocinio
+              </span>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                {result.reasoning}
+              </p>
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
 // ─── Tipos ──────────────────────────────────────────────────────────────
 
 const nodeTypes = { agent: AgentNode };
@@ -466,6 +636,7 @@ function WorkflowCanvas({ workflowId }: { workflowId: string }) {
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
   const [confirmApply, setConfirmApply] = useState(false);
   const [initialized, setInitialized] = useState(false);
+  const [showSimulation, setShowSimulation] = useState(false);
 
   // Inicializar nos/arestas do workflow carregado
   useEffect(() => {
@@ -646,6 +817,24 @@ function WorkflowCanvas({ workflowId }: { workflowId: string }) {
     setSelectedNode(null);
   }
 
+  function handleSimulationResult(_result: SimulateResult, path: string[]) {
+    const pathSet = new Set(path);
+    setNodes((nds) =>
+      nds.map((n) => ({
+        ...n,
+        data: { ...n.data, highlighted: pathSet.has(n.id) },
+      })),
+    );
+  }
+
+  function clearHighlights() {
+    setNodes((nds) =>
+      nds.map((n) => ({ ...n, data: { ...n.data, highlighted: false } })),
+    );
+  }
+
+  const entryNode = nodes.find((n) => (n.data as unknown as AgentNodeData).isEntry);
+
   if (wfLoading) {
     return (
       <div className="flex h-full items-center justify-center text-muted-foreground">
@@ -666,7 +855,7 @@ function WorkflowCanvas({ workflowId }: { workflowId: string }) {
     );
   }
 
-  const hasRightPanel = !!selectedEdge || !!selectedNode;
+  const hasRightPanel = !!selectedEdge || !!selectedNode || showSimulation;
 
   return (
     <div className="flex h-full flex-col">
@@ -692,6 +881,19 @@ function WorkflowCanvas({ workflowId }: { workflowId: string }) {
         >
           <Save className="mr-2 h-4 w-4" />
           Salvar rascunho
+        </Button>
+        <Button
+          variant={showSimulation ? "secondary" : "outline"}
+          size="sm"
+          onClick={() => {
+            setShowSimulation((v) => !v);
+            if (showSimulation) clearHighlights();
+            setSelectedEdge(null);
+            setSelectedNode(null);
+          }}
+        >
+          <Play className="mr-2 h-4 w-4" />
+          Simular
         </Button>
         <Button
           size="sm"
@@ -764,10 +966,21 @@ function WorkflowCanvas({ workflowId }: { workflowId: string }) {
           </ReactFlow>
         </div>
 
-        {/* Painel direito: editor contextual */}
+        {/* Painel direito: editor contextual ou simulacao */}
         {hasRightPanel && (
-          <div className="w-64 shrink-0 overflow-y-auto border-l bg-card">
-            {selectedEdge && (
+          <div className="w-72 shrink-0 overflow-y-auto border-l bg-card">
+            {showSimulation && (
+              <SimulationPanel
+                workflowId={workflowId}
+                entryNodeId={entryNode?.id ?? null}
+                onClose={() => {
+                  setShowSimulation(false);
+                  clearHighlights();
+                }}
+                onResult={handleSimulationResult}
+              />
+            )}
+            {!showSimulation && selectedEdge && (
               <EdgeEditorPanel
                 edge={selectedEdge}
                 onUpdate={handleEdgeUpdate}
@@ -775,7 +988,7 @@ function WorkflowCanvas({ workflowId }: { workflowId: string }) {
                 onClose={() => setSelectedEdge(null)}
               />
             )}
-            {selectedNode && (
+            {!showSimulation && selectedNode && (
               <NodeEditorPanel
                 node={selectedNode}
                 onUpdate={handleNodeUpdate}
