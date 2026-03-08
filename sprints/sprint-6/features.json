@@ -188,7 +188,7 @@
     "id": "F-131",
     "name": "Model Routing: API de Routing — Estatisticas e Simulacao",
     "description": "Implementar endpoints: GET /settings/routing (config global), PUT /settings/routing (atualizar regras), GET /agents/:id/routing-stats (distribuicao de modelos, economia estimada em USD, rule hits; query params: from, to), POST /settings/routing/simulate (retorna modelo selecionado e regra para contexto dado). Economia estimada usa tabela de precos estatica por modelo. Dados de routing-stats obtidos de heartbeat_log.model_used e routing_rule.",
-    "status": "pending",
+    "status": "passing",
     "priority": 10,
     "agent": "coder",
     "task": "vibe-code",
@@ -202,7 +202,8 @@
       "PUT /settings/routing persiste novas regras em llm.json",
       "`npm run typecheck` passa sem erros"
     ],
-    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-6/worktree/sprints/sprint-6/3-prps/PRP-37-model-routing-inteligente.md"
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-6/worktree/sprints/sprint-6/3-prps/PRP-37-model-routing-inteligente.md",
+    "completed_at": "2026-03-08T06:29:50Z"
   },
   {
     "id": "F-140",
@@ -330,7 +331,7 @@
     "id": "F-135",
     "name": "Email: Hub — Formulario de Adapter Email + Card de Status",
     "description": "Formulario de criacao de adapter Email no Hub com secoes: Recebimento (IMAP host/porta/usuario/senha), Envio (SMTP host/porta/STARTTLS toggle/usuario/senha), Opcoes (mailbox, poll interval, mark_seen, reply_prefix, from_name, auto_reply toggle, whitelist de remetentes, filtro de assunto regex). Botao 'Testar conexao' que exibe resultado IMAP + SMTP com latencia. Campos sensiveis suportam ${ENV_VAR} e sao mascarados (usando utils/sensitive.ts). Card de status apos criacao com indicador de polling e contagem de emails processados. Card Email na pagina /agents/:id/channels com status de polling, ultima execucao, emails (24h) e link para conversas de email.",
-    "status": "blocked",
+    "status": "pending",
     "priority": 17,
     "agent": "coder",
     "task": "vibe-code",

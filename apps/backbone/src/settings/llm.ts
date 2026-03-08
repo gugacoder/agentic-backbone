@@ -200,6 +200,29 @@ function loadGlobalRoutingRules(): RoutingRule[] {
   return routing.rules;
 }
 
+export interface RoutingConfig {
+  enabled: boolean;
+  rules: RoutingRule[];
+}
+
+export function getRoutingConfig(): RoutingConfig {
+  if (!existsSync(settingsPath())) return { enabled: false, rules: [] };
+  const settings = readYaml(settingsPath()) as Record<string, unknown>;
+  const routing = settings["routing"] as { enabled?: boolean; rules?: RoutingRule[] } | undefined;
+  return {
+    enabled: routing?.enabled ?? false,
+    rules: routing?.rules ?? [],
+  };
+}
+
+export function setRoutingConfig(config: RoutingConfig): void {
+  const settings = existsSync(settingsPath())
+    ? (readYaml(settingsPath()) as Record<string, unknown>)
+    : {};
+  settings["routing"] = config;
+  writeYaml(settingsPath(), settings);
+}
+
 export function resolveModelResult(
   role: string,
   context?: RoutingContext,
