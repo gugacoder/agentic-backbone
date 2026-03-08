@@ -1,17 +1,17 @@
 [
   {
     "id": "F-144",
-    "name": "Circuit-breaker: Tabelas circuit_breaker_config + circuit_breaker_events + migração DB",
-    "description": "Criar tabelas `circuit_breaker_config` (agent_id PK, enabled, max_consecutive_fails, error_rate_threshold, error_rate_window_min, max_actions_per_hour, max_actions_per_day, cooldown_min, auto_resume, updated_at) e `circuit_breaker_events` (id PK, agent_id, event_type, trigger_reason, context, actor, created_at) no SQLite. Indexes em agent_id, created_at e event_type. Migração automática no startup. Seguir padrão existente em `apps/backbone/src/db/`.",
+    "name": "Circuit-breaker: Tabelas circuit_breaker_config + circuit_breaker_events + migraÃ§Ã£o DB",
+    "description": "Criar tabelas `circuit_breaker_config` (agent_id PK, enabled, max_consecutive_fails, error_rate_threshold, error_rate_window_min, max_actions_per_hour, max_actions_per_day, cooldown_min, auto_resume, updated_at) e `circuit_breaker_events` (id PK, agent_id, event_type, trigger_reason, context, actor, created_at) no SQLite. Indexes em agent_id, created_at e event_type. MigraÃ§Ã£o automÃ¡tica no startup. Seguir padrÃ£o existente em `apps/backbone/src/db/`.",
     "status": "passing",
     "priority": 1,
     "agent": "coder",
     "task": "vibe-code",
     "dependencies": [],
     "tests": [
-      "Tabelas `circuit_breaker_config` e `circuit_breaker_events` existem após startup",
+      "Tabelas `circuit_breaker_config` e `circuit_breaker_events` existem apÃ³s startup",
       "Indexes idx_cb_events_agent, idx_cb_events_created e idx_cb_events_type criados",
-      "Migração é idempotente (rodar duas vezes não gera erro)",
+      "MigraÃ§Ã£o Ã© idempotente (rodar duas vezes nÃ£o gera erro)",
       "`npm run typecheck` passa sem erros"
     ],
     "prp_path": "sprints/sprint-7/3-prps/PRP-42-kill-switch-circuit-breaker.md",
@@ -19,8 +19,8 @@
   },
   {
     "id": "F-145",
-    "name": "Circuit-breaker: CircuitBreakerManager — módulo src/circuit-breaker/",
-    "description": "Criar módulo `src/circuit-breaker/` com index.ts (CircuitBreakerManager singleton), config.ts (CRUD de circuit_breaker_config), monitor.ts (contagem de falhas, cálculo de error rate, verificação de limites), schemas.ts (Zod). CircuitBreakerManager implementa: canExecute(agentId) retornando {allowed, reason}, recordOutcome(agentId, success), activateKillSwitch/deactivateKillSwitch, getState/getAllStates, resume. Kill-switch mantido in-memory para resposta <1s, persistido via events para recovery. Trip logic: consecutiveFails >= max OU error_rate > threshold OU actions >= limit. Ao trip: registra evento, emite no EventBus, envia notificação push (PWA). Auto-resume após cooldown se configurado.",
+    "name": "Circuit-breaker: CircuitBreakerManager â€” mÃ³dulo src/circuit-breaker/",
+    "description": "Criar mÃ³dulo `src/circuit-breaker/` com index.ts (CircuitBreakerManager singleton), config.ts (CRUD de circuit_breaker_config), monitor.ts (contagem de falhas, cÃ¡lculo de error rate, verificaÃ§Ã£o de limites), schemas.ts (Zod). CircuitBreakerManager implementa: canExecute(agentId) retornando {allowed, reason}, recordOutcome(agentId, success), activateKillSwitch/deactivateKillSwitch, getState/getAllStates, resume. Kill-switch mantido in-memory para resposta <1s, persistido via events para recovery. Trip logic: consecutiveFails >= max OU error_rate > threshold OU actions >= limit. Ao trip: registra evento, emite no EventBus, envia notificaÃ§Ã£o push (PWA). Auto-resume apÃ³s cooldown se configurado.",
     "status": "passing",
     "priority": 2,
     "agent": "coder",
@@ -32,8 +32,8 @@
       "canExecute retorna allowed:false quando kill-switch ativo",
       "canExecute retorna allowed:false quando circuit-breaker tripped",
       "recordOutcome incrementa contadores e dispara trip ao atingir threshold",
-      "Kill-switch persiste após restart (recuperado de circuit_breaker_events)",
-      "Auto-resume funciona após cooldown_min minutos",
+      "Kill-switch persiste apÃ³s restart (recuperado de circuit_breaker_events)",
+      "Auto-resume funciona apÃ³s cooldown_min minutos",
       "`npm run typecheck` passa sem erros"
     ],
     "prp_path": "sprints/sprint-7/3-prps/PRP-42-kill-switch-circuit-breaker.md",
@@ -42,7 +42,7 @@
   {
     "id": "F-146",
     "name": "Circuit-breaker: API endpoints",
-    "description": "Implementar endpoints em `src/routes/`: GET /agents/:id/circuit-breaker (estado atual), PUT /agents/:id/circuit-breaker/config (atualizar configuração), POST /agents/:id/circuit-breaker/kill (ativar kill-switch), POST /agents/:id/circuit-breaker/resume (desativar/resume), GET /agents/:id/circuit-breaker/events (histórico paginado), GET /system/circuit-breaker (estado de todos os agentes). Validação via Zod schemas. Auth JWT obrigatório.",
+    "description": "Implementar endpoints em `src/routes/`: GET /agents/:id/circuit-breaker (estado atual), PUT /agents/:id/circuit-breaker/config (atualizar configuraÃ§Ã£o), POST /agents/:id/circuit-breaker/kill (ativar kill-switch), POST /agents/:id/circuit-breaker/resume (desativar/resume), GET /agents/:id/circuit-breaker/events (histÃ³rico paginado), GET /system/circuit-breaker (estado de todos os agentes). ValidaÃ§Ã£o via Zod schemas. Auth JWT obrigatÃ³rio.",
     "status": "passing",
     "priority": 3,
     "agent": "coder",
@@ -52,8 +52,8 @@
     ],
     "tests": [
       "GET /agents/:id/circuit-breaker retorna estado com config, contadores e status",
-      "PUT /agents/:id/circuit-breaker/config atualiza configuração e persiste",
-      "POST /agents/:id/circuit-breaker/kill bloqueia execuções do agente imediatamente",
+      "PUT /agents/:id/circuit-breaker/config atualiza configuraÃ§Ã£o e persiste",
+      "POST /agents/:id/circuit-breaker/kill bloqueia execuÃ§Ãµes do agente imediatamente",
       "POST /agents/:id/circuit-breaker/resume reativa agente parado",
       "GET /system/circuit-breaker retorna estados de todos os agentes",
       "`npm run typecheck` passa sem erros"
@@ -63,8 +63,8 @@
   },
   {
     "id": "F-147",
-    "name": "Circuit-breaker: Integração heartbeat/cron/webhooks + SSE",
-    "description": "Inserir check canExecute(agentId) no início de heartbeat/scheduler.ts (antes de runAgent), cron/scheduler.ts (antes de executar job) e handler de webhooks (antes de processar). Se allowed:false: bloqueia execução, registra evento action_blocked com contexto. Inserir recordOutcome(agentId, success) ao final de cada execução. Emitir eventos SSE: circuit_breaker:tripped, circuit_breaker:resumed, circuit_breaker:kill_switch no canal /system/events com payloads tipados.",
+    "name": "Circuit-breaker: IntegraÃ§Ã£o heartbeat/cron/webhooks + SSE",
+    "description": "Inserir check canExecute(agentId) no inÃ­cio de heartbeat/scheduler.ts (antes de runAgent), cron/scheduler.ts (antes de executar job) e handler de webhooks (antes de processar). Se allowed:false: bloqueia execuÃ§Ã£o, registra evento action_blocked com contexto. Inserir recordOutcome(agentId, success) ao final de cada execuÃ§Ã£o. Emitir eventos SSE: circuit_breaker:tripped, circuit_breaker:resumed, circuit_breaker:kill_switch no canal /system/events com payloads tipados.",
     "status": "passing",
     "priority": 4,
     "agent": "coder",
@@ -73,11 +73,11 @@
       "F-145"
     ],
     "tests": [
-      "Heartbeat bloqueado quando kill-switch ativo — execução não ocorre",
+      "Heartbeat bloqueado quando kill-switch ativo â€” execuÃ§Ã£o nÃ£o ocorre",
       "Cron job bloqueado quando circuit-breaker tripped",
-      "Webhook bloqueado quando agente parado — action_blocked registrado",
-      "recordOutcome atualiza contadores após cada heartbeat/cron",
-      "Evento SSE circuit_breaker:tripped emitido ao trip automático",
+      "Webhook bloqueado quando agente parado â€” action_blocked registrado",
+      "recordOutcome atualiza contadores apÃ³s cada heartbeat/cron",
+      "Evento SSE circuit_breaker:tripped emitido ao trip automÃ¡tico",
       "Evento SSE circuit_breaker:kill_switch emitido ao ativar/desativar kill-switch",
       "`npm run typecheck` passa sem erros"
     ],
@@ -86,8 +86,8 @@
   },
   {
     "id": "F-148",
-    "name": "Circuit-breaker: Hub — seção na página do agente + badges na lista",
-    "description": "Na página /agents/:id: seção circuit-breaker com botão kill-switch (vermelho, confirmação), indicador visual de status (verde/amarelo/vermelho), contadores em tempo real (falhas consecutivas, ações/hora, ações/dia com progress bars), formulário de configuração editável, tabela das últimas 20 eventos. Na lista /agents: badge de escudo (verde/amarelo/vermelho) por agente, destaque visual para kill-switch ativo. Atualização via SSE /system/events (circuit_breaker:*) sem polling.",
+    "name": "Circuit-breaker: Hub â€” seÃ§Ã£o na pÃ¡gina do agente + badges na lista",
+    "description": "Na pÃ¡gina /agents/:id: seÃ§Ã£o circuit-breaker com botÃ£o kill-switch (vermelho, confirmaÃ§Ã£o), indicador visual de status (verde/amarelo/vermelho), contadores em tempo real (falhas consecutivas, aÃ§Ãµes/hora, aÃ§Ãµes/dia com progress bars), formulÃ¡rio de configuraÃ§Ã£o editÃ¡vel, tabela das Ãºltimas 20 eventos. Na lista /agents: badge de escudo (verde/amarelo/vermelho) por agente, destaque visual para kill-switch ativo. AtualizaÃ§Ã£o via SSE /system/events (circuit_breaker:*) sem polling.",
     "status": "passing",
     "priority": 5,
     "agent": "coder",
@@ -96,11 +96,11 @@
       "F-146"
     ],
     "tests": [
-      "Botão kill-switch visível na página do agente com confirmação",
+      "BotÃ£o kill-switch visÃ­vel na pÃ¡gina do agente com confirmaÃ§Ã£o",
       "Status atualiza em tempo real via SSE ao ativar kill-switch",
-      "Contadores de ações exibidos com progress bars e threshold marcado",
-      "Badge de circuit-breaker visível na lista de agentes",
-      "Formulário de configuração salva e aplica mudanças",
+      "Contadores de aÃ§Ãµes exibidos com progress bars e threshold marcado",
+      "Badge de circuit-breaker visÃ­vel na lista de agentes",
+      "FormulÃ¡rio de configuraÃ§Ã£o salva e aplica mudanÃ§as",
       "`npm run build` e `npm run typecheck` passam sem erros"
     ],
     "prp_path": "sprints/sprint-7/3-prps/PRP-42-kill-switch-circuit-breaker.md",
@@ -108,18 +108,18 @@
   },
   {
     "id": "F-149",
-    "name": "Compliance: Tabelas compliance_classification + checklist + reports + migração DB",
-    "description": "Criar tabelas `compliance_classification` (agent_id PK, risk_level, risk_justification, classified_by, classified_at, reviewed_at, review_due_at), `compliance_checklist` (id PK, agent_id, item_key, item_label, category, status, evidence, updated_by, updated_at — UNIQUE agent_id+item_key) e `compliance_reports` (id PK, agent_id, report_type, title, content, generated_by, generated_at, period_from, period_to) no SQLite. Indexes em agent_id e report_type. Migração no startup.",
+    "name": "Compliance: Tabelas compliance_classification + checklist + reports + migraÃ§Ã£o DB",
+    "description": "Criar tabelas `compliance_classification` (agent_id PK, risk_level, risk_justification, classified_by, classified_at, reviewed_at, review_due_at), `compliance_checklist` (id PK, agent_id, item_key, item_label, category, status, evidence, updated_by, updated_at â€” UNIQUE agent_id+item_key) e `compliance_reports` (id PK, agent_id, report_type, title, content, generated_by, generated_at, period_from, period_to) no SQLite. Indexes em agent_id e report_type. MigraÃ§Ã£o no startup.",
     "status": "passing",
     "priority": 6,
     "agent": "coder",
     "task": "vibe-code",
     "dependencies": [],
     "tests": [
-      "Tabelas compliance_classification, compliance_checklist e compliance_reports existem após startup",
+      "Tabelas compliance_classification, compliance_checklist e compliance_reports existem apÃ³s startup",
       "Constraint UNIQUE(agent_id, item_key) em compliance_checklist funciona",
       "Indexes criados corretamente",
-      "Migração é idempotente",
+      "MigraÃ§Ã£o Ã© idempotente",
       "`npm run typecheck` passa sem erros"
     ],
     "prp_path": "sprints/sprint-7/3-prps/PRP-43-eu-ai-act-compliance-toolkit.md",
@@ -127,8 +127,8 @@
   },
   {
     "id": "F-150",
-    "name": "Compliance: ComplianceManager — classificação + checklist auto-gerado",
-    "description": "Criar módulo `src/compliance/` com index.ts (ComplianceManager), classification.ts (CRUD classificação de risco), checklist.ts (CRUD e auto-geração de items), schemas.ts (Zod). Ao classificar agente como high-risk: gerar 10 items de checklist automaticamente (human_oversight, decision_transparency, kill_switch, etc). Limited-risk: 4 items. Minimal-risk: 1 item. Reclassificação ajusta items (adiciona/remove). Items agrupados por category: transparency, oversight, documentation, data_governance, risk_management.",
+    "name": "Compliance: ComplianceManager â€” classificaÃ§Ã£o + checklist auto-gerado",
+    "description": "Criar mÃ³dulo `src/compliance/` com index.ts (ComplianceManager), classification.ts (CRUD classificaÃ§Ã£o de risco), checklist.ts (CRUD e auto-geraÃ§Ã£o de items), schemas.ts (Zod). Ao classificar agente como high-risk: gerar 10 items de checklist automaticamente (human_oversight, decision_transparency, kill_switch, etc). Limited-risk: 4 items. Minimal-risk: 1 item. ReclassificaÃ§Ã£o ajusta items (adiciona/remove). Items agrupados por category: transparency, oversight, documentation, data_governance, risk_management.",
     "status": "passing",
     "priority": 7,
     "agent": "coder",
@@ -140,9 +140,9 @@
     "tests": [
       "Classificar agente como high-risk gera 10 items de checklist automaticamente",
       "Classificar como limited-risk gera 4 items, minimal-risk gera 1 item",
-      "Reclassificação de high para limited remove items não aplicáveis",
-      "Items de checklist podem ser atualizados com status e evidência",
-      "CRUD de classificação persiste risk_level e justificativa",
+      "ReclassificaÃ§Ã£o de high para limited remove items nÃ£o aplicÃ¡veis",
+      "Items de checklist podem ser atualizados com status e evidÃªncia",
+      "CRUD de classificaÃ§Ã£o persiste risk_level e justificativa",
       "`npm run typecheck` passa sem erros"
     ],
     "prp_path": "sprints/sprint-7/3-prps/PRP-43-eu-ai-act-compliance-toolkit.md",
@@ -150,8 +150,8 @@
   },
   {
     "id": "F-151",
-    "name": "Compliance: Decision Explainer + geração de relatórios",
-    "description": "Criar decision-explainer.ts: gera DecisionExplanation a partir de trace timeline existente (input, decision, reasoning, toolsUsed, instructionVersion, memoryContext, humanApproval). Criar reports.ts: gera relatórios tipo audit (decisões + HITL + instruções), dpia (template pré-preenchido), human_oversight (logs HITL exportáveis), decision_explanation (explicação individual). Relatórios em JSON estruturado, persistidos em compliance_reports. Template DPIA com campos pré-preenchidos baseado no agente.",
+    "name": "Compliance: Decision Explainer + geraÃ§Ã£o de relatÃ³rios",
+    "description": "Criar decision-explainer.ts: gera DecisionExplanation a partir de trace timeline existente (input, decision, reasoning, toolsUsed, instructionVersion, memoryContext, humanApproval). Criar reports.ts: gera relatÃ³rios tipo audit (decisÃµes + HITL + instruÃ§Ãµes), dpia (template prÃ©-preenchido), human_oversight (logs HITL exportÃ¡veis), decision_explanation (explicaÃ§Ã£o individual). RelatÃ³rios em JSON estruturado, persistidos em compliance_reports. Template DPIA com campos prÃ©-preenchidos baseado no agente.",
     "status": "passing",
     "priority": 8,
     "agent": "coder",
@@ -160,10 +160,10 @@
       "F-150"
     ],
     "tests": [
-      "Decision Explainer gera explicação legível a partir de trace existente",
-      "Relatório de auditoria inclui decisões, logs de HITL e versões de instruções",
-      "Template de DPIA gerado com campos pré-preenchidos do agente",
-      "Relatórios persistidos em compliance_reports com tipo e período",
+      "Decision Explainer gera explicaÃ§Ã£o legÃ­vel a partir de trace existente",
+      "RelatÃ³rio de auditoria inclui decisÃµes, logs de HITL e versÃµes de instruÃ§Ãµes",
+      "Template de DPIA gerado com campos prÃ©-preenchidos do agente",
+      "RelatÃ³rios persistidos em compliance_reports com tipo e perÃ­odo",
       "`npm run typecheck` passa sem erros"
     ],
     "prp_path": "sprints/sprint-7/3-prps/PRP-43-eu-ai-act-compliance-toolkit.md",
@@ -172,7 +172,7 @@
   {
     "id": "F-152",
     "name": "Compliance: API endpoints",
-    "description": "Implementar endpoints: GET /agents/:id/compliance (visão completa), GET/PUT /agents/:id/compliance/classification (classificação de risco), GET /agents/:id/compliance/checklist (items), PUT /agents/:id/compliance/checklist/:itemKey (atualizar item), POST /agents/:id/compliance/reports (gerar relatório), GET /agents/:id/compliance/reports (listar), GET /agents/:id/compliance/reports/:reportId (detalhes), POST /agents/:id/compliance/explain (explicação de decisão), GET /compliance/overview (visão geral), GET /compliance/dpia-template. Auth JWT obrigatório.",
+    "description": "Implementar endpoints: GET /agents/:id/compliance (visÃ£o completa), GET/PUT /agents/:id/compliance/classification (classificaÃ§Ã£o de risco), GET /agents/:id/compliance/checklist (items), PUT /agents/:id/compliance/checklist/:itemKey (atualizar item), POST /agents/:id/compliance/reports (gerar relatÃ³rio), GET /agents/:id/compliance/reports (listar), GET /agents/:id/compliance/reports/:reportId (detalhes), POST /agents/:id/compliance/explain (explicaÃ§Ã£o de decisÃ£o), GET /compliance/overview (visÃ£o geral), GET /compliance/dpia-template. Auth JWT obrigatÃ³rio.",
     "status": "passing",
     "priority": 9,
     "agent": "coder",
@@ -181,11 +181,11 @@
       "F-151"
     ],
     "tests": [
-      "PUT /agents/:id/compliance/classification atualiza classificação e gera checklist",
+      "PUT /agents/:id/compliance/classification atualiza classificaÃ§Ã£o e gera checklist",
       "GET /agents/:id/compliance/checklist retorna items com status",
-      "POST /agents/:id/compliance/reports gera relatório e retorna ID",
-      "POST /agents/:id/compliance/explain gera explicação de decisão",
-      "GET /compliance/overview retorna taxa de conformidade e items não-conformes",
+      "POST /agents/:id/compliance/reports gera relatÃ³rio e retorna ID",
+      "POST /agents/:id/compliance/explain gera explicaÃ§Ã£o de decisÃ£o",
+      "GET /compliance/overview retorna taxa de conformidade e items nÃ£o-conformes",
       "`npm run typecheck` passa sem erros"
     ],
     "prp_path": "sprints/sprint-7/3-prps/PRP-43-eu-ai-act-compliance-toolkit.md",
@@ -193,8 +193,8 @@
   },
   {
     "id": "F-153",
-    "name": "Compliance: Hub — painel /compliance + compliance do agente",
-    "description": "Página /compliance: overview cards (agentes por risco, taxa conformidade), tabela de agentes (risco, % checklist, próxima revisão), alertas de items não-conformes e revisões vencidas, botão Gerar Relatório de Sistema. Página /agents/:id/compliance: selector de risco com justificativa, checklist interativo agrupado por categoria (toggle status + evidência), barra de progresso, lista de relatórios + gerar novo, explicabilidade (busca por trace). Integração bidirecional com LGPD Dashboard (links + items compartilhados).",
+    "name": "Compliance: Hub â€” painel /compliance + compliance do agente",
+    "description": "PÃ¡gina /compliance: overview cards (agentes por risco, taxa conformidade), tabela de agentes (risco, % checklist, prÃ³xima revisÃ£o), alertas de items nÃ£o-conformes e revisÃµes vencidas, botÃ£o Gerar RelatÃ³rio de Sistema. PÃ¡gina /agents/:id/compliance: selector de risco com justificativa, checklist interativo agrupado por categoria (toggle status + evidÃªncia), barra de progresso, lista de relatÃ³rios + gerar novo, explicabilidade (busca por trace). IntegraÃ§Ã£o bidirecional com LGPD Dashboard (links + items compartilhados).",
     "status": "passing",
     "priority": 10,
     "agent": "coder",
@@ -203,10 +203,10 @@
       "F-152"
     ],
     "tests": [
-      "Painel /compliance lista agentes com nível de risco e taxa de conformidade",
-      "Classificação de risco editável na página do agente",
-      "Checklist interativo permite atualizar status e evidência",
-      "Relatório pode ser gerado a partir da interface",
+      "Painel /compliance lista agentes com nÃ­vel de risco e taxa de conformidade",
+      "ClassificaÃ§Ã£o de risco editÃ¡vel na pÃ¡gina do agente",
+      "Checklist interativo permite atualizar status e evidÃªncia",
+      "RelatÃ³rio pode ser gerado a partir da interface",
       "Link bidirecional com LGPD Dashboard funciona",
       "`npm run build` e `npm run typecheck` passam sem erros"
     ],
@@ -216,7 +216,7 @@
   {
     "id": "F-154",
     "name": "Fleet: API endpoints /fleet, /fleet/batch, /fleet/summary",
-    "description": "Implementar endpoints: GET /fleet (visão consolidada de todos os agentes com métricas de saúde, consumo, atividade, circuit-breaker — query params: owner, status, sortBy, sortDir), POST /fleet/batch (operação em lote: enable, disable, trigger_heartbeat, activate_kill_switch, deactivate_kill_switch — resposta individual por agente), GET /fleet/summary (cards: totalAgents, activeAgents, pausedAgents, errorAgents, killedAgents, totalTokensToday, totalCostToday, avgHealthRate, activeAlerts). Agrega dados de AgentRegistry, heartbeat_log, circuit_breaker e custos.",
+    "description": "Implementar endpoints: GET /fleet (visÃ£o consolidada de todos os agentes com mÃ©tricas de saÃºde, consumo, atividade, circuit-breaker â€” query params: owner, status, sortBy, sortDir), POST /fleet/batch (operaÃ§Ã£o em lote: enable, disable, trigger_heartbeat, activate_kill_switch, deactivate_kill_switch â€” resposta individual por agente), GET /fleet/summary (cards: totalAgents, activeAgents, pausedAgents, errorAgents, killedAgents, totalTokensToday, totalCostToday, avgHealthRate, activeAlerts). Agrega dados de AgentRegistry, heartbeat_log, circuit_breaker e custos.",
     "status": "passing",
     "priority": 11,
     "agent": "coder",
@@ -225,10 +225,10 @@
       "F-145"
     ],
     "tests": [
-      "GET /fleet retorna todos os agentes com métricas consolidadas",
-      "Filtro por owner e status funciona e são combináveis",
-      "Ordenação por tokens, erros, última atividade e nome funciona",
-      "POST /fleet/batch executa ação para todos os agentIds com feedback individual",
+      "GET /fleet retorna todos os agentes com mÃ©tricas consolidadas",
+      "Filtro por owner e status funciona e sÃ£o combinÃ¡veis",
+      "OrdenaÃ§Ã£o por tokens, erros, Ãºltima atividade e nome funciona",
+      "POST /fleet/batch executa aÃ§Ã£o para todos os agentIds com feedback individual",
       "GET /fleet/summary retorna totais corretos",
       "`npm run typecheck` passa sem erros"
     ],
@@ -238,7 +238,7 @@
   {
     "id": "F-155",
     "name": "Fleet: Eventos SSE fleet:agent_status e fleet:alert",
-    "description": "Emitir novos eventos no canal /system/events: fleet:agent_status ({agentId, status, health, consumption}) a cada heartbeat completo ou mudança de estado (enable/disable/trip), fleet:alert ({agentId, alertType, message}) ao detectar problema (3+ heartbeats falhados, circuit-breaker trip). Eventos emitidos apenas em mudanças reais — atualizações incrementais para o cliente SSE.",
+    "description": "Emitir novos eventos no canal /system/events: fleet:agent_status ({agentId, status, health, consumption}) a cada heartbeat completo ou mudanÃ§a de estado (enable/disable/trip), fleet:alert ({agentId, alertType, message}) ao detectar problema (3+ heartbeats falhados, circuit-breaker trip). Eventos emitidos apenas em mudanÃ§as reais â€” atualizaÃ§Ãµes incrementais para o cliente SSE.",
     "status": "passing",
     "priority": 12,
     "agent": "coder",
@@ -247,10 +247,10 @@
       "F-154"
     ],
     "tests": [
-      "Evento fleet:agent_status emitido após heartbeat completo",
+      "Evento fleet:agent_status emitido apÃ³s heartbeat completo",
       "Evento fleet:agent_status emitido ao enable/disable agente",
       "Evento fleet:alert emitido ao detectar 3+ heartbeats falhados",
-      "Eventos contêm payload correto com métricas atualizadas",
+      "Eventos contÃªm payload correto com mÃ©tricas atualizadas",
       "`npm run typecheck` passa sem erros"
     ],
     "prp_path": "sprints/sprint-7/3-prps/PRP-44-fleet-management-dashboard.md",
@@ -258,8 +258,8 @@
   },
   {
     "id": "F-156",
-    "name": "Fleet: Hub — página /fleet com grid, filtros e operações em lote",
-    "description": "Página /fleet: header com 4 cards de resumo (Total, Ativos, Problemas, Custo Hoje), barra de filtros (Owner, Status, busca por nome), botões de ordenação. Grid desktop: tabela densa com checkbox, nome, owner, status badge, saúde %, tokens, custo, último heartbeat, alertas, ações dropdown. Cards mobile: card por agente com info compacta. Seleção multi-agent habilita barra de ações em lote (Enable, Disable, Kill, Trigger Heartbeat). SSE: conecta /system/events, atualiza ao receber fleet:* e circuit_breaker:*. Status badges: Ativo (verde), Pausado (cinza), Alerta (amarelo), Parado (vermelho), Erro (laranja).",
+    "name": "Fleet: Hub â€” pÃ¡gina /fleet com grid, filtros e operaÃ§Ãµes em lote",
+    "description": "PÃ¡gina /fleet: header com 4 cards de resumo (Total, Ativos, Problemas, Custo Hoje), barra de filtros (Owner, Status, busca por nome), botÃµes de ordenaÃ§Ã£o. Grid desktop: tabela densa com checkbox, nome, owner, status badge, saÃºde %, tokens, custo, Ãºltimo heartbeat, alertas, aÃ§Ãµes dropdown. Cards mobile: card por agente com info compacta. SeleÃ§Ã£o multi-agent habilita barra de aÃ§Ãµes em lote (Enable, Disable, Kill, Trigger Heartbeat). SSE: conecta /system/events, atualiza ao receber fleet:* e circuit_breaker:*. Status badges: Ativo (verde), Pausado (cinza), Alerta (amarelo), Parado (vermelho), Erro (laranja).",
     "status": "passing",
     "priority": 13,
     "agent": "coder",
@@ -268,10 +268,10 @@
       "F-155"
     ],
     "tests": [
-      "Página /fleet lista todos os agentes com métricas",
+      "PÃ¡gina /fleet lista todos os agentes com mÃ©tricas",
       "Cards de resumo exibem totais corretos",
-      "Filtros e ordenação funcionam",
-      "Seleção multi-agent habilita barra de ações em lote",
+      "Filtros e ordenaÃ§Ã£o funcionam",
+      "SeleÃ§Ã£o multi-agent habilita barra de aÃ§Ãµes em lote",
       "Status atualiza em tempo real via SSE",
       "Layout responsivo: tabela no desktop, cards no mobile",
       "`npm run build` e `npm run typecheck` passam sem erros"
@@ -281,27 +281,28 @@
   },
   {
     "id": "F-157",
-    "name": "OTel: Módulo src/telemetry/ + inicialização OTel SDK",
-    "description": "Criar módulo `src/telemetry/` com index.ts (inicializa NodeSDK com OTLPTraceExporter e BatchSpanProcessor), config.ts (leitura/escrita de OTelConfig na tabela settings com key 'otel'), schemas.ts (Zod). Interface OTelConfig: enabled, endpoint, headers, samplingRate, agentFilter, operationFilter. Resource attributes: service.name, service.version, agent.id, agent.label, agent.owner, tenant.id, deployment.environment. Inicialização condicional: se !enabled || !endpoint, não inicializa. Dependências: @opentelemetry/sdk-node, @opentelemetry/api, @opentelemetry/exporter-trace-otlp-http, @opentelemetry/sdk-trace-base, @opentelemetry/resources, @opentelemetry/semantic-conventions.",
-    "status": "pending",
+    "name": "OTel: MÃ³dulo src/telemetry/ + inicializaÃ§Ã£o OTel SDK",
+    "description": "Criar mÃ³dulo `src/telemetry/` com index.ts (inicializa NodeSDK com OTLPTraceExporter e BatchSpanProcessor), config.ts (leitura/escrita de OTelConfig na tabela settings com key 'otel'), schemas.ts (Zod). Interface OTelConfig: enabled, endpoint, headers, samplingRate, agentFilter, operationFilter. Resource attributes: service.name, service.version, agent.id, agent.label, agent.owner, tenant.id, deployment.environment. InicializaÃ§Ã£o condicional: se !enabled || !endpoint, nÃ£o inicializa. DependÃªncias: @opentelemetry/sdk-node, @opentelemetry/api, @opentelemetry/exporter-trace-otlp-http, @opentelemetry/sdk-trace-base, @opentelemetry/resources, @opentelemetry/semantic-conventions.",
+    "status": "passing",
     "priority": 14,
     "agent": "coder",
     "task": "vibe-code",
     "dependencies": [],
     "tests": [
-      "Módulo inicializa OTel SDK quando enabled e endpoint configurados",
-      "Módulo não inicializa quando disabled (zero impacto)",
+      "MÃ³dulo inicializa OTel SDK quando enabled e endpoint configurados",
+      "MÃ³dulo nÃ£o inicializa quando disabled (zero impacto)",
       "Config persistida em tabela settings com key 'otel'",
       "Resource attributes incluem service.name e agent.id",
       "`npm run typecheck` passa sem erros"
     ],
-    "prp_path": "sprints/sprint-7/3-prps/PRP-45-opentelemetry-export.md"
+    "prp_path": "sprints/sprint-7/3-prps/PRP-45-opentelemetry-export.md",
+    "completed_at": "2026-03-08T16:21:35Z"
   },
   {
     "id": "F-158",
-    "name": "OTel: Instrumentação de runAgent(), tool calls e MCP calls",
-    "description": "Criar instrumentor.ts: wrapper instrumentedRunAgent() que cria span gen_ai.{mode} com atributos GenAI Semantic Conventions (gen_ai.system, gen_ai.request.model, gen_ai.usage.*). Tool calls geram child spans gen_ai.tool_call (name, duration_ms, status). MCP calls geram child spans gen_ai.mcp_call (adapter_id, server_label). Spans tipos: chat (CLIENT), heartbeat (CLIENT), cron (CLIENT), tool_call (INTERNAL), mcp_call (CLIENT). Contexto de propagação: trace_id vinculado a session ID ou heartbeat/cron run ID. Sampling rate aplicado conforme config.",
-    "status": "blocked",
+    "name": "OTel: InstrumentaÃ§Ã£o de runAgent(), tool calls e MCP calls",
+    "description": "Criar instrumentor.ts: wrapper instrumentedRunAgent() que cria span gen_ai.{mode} com atributos GenAI Semantic Conventions (gen_ai.system, gen_ai.request.model, gen_ai.usage.*). Tool calls geram child spans gen_ai.tool_call (name, duration_ms, status). MCP calls geram child spans gen_ai.mcp_call (adapter_id, server_label). Spans tipos: chat (CLIENT), heartbeat (CLIENT), cron (CLIENT), tool_call (INTERNAL), mcp_call (CLIENT). Contexto de propagaÃ§Ã£o: trace_id vinculado a session ID ou heartbeat/cron run ID. Sampling rate aplicado conforme config.",
+    "status": "pending",
     "priority": 15,
     "agent": "coder",
     "task": "vibe-code",
@@ -311,10 +312,10 @@
     "tests": [
       "Conversas geram spans gen_ai.chat com atributos corretos",
       "Heartbeats geram spans gen_ai.heartbeat com resultado",
-      "Tool calls geram child spans com nome e duração",
+      "Tool calls geram child spans com nome e duraÃ§Ã£o",
       "MCP calls geram child spans com adapter_id",
       "Sampling rate 0.5 exporta ~50% dos traces",
-      "Falha no exportador não impacta operação do backbone",
+      "Falha no exportador nÃ£o impacta operaÃ§Ã£o do backbone",
       "`npm run typecheck` passa sem erros"
     ],
     "prp_path": "sprints/sprint-7/3-prps/PRP-45-opentelemetry-export.md"
@@ -322,8 +323,8 @@
   {
     "id": "F-159",
     "name": "OTel: API endpoints settings/otel",
-    "description": "Implementar endpoints: GET /settings/otel (config atual), PUT /settings/otel (atualizar — reinicializa SDK sem restart), POST /settings/otel/test (envia span de teste ao endpoint e verifica aceitação — retorna success, message, latencyMs), GET /settings/otel/status (connected, spansExported, errors, lastExportAt). Auth JWT obrigatório. Validação via Zod.",
-    "status": "blocked",
+    "description": "Implementar endpoints: GET /settings/otel (config atual), PUT /settings/otel (atualizar â€” reinicializa SDK sem restart), POST /settings/otel/test (envia span de teste ao endpoint e verifica aceitaÃ§Ã£o â€” retorna success, message, latencyMs), GET /settings/otel/status (connected, spansExported, errors, lastExportAt). Auth JWT obrigatÃ³rio. ValidaÃ§Ã£o via Zod.",
+    "status": "pending",
     "priority": 16,
     "agent": "coder",
     "task": "vibe-code",
@@ -331,19 +332,19 @@
       "F-157"
     ],
     "tests": [
-      "GET /settings/otel retorna configuração atual",
+      "GET /settings/otel retorna configuraÃ§Ã£o atual",
       "PUT /settings/otel atualiza e reinicializa SDK sem restart",
       "POST /settings/otel/test envia span de teste e reporta sucesso/falha",
-      "GET /settings/otel/status retorna métricas do exportador",
+      "GET /settings/otel/status retorna mÃ©tricas do exportador",
       "`npm run typecheck` passa sem erros"
     ],
     "prp_path": "sprints/sprint-7/3-prps/PRP-45-opentelemetry-export.md"
   },
   {
     "id": "F-160",
-    "name": "OTel: Hub — página /settings/otel com presets",
-    "description": "Página /settings/otel: toggle habilitar exportação, campo endpoint URL (placeholder localhost:4318), key-value editor de headers (password), slider sampling rate 0-100%, multi-select filtro por agente, multi-select filtro por tipo operação, botão Testar Conexão (feedback visual sucesso/erro + latência), status card (spans exportados, erros, último export). Presets (botões que preenchem endpoint+headers): Grafana Cloud, Datadog (DD-API-KEY), New Relic (Api-Key), Langfuse, Local Jaeger.",
-    "status": "blocked",
+    "name": "OTel: Hub â€” pÃ¡gina /settings/otel com presets",
+    "description": "PÃ¡gina /settings/otel: toggle habilitar exportaÃ§Ã£o, campo endpoint URL (placeholder localhost:4318), key-value editor de headers (password), slider sampling rate 0-100%, multi-select filtro por agente, multi-select filtro por tipo operaÃ§Ã£o, botÃ£o Testar ConexÃ£o (feedback visual sucesso/erro + latÃªncia), status card (spans exportados, erros, Ãºltimo export). Presets (botÃµes que preenchem endpoint+headers): Grafana Cloud, Datadog (DD-API-KEY), New Relic (Api-Key), Langfuse, Local Jaeger.",
+    "status": "pending",
     "priority": 17,
     "agent": "coder",
     "task": "vibe-code",
@@ -353,34 +354,34 @@
     "tests": [
       "Toggle habilitar/desabilitar funciona",
       "Presets preenchem endpoint e headers corretamente",
-      "Botão Testar Conexão mostra resultado",
-      "Filtros por agente e tipo de operação salvam corretamente",
+      "BotÃ£o Testar ConexÃ£o mostra resultado",
+      "Filtros por agente e tipo de operaÃ§Ã£o salvam corretamente",
       "`npm run build` e `npm run typecheck` passam sem erros"
     ],
     "prp_path": "sprints/sprint-7/3-prps/PRP-45-opentelemetry-export.md"
   },
   {
     "id": "F-161",
-    "name": "Billing: Tabelas billing_config + tenant_billing + detail + markup_override + migração DB",
-    "description": "Criar tabelas `billing_config` (id PK 'default', currency, default_markup_pct, agency_name/document/address/bank_info/logo_url, invoice_footer), `tenant_billing` (id PK, tenant_id, period_year, period_month, tokens_input/output/total, cost_base, markup_pct, cost_with_markup, status draft/finalized/exported, UNIQUE tenant_id+year+month), `tenant_billing_detail` (id PK, billing_id FK, agent_id, agent_label, model, operation_type, tokens_input/output/total, cost_base, invocations), `tenant_markup_override` (tenant_id PK, markup_pct). Indexes. Migração no startup.",
+    "name": "Billing: Tabelas billing_config + tenant_billing + detail + markup_override + migraÃ§Ã£o DB",
+    "description": "Criar tabelas `billing_config` (id PK 'default', currency, default_markup_pct, agency_name/document/address/bank_info/logo_url, invoice_footer), `tenant_billing` (id PK, tenant_id, period_year, period_month, tokens_input/output/total, cost_base, markup_pct, cost_with_markup, status draft/finalized/exported, UNIQUE tenant_id+year+month), `tenant_billing_detail` (id PK, billing_id FK, agent_id, agent_label, model, operation_type, tokens_input/output/total, cost_base, invocations), `tenant_markup_override` (tenant_id PK, markup_pct). Indexes. MigraÃ§Ã£o no startup.",
     "status": "pending",
     "priority": 18,
     "agent": "coder",
     "task": "vibe-code",
     "dependencies": [],
     "tests": [
-      "Todas as 4 tabelas existem após startup",
+      "Todas as 4 tabelas existem apÃ³s startup",
       "Constraint UNIQUE(tenant_id, period_year, period_month) funciona",
       "FK tenant_billing_detail.billing_id com ON DELETE CASCADE funciona",
-      "Migração é idempotente",
+      "MigraÃ§Ã£o Ã© idempotente",
       "`npm run typecheck` passa sem erros"
     ],
     "prp_path": "sprints/sprint-7/3-prps/PRP-46-billing-por-tenant.md"
   },
   {
     "id": "F-162",
-    "name": "Billing: BillingManager — consolidação, invoice JSON, export CSV",
-    "description": "Criar módulo `src/billing/` com index.ts (BillingManager, registro de cron consolidação dia 1 02:00), config.ts (CRUD billing_config), consolidator.ts (agrega consumo existente por tenant: soma tokens por agente/modelo/operação, calcula custo base, aplica markup override>default, upsert tenant_billing+detail), invoice.ts (gera Invoice JSON com dados agência, breakdown, totais), export.ts (CSV: tenant, agente, modelo, operação, tokens, custo, markup, custo final), schemas.ts (Zod).",
+    "name": "Billing: BillingManager â€” consolidaÃ§Ã£o, invoice JSON, export CSV",
+    "description": "Criar mÃ³dulo `src/billing/` com index.ts (BillingManager, registro de cron consolidaÃ§Ã£o dia 1 02:00), config.ts (CRUD billing_config), consolidator.ts (agrega consumo existente por tenant: soma tokens por agente/modelo/operaÃ§Ã£o, calcula custo base, aplica markup override>default, upsert tenant_billing+detail), invoice.ts (gera Invoice JSON com dados agÃªncia, breakdown, totais), export.ts (CSV: tenant, agente, modelo, operaÃ§Ã£o, tokens, custo, markup, custo final), schemas.ts (Zod).",
     "status": "blocked",
     "priority": 19,
     "agent": "coder",
@@ -389,11 +390,11 @@
       "F-161"
     ],
     "tests": [
-      "Consolidação agrega tokens e custos por tenant/agente/modelo corretamente",
+      "ConsolidaÃ§Ã£o agrega tokens e custos por tenant/agente/modelo corretamente",
       "Markup override do tenant tem prioridade sobre default",
-      "Invoice JSON contém dados da agência e breakdown completo",
-      "Export CSV contém todas as colunas esperadas",
-      "Consolidação automática registrada como cron interno",
+      "Invoice JSON contÃ©m dados da agÃªncia e breakdown completo",
+      "Export CSV contÃ©m todas as colunas esperadas",
+      "ConsolidaÃ§Ã£o automÃ¡tica registrada como cron interno",
       "`npm run typecheck` passa sem erros"
     ],
     "prp_path": "sprints/sprint-7/3-prps/PRP-46-billing-por-tenant.md"
@@ -401,7 +402,7 @@
   {
     "id": "F-163",
     "name": "Billing: API endpoints",
-    "description": "Implementar endpoints: GET/PUT /billing/config, GET /billing/tenants (?year, ?month), GET /billing/tenants/:tenantId, GET /billing/tenants/:tenantId/months/:year/:month, POST /billing/tenants/:tenantId/months/:year/:month/finalize, GET /billing/tenants/:tenantId/invoice/:year/:month, GET /billing/tenants/:tenantId/export/:year/:month (CSV download), POST /billing/consolidate (manual), GET/PUT /billing/tenants/:tenantId/markup, GET /billing/profitability (?months default 6). Auth JWT obrigatório.",
+    "description": "Implementar endpoints: GET/PUT /billing/config, GET /billing/tenants (?year, ?month), GET /billing/tenants/:tenantId, GET /billing/tenants/:tenantId/months/:year/:month, POST /billing/tenants/:tenantId/months/:year/:month/finalize, GET /billing/tenants/:tenantId/invoice/:year/:month, GET /billing/tenants/:tenantId/export/:year/:month (CSV download), POST /billing/consolidate (manual), GET/PUT /billing/tenants/:tenantId/markup, GET /billing/profitability (?months default 6). Auth JWT obrigatÃ³rio.",
     "status": "blocked",
     "priority": 20,
     "agent": "coder",
@@ -411,10 +412,10 @@
     ],
     "tests": [
       "GET /billing/tenants retorna lista com resumo mensal",
-      "POST /billing/consolidate dispara consolidação manual",
+      "POST /billing/consolidate dispara consolidaÃ§Ã£o manual",
       "GET /billing/tenants/:id/invoice/:year/:month retorna invoice JSON completo",
       "GET /billing/tenants/:id/export/:year/:month retorna CSV",
-      "GET /billing/profitability retorna custo vs receita dos últimos N meses",
+      "GET /billing/profitability retorna custo vs receita dos Ãºltimos N meses",
       "POST finalize muda status para 'finalized'",
       "`npm run typecheck` passa sem erros"
     ],
@@ -422,8 +423,8 @@
   },
   {
     "id": "F-164",
-    "name": "Billing: Hub — painel /billing + detalhes tenant + config agência",
-    "description": "Página /billing: cards resumo (Receita, Custo Base, Lucro, Margem), tabela de tenants (nome, tokens, custo, markup, status), gráfico tendência custo vs receita 6 meses, selector mês/ano. Página /billing/tenants/:id: resumo mês, breakdown por agente, comparativo mês anterior (delta %), ações (Finalizar, Invoice, CSV), campo markup override. Página /billing/config: campos agência (nome, CNPJ, endereço, banco, logo upload), markup padrão slider, rodapé invoice, moeda BRL.",
+    "name": "Billing: Hub â€” painel /billing + detalhes tenant + config agÃªncia",
+    "description": "PÃ¡gina /billing: cards resumo (Receita, Custo Base, Lucro, Margem), tabela de tenants (nome, tokens, custo, markup, status), grÃ¡fico tendÃªncia custo vs receita 6 meses, selector mÃªs/ano. PÃ¡gina /billing/tenants/:id: resumo mÃªs, breakdown por agente, comparativo mÃªs anterior (delta %), aÃ§Ãµes (Finalizar, Invoice, CSV), campo markup override. PÃ¡gina /billing/config: campos agÃªncia (nome, CNPJ, endereÃ§o, banco, logo upload), markup padrÃ£o slider, rodapÃ© invoice, moeda BRL.",
     "status": "blocked",
     "priority": 21,
     "agent": "coder",
@@ -432,37 +433,37 @@
       "F-163"
     ],
     "tests": [
-      "Painel /billing lista tenants com métricas de consumo",
-      "Gráfico de tendência exibe custo vs receita",
+      "Painel /billing lista tenants com mÃ©tricas de consumo",
+      "GrÃ¡fico de tendÃªncia exibe custo vs receita",
       "Detalhes do tenant exibem breakdown por agente",
-      "Ações Finalizar, Invoice e CSV funcionam",
-      "Config da agência salva e persiste",
+      "AÃ§Ãµes Finalizar, Invoice e CSV funcionam",
+      "Config da agÃªncia salva e persiste",
       "`npm run build` e `npm run typecheck` passam sem erros"
     ],
     "prp_path": "sprints/sprint-7/3-prps/PRP-46-billing-por-tenant.md"
   },
   {
     "id": "F-165",
-    "name": "Outreach: Tabelas outreach_rules + outreach_log + migração DB",
-    "description": "Criar tabelas `outreach_rules` (id PK, agent_id, label, enabled, trigger_type webhook/schedule/job_status, trigger_config JSON, recipient_type user/whatsapp/slack/teams/email, recipient_id, message_template, cooldown_hours, max_per_day, created_at, updated_at) e `outreach_log` (id PK, rule_id FK CASCADE, agent_id, recipient_type, recipient_id, message, status pending/sent/delivered/failed/throttled, error, trigger_context JSON, session_id, sent_at, created_at). Indexes em agent_id, rule_id, recipient_id, created_at, enabled. Migração no startup.",
+    "name": "Outreach: Tabelas outreach_rules + outreach_log + migraÃ§Ã£o DB",
+    "description": "Criar tabelas `outreach_rules` (id PK, agent_id, label, enabled, trigger_type webhook/schedule/job_status, trigger_config JSON, recipient_type user/whatsapp/slack/teams/email, recipient_id, message_template, cooldown_hours, max_per_day, created_at, updated_at) e `outreach_log` (id PK, rule_id FK CASCADE, agent_id, recipient_type, recipient_id, message, status pending/sent/delivered/failed/throttled, error, trigger_context JSON, session_id, sent_at, created_at). Indexes em agent_id, rule_id, recipient_id, created_at, enabled. MigraÃ§Ã£o no startup.",
     "status": "pending",
     "priority": 22,
     "agent": "coder",
     "task": "vibe-code",
     "dependencies": [],
     "tests": [
-      "Tabelas outreach_rules e outreach_log existem após startup",
+      "Tabelas outreach_rules e outreach_log existem apÃ³s startup",
       "FK outreach_log.rule_id com ON DELETE CASCADE funciona",
       "Indexes criados corretamente",
-      "Migração é idempotente",
+      "MigraÃ§Ã£o Ã© idempotente",
       "`npm run typecheck` passa sem erros"
     ],
     "prp_path": "sprints/sprint-7/3-prps/PRP-47-outreach-proativo.md"
   },
   {
     "id": "F-166",
-    "name": "Outreach: OutreachManager — regras, triggers e executor com throttle",
-    "description": "Criar módulo `src/outreach/` com index.ts (OutreachManager, registro de listeners no EventBus), rules.ts (CRUD outreach_rules), triggers.ts (listeners: webhook:received avalia condition, schedule via croner com memoryCondition opcional via busca semântica, job:status avalia pattern), executor.ts (checkThrottle cooldown+maxPerDay, resolveTemplate com {variables}, sendToRecipient via canal correto, logOutreach, emite SSE outreach:sent), schemas.ts (Zod). Cada envio cria sessão no inbox unificado.",
+    "name": "Outreach: OutreachManager â€” regras, triggers e executor com throttle",
+    "description": "Criar mÃ³dulo `src/outreach/` com index.ts (OutreachManager, registro de listeners no EventBus), rules.ts (CRUD outreach_rules), triggers.ts (listeners: webhook:received avalia condition, schedule via croner com memoryCondition opcional via busca semÃ¢ntica, job:status avalia pattern), executor.ts (checkThrottle cooldown+maxPerDay, resolveTemplate com {variables}, sendToRecipient via canal correto, logOutreach, emite SSE outreach:sent), schemas.ts (Zod). Cada envio cria sessÃ£o no inbox unificado.",
     "status": "blocked",
     "priority": 23,
     "agent": "coder",
@@ -472,12 +473,12 @@
     ],
     "tests": [
       "Trigger webhook dispara ao receber webhook matching",
-      "Trigger schedule dispara no horário configurado",
-      "Trigger schedule com memoryCondition só dispara se memória tem resultado relevante",
-      "Trigger job_status dispara ao detectar mudança matching",
+      "Trigger schedule dispara no horÃ¡rio configurado",
+      "Trigger schedule com memoryCondition sÃ³ dispara se memÃ³ria tem resultado relevante",
+      "Trigger job_status dispara ao detectar mudanÃ§a matching",
       "Throttle por cooldown respeitado",
       "Throttle por max_per_day respeitado",
-      "Sessão criada no inbox unificado para cada envio",
+      "SessÃ£o criada no inbox unificado para cada envio",
       "`npm run typecheck` passa sem erros"
     ],
     "prp_path": "sprints/sprint-7/3-prps/PRP-47-outreach-proativo.md"
@@ -485,7 +486,7 @@
   {
     "id": "F-167",
     "name": "Outreach: API endpoints",
-    "description": "Implementar endpoints: GET /agents/:id/outreach/rules, POST /agents/:id/outreach/rules (criar regra), PUT /agents/:id/outreach/rules/:ruleId, DELETE /agents/:id/outreach/rules/:ruleId, POST /agents/:id/outreach/rules/:ruleId/test (simula envio sem enviar — retorna wouldSend, resolvedMessage, throttleStatus), GET /agents/:id/outreach/log (histórico paginado), GET /agents/:id/outreach/stats (totalRules, activeRules, last30Days sent/delivered/failed/throttled, byRecipientType). Auth JWT obrigatório.",
+    "description": "Implementar endpoints: GET /agents/:id/outreach/rules, POST /agents/:id/outreach/rules (criar regra), PUT /agents/:id/outreach/rules/:ruleId, DELETE /agents/:id/outreach/rules/:ruleId, POST /agents/:id/outreach/rules/:ruleId/test (simula envio sem enviar â€” retorna wouldSend, resolvedMessage, throttleStatus), GET /agents/:id/outreach/log (histÃ³rico paginado), GET /agents/:id/outreach/stats (totalRules, activeRules, last30Days sent/delivered/failed/throttled, byRecipientType). Auth JWT obrigatÃ³rio.",
     "status": "blocked",
     "priority": 24,
     "agent": "coder",
@@ -496,16 +497,16 @@
     "tests": [
       "CRUD de regras funciona (criar, listar, atualizar, deletar)",
       "POST test simula envio e retorna resultado sem enviar de fato",
-      "GET log retorna histórico paginado com status de cada envio",
-      "GET stats retorna métricas dos últimos 30 dias",
+      "GET log retorna histÃ³rico paginado com status de cada envio",
+      "GET stats retorna mÃ©tricas dos Ãºltimos 30 dias",
       "`npm run typecheck` passa sem erros"
     ],
     "prp_path": "sprints/sprint-7/3-prps/PRP-47-outreach-proativo.md"
   },
   {
     "id": "F-168",
-    "name": "Outreach: Hub — página /agents/:id/outreach com regras, teste e histórico",
-    "description": "Página /agents/:id/outreach: lista de regras (label, trigger badge, recipient ícone+ID, enabled toggle, sent/failed últimos 7d), botão Nova Regra (formulário: label, trigger type select, config dinâmica por tipo, recipient type select com ícones, recipient ID com autocomplete para usuários, message template textarea com hint variáveis, cooldown horas, max por dia), botão Testar por regra, toggle enable/disable. Aba /outreach/log: tabela (data, regra, destinatário, mensagem truncada, status badge), filtros (regra, status, período), click expande detalhes (mensagem, trigger context, link inbox). Badge na página /agents/:id: 'Outreach: X regras ativas' com ícone megafone.",
+    "name": "Outreach: Hub â€” pÃ¡gina /agents/:id/outreach com regras, teste e histÃ³rico",
+    "description": "PÃ¡gina /agents/:id/outreach: lista de regras (label, trigger badge, recipient Ã­cone+ID, enabled toggle, sent/failed Ãºltimos 7d), botÃ£o Nova Regra (formulÃ¡rio: label, trigger type select, config dinÃ¢mica por tipo, recipient type select com Ã­cones, recipient ID com autocomplete para usuÃ¡rios, message template textarea com hint variÃ¡veis, cooldown horas, max por dia), botÃ£o Testar por regra, toggle enable/disable. Aba /outreach/log: tabela (data, regra, destinatÃ¡rio, mensagem truncada, status badge), filtros (regra, status, perÃ­odo), click expande detalhes (mensagem, trigger context, link inbox). Badge na pÃ¡gina /agents/:id: 'Outreach: X regras ativas' com Ã­cone megafone.",
     "status": "blocked",
     "priority": 25,
     "agent": "coder",
@@ -514,12 +515,12 @@
       "F-167"
     ],
     "tests": [
-      "Lista de regras exibida com informações corretas",
-      "Formulário Nova Regra cria regra com campos dinâmicos por trigger type",
-      "Botão Testar mostra resultado de simulação",
+      "Lista de regras exibida com informaÃ§Ãµes corretas",
+      "FormulÃ¡rio Nova Regra cria regra com campos dinÃ¢micos por trigger type",
+      "BotÃ£o Testar mostra resultado de simulaÃ§Ã£o",
       "Toggle enable/disable atualiza regra",
-      "Histórico de outreach exibido com filtros funcionais",
-      "Badge de outreach visível na página do agente",
+      "HistÃ³rico de outreach exibido com filtros funcionais",
+      "Badge de outreach visÃ­vel na pÃ¡gina do agente",
       "`npm run build` e `npm run typecheck` passam sem erros"
     ],
     "prp_path": "sprints/sprint-7/3-prps/PRP-47-outreach-proativo.md"

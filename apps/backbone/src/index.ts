@@ -34,6 +34,7 @@ import { loadPlans } from "./settings/llm.js";
 import { initBenchmarkTrigger } from "./benchmarks/index.js";
 import { initCircuitBreaker } from "./circuit-breaker/index.js";
 import { initFleetEvents } from "./fleet/events.js";
+import { initTelemetry } from "./telemetry/index.js";
 
 import type { ServerType } from "@hono/node-server";
 
@@ -62,6 +63,7 @@ async function bootstrap() {
   initBenchmarkTrigger();
   initCircuitBreaker();
   initFleetEvents();
+  initTelemetry();
 
   await initChannelAdapters();
 

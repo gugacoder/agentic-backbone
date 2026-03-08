@@ -621,4 +621,12 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_compliance_reports_type  ON compliance_reports(report_type);
 `);
 
+db.exec(`
+  CREATE TABLE IF NOT EXISTS settings (
+    key        TEXT PRIMARY KEY,
+    value      TEXT NOT NULL,
+    updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+`);
+
 export { db };
