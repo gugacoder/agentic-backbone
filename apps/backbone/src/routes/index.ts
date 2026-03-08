@@ -37,6 +37,7 @@ import { emailRoutes } from "./email.js";
 import { routingRoutes } from "./routing.js";
 import { benchmarkRoutes } from "./benchmarks.js";
 import { circuitBreakerRoutes } from "./circuit-breaker.js";
+import { complianceRoutes } from "./compliance.js";
 import { initMcpServerRoutes } from "../mcp-server/index.js";
 import { getHeartbeatStatus } from "../heartbeat/index.js";
 import { listAgents } from "../agents/registry.js";
@@ -163,6 +164,7 @@ routes.route("/", emailRoutes);
 routes.route("/", routingRoutes);
 routes.route("/", benchmarkRoutes);
 routes.route("/", circuitBreakerRoutes);
+routes.route("/", complianceRoutes);
 
 // MCP Server — registers GET /mcp/sse + POST /mcp/message directly on routes
 initMcpServerRoutes(routes);

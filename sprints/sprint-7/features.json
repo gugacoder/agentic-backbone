@@ -173,7 +173,7 @@
     "id": "F-152",
     "name": "Compliance: API endpoints",
     "description": "Implementar endpoints: GET /agents/:id/compliance (visão completa), GET/PUT /agents/:id/compliance/classification (classificação de risco), GET /agents/:id/compliance/checklist (items), PUT /agents/:id/compliance/checklist/:itemKey (atualizar item), POST /agents/:id/compliance/reports (gerar relatório), GET /agents/:id/compliance/reports (listar), GET /agents/:id/compliance/reports/:reportId (detalhes), POST /agents/:id/compliance/explain (explicação de decisão), GET /compliance/overview (visão geral), GET /compliance/dpia-template. Auth JWT obrigatório.",
-    "status": "blocked",
+    "status": "passing",
     "priority": 9,
     "agent": "coder",
     "task": "vibe-code",
@@ -188,7 +188,8 @@
       "GET /compliance/overview retorna taxa de conformidade e items não-conformes",
       "`npm run typecheck` passa sem erros"
     ],
-    "prp_path": "sprints/sprint-7/3-prps/PRP-43-eu-ai-act-compliance-toolkit.md"
+    "prp_path": "sprints/sprint-7/3-prps/PRP-43-eu-ai-act-compliance-toolkit.md",
+    "completed_at": "2026-03-08T15:36:15Z"
   },
   {
     "id": "F-153",
