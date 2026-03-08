@@ -367,7 +367,7 @@
     "id": "F-161",
     "name": "Billing: Tabelas billing_config + tenant_billing + detail + markup_override + migraÃ§Ã£o DB",
     "description": "Criar tabelas `billing_config` (id PK 'default', currency, default_markup_pct, agency_name/document/address/bank_info/logo_url, invoice_footer), `tenant_billing` (id PK, tenant_id, period_year, period_month, tokens_input/output/total, cost_base, markup_pct, cost_with_markup, status draft/finalized/exported, UNIQUE tenant_id+year+month), `tenant_billing_detail` (id PK, billing_id FK, agent_id, agent_label, model, operation_type, tokens_input/output/total, cost_base, invocations), `tenant_markup_override` (tenant_id PK, markup_pct). Indexes. MigraÃ§Ã£o no startup.",
-    "status": "pending",
+    "status": "passing",
     "priority": 18,
     "agent": "coder",
     "task": "vibe-code",
@@ -379,7 +379,8 @@
       "MigraÃ§Ã£o Ã© idempotente",
       "`npm run typecheck` passa sem erros"
     ],
-    "prp_path": "sprints/sprint-7/3-prps/PRP-46-billing-por-tenant.md"
+    "prp_path": "sprints/sprint-7/3-prps/PRP-46-billing-por-tenant.md",
+    "completed_at": "2026-03-08T16:58:27.220Z"
   },
   {
     "id": "F-162",
