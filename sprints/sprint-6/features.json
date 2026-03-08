@@ -406,7 +406,7 @@
     "id": "F-141",
     "name": "Benchmarking: Hub — Dashboard de Benchmark Runs + Badge de Saude",
     "description": "Criar pagina /agents/:id/benchmarks com: linha do tempo de runs (ponto por run, cor verde/vermelho/cinza), tabela de runs (versao, data, score antes/depois, delta com badge colorido, status), botao 'Rodar benchmark agora', select de golden set se multiplos disponiveis, alerta visual se ultima run detectou regressao. Pagina de detalhes /agents/:id/benchmarks/:runId com: resumo (scores, delta, casos totais/passados/falhos), tabela de casos com botao 'Ver detalhes', modal de detalhes (input completo, expected, resposta antes, resposta depois, scores, reasoning do judge). Badge de saude em /agents/:id: vermelho 'Regressao detectada' / verde 'Score melhorou' / neutro 'Sem benchmark'.",
-    "status": "pending",
+    "status": "passing",
     "priority": 20,
     "agent": "coder",
     "task": "vibe-code",
@@ -421,7 +421,8 @@
       "Alerta visual aparece no topo se ultima run detectou regressao",
       "`npm run build:hub` e `npm run typecheck` passam sem erros"
     ],
-    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-6/worktree/sprints/sprint-6/3-prps/PRP-40-agent-performance-benchmarking.md"
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-6/worktree/sprints/sprint-6/3-prps/PRP-40-agent-performance-benchmarking.md",
+    "completed_at": "2026-03-08T12:00:00Z"
   },
   {
     "id": "F-138",
