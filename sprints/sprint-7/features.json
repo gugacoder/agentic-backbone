@@ -110,7 +110,7 @@
     "id": "F-149",
     "name": "Compliance: Tabelas compliance_classification + checklist + reports + migração DB",
     "description": "Criar tabelas `compliance_classification` (agent_id PK, risk_level, risk_justification, classified_by, classified_at, reviewed_at, review_due_at), `compliance_checklist` (id PK, agent_id, item_key, item_label, category, status, evidence, updated_by, updated_at — UNIQUE agent_id+item_key) e `compliance_reports` (id PK, agent_id, report_type, title, content, generated_by, generated_at, period_from, period_to) no SQLite. Indexes em agent_id e report_type. Migração no startup.",
-    "status": "pending",
+    "status": "passing",
     "priority": 6,
     "agent": "coder",
     "task": "vibe-code",
@@ -122,7 +122,8 @@
       "Migração é idempotente",
       "`npm run typecheck` passa sem erros"
     ],
-    "prp_path": "sprints/sprint-7/3-prps/PRP-43-eu-ai-act-compliance-toolkit.md"
+    "prp_path": "sprints/sprint-7/3-prps/PRP-43-eu-ai-act-compliance-toolkit.md",
+    "completed_at": "2026-03-08T15:20:00Z"
   },
   {
     "id": "F-150",
