@@ -129,7 +129,7 @@
     "id": "F-150",
     "name": "Compliance: ComplianceManager — classificação + checklist auto-gerado",
     "description": "Criar módulo `src/compliance/` com index.ts (ComplianceManager), classification.ts (CRUD classificação de risco), checklist.ts (CRUD e auto-geração de items), schemas.ts (Zod). Ao classificar agente como high-risk: gerar 10 items de checklist automaticamente (human_oversight, decision_transparency, kill_switch, etc). Limited-risk: 4 items. Minimal-risk: 1 item. Reclassificação ajusta items (adiciona/remove). Items agrupados por category: transparency, oversight, documentation, data_governance, risk_management.",
-    "status": "blocked",
+    "status": "passing",
     "priority": 7,
     "agent": "coder",
     "task": "vibe-code",
@@ -145,7 +145,8 @@
       "CRUD de classificação persiste risk_level e justificativa",
       "`npm run typecheck` passa sem erros"
     ],
-    "prp_path": "sprints/sprint-7/3-prps/PRP-43-eu-ai-act-compliance-toolkit.md"
+    "prp_path": "sprints/sprint-7/3-prps/PRP-43-eu-ai-act-compliance-toolkit.md",
+    "completed_at": "2026-03-08T15:35:00Z"
   },
   {
     "id": "F-151",
