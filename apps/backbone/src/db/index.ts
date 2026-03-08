@@ -466,4 +466,20 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_versions_agent_file ON config_versions(agent_id, file_name);
 `);
 
+db.exec(`
+  CREATE TABLE IF NOT EXISTS mcp_tool_calls (
+    id          TEXT PRIMARY KEY,
+    agent_id    TEXT NOT NULL,
+    adapter_id  TEXT NOT NULL,
+    tool_name   TEXT NOT NULL,
+    input       TEXT NOT NULL,
+    output      TEXT,
+    error       TEXT,
+    duration_ms INTEGER,
+    called_at   TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+  CREATE INDEX IF NOT EXISTS idx_mcp_tool_calls_agent ON mcp_tool_calls(agent_id);
+  CREATE INDEX IF NOT EXISTS idx_mcp_tool_calls_adapter ON mcp_tool_calls(adapter_id);
+`);
+
 export { db };
