@@ -408,7 +408,7 @@
     "id": "F-163",
     "name": "Billing: API endpoints",
     "description": "Implementar endpoints: GET/PUT /billing/config, GET /billing/tenants (?year, ?month), GET /billing/tenants/:tenantId, GET /billing/tenants/:tenantId/months/:year/:month, POST /billing/tenants/:tenantId/months/:year/:month/finalize, GET /billing/tenants/:tenantId/invoice/:year/:month, GET /billing/tenants/:tenantId/export/:year/:month (CSV download), POST /billing/consolidate (manual), GET/PUT /billing/tenants/:tenantId/markup, GET /billing/profitability (?months default 6). Auth JWT obrigatÃ³rio.",
-    "status": "blocked",
+    "status": "passing",
     "priority": 20,
     "agent": "coder",
     "task": "vibe-code",
@@ -424,13 +424,14 @@
       "POST finalize muda status para 'finalized'",
       "`npm run typecheck` passa sem erros"
     ],
-    "prp_path": "sprints/sprint-7/3-prps/PRP-46-billing-por-tenant.md"
+    "prp_path": "sprints/sprint-7/3-prps/PRP-46-billing-por-tenant.md",
+    "completed_at": "2026-03-08T17:15:00Z"
   },
   {
-    "id": "F-164",
-    "name": "Billing: Hub â€” painel /billing + detalhes tenant + config agÃªncia",
-    "description": "PÃ¡gina /billing: cards resumo (Receita, Custo Base, Lucro, Margem), tabela de tenants (nome, tokens, custo, markup, status), grÃ¡fico tendÃªncia custo vs receita 6 meses, selector mÃªs/ano. PÃ¡gina /billing/tenants/:id: resumo mÃªs, breakdown por agente, comparativo mÃªs anterior (delta %), aÃ§Ãµes (Finalizar, Invoice, CSV), campo markup override. PÃ¡gina /billing/config: campos agÃªncia (nome, CNPJ, endereÃ§o, banco, logo upload), markup padrÃ£o slider, rodapÃ© invoice, moeda BRL.",
-    "status": "blocked",
+    “id”: “F-164”,
+    “name”: “Billing: Hub â€” painel /billing + detalhes tenant + config agÃªncia”,
+    “description”: “PÃ¡gina /billing: cards resumo (Receita, Custo Base, Lucro, Margem), tabela de tenants (nome, tokens, custo, markup, status), grÃ¡fico tendÃªncia custo vs receita 6 meses, selector mÃªs/ano. PÃ¡gina /billing/tenants/:id: resumo mÃªs, breakdown por agente, comparativo mÃªs anterior (delta %), aÃ§Ãµes (Finalizar, Invoice, CSV), campo markup override. PÃ¡gina /billing/config: campos agÃªncia (nome, CNPJ, endereÃ§o, banco, logo upload), markup padrÃ£o slider, rodapÃ© invoice, moeda BRL.”,
+    “status”: “pending”,
     "priority": 21,
     "agent": "coder",
     "task": "vibe-code",
