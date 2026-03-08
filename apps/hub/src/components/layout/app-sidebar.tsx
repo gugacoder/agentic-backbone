@@ -13,13 +13,20 @@ import {
   Settings,
   ShieldCheck,
   ShieldAlert,
+  ClipboardCheck,
   Plug,
   Inbox,
+  UserCircle,
+  GitBranch,
+  Star,
+  Network,
+  Telescope,
 } from "lucide-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
@@ -32,6 +39,7 @@ import { pendingApprovalsQueryOptions } from "@/api/approvals";
 import { securitySummaryQueryOptions } from "@/api/security";
 import { inboxQueryOptions } from "@/api/inbox";
 import { useSSEEvent, type SystemEvent } from "@/hooks/use-sse";
+import { useAuthStore } from "@/lib/auth";
 
 const navItemsBefore = [
   { label: "Dashboard", icon: LayoutDashboard, to: "/" as const },
@@ -39,12 +47,14 @@ const navItemsBefore = [
 
 const navItemsAfter = [
   { label: "Agentes", icon: Bot, to: "/agents" as const },
+  { label: "Workflows", icon: GitBranch, to: "/workflows" as const },
   { label: "Conversas", icon: MessageSquare, to: "/conversations" as const },
   { label: "Canais", icon: Radio, to: "/channels" as const },
   { label: "Agenda", icon: Calendar, to: "/cron" as const },
   { label: "Jobs", icon: Cpu, to: "/jobs" as const },
   { label: "Custos", icon: DollarSign, to: "/costs" as const },
   { label: "Analytics", icon: TrendingUp, to: "/analytics" as const },
+  { label: "Ratings", icon: Star, to: "/ratings" as const },
   { label: "Notificacoes", icon: Bell, to: "/notifications" as const },
   { label: "Configuracoes", icon: Settings, to: "/settings" as const },
 ] as const;
@@ -52,6 +62,8 @@ const navItemsAfter = [
 export function AppSidebar() {
   const matchRoute = useMatchRoute();
   const queryClient = useQueryClient();
+  const user = useAuthStore((s) => s.user);
+  const isAccountActive = !!matchRoute({ to: "/account" });
 
   const { data: pending } = useQuery(pendingApprovalsQueryOptions());
   const pendingCount = pending?.length ?? 0;
@@ -87,6 +99,9 @@ export function AppSidebar() {
   const isApprovalsActive = !!matchRoute({ to: "/approvals", fuzzy: true });
   const isAdaptersActive = !!matchRoute({ to: "/adapters", fuzzy: true });
   const isSecurityActive = !!matchRoute({ to: "/security", fuzzy: true });
+  const isComplianceActive = !!matchRoute({ to: "/compliance", fuzzy: true });
+  const isFleetActive = !!matchRoute({ to: "/fleet", fuzzy: true });
+  const isOtelActive = !!matchRoute({ to: "/settings/otel", fuzzy: true });
 
   return (
     <Sidebar>
@@ -189,10 +204,47 @@ export function AppSidebar() {
                   )}
                 </SidebarMenuButton>
               </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  isActive={isComplianceActive}
+                  render={<Link to="/compliance" />}
+                >
+                  <ClipboardCheck />
+                  <span>Conformidade</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  isActive={isFleetActive}
+                  render={<Link to="/fleet" />}
+                >
+                  <Network />
+                  <span>Fleet</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  isActive={isOtelActive}
+                  render={<Link to="/settings/otel" />}
+                >
+                  <Telescope />
+                  <span>OpenTelemetry</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+      <SidebarFooter>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton isActive={isAccountActive} render={<Link to="/account" />}>
+              <UserCircle />
+              <span className="flex-1 truncate">{user?.displayName ?? "Minha Conta"}</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarFooter>
     </Sidebar>
   );
 }

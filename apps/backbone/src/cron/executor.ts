@@ -1,4 +1,5 @@
-import { runAgent, type UsageData } from "../agent/index.js";
+import { type UsageData, type RoutingContext, type RoutingRule, type ModelResult } from "../agent/index.js";
+import { instrumentedRunAgent } from "../telemetry/instrumentor.js";
 import { triggerManualHeartbeat } from "../heartbeat/index.js";
 import { deliverToSystemChannel } from "../channels/system-channel.js";
 import { assemblePrompt } from "../context/index.js";
@@ -10,6 +11,9 @@ import { formatError } from "../utils/errors.js";
 import { emitNotification } from "../notifications/index.js";
 import { trackCost } from "../db/costs.js";
 import { trackCron } from "../db/analytics.js";
+import { estimateTokens } from "../settings/llm.js";
+import { getAgent } from "../agents/registry.js";
+import { circuitBreaker } from "../circuit-breaker/index.js";
 
 const EXECUTION_TIMEOUT_MS = 10 * 60 * 1000;
 
@@ -23,6 +27,16 @@ export interface CronExecutionResult {
 
 export async function executeCronJob(job: CronJob): Promise<CronExecutionResult> {
   const startMs = Date.now();
+
+  // Guard: circuit-breaker
+  const cbCheck = circuitBreaker.canExecute(job.agentId);
+  if (!cbCheck.allowed) {
+    circuitBreaker.recordBlocked(job.agentId, cbCheck.reason ?? "unknown", {
+      mode: "cron",
+      jobSlug: job.slug,
+    });
+    return { status: "skipped", error: `circuit-breaker: ${cbCheck.reason}`, durationMs: 0 };
+  }
 
   try {
     if (job.def.payload.kind === "heartbeat") {
@@ -52,6 +66,7 @@ export async function executeCronJob(job: CronJob): Promise<CronExecutionResult>
     });
 
     trackCron({ agentId: job.agentId, status: "error", durationMs });
+    circuitBreaker.recordOutcome(job.agentId, false);
     return { status: "error", error, durationMs };
   }
 }
@@ -106,13 +121,29 @@ async function executeMessagePayload(
     setTimeout(() => reject(new Error("cron job timeout")), EXECUTION_TIMEOUT_MS);
   });
 
+  const tools = composeAgentTools(job.agentId, "cron");
+  const routingCtx: RoutingContext = {
+    mode: "cron",
+    estimatedPromptTokens: estimateTokens((assembled.system ?? "") + assembled.userMessage),
+    toolsCount: tools ? Object.keys(tools).length : 0,
+  };
+  const agentConfig = getAgent(job.agentId);
+  const agentRules = ((agentConfig?.metadata as Record<string, unknown> | undefined)?.["routing"] as { rules?: RoutingRule[] } | undefined)?.rules;
+
+  let routingResult: ModelResult | undefined;
+
   process.env.AGENT_ID = job.agentId;
   const execution = (async () => {
     const result = await collectAgentResult(
-      runAgent(assembled.userMessage, {
+      instrumentedRunAgent(job.agentId, "cron", assembled.userMessage, {
         role: "cron",
-        tools: composeAgentTools(job.agentId, "cron"),
+        tools,
         system: assembled.system,
+        routingContext: routingCtx,
+        agentRoutingRules: agentRules,
+        onRoutingResolved: (r) => { routingResult = r; },
+        cronJobId: job.slug,
+        cronSchedule: JSON.stringify(job.def.schedule),
       })
     );
     fullText = result.fullText;
@@ -137,6 +168,8 @@ async function executeMessagePayload(
     inputTokens: usageData?.inputTokens,
     outputTokens: usageData?.outputTokens,
     costUsd: usageData?.totalCostUsd,
+    modelUsed: routingResult?.model,
+    routingRule: routingResult?.ruleName ?? undefined,
   });
 
   if (usageData) {
@@ -150,6 +183,7 @@ async function executeMessagePayload(
   }
 
   trackCron({ agentId: job.agentId, status: "ok", durationMs });
+  circuitBreaker.recordOutcome(job.agentId, true);
 
   emitNotification({
     type: "cron_ok",

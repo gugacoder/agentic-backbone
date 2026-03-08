@@ -103,6 +103,7 @@ export async function* runAiAgent(prompt, options) {
                 catch (err) {
                     const msg = err instanceof Error ? err.message : String(err);
                     console.warn(`[ai] MCP server "${serverConfig.name}" failed to connect: ${msg}`);
+                    yield { type: "mcp_error", server: serverConfig.name, error: msg };
                 }
             }
             yield { type: "mcp_connected", servers: connectedServers };
@@ -274,55 +275,49 @@ export async function* runAiAgent(prompt, options) {
         // stopWhen integration — AbortController to cancel the stream when condition is met
         const abortController = options.stopWhen ? new AbortController() : undefined;
         let stoppedByStopWhen = false;
-        let result;
-        try {
-            result = streamText({
-                model: effectiveModel,
-                tools,
-                maxRetries: 3,
-                stopWhen: stepCountIs(options.maxSteps ?? DEFAULT_MAX_STEPS),
-                messages,
-                system: systemPrompt,
-                ...(telemetryConfig ? { experimental_telemetry: telemetryConfig } : {}),
-                ...(stepActiveTools ? { activeTools: stepActiveTools } : {}),
-                ...(stepToolChoice ? { toolChoice: stepToolChoice } : {}),
-                ...(abortController ? { abortSignal: abortController.signal } : {}),
-                ...(experimentalRepairToolCall ? { experimental_repairToolCall: experimentalRepairToolCall } : {}),
-                onStepFinish: (stepResult) => {
-                    const toolNames = (stepResult.toolCalls ?? []).map((tc) => tc.toolName);
-                    const stepEvent = {
-                        type: "step_finish",
-                        step: stepCounter,
+        const callStreamText = () => streamText({
+            model: effectiveModel,
+            tools,
+            maxRetries: 3,
+            stopWhen: stepCountIs(options.maxSteps ?? DEFAULT_MAX_STEPS),
+            messages,
+            system: systemPrompt,
+            ...(telemetryConfig ? { experimental_telemetry: telemetryConfig } : {}),
+            ...(stepActiveTools ? { activeTools: stepActiveTools } : {}),
+            ...(stepToolChoice ? { toolChoice: stepToolChoice } : {}),
+            ...(abortController ? { abortSignal: abortController.signal } : {}),
+            ...(experimentalRepairToolCall ? { experimental_repairToolCall: experimentalRepairToolCall } : {}),
+            onStepFinish: (stepResult) => {
+                const toolNames = (stepResult.toolCalls ?? []).map((tc) => tc.toolName);
+                const stepEvent = {
+                    type: "step_finish",
+                    step: stepCounter,
+                    toolCalls: toolNames,
+                    finishReason: stepResult.finishReason ?? "unknown",
+                };
+                pendingStepEvents.push(stepEvent);
+                // Collect per-step breakdown when telemetry is enabled (F-007)
+                if (telemetryEnabled) {
+                    const now = Date.now();
+                    collectedSteps.push({
+                        stepNumber: stepCounter,
                         toolCalls: toolNames,
-                        finishReason: stepResult.finishReason ?? "unknown",
-                    };
-                    pendingStepEvents.push(stepEvent);
-                    // Collect per-step breakdown when telemetry is enabled (F-007)
-                    if (telemetryEnabled) {
-                        const now = Date.now();
-                        collectedSteps.push({
-                            stepNumber: stepCounter,
-                            toolCalls: toolNames,
-                            inputTokens: stepResult.usage?.promptTokens ?? 0,
-                            outputTokens: stepResult.usage?.completionTokens ?? 0,
-                            durationMs: now - stepStartMs,
-                        });
-                        stepStartMs = now;
-                    }
-                    previousToolCalls = toolNames;
-                    stepCounter++;
-                    // Evaluate stopWhen condition after recording the step event
-                    if (options.stopWhen && options.stopWhen(stepEvent)) {
-                        stoppedByStopWhen = true;
-                        abortController.abort();
-                    }
-                },
-            });
-        }
-        catch (err) {
-            const msg = err instanceof Error ? err.message : String(err);
-            throw new Error(`OpenRouter request failed: ${msg}`);
-        }
+                        inputTokens: stepResult.usage?.promptTokens ?? 0,
+                        outputTokens: stepResult.usage?.completionTokens ?? 0,
+                        durationMs: now - stepStartMs,
+                    });
+                    stepStartMs = now;
+                }
+                previousToolCalls = toolNames;
+                stepCounter++;
+                // Evaluate stopWhen condition after recording the step event
+                if (options.stopWhen && options.stopWhen(stepEvent)) {
+                    stoppedByStopWhen = true;
+                    abortController.abort();
+                }
+            },
+        });
+        const result = callStreamText();
         // Stream text deltas — surface API errors instead of hanging
         let fullText = "";
         try {
@@ -332,7 +327,7 @@ export async function* runAiAgent(prompt, options) {
                     fullText += delta;
                     yield { type: "text", content: delta };
                 }
-                else if (part.type === "step-finish") {
+                else if (part.type === "finish-step") {
                     // Drain pending step_finish events collected by onStepFinish
                     while (pendingStepEvents.length > 0) {
                         yield pendingStepEvents.shift();
@@ -373,7 +368,7 @@ export async function* runAiAgent(prompt, options) {
                 ...messages,
                 ...response.messages,
             ]);
-            usage = await result.usage;
+            usage = await result.totalUsage;
             steps = await result.steps;
             finishReason = stoppedByStopWhen ? "stop_when" : (await result.finishReason ?? "unknown");
             // Fetch cost from OpenRouter generation endpoint

@@ -17,6 +17,7 @@ import {
   triggerManualHeartbeat,
 } from "../heartbeat/index.js";
 import { getHeartbeatHistory, getHeartbeatStats } from "../heartbeat/log.js";
+import { emitFleetAgentStatus } from "../fleet/events.js";
 import { getAgentMemoryManager } from "../memory/manager.js";
 import { loadAllSkills } from "../skills/loader.js";
 import { loadAgentServices, findService } from "../services/loader.js";
@@ -43,6 +44,13 @@ function assertAgentOwnership(
 
 agentRoutes.get("/agents", (c) => {
   const auth = getAuthUser(c);
+  const scope = c.req.query("scope");
+  if (scope === "all") {
+    if (auth.role !== "sysuser") {
+      return c.json({ error: "forbidden" }, 403);
+    }
+    return c.json(listAgents());
+  }
   return c.json(filterByOwner(listAgents(), auth));
 });
 
@@ -90,6 +98,7 @@ agentRoutes.patch("/agents/:id", async (c) => {
       } else {
         updateHeartbeatAgent(id, { ...agent.heartbeat, enabled: false });
       }
+      emitFleetAgentStatus(id);
     }
 
     return c.json(agent);

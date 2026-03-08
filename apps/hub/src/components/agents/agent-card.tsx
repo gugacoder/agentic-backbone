@@ -1,4 +1,4 @@
-import { Activity } from "lucide-react";
+import { Activity, ShieldAlert, ShieldCheck, ShieldX } from "lucide-react";
 import {
   Card,
   CardHeader,
@@ -18,10 +18,16 @@ export interface HeartbeatLive {
   preview?: string;
 }
 
+export interface CircuitBreakerLive {
+  killSwitch: boolean;
+  tripped: boolean;
+}
+
 interface AgentCardProps {
   agent: Agent;
   stats?: AgentStats;
   heartbeatLive?: HeartbeatLive;
+  circuitBreaker?: CircuitBreakerLive;
   onToggle: (id: string, enabled: boolean) => void;
   onClick: () => void;
 }
@@ -43,12 +49,36 @@ function formatCost(value?: number): string {
   return `US$ ${value.toFixed(4)}`;
 }
 
-export function AgentCard({ agent, stats, heartbeatLive, onToggle, onClick }: AgentCardProps) {
+export function AgentCard({
+  agent,
+  stats,
+  heartbeatLive,
+  circuitBreaker,
+  onToggle,
+  onClick,
+}: AgentCardProps) {
   const isActive = agent.enabled && agent.heartbeatEnabled;
+
+  let CbIcon: typeof ShieldCheck | null = null;
+  let cbClass = "";
+  let cbTitle = "";
+  if (circuitBreaker?.killSwitch) {
+    CbIcon = ShieldX;
+    cbClass = "text-red-500";
+    cbTitle = "Kill-switch ativo";
+  } else if (circuitBreaker?.tripped) {
+    CbIcon = ShieldAlert;
+    cbClass = "text-yellow-500";
+    cbTitle = "Circuit-breaker disparado";
+  } else if (circuitBreaker !== undefined) {
+    CbIcon = ShieldCheck;
+    cbClass = "text-green-500";
+    cbTitle = "Circuit-breaker OK";
+  }
 
   return (
     <Card
-      className="cursor-pointer transition-colors hover:ring-foreground/20"
+      className={`cursor-pointer transition-colors hover:ring-foreground/20 ${circuitBreaker?.killSwitch ? "ring-2 ring-red-500/40" : ""}`}
       onClick={onClick}
     >
       <CardHeader>
@@ -57,6 +87,9 @@ export function AgentCard({ agent, stats, heartbeatLive, onToggle, onClick }: Ag
             className={`size-4 shrink-0 ${heartbeatLive ? "animate-pulse text-green-500" : "text-muted-foreground"}`}
           />
           {agent.slug}
+          {CbIcon && (
+            <CbIcon className={`size-3.5 shrink-0 ml-auto ${cbClass}`} title={cbTitle} />
+          )}
         </CardTitle>
         <CardAction>
           <Switch
@@ -66,11 +99,14 @@ export function AgentCard({ agent, stats, heartbeatLive, onToggle, onClick }: Ag
             onCheckedChange={(checked) => onToggle(agent.id, checked)}
           />
         </CardAction>
-        <CardDescription className="flex items-center gap-2">
+        <CardDescription className="flex items-center gap-2 flex-wrap">
           <Badge variant="secondary" className="text-xs">
             {agent.owner}
           </Badge>
           <StatusBadge status={isActive ? "active" : "inactive"} />
+          {circuitBreaker?.killSwitch && (
+            <Badge variant="destructive" className="text-xs">PARADO</Badge>
+          )}
         </CardDescription>
       </CardHeader>
       <CardContent>

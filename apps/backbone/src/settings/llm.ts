@@ -3,6 +3,37 @@ import { join } from "node:path";
 import { plansDir, settingsPath } from "../context/paths.js";
 import { readYaml, writeYaml } from "../context/readers.js";
 
+// --- Routing Types ---
+
+export interface RoutingContext {
+  mode: "heartbeat" | "conversation" | "cron" | "webhook";
+  estimatedPromptTokens?: number;
+  toolsCount?: number;
+  channelType?: string;
+  tags?: string[];
+}
+
+export interface RoutingRule {
+  id: string;
+  description?: string;
+  conditions: {
+    mode?: string;
+    prompt_tokens_lte?: number;
+    prompt_tokens_gte?: number;
+    tools_count_gte?: number;
+    tools_count_lte?: number;
+    tags_any?: string[];
+    channel_type?: string;
+  };
+  model: string;
+  priority: number;
+}
+
+export interface ModelResult {
+  model: string;
+  ruleName: string | null;
+}
+
 // --- Types ---
 
 export type SlugClass = "small" | "medium" | "large";
@@ -133,8 +164,91 @@ export function resolveSlug(role: string): SlugDef {
   return slug;
 }
 
-export function resolveModel(role: string): string {
-  return resolveSlug(role).llm.model;
+// --- Routing ---
+
+export function estimateTokens(text: string): number {
+  return Math.ceil(text.length / 4);
+}
+
+function matchesRule(rule: RoutingRule, ctx: RoutingContext): boolean {
+  const c = rule.conditions;
+  if (c.mode !== undefined && c.mode !== ctx.mode) return false;
+  if (c.prompt_tokens_lte !== undefined && (ctx.estimatedPromptTokens ?? 0) > c.prompt_tokens_lte) return false;
+  if (c.prompt_tokens_gte !== undefined && (ctx.estimatedPromptTokens ?? 0) < c.prompt_tokens_gte) return false;
+  if (c.tools_count_gte !== undefined && (ctx.toolsCount ?? 0) < c.tools_count_gte) return false;
+  if (c.tools_count_lte !== undefined && (ctx.toolsCount ?? 0) > c.tools_count_lte) return false;
+  if (c.channel_type !== undefined && c.channel_type !== ctx.channelType) return false;
+  if (c.tags_any !== undefined && !c.tags_any.some((t) => ctx.tags?.includes(t))) return false;
+  return true;
+}
+
+function loadGlobalRoutingRules(): RoutingRule[] {
+  if (!existsSync(settingsPath())) return [];
+  const settings = readYaml(settingsPath()) as Record<string, unknown>;
+  const routing = settings["routing"] as { enabled?: boolean; rules?: RoutingRule[] } | undefined;
+  if (!routing?.enabled || !routing.rules) return [];
+  return routing.rules;
+}
+
+export interface RoutingConfig {
+  enabled: boolean;
+  rules: RoutingRule[];
+}
+
+export function getRoutingConfig(): RoutingConfig {
+  if (!existsSync(settingsPath())) return { enabled: false, rules: [] };
+  const settings = readYaml(settingsPath()) as Record<string, unknown>;
+  const routing = settings["routing"] as { enabled?: boolean; rules?: RoutingRule[] } | undefined;
+  return {
+    enabled: routing?.enabled ?? false,
+    rules: routing?.rules ?? [],
+  };
+}
+
+export function setRoutingConfig(config: RoutingConfig): void {
+  const settings = existsSync(settingsPath())
+    ? (readYaml(settingsPath()) as Record<string, unknown>)
+    : {};
+  settings["routing"] = config;
+  writeYaml(settingsPath(), settings);
+}
+
+export function resolveModelResult(
+  role: string,
+  context?: RoutingContext,
+  agentRoutingRules?: RoutingRule[]
+): ModelResult {
+  const fallbackModel = resolveSlug(role).llm.model;
+
+  if (!context) {
+    return { model: fallbackModel, ruleName: null };
+  }
+
+  // Agent rules take priority over global rules — check them first (sorted by priority desc)
+  const sortedAgentRules = [...(agentRoutingRules ?? [])].sort((a, b) => b.priority - a.priority);
+  for (const rule of sortedAgentRules) {
+    if (matchesRule(rule, context)) {
+      return { model: rule.model, ruleName: rule.id };
+    }
+  }
+
+  // Then global rules
+  const sortedGlobalRules = loadGlobalRoutingRules().sort((a, b) => b.priority - a.priority);
+  for (const rule of sortedGlobalRules) {
+    if (matchesRule(rule, context)) {
+      return { model: rule.model, ruleName: rule.id };
+    }
+  }
+
+  return { model: fallbackModel, ruleName: null };
+}
+
+export function resolveModel(
+  role: string,
+  context?: RoutingContext,
+  agentRoutingRules?: RoutingRule[]
+): string {
+  return resolveModelResult(role, context, agentRoutingRules).model;
 }
 
 export function resolveParameters(role: string): Record<string, unknown> {

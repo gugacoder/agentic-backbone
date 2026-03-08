@@ -1,0 +1,448 @@
+[
+  {
+    "id": "F-123",
+    "name": "MCP: Tabela mcp_tool_calls + migracao DB",
+    "description": "Criar tabela `mcp_tool_calls` no SQLite do backbone com indexes e migracao automatica no startup. Colunas: id (TEXT PK), agent_id, adapter_id, tool_name, input, output, error, duration_ms, called_at (DEFAULT datetime('now')). Indexes em agent_id e adapter_id. Seguir padrao de migracao existente em `apps/backbone/src/db/`.",
+    "status": "passing",
+    "priority": 1,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [],
+    "tests": [
+      "Tabela `mcp_tool_calls` existe apos startup do backbone",
+      "Indexes idx_mcp_tool_calls_agent e idx_mcp_tool_calls_adapter criados",
+      "Migracao e idempotente (rodar duas vezes nao gera erro)",
+      "`npm run typecheck` passa sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-6/worktree/sprints/sprint-6/3-prps/PRP-35-mcp-support.md",
+    "completed_at": "2026-03-08T05:15:00Z"
+  },
+  {
+    "id": "F-127",
+    "name": "Rating: Tabela message_ratings + API de Rating",
+    "description": "Criar tabela `message_ratings` no SQLite com indexes (agent_id, session_id, rating, rated_at) e migracao automatica. Implementar endpoints: POST /conversations/:sessionId/messages/:index/rate (upsert por session+index), GET /agents/:agentId/ratings (paginado), GET /agents/:agentId/ratings/summary (taxa aprovacao + breakdown + tendencia diaria), POST /agents/:agentId/ratings/export-golden-set (cria eval set a partir de ratings down), GET /ratings (dashboard global de todos os agentes). Validacao: messageIndex deve referenciar mensagem com role 'assistant'.",
+    "status": "passing",
+    "priority": 2,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [],
+    "tests": [
+      "POST de rating com 'up' ou 'down' persiste em `message_ratings`",
+      "Rating duplicado para mesma mensagem atualiza o existente (sem duplicatas)",
+      "GET /agents/:id/ratings/summary retorna taxa de aprovacao e breakdown por categoria",
+      "Export de golden set cria diretorio no formato de eval sets existentes",
+      "GET /ratings lista todos os agentes com metricas comparativas",
+      "`npm run typecheck` passa sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-6/worktree/sprints/sprint-6/3-prps/PRP-36-feedback-loop-rating.md",
+    "completed_at": "2026-03-08T05:14:30Z"
+  },
+  {
+    "id": "F-130",
+    "name": "Model Routing: Migracao DB + resolveModel() com RoutingContext",
+    "description": "Adicionar colunas `model_used TEXT` e `routing_rule TEXT` em `heartbeat_log` e `cron_run_log` via ALTER TABLE no startup. Estender `src/settings/llm.ts`: interface RoutingContext (mode, estimatedPromptTokens, toolsCount, channelType, tags) e interface RoutingRule. Atualizar `resolveModel()` para aceitar RoutingContext e agentRoutingRules opcionais — compativel com chamadas existentes. Logica: combinar regras globais (routing.rules em llm.json) + regras do agente (frontmatter AGENT.md), ordenar por prioridade decrescente, retornar model da primeira regra satisfeita, fallback para plan[role]. Funcao auxiliar estimateTokens(text): chars/4. Propagacao em runAgent(): registrar model_used e routing_rule nos logs.",
+    "status": "passing",
+    "priority": 3,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [],
+    "tests": [
+      "`resolveModel()` com RoutingContext retorna modelo correto baseado nas regras",
+      "Regra com maior prioridade vence em caso de multiplas condicoes satisfeitas",
+      "Sem regras configuradas: comportamento identico ao anterior (fallback para plan[role])",
+      "`heartbeat_log.model_used` registra modelo efetivamente usado em cada execucao",
+      "Override de agente (frontmatter) tem prioridade maior que regras globais",
+      "Estimativa de tokens funciona sem dependencias externas",
+      "`npm run typecheck` passa sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-6/worktree/sprints/sprint-6/3-prps/PRP-37-model-routing-inteligente.md",
+    "completed_at": "2026-03-08T05:25:48.126Z"
+  },
+  {
+    "id": "F-133",
+    "name": "Email: Connector IMAP/SMTP + Channel-Adapter + Polling",
+    "description": "Criar connector `email` em `src/connectors/email/` seguindo padrao existente. Arquivos: index.ts (ConnectorDef), client.ts (ImapFlow + Nodemailer), schemas.ts (Zod para ADAPTER.yaml), channel-adapter.ts (polling IMAP). Schema ADAPTER.yaml inclui: imap/smtp credentials, poll_interval_seconds, mark_seen, reply_prefix, from_name, sender_whitelist, subject_filter, auto_reply. Estado de polling em data/email-state/{adapterId}.json. Fluxo: polling IMAP SEARCH UNSEEN, verificacao por Message-ID, criacao/continuacao de sessao backbone (channelType: 'email'), prompt XML ao agente, resposta via SMTP com In-Reply-To e References corretos, emissao de evento channel:message. Dependencias: imapflow, nodemailer.",
+    "status": "passing",
+    "priority": 4,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [],
+    "tests": [
+      "Polling IMAP detecta emails nao lidos e cria sessao backbone por thread",
+      "Email de thread existente continua a sessao backbone correspondente",
+      "Resposta do agente enviada via SMTP com headers In-Reply-To e References corretos",
+      "`mark_seen: true` marca email como lido no IMAP apos processamento",
+      "`sender_whitelist` filtra emails de remetentes nao listados",
+      "`auto_reply: false` cria sessao mas nao envia resposta por email",
+      "Estado de polling persiste entre reinicializacoes (sem reprocessar emails ja vistos)",
+      "`npm run typecheck` passa sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-6/worktree/sprints/sprint-6/3-prps/PRP-38-email-connector.md",
+    "completed_at": "2026-03-08T05:39:11Z"
+  },
+  {
+    "id": "F-136",
+    "name": "Workflow Builder: API Backend — CRUD + Apply + Simulate",
+    "description": "Implementar API de workflows com persistencia em `context/agents/{owner}.{slug}/workflows/{workflowId}.json`. Endpoints: GET /workflows (listar), POST /workflows (criar), GET /workflows/:id (obter), PUT /workflows/:id (atualizar), DELETE /workflows/:id (deletar), POST /workflows/:id/apply (gera/atualiza frontmatter `handoff` nos AGENT.md dos nos participantes), POST /workflows/:id/simulate (simula roteamento com input de texto e retorna caminho percorrido + condicao satisfeita + reasoning). Tipos de condicao: keyword (regex), intent (lista ORed), sentiment, schedule (time range + days), channel, fallback.",
+    "status": "passing",
+    "priority": 5,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [],
+    "tests": [
+      "CRUD de workflows persiste e recupera corretamente os arquivos JSON",
+      "POST /workflows/:id/apply gera frontmatter `handoff` correto nos AGENT.md participantes",
+      "Apos aplicar, agentes roteiam handoffs conforme arestas configuradas",
+      "POST /workflows/:id/simulate retorna caminho correto e razao da condicao satisfeita",
+      "Todos os tipos de condicao (keyword, intent, schedule, channel, fallback) funcionam na simulacao",
+      "`npm run typecheck` passa sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-6/worktree/sprints/sprint-6/3-prps/PRP-39-visual-workflow-builder.md",
+    "completed_at": "2026-03-08T08:00:00Z"
+  },
+  {
+    "id": "F-139",
+    "name": "Benchmarking: Schema DB + Integracao com Config Versioning",
+    "description": "Criar tabelas `benchmark_runs` e `benchmark_cases` no SQLite com indexes e migracao automatica. Implementar gatilho automatico: subscrever no evento `config:version_changed` do EventBus; ao detectar mudanca em SOUL.md ou CONVERSATION.md, verificar `auto_benchmark` no frontmatter do agente e golden sets disponiveis, entao agendar benchmark run em background. Execucao: para cada caso do golden set, executar agente com versao atual, enviar ao LLM-as-judge existente, armazenar em `benchmark_cases`. Calcular delta, detectar regressao (delta < regression_threshold), emitir alerta via EventBus + notificacao push PWA. Configuracao por agente via frontmatter AGENT.md (auto_benchmark, eval_set_id, regression_threshold, alert_on_regression).",
+    "status": "passing",
+    "priority": 6,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [],
+    "tests": [
+      "Tabelas `benchmark_runs` e `benchmark_cases` existem apos startup",
+      "Mudanca em SOUL.md dispara benchmark automatico se `auto_benchmark: true`",
+      "Sem golden sets configurados: benchmark automatico e silenciosamente ignorado",
+      "`regression: true` registrado quando `delta < regression_threshold`",
+      "Notificacao push enviada ao detectar regressao",
+      "Benchmark em background nao bloqueia operacao normal do agente",
+      "`npm run typecheck` passa sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-6/worktree/sprints/sprint-6/3-prps/PRP-40-agent-performance-benchmarking.md",
+    "completed_at": "2026-03-08T09:00:00Z"
+  },
+  {
+    "id": "F-142",
+    "name": "Hub: Área do Usuário (perfil + logout)",
+    "description": "Criar página /account no Hub com informações do usuário logado (nome, role, ID) e botão de logout que limpa o token JWT e redireciona para /login. Adicionar link para /account na navegação principal (header ou sidebar). Usar useAuthStore para dados do usuário e ação de logout. Components: shadcn Card, Button, Avatar. Rota via TanStack Router.",
+    "status": "passing",
+    "priority": 7,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [],
+    "tests": [
+      "Página /account renderiza informações do usuário logado (nome, role)",
+      "Botão Sair limpa o token JWT e redireciona para /login",
+      "Link para /account aparece na navegação principal",
+      "npm run build:hub passa sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-6/worktree/sprints/sprint-6/3-prps/PRP-41-hub-user-area-sysadmin.md",
+    "completed_at": "2026-03-08T10:30:00Z"
+  },
+  {
+    "id": "F-124",
+    "name": "MCP: Connector MCP Cliente (stdio + HTTP)",
+    "description": "Criar connector `mcp` em `src/connectors/mcp/` seguindo o padrao existente. Suporte a transporte `stdio` (via command/args/env) e `http` (via URL + api_key opcional). Descoberta dinamica de tools do servidor MCP e injecao em `runAgent()` com prefixo `mcp_{adapter_slug}_{tool_name}`. Cada chamada auditada em `mcp_tool_calls`. Schema Zod para ADAPTER.yaml. Endpoints GET /agents/:id/mcp-tools e GET /agents/:id/mcp-calls. Dependencia: `@modelcontextprotocol/sdk`.",
+    "status": "passing",
+    "priority": 8,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-123"
+    ],
+    "tests": [
+      "Adapter MCP stdio conecta a servidor e expoe tools ao agente",
+      "Adapter MCP HTTP conecta a servidor SSE e expoe tools ao agente",
+      "Tools MCP aparecem no prompt do agente e podem ser chamadas durante execucao",
+      "Cada chamada MCP e registrada em `mcp_tool_calls` com input, output e duracao",
+      "`allowed_tools` filtra corretamente quais ferramentas sao expostas",
+      "Multiplos adapters MCP coexistem sem conflito (prefixo por adapter_slug)",
+      "`npm run typecheck` passa sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-6/worktree/sprints/sprint-6/3-prps/PRP-35-mcp-support.md",
+    "completed_at": "2026-03-08T06:17:07Z"
+  },
+  {
+    "id": "F-134",
+    "name": "Email: Tools (send-reply, get-thread, create-draft) + API Endpoints de Status",
+    "description": "Implementar tools em `src/connectors/email/tools/`: send-reply (envia email com threading correto), get-thread (busca thread por Message-ID), create-draft (cria rascunho sem enviar). Implementar endpoints: POST /adapters/email/:adapterId/test (testa conectividade IMAP e SMTP separados com latencia), GET /adapters/email/:adapterId/status (status do polling, ultima execucao, emails processados hoje, last error).",
+    "status": "passing",
+    "priority": 9,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-133"
+    ],
+    "tests": [
+      "Tool `send_email_reply` envia email com threading correto (In-Reply-To, References)",
+      "Tool `get_email_thread` retorna historico de mensagens da thread",
+      "Tool `create_email_draft` cria rascunho sem enviar",
+      "Botao 'Testar conexao' retorna status IMAP e SMTP separados com latencia",
+      "GET /adapters/email/:adapterId/status retorna contagem de emails processados hoje",
+      "`npm run typecheck` passa sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-6/worktree/sprints/sprint-6/3-prps/PRP-38-email-connector.md",
+    "completed_at": "2026-03-08T06:24:01.712159+00:00"
+  },
+  {
+    "id": "F-131",
+    "name": "Model Routing: API de Routing — Estatisticas e Simulacao",
+    "description": "Implementar endpoints: GET /settings/routing (config global), PUT /settings/routing (atualizar regras), GET /agents/:id/routing-stats (distribuicao de modelos, economia estimada em USD, rule hits; query params: from, to), POST /settings/routing/simulate (retorna modelo selecionado e regra para contexto dado). Economia estimada usa tabela de precos estatica por modelo. Dados de routing-stats obtidos de heartbeat_log.model_used e routing_rule.",
+    "status": "passing",
+    "priority": 10,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-130"
+    ],
+    "tests": [
+      "GET /agents/:id/routing-stats retorna distribuicao correta de modelos",
+      "GET /agents/:id/routing-stats retorna economia estimada USD",
+      "POST /settings/routing/simulate retorna modelo e regra para contexto fornecido",
+      "PUT /settings/routing persiste novas regras em llm.json",
+      "`npm run typecheck` passa sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-6/worktree/sprints/sprint-6/3-prps/PRP-37-model-routing-inteligente.md",
+    "completed_at": "2026-03-08T06:29:50Z"
+  },
+  {
+    "id": "F-140",
+    "name": "Benchmarking: API Endpoints",
+    "description": "Implementar endpoints: GET /agents/:id/benchmarks (listar runs com paginacao), POST /agents/:id/benchmarks (trigger manual com evalSetId e compareWithVersion opcionais, response 202 com benchmarkId), GET /agents/:id/benchmarks/:runId (detalhes completos da run), GET /agents/:id/benchmarks/:runId/cases (casos individuais com score_before/after/delta/judge_reasoning), GET /agents/:id/benchmarks/trend (tendencia de score por versao, query param limit default 10).",
+    "status": "passing",
+    "priority": 11,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-139"
+    ],
+    "tests": [
+      "Benchmark manual via POST /agents/:id/benchmarks executa e persiste resultados",
+      "`score_before` e `score_after` calculados corretamente a partir do LLM-as-judge",
+      "GET /agents/:id/benchmarks/trend retorna historico de scores com campo regression",
+      "GET /agents/:id/benchmarks/:runId/cases retorna casos com judge_reasoning",
+      "`npm run typecheck` passa sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-6/worktree/sprints/sprint-6/3-prps/PRP-40-agent-performance-benchmarking.md",
+    "completed_at": "2026-03-08T06:33:59.990Z"
+  },
+  {
+    "id": "F-143",
+    "name": "Hub + API: Visão Sysadmin — Agentes de Todos os Usuários",
+    "description": "Quando usuário logado tem role=sysadmin, a listagem de agentes no Hub exibe todos os agentes de todos os owners. Backend: GET /agents aceita ?scope=all (apenas sysadmin, retorna 403 caso contrário) usando listAgents() do registry sem filtro de owner. Hub: verificar role no useAuthStore, chamar ?scope=all se sysadmin, exibir badge com owner do agente na listagem (ID já contém owner.slug). Adicionar badge visual Admin no header quando sysadmin.",
+    "status": "passing",
+    "priority": 12,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-142"
+    ],
+    "tests": [
+      "Com role=sysadmin, listagem exibe agentes de todos os owners com badge de owner",
+      "Com role comum, listagem exibe apenas agentes do próprio usuário",
+      "GET /agents?scope=all sem sysadmin retorna 403",
+      "Badge Admin aparece no header quando logado como sysadmin",
+      "npm run build:hub passa sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-6/worktree/sprints/sprint-6/3-prps/PRP-41-hub-user-area-sysadmin.md",
+    "completed_at": "2026-03-08T06:40:40Z"
+  },
+  {
+    "id": "F-125",
+    "name": "MCP: Servidor MCP do Backbone (endpoint SSE para clientes externos)",
+    "description": "Criar `src/mcp-server/` com implementacao do servidor MCP via @modelcontextprotocol/sdk. Endpoint GET /mcp/sse (JWT via query param ou header). Tools expostas: list_agents, send_message, get_agent_status, get_agent_memory. Configuracao em `context/system/mcp-server.json` (enabled, allowed_agents, require_auth). Endpoints GET/PUT /settings/mcp-server.",
+    "status": "passing",
+    "priority": 13,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-124"
+    ],
+    "tests": [
+      "Endpoint `/mcp/sse` permite que Claude Desktop/Cursor se conecte e liste agentes",
+      "Tool `send_message` via MCP Server cria sessao e retorna resposta do agente",
+      "JWT invalido retorna 401",
+      "`allowed_agents` filtra agentes acessiveis corretamente",
+      "`npm run typecheck` passa sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-6/worktree/sprints/sprint-6/3-prps/PRP-35-mcp-support.md",
+    "completed_at": "2026-03-08T07:01:20Z"
+  },
+  {
+    "id": "F-128",
+    "name": "Rating: Hub — Botoes 👍/👎 no Chat + Pagina /agents/:id/ratings",
+    "description": "Adicionar botoes de rating (👍/👎) abaixo de cada mensagem do agente no componente de chat do Hub. Ao clicar 👎: dropdown com categorias (wrong_info, off_topic, too_long, rude, other) + campo de texto livre opcional. Estado visual: icone preenchido apos rating, possibilidade de alterar. Criar pagina /agents/:id/ratings com: gauge de taxa de aprovacao, grafico de linha de aprovacao ao longo do tempo (30 dias), grafico de pizza de categorias de falha, tabela de ratings recentes com link para conversa, botao 'Exportar como Golden Set', filtros por periodo/canal/rating. Badge na pagina /agents/:id com taxa de aprovacao e link para ratings.",
+    "status": "passing",
+    "priority": 14,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-127"
+    ],
+    "tests": [
+      "Botoes 👍/👎 aparecem abaixo de mensagens do agente no chat",
+      "Clicar 👎 exibe dropdown de categorias",
+      "Icone preenchido apos rating com possibilidade de alterar",
+      "Dashboard /agents/:id/ratings exibe graficos e tabela de ratings",
+      "Badge de taxa de aprovacao aparece na pagina do agente com cor correta",
+      "`npm run build:hub` e `npm run typecheck` passam sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-6/worktree/sprints/sprint-6/3-prps/PRP-36-feedback-loop-rating.md",
+    "completed_at": "2026-03-08T07:20:46.327Z"
+  },
+  {
+    "id": "F-126",
+    "name": "MCP: Hub — Configuracao de adapters MCP + Aba MCP Tools + Settings MCP Server",
+    "description": "Formulario no Hub para criar adapters MCP (tipo stdio: command/args/env; tipo http: URL/API key). Botao 'Testar conexao' que lista tools disponiveis. Aba 'MCP Tools' na pagina do agente com lista de adapters, ferramentas e historico de chamadas (ultimas 20). Secao 'MCP Server' em /settings com toggle de habilitacao, agentes acessiveis, exigir JWT, instrucoes de conexao e botao 'Copiar config para Claude Desktop'.",
+    "status": "passing",
+    "completed_at": "2026-03-08T12:45:00Z",
+    "priority": 15,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-124",
+      "F-125"
+    ],
+    "tests": [
+      "Botao 'Testar conexao' no formulario de adapter MCP conecta e lista tools disponiveis",
+      "Historico de chamadas MCP exibido na aba do agente no Hub",
+      "Botao 'Copiar config para Claude Desktop' gera JSON valido",
+      "Toggle de habilitar servidor MCP salva configuracao corretamente",
+      "`npm run build:hub` e `npm run typecheck` passam sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-6/worktree/sprints/sprint-6/3-prps/PRP-35-mcp-support.md"
+  },
+  {
+    "id": "F-132",
+    "name": "Model Routing: Hub — Editor Visual de Regras + Dashboard de Economia",
+    "description": "Secao 'Model Routing' em /settings com: toggle habilitar routing, lista de regras globais (nome, condicoes resumidas, modelo, prioridade), botao 'Adicionar regra' com modal de editor (form visual por tipo de condicao), botao 'Simular' com painel de resultado. Secao 'Routing' em /agents/:id/settings com toggle de override e editor de regras especificas do agente. Aba de analytics em /agents/:id com gauge de economia estimada (USD), grafico de pizza de distribuicao por modelo, grafico de barras de regras mais acionadas.",
+    "status": "passing",
+    "priority": 16,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-131"
+    ],
+    "tests": [
+      "Editor visual de regras permite criar/editar/remover regras sem editar JSON",
+      "Gauge de economia exibe diferenca estimada USD entre uso com e sem routing",
+      "Painel de simulacao retorna modelo e regra para contexto configurado via UI",
+      "Override de agente salvo via Hub reflete em resolveModel() nas execucoes seguintes",
+      "`npm run build:hub` e `npm run typecheck` passam sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-6/worktree/sprints/sprint-6/3-prps/PRP-37-model-routing-inteligente.md",
+    "completed_at": "2026-03-08T13:00:00Z"
+  },
+  {
+    "id": "F-135",
+    "name": "Email: Hub — Formulario de Adapter Email + Card de Status",
+    "description": "Formulario de criacao de adapter Email no Hub com secoes: Recebimento (IMAP host/porta/usuario/senha), Envio (SMTP host/porta/STARTTLS toggle/usuario/senha), Opcoes (mailbox, poll interval, mark_seen, reply_prefix, from_name, auto_reply toggle, whitelist de remetentes, filtro de assunto regex). Botao 'Testar conexao' que exibe resultado IMAP + SMTP com latencia. Campos sensiveis suportam ${ENV_VAR} e sao mascarados (usando utils/sensitive.ts). Card de status apos criacao com indicador de polling e contagem de emails processados. Card Email na pagina /agents/:id/channels com status de polling, ultima execucao, emails (24h) e link para conversas de email.",
+    "status": "passing",
+    "priority": 17,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-134"
+    ],
+    "tests": [
+      "Formulario de adapter Email renderiza todas as secoes e campos",
+      "Botao 'Testar conexao' exibe resultado IMAP e SMTP separados",
+      "Campos de senha suportam ${ENV_VAR} e sao mascarados na exibicao",
+      "Multiplos adapters de email coexistem sem conflito",
+      "Card de status em /agents/:id/channels exibe status de polling",
+      "`npm run build:hub` e `npm run typecheck` passam sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-6/worktree/sprints/sprint-6/3-prps/PRP-38-email-connector.md",
+    "completed_at": "2026-03-08T13:30:00Z"
+  },
+  {
+    "id": "F-137",
+    "name": "Workflow Builder: Hub — Canvas React Flow + Editor de Condicoes",
+    "description": "Implementar canvas visual usando @xyflow/react na rota /workflows/:id. Layout: painel esquerdo com lista de agentes (arrastar para canvas), canvas central com zoom/pan, painel direito contextual. No de agente: avatar, nome, badge 'Entrada', handles de conexao. Aresta de handoff: label, cor por tipo (keyword=azul, intent=roxo, schedule=verde, channel=laranja, fallback=cinza), painel de edicao ao clicar. Painel de edicao de aresta: select de tipo, campos dinamicos por tipo (text/select/time picker/checkbox). Toolbar: 'Salvar rascunho' (PUT), 'Aplicar ao vivo' (POST apply com confirmacao). Pagina /workflows com cards de workflows e botao 'Novo Workflow'. Dependencia: @xyflow/react.",
+    "status": "passing",
+    "priority": 18,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-136"
+    ],
+    "tests": [
+      "Canvas permite arrastar agentes da lista e criar nos",
+      "Conectar dois nos cria aresta com painel de edicao",
+      "Todos os tipos de condicao sao configuráveis via UI sem editar JSON",
+      "'Salvar rascunho' persiste workflow.json sem afetar agentes",
+      "'Aplicar ao vivo' gera frontmatter nos AGENT.md corretos",
+      "No marcado como 'Entrada' tem badge visual distinto",
+      "Arestas tem cores distintas por tipo",
+      "Canvas suporta zoom e pan",
+      "`npm run build:hub` e `npm run typecheck` passam sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-6/worktree/sprints/sprint-6/3-prps/PRP-39-visual-workflow-builder.md",
+    "completed_at": "2026-03-08T13:16:53Z"
+  },
+  {
+    "id": "F-129",
+    "name": "Rating: Dashboard Global /ratings + Rating via WhatsApp",
+    "description": "Criar pagina /ratings no Hub com tabela comparativa de todos os agentes (taxa de aprovacao, total ratings, tendencia), destaque de agentes com aprovacao <70% nas ultimas 24h, filtros por canal e periodo. Implementar rating via WhatsApp: apos cada resposta do agente, enviar 'Essa resposta foi util? Responda SIM ou NAO'. Se NAO: solicitar motivo opcional. Registrar resposta como rating up/down associado a sessao e mensagem correspondente.",
+    "status": "passing",
+    "priority": 19,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-127",
+      "F-128"
+    ],
+    "tests": [
+      "Dashboard /ratings lista todos os agentes com metricas comparativas",
+      "Agentes com aprovacao <70% sao destacados na tabela",
+      "Canal WhatsApp envia pergunta de rating apos resposta do agente",
+      "Resposta SIM/NAO via WhatsApp registrada como rating up/down na sessao correta",
+      "`npm run build:hub` e `npm run typecheck` passam sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-6/worktree/sprints/sprint-6/3-prps/PRP-36-feedback-loop-rating.md",
+    "completed_at": "2026-03-08T13:29:33Z"
+  },
+  {
+    "id": "F-141",
+    "name": "Benchmarking: Hub — Dashboard de Benchmark Runs + Badge de Saude",
+    "description": "Criar pagina /agents/:id/benchmarks com: linha do tempo de runs (ponto por run, cor verde/vermelho/cinza), tabela de runs (versao, data, score antes/depois, delta com badge colorido, status), botao 'Rodar benchmark agora', select de golden set se multiplos disponiveis, alerta visual se ultima run detectou regressao. Pagina de detalhes /agents/:id/benchmarks/:runId com: resumo (scores, delta, casos totais/passados/falhos), tabela de casos com botao 'Ver detalhes', modal de detalhes (input completo, expected, resposta antes, resposta depois, scores, reasoning do judge). Badge de saude em /agents/:id: vermelho 'Regressao detectada' / verde 'Score melhorou' / neutro 'Sem benchmark'.",
+    "status": "passing",
+    "priority": 20,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-140"
+    ],
+    "tests": [
+      "Linha do tempo de benchmark runs exibe historico com cores corretas",
+      "Modal de detalhes exibe respostas antes/depois com reasoning do judge",
+      "Badge de saude na pagina do agente reflete estado da ultima benchmark run",
+      "Botao 'Rodar benchmark agora' dispara run manual e atualiza a lista",
+      "Alerta visual aparece no topo se ultima run detectou regressao",
+      "`npm run build:hub` e `npm run typecheck` passam sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-6/worktree/sprints/sprint-6/3-prps/PRP-40-agent-performance-benchmarking.md",
+    "completed_at": "2026-03-08T12:00:00Z"
+  },
+  {
+    "id": "F-138",
+    "name": "Workflow Builder: Hub — Painel de Simulacao + Secao Workflows no Agente",
+    "description": "Adicionar painel lateral de simulacao no canvas: input de texto, select de canal, botao 'Simular', resultado com caminho percorrido (nos destacados no canvas), condicao que passou e agente selecionado com reasoning textual. Adicionar secao 'Workflows' na pagina /agents/:id listando workflows em que o agente participa, com link para o canvas de cada workflow e papel do agente (entrada/intermediario/destino).",
+    "status": "passing",
+    "priority": 21,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-137"
+    ],
+    "tests": [
+      "Painel de simulacao retorna caminho percorrido com nos destacados no canvas",
+      "Reasoning textual explica condicao que passou",
+      "Secao 'Workflows' em /agents/:id lista workflows participados pelo agente",
+      "Link para o canvas abre o workflow correto",
+      "`npm run build:hub` e `npm run typecheck` passam sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-6/worktree/sprints/sprint-6/3-prps/PRP-39-visual-workflow-builder.md",
+    "completed_at": "2026-03-08T13:55:19Z"
+  }
+]

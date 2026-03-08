@@ -466,4 +466,224 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_versions_agent_file ON config_versions(agent_id, file_name);
 `);
 
+db.exec(`
+  CREATE TABLE IF NOT EXISTS message_ratings (
+    id            TEXT PRIMARY KEY,
+    session_id    TEXT NOT NULL,
+    message_index INTEGER NOT NULL,
+    agent_id      TEXT NOT NULL,
+    channel_type  TEXT NOT NULL,
+    rating        TEXT NOT NULL,
+    reason        TEXT,
+    reason_cat    TEXT,
+    user_ref      TEXT,
+    rated_at      TEXT NOT NULL DEFAULT (datetime('now')),
+    UNIQUE(session_id, message_index)
+  );
+  CREATE INDEX IF NOT EXISTS idx_ratings_agent ON message_ratings(agent_id);
+  CREATE INDEX IF NOT EXISTS idx_ratings_session ON message_ratings(session_id);
+  CREATE INDEX IF NOT EXISTS idx_ratings_rating ON message_ratings(rating);
+  CREATE INDEX IF NOT EXISTS idx_ratings_rated_at ON message_ratings(rated_at);
+`);
+
+// Idempotent migration: add model routing columns to heartbeat_log
+try { db.exec(`ALTER TABLE heartbeat_log ADD COLUMN model_used TEXT`); } catch {}
+try { db.exec(`ALTER TABLE heartbeat_log ADD COLUMN routing_rule TEXT`); } catch {}
+
+// Idempotent migration: add model routing columns to cron_run_log
+try { db.exec(`ALTER TABLE cron_run_log ADD COLUMN model_used TEXT`); } catch {}
+try { db.exec(`ALTER TABLE cron_run_log ADD COLUMN routing_rule TEXT`); } catch {}
+
+db.exec(`
+  CREATE TABLE IF NOT EXISTS mcp_tool_calls (
+    id          TEXT PRIMARY KEY,
+    agent_id    TEXT NOT NULL,
+    adapter_id  TEXT NOT NULL,
+    tool_name   TEXT NOT NULL,
+    input       TEXT NOT NULL,
+    output      TEXT,
+    error       TEXT,
+    duration_ms INTEGER,
+    called_at   TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+  CREATE INDEX IF NOT EXISTS idx_mcp_tool_calls_agent ON mcp_tool_calls(agent_id);
+  CREATE INDEX IF NOT EXISTS idx_mcp_tool_calls_adapter ON mcp_tool_calls(adapter_id);
+`);
+
+db.exec(`
+  CREATE TABLE IF NOT EXISTS benchmark_runs (
+    id              TEXT PRIMARY KEY,
+    agent_id        TEXT NOT NULL,
+    trigger         TEXT NOT NULL,
+    version_from    TEXT,
+    version_to      TEXT NOT NULL,
+    eval_set_id     TEXT NOT NULL,
+    status          TEXT NOT NULL DEFAULT 'pending',
+    score_before    REAL,
+    score_after     REAL,
+    delta           REAL,
+    regression      INTEGER NOT NULL DEFAULT 0,
+    cases_total     INTEGER,
+    cases_passed    INTEGER,
+    cases_failed    INTEGER,
+    started_at      TEXT,
+    completed_at    TEXT,
+    created_at      TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+  CREATE INDEX IF NOT EXISTS idx_benchmark_runs_agent ON benchmark_runs(agent_id);
+  CREATE INDEX IF NOT EXISTS idx_benchmark_runs_status ON benchmark_runs(status);
+  CREATE INDEX IF NOT EXISTS idx_benchmark_runs_created ON benchmark_runs(created_at);
+
+  CREATE TABLE IF NOT EXISTS benchmark_cases (
+    id              TEXT PRIMARY KEY,
+    benchmark_id    TEXT NOT NULL REFERENCES benchmark_runs(id) ON DELETE CASCADE,
+    case_id         TEXT NOT NULL,
+    input           TEXT NOT NULL,
+    expected        TEXT NOT NULL,
+    response_before TEXT,
+    response_after  TEXT NOT NULL,
+    score_before    REAL,
+    score_after     REAL,
+    delta           REAL,
+    judge_reasoning TEXT
+  );
+  CREATE INDEX IF NOT EXISTS idx_benchmark_cases_benchmark ON benchmark_cases(benchmark_id);
+`);
+
+db.exec(`
+  CREATE TABLE IF NOT EXISTS circuit_breaker_config (
+    agent_id              TEXT PRIMARY KEY,
+    enabled               INTEGER NOT NULL DEFAULT 1,
+    max_consecutive_fails INTEGER NOT NULL DEFAULT 5,
+    error_rate_threshold  REAL NOT NULL DEFAULT 0.5,
+    error_rate_window_min INTEGER NOT NULL DEFAULT 10,
+    max_actions_per_hour  INTEGER NOT NULL DEFAULT 100,
+    max_actions_per_day   INTEGER NOT NULL DEFAULT 1000,
+    cooldown_min          INTEGER NOT NULL DEFAULT 30,
+    auto_resume           INTEGER NOT NULL DEFAULT 0,
+    updated_at            TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+
+  CREATE TABLE IF NOT EXISTS circuit_breaker_events (
+    id              TEXT PRIMARY KEY,
+    agent_id        TEXT NOT NULL,
+    event_type      TEXT NOT NULL,
+    trigger_reason  TEXT,
+    context         TEXT,
+    actor           TEXT,
+    created_at      TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_cb_events_agent   ON circuit_breaker_events(agent_id);
+  CREATE INDEX IF NOT EXISTS idx_cb_events_created ON circuit_breaker_events(created_at);
+  CREATE INDEX IF NOT EXISTS idx_cb_events_type    ON circuit_breaker_events(event_type);
+`);
+
+db.exec(`
+  CREATE TABLE IF NOT EXISTS compliance_classification (
+    agent_id           TEXT PRIMARY KEY,
+    risk_level         TEXT NOT NULL DEFAULT 'minimal',
+    risk_justification TEXT,
+    classified_by      TEXT NOT NULL,
+    classified_at      TEXT NOT NULL DEFAULT (datetime('now')),
+    reviewed_at        TEXT,
+    review_due_at      TEXT
+  );
+
+  CREATE TABLE IF NOT EXISTS compliance_checklist (
+    id         TEXT PRIMARY KEY,
+    agent_id   TEXT NOT NULL,
+    item_key   TEXT NOT NULL,
+    item_label TEXT NOT NULL,
+    category   TEXT NOT NULL,
+    status     TEXT NOT NULL DEFAULT 'pending',
+    evidence   TEXT,
+    updated_by TEXT,
+    updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+    UNIQUE(agent_id, item_key)
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_compliance_checklist_agent ON compliance_checklist(agent_id);
+
+  CREATE TABLE IF NOT EXISTS compliance_reports (
+    id           TEXT PRIMARY KEY,
+    agent_id     TEXT,
+    report_type  TEXT NOT NULL,
+    title        TEXT NOT NULL,
+    content      TEXT NOT NULL,
+    generated_by TEXT NOT NULL,
+    generated_at TEXT NOT NULL DEFAULT (datetime('now')),
+    period_from  TEXT,
+    period_to    TEXT
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_compliance_reports_agent ON compliance_reports(agent_id);
+  CREATE INDEX IF NOT EXISTS idx_compliance_reports_type  ON compliance_reports(report_type);
+`);
+
+db.exec(`
+  CREATE TABLE IF NOT EXISTS settings (
+    key        TEXT PRIMARY KEY,
+    value      TEXT NOT NULL,
+    updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+`);
+
+// F-161: Billing tables
+db.exec(`
+  CREATE TABLE IF NOT EXISTS billing_config (
+    id                  TEXT PRIMARY KEY DEFAULT 'default',
+    currency            TEXT NOT NULL DEFAULT 'BRL',
+    default_markup_pct  REAL NOT NULL DEFAULT 0.0,
+    agency_name         TEXT,
+    agency_document     TEXT,
+    agency_address      TEXT,
+    agency_bank_info    TEXT,
+    agency_logo_url     TEXT,
+    invoice_footer      TEXT,
+    updated_at          TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+
+  CREATE TABLE IF NOT EXISTS tenant_billing (
+    id                  TEXT PRIMARY KEY,
+    tenant_id           TEXT NOT NULL,
+    period_year         INTEGER NOT NULL,
+    period_month        INTEGER NOT NULL,
+    tokens_input        INTEGER NOT NULL DEFAULT 0,
+    tokens_output       INTEGER NOT NULL DEFAULT 0,
+    tokens_total        INTEGER NOT NULL DEFAULT 0,
+    cost_base           REAL NOT NULL DEFAULT 0.0,
+    markup_pct          REAL NOT NULL DEFAULT 0.0,
+    cost_with_markup    REAL NOT NULL DEFAULT 0.0,
+    status              TEXT NOT NULL DEFAULT 'draft',
+    finalized_at        TEXT,
+    created_at          TEXT NOT NULL DEFAULT (datetime('now')),
+    UNIQUE(tenant_id, period_year, period_month)
+  );
+  CREATE INDEX IF NOT EXISTS idx_tenant_billing_tenant ON tenant_billing(tenant_id);
+  CREATE INDEX IF NOT EXISTS idx_tenant_billing_period ON tenant_billing(period_year, period_month);
+
+  CREATE TABLE IF NOT EXISTS tenant_billing_detail (
+    id                  TEXT PRIMARY KEY,
+    billing_id          TEXT NOT NULL REFERENCES tenant_billing(id) ON DELETE CASCADE,
+    agent_id            TEXT NOT NULL,
+    agent_label         TEXT NOT NULL,
+    model               TEXT NOT NULL,
+    operation_type      TEXT NOT NULL,
+    tokens_input        INTEGER NOT NULL DEFAULT 0,
+    tokens_output       INTEGER NOT NULL DEFAULT 0,
+    tokens_total        INTEGER NOT NULL DEFAULT 0,
+    cost_base           REAL NOT NULL DEFAULT 0.0,
+    invocations         INTEGER NOT NULL DEFAULT 0
+  );
+  CREATE INDEX IF NOT EXISTS idx_billing_detail_billing ON tenant_billing_detail(billing_id);
+  CREATE INDEX IF NOT EXISTS idx_billing_detail_agent ON tenant_billing_detail(agent_id);
+
+  CREATE TABLE IF NOT EXISTS tenant_markup_override (
+    tenant_id           TEXT PRIMARY KEY,
+    markup_pct          REAL NOT NULL,
+    updated_at          TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+`);
+
 export { db };

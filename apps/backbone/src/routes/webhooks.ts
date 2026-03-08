@@ -4,6 +4,7 @@ import { db } from "../db/index.js";
 import { runAgent } from "../agent/index.js";
 import { assemblePrompt } from "../context/index.js";
 import { getAgent } from "../agents/registry.js";
+import { circuitBreaker } from "../circuit-breaker/index.js";
 
 export const webhookRoutes = new Hono();
 
@@ -180,6 +181,19 @@ webhookRoutes.post("/agents/:agentId/webhooks/:webhookId/events/:eventId/reproce
 // ── Async agent execution ───────────────────────────────────
 
 async function executeWebhookAsync(eventId: string, agentId: string, payload: unknown): Promise<void> {
+  // Guard: circuit-breaker
+  const cbCheck = circuitBreaker.canExecute(agentId);
+  if (!cbCheck.allowed) {
+    circuitBreaker.recordBlocked(agentId, cbCheck.reason ?? "unknown", {
+      mode: "webhook",
+      eventId,
+    });
+    db.prepare(
+      `UPDATE webhook_events SET status = 'blocked', error = ?, processed_at = datetime('now') WHERE id = ?`
+    ).run(`circuit-breaker: ${cbCheck.reason}`, eventId);
+    return;
+  }
+
   const agent = getAgent(agentId);
   if (!agent) {
     db.prepare(
@@ -206,11 +220,13 @@ async function executeWebhookAsync(eventId: string, agentId: string, payload: un
     db.prepare(
       `UPDATE webhook_events SET status = 'done', processed_at = datetime('now') WHERE id = ?`
     ).run(eventId);
+    circuitBreaker.recordOutcome(agentId, true);
   } catch (err) {
     const error = err instanceof Error ? err.message : String(err);
     db.prepare(
       `UPDATE webhook_events SET status = 'failed', error = ?, processed_at = datetime('now') WHERE id = ?`
     ).run(error, eventId);
+    circuitBreaker.recordOutcome(agentId, false);
   }
 }
 

@@ -162,7 +162,7 @@ export class ConnectorRegistry {
       const connectorDef = this.connectors.get(connectorSlug);
       if (!connectorDef?.createTools) continue;
 
-      const connectorTools = connectorDef.createTools(adapterList);
+      const connectorTools = connectorDef.createTools(adapterList, agentId);
       if (connectorTools) {
         Object.assign(tools, connectorTools);
       }

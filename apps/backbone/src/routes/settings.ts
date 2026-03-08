@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import { requireSysuser } from "./auth-helpers.js";
 import { getActivePlan, listPlans, setActivePlan } from "../settings/llm.js";
 import { loadWebSearchConfig, saveWebSearchConfig, isValidWebSearchProvider } from "../settings/web-search.js";
+import { loadMcpServerConfig, saveMcpServerConfig, type McpServerConfig } from "../settings/mcp-server.js";
 
 export const settingsRoutes = new Hono();
 
@@ -68,4 +69,32 @@ settingsRoutes.patch("/settings/web-search", async (c) => {
   const config = { provider: body.provider };
   saveWebSearchConfig(config);
   return c.json(config);
+});
+
+// --- GET /settings/mcp-server ---
+
+settingsRoutes.get("/settings/mcp-server", (c) => {
+  const denied = requireSysuser(c);
+  if (denied) return denied;
+
+  return c.json(loadMcpServerConfig());
+});
+
+// --- PUT /settings/mcp-server ---
+
+settingsRoutes.put("/settings/mcp-server", async (c) => {
+  const denied = requireSysuser(c);
+  if (denied) return denied;
+
+  const body = await c.req.json<Partial<McpServerConfig>>();
+
+  const current = loadMcpServerConfig();
+  const updated: McpServerConfig = {
+    enabled: body.enabled ?? current.enabled,
+    allowed_agents: body.allowed_agents ?? current.allowed_agents,
+    require_auth: body.require_auth ?? current.require_auth,
+  };
+
+  saveMcpServerConfig(updated);
+  return c.json(updated);
 });

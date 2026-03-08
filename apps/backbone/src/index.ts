@@ -31,6 +31,11 @@ import { initChannelAdapters, channelAdapterRegistry } from "./channels/delivery
 import { CONTEXT_DIR } from "./context/index.js";
 import { encryptAllYamlFiles } from "./context/encryptor.js";
 import { loadPlans } from "./settings/llm.js";
+import { initBenchmarkTrigger } from "./benchmarks/index.js";
+import { initCircuitBreaker } from "./circuit-breaker/index.js";
+import { initFleetEvents } from "./fleet/events.js";
+import { initTelemetry } from "./telemetry/index.js";
+import { initBilling } from "./billing/index.js";
 
 import type { ServerType } from "@hono/node-server";
 
@@ -55,6 +60,12 @@ async function bootstrap() {
 
   await initHooks();
   wireEventBusToHooks();
+
+  initBenchmarkTrigger();
+  initCircuitBreaker();
+  initFleetEvents();
+  initTelemetry();
+  initBilling();
 
   await initChannelAdapters();
 

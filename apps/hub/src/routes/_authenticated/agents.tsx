@@ -4,16 +4,18 @@ import { useQuery, useQueries, useMutation, useQueryClient } from "@tanstack/rea
 import { Bot, Plus, Search } from "lucide-react";
 import { PageHeader } from "@/components/shared/page-header";
 import { EmptyState } from "@/components/shared/empty-state";
-import { AgentCard, type HeartbeatLive } from "@/components/agents/agent-card";
+import { AgentCard, type HeartbeatLive, type CircuitBreakerLive } from "@/components/agents/agent-card";
 import {
   agentsQueryOptions,
   agentStatsQueryOptions,
   toggleAgentEnabled,
 } from "@/api/agents";
+import { systemCircuitBreakerQueryOptions } from "@/api/circuit-breaker";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useSSEEvent } from "@/hooks/use-sse";
+import { useAuthStore } from "@/lib/auth";
 
 type FilterValue = "all" | "active" | "inactive";
 
@@ -27,8 +29,13 @@ function AgentsPage() {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<FilterValue>("all");
   const [heartbeatMap, setHeartbeatMap] = useState<Record<string, HeartbeatLive>>({});
+  const [cbOverrides, setCbOverrides] = useState<Record<string, CircuitBreakerLive>>({});
 
-  const { data: agents, isLoading } = useQuery(agentsQueryOptions());
+  const userRole = useAuthStore((s) => s.user?.role);
+  const isSysadmin = userRole === "sysuser";
+
+  const { data: agents, isLoading } = useQuery(agentsQueryOptions(isSysadmin ? "all" : undefined));
+  const { data: cbStates } = useQuery(systemCircuitBreakerQueryOptions());
 
   const statsQueries = useQueries({
     queries: (agents ?? []).map((a) => agentStatsQueryOptions(a.id)),
@@ -42,6 +49,15 @@ function AgentsPage() {
     return map;
   }, [agents, statsQueries]);
 
+  const cbMap = useMemo(() => {
+    const map: Record<string, CircuitBreakerLive> = {};
+    for (const s of cbStates ?? []) {
+      map[s.agentId] = { killSwitch: s.killSwitch, tripped: s.tripped };
+    }
+    // SSE overrides take precedence
+    return { ...map, ...cbOverrides };
+  }, [cbStates, cbOverrides]);
+
   useSSEEvent("heartbeat:status", useCallback((event) => {
     const agentId = event.data?.agentId as string | undefined;
     if (!agentId) return;
@@ -51,6 +67,36 @@ function AgentsPage() {
         status: (event.data?.status as string) ?? "ok",
         preview: event.data?.preview as string | undefined,
       },
+    }));
+  }, []));
+
+  useSSEEvent("circuit_breaker:kill_switch", useCallback((event) => {
+    const agentId = event.data?.agentId as string | undefined;
+    if (!agentId) return;
+    setCbOverrides((prev) => ({
+      ...prev,
+      [agentId]: {
+        killSwitch: (event.data?.active as boolean) ?? false,
+        tripped: prev[agentId]?.tripped ?? false,
+      },
+    }));
+  }, []));
+
+  useSSEEvent("circuit_breaker:tripped", useCallback((event) => {
+    const agentId = event.data?.agentId as string | undefined;
+    if (!agentId) return;
+    setCbOverrides((prev) => ({
+      ...prev,
+      [agentId]: { killSwitch: prev[agentId]?.killSwitch ?? false, tripped: true },
+    }));
+  }, []));
+
+  useSSEEvent("circuit_breaker:resumed", useCallback((event) => {
+    const agentId = event.data?.agentId as string | undefined;
+    if (!agentId) return;
+    setCbOverrides((prev) => ({
+      ...prev,
+      [agentId]: { killSwitch: false, tripped: false },
     }));
   }, []));
 
@@ -153,6 +199,7 @@ function AgentsPage() {
               agent={agent}
               stats={statsMap[agent.id]}
               heartbeatLive={heartbeatMap[agent.id]}
+              circuitBreaker={cbMap[agent.id]}
               onToggle={handleToggle}
               onClick={() => navigate({ to: `/agents/${agent.id}` as string })}
             />

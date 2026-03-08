@@ -156,5 +156,20 @@ function invalidateByEvent(event: SystemEvent) {
       queryClient.invalidateQueries({ queryKey: ["agents"] });
       break;
     }
+    case "circuit_breaker:tripped":
+    case "circuit_breaker:resumed":
+    case "circuit_breaker:kill_switch": {
+      const agentId = event.data?.agentId as string | undefined;
+      if (agentId) {
+        queryClient.invalidateQueries({ queryKey: ["circuit-breaker", agentId] });
+      }
+      queryClient.invalidateQueries({ queryKey: ["circuit-breaker", "system"] });
+      queryClient.invalidateQueries({ queryKey: ["fleet"] });
+      break;
+    }
+    case "fleet:agent_status":
+    case "fleet:alert":
+      queryClient.invalidateQueries({ queryKey: ["fleet"] });
+      break;
   }
 }

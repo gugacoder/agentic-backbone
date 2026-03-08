@@ -94,6 +94,57 @@ export interface AgentQuotaExceededEvent {
   value: number;
 }
 
+export interface ConfigVersionChangedEvent {
+  agentId: string;
+  file: string;
+  versionFrom: string | null;
+  versionTo: string;
+}
+
+export interface CircuitBreakerTrippedEvent {
+  ts: number;
+  agentId: string;
+  reason: string;
+  trippedAt: string;
+}
+
+export interface CircuitBreakerResumedEvent {
+  ts: number;
+  agentId: string;
+  actor: string | null;
+  resumedAt: string;
+}
+
+export interface CircuitBreakerKillSwitchEvent {
+  ts: number;
+  agentId: string;
+  active: boolean;
+  actor: string;
+}
+
+export interface FleetAgentStatusEvent {
+  ts: number;
+  agentId: string;
+  status: "active" | "paused" | "alert" | "killed" | "error";
+  health: {
+    heartbeatSuccessRate24h: number;
+    lastHeartbeat: string | null;
+    lastHeartbeatResult: string | null;
+    consecutiveFails: number;
+  };
+  consumption: {
+    tokensToday: number;
+    costToday: number;
+  };
+}
+
+export interface FleetAlertEvent {
+  ts: number;
+  agentId: string;
+  alertType: "consecutive_fails" | "circuit_breaker_trip" | "kill_switch";
+  message: string;
+}
+
 export interface BackboneEventMap {
   "heartbeat:status": HeartbeatStatusEvent;
   "channel:message": ChannelMessageEvent;
@@ -107,6 +158,12 @@ export interface BackboneEventMap {
   "approval:pending": ApprovalPendingEvent;
   "security:alert": SecurityAlertEvent;
   "agent:quota-exceeded": AgentQuotaExceededEvent;
+  "config:version_changed": ConfigVersionChangedEvent;
+  "circuit_breaker:tripped": CircuitBreakerTrippedEvent;
+  "circuit_breaker:resumed": CircuitBreakerResumedEvent;
+  "circuit_breaker:kill_switch": CircuitBreakerKillSwitchEvent;
+  "fleet:agent_status": FleetAgentStatusEvent;
+  "fleet:alert": FleetAlertEvent;
 }
 
 // --- Typed Event Bus ---

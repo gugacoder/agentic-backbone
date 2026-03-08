@@ -1,0 +1,5 @@
+{
+  "enabled": false,
+  "allowed_agents": [],
+  "require_auth": true
+}

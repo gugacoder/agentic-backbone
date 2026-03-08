@@ -4,6 +4,12 @@ import type { EvolutionStateTracker } from "./state.js";
 import type { EvolutionActions, ActionResult } from "./actions.js";
 import { findChannelByMetadata } from "../../channels/lookup.js";
 import { routeInboundMessage } from "../../channels/delivery/inbound-router.js";
+import {
+  getPendingRating,
+  handlePossibleRatingReply,
+  lastAssistantMessageIndex,
+  setPendingRating,
+} from "./whatsapp-rating.js";
 
 interface RouteDeps {
   probe: EvolutionProbe;
@@ -297,7 +303,7 @@ export function createEvolutionRoutes(deps: RouteDeps): Hono {
     }
 
     // Extract sender number from JID (e.g. "5511999999999@s.whatsapp.net" → "5511999999999")
-    const senderId = remoteJid.split("@")[0];
+    const senderId = remoteJid.split("@")[0]!;
 
     // Lookup channel by instance metadata
     const channel = findChannelByMetadata("instance", instanceName);
@@ -305,12 +311,62 @@ export function createEvolutionRoutes(deps: RouteDeps): Hono {
       return c.json({ status: "no_channel" }, 200);
     }
 
-    routeInboundMessage(channel.slug, {
-      senderId,
-      content: messageText,
-      ts: Date.now(),
-      metadata: { instance: instanceName, remoteJid },
-    }).catch((err) => {
+    // ── Rating intercept ─────────────────────────────────────────────────────
+    // Check if this sender has a pending rating before routing to the agent.
+    const pending = getPendingRating(senderId);
+    if (pending) {
+      const result = handlePossibleRatingReply(senderId, messageText);
+      if (result === "handled") {
+        // If now awaiting reason, send optional follow-up prompt
+        const stillPending = getPendingRating(senderId);
+        if (stillPending?.step === "awaiting_reason") {
+          sendWhatsAppText(
+            baseUrl,
+            apiKey,
+            instanceName,
+            remoteJid,
+            "Pode nos dizer o motivo? (opcional — responda com o texto ou ignore)",
+          ).catch((err) => console.error("[evolution/rating] reason prompt failed:", err));
+        }
+        return c.json({ status: "rating_handled" }, 200);
+      }
+      // "passthrough" — treat as a new regular message (clear stale state already done)
+    }
+
+    // ── Normal agent routing ─────────────────────────────────────────────────
+    routeInboundMessage(
+      channel.slug,
+      {
+        senderId,
+        content: messageText,
+        ts: Date.now(),
+        metadata: { instance: instanceName, remoteJid },
+      },
+      async (sessionId, agentId) => {
+        // After agent responds, find the last assistant message index
+        const msgIndex = lastAssistantMessageIndex(agentId, sessionId);
+        if (msgIndex < 0) return;
+
+        // Set pending rating state
+        setPendingRating(senderId, {
+          sessionId,
+          agentId,
+          channelId: channel.slug,
+          instanceName,
+          messageIndex: msgIndex,
+          step: "awaiting_rating",
+        });
+
+        // Send rating question via WhatsApp
+        await sendWhatsAppText(
+          baseUrl,
+          apiKey,
+          instanceName,
+          remoteJid,
+          "Essa resposta foi útil? Responda *SIM* ou *NAO*",
+        ).catch((err) => console.error("[evolution/rating] rating question failed:", err));
+      },
+    ).catch((err) => {
       console.error(`[evolution/webhook] routing failed:`, err);
     });
 
@@ -318,6 +374,25 @@ export function createEvolutionRoutes(deps: RouteDeps): Hono {
   });
 
   return app;
+}
+
+// --- WhatsApp send helper ---
+
+async function sendWhatsAppText(
+  baseUrl: string,
+  apiKey: string,
+  instance: string,
+  remoteJid: string,
+  text: string,
+): Promise<void> {
+  const res = await fetch(`${baseUrl}/message/sendText/${instance}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", apikey: apiKey },
+    body: JSON.stringify({ number: remoteJid, text }),
+  });
+  if (!res.ok) {
+    throw new Error(`sendText HTTP ${res.status}`);
+  }
 }
 
 // --- Response envelope helpers ---

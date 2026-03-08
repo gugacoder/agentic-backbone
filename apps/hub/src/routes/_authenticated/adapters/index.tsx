@@ -14,7 +14,7 @@ export const Route = createFileRoute("/_authenticated/adapters/")({
   component: AdaptersPage,
 });
 
-const CONNECTOR_FILTERS = ["Todos", "mysql", "postgres", "evolution", "twilio", "http"] as const;
+const CONNECTOR_FILTERS = ["Todos", "mysql", "postgres", "evolution", "twilio", "http", "mcp"] as const;
 type ConnectorFilter = (typeof CONNECTOR_FILTERS)[number];
 
 const FILTER_LABELS: Record<ConnectorFilter, string> = {
@@ -24,6 +24,7 @@ const FILTER_LABELS: Record<ConnectorFilter, string> = {
   evolution: "Evolution",
   twilio: "Twilio",
   http: "HTTP",
+  mcp: "MCP",
 };
 
 function AdaptersPage() {

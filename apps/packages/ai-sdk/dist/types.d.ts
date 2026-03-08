@@ -1,4 +1,4 @@
-import type { LanguageModelV1Middleware } from "ai";
+import type { LanguageModelMiddleware } from "ai";
 export interface McpServerConfig {
     name: string;
     transport: {
@@ -159,7 +159,7 @@ export interface AiAgentOptions {
     /** Callback executed before each step. Returns overrides for model, tools, toolChoice. */
     prepareStep?: (context: PrepareStepContext) => PrepareStepResult | undefined;
     /** Middleware pipeline applied to the model. Executed in array order. */
-    middleware?: LanguageModelV1Middleware[];
+    middleware?: LanguageModelMiddleware[];
     /** Configuracao de telemetria OpenTelemetry */
     telemetry?: AiTelemetryOptions;
     /** Aliases de modelo customizados: nome amigavel → model ID completo (ex: { fast: "anthropic/claude-haiku-4.5" }) */

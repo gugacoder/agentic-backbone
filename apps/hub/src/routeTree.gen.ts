@@ -12,7 +12,9 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
+import { Route as AuthenticatedWorkflowsRouteImport } from './routes/_authenticated/workflows'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
+import { Route as AuthenticatedRatingsRouteImport } from './routes/_authenticated/ratings'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
 import { Route as AuthenticatedJobsRouteImport } from './routes/_authenticated/jobs'
 import { Route as AuthenticatedCronRouteImport } from './routes/_authenticated/cron'
@@ -21,17 +23,24 @@ import { Route as AuthenticatedConversationsRouteImport } from './routes/_authen
 import { Route as AuthenticatedChannelsRouteImport } from './routes/_authenticated/channels'
 import { Route as AuthenticatedAnalyticsRouteImport } from './routes/_authenticated/analytics'
 import { Route as AuthenticatedAgentsRouteImport } from './routes/_authenticated/agents'
+import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
 import { Route as AuthenticatedSecurityIndexRouteImport } from './routes/_authenticated/security/index'
+import { Route as AuthenticatedComplianceIndexRouteImport } from './routes/_authenticated/compliance/index'
+import { Route as AuthenticatedFleetIndexRouteImport } from './routes/_authenticated/fleet/index'
+import { Route as AuthenticatedSettingsOtelRouteImport } from './routes/_authenticated/settings_.otel'
 import { Route as AuthenticatedInboxIndexRouteImport } from './routes/_authenticated/inbox/index'
 import { Route as AuthenticatedApprovalsIndexRouteImport } from './routes/_authenticated/approvals/index'
 import { Route as AuthenticatedAdaptersIndexRouteImport } from './routes/_authenticated/adapters/index'
+import { Route as AuthenticatedWorkflowsIdRouteImport } from './routes/_authenticated/workflows.$id'
 import { Route as AuthenticatedJobsIdRouteImport } from './routes/_authenticated/jobs.$id'
 import { Route as AuthenticatedConversationsIdRouteImport } from './routes/_authenticated/conversations.$id'
 import { Route as AuthenticatedChannelsSlugRouteImport } from './routes/_authenticated/channels.$slug'
 import { Route as AuthenticatedAgentsNewRouteImport } from './routes/_authenticated/agents.new'
 import { Route as AuthenticatedAgentsIdRouteImport } from './routes/_authenticated/agents.$id'
+import { Route as AuthenticatedAgentsIdRatingsRouteImport } from './routes/_authenticated/agents.$id.ratings'
 import { Route as AuthenticatedAgentsIdEvalRunsRunIdRouteImport } from './routes/_authenticated/agents.$id.eval-runs.$runId'
 import { Route as AuthenticatedAgentsIdDraftsDraftIdRouteImport } from './routes/_authenticated/agents.$id.drafts.$draftId'
+import { Route as AuthenticatedAgentsIdBenchmarksRunIdRouteImport } from './routes/_authenticated/agents.$id.benchmarks.$runId'
 import { Route as AuthenticatedAgentsIdDraftsDraftIdCompareRouteImport } from './routes/_authenticated/agents.$id.drafts.$draftId.compare'
 
 const LoginRoute = LoginRouteImport.update({
@@ -48,9 +57,19 @@ const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedWorkflowsRoute = AuthenticatedWorkflowsRouteImport.update({
+  id: '/workflows',
+  path: '/workflows',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedRatingsRoute = AuthenticatedRatingsRouteImport.update({
+  id: '/ratings',
+  path: '/ratings',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedNotificationsRoute =
@@ -95,10 +114,33 @@ const AuthenticatedAgentsRoute = AuthenticatedAgentsRouteImport.update({
   path: '/agents',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedAccountRoute = AuthenticatedAccountRouteImport.update({
+  id: '/account',
+  path: '/account',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedSecurityIndexRoute =
   AuthenticatedSecurityIndexRouteImport.update({
     id: '/security/',
     path: '/security/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedComplianceIndexRoute =
+  AuthenticatedComplianceIndexRouteImport.update({
+    id: '/compliance/',
+    path: '/compliance/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedFleetIndexRoute =
+  AuthenticatedFleetIndexRouteImport.update({
+    id: '/fleet/',
+    path: '/fleet/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedSettingsOtelRoute =
+  AuthenticatedSettingsOtelRouteImport.update({
+    id: '/_authenticated/settings_/otel',
+    path: '/settings/otel',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
 const AuthenticatedInboxIndexRoute = AuthenticatedInboxIndexRouteImport.update({
@@ -117,6 +159,12 @@ const AuthenticatedAdaptersIndexRoute =
     id: '/adapters/',
     path: '/adapters/',
     getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedWorkflowsIdRoute =
+  AuthenticatedWorkflowsIdRouteImport.update({
+    id: '/$id',
+    path: '/$id',
+    getParentRoute: () => AuthenticatedWorkflowsRoute,
   } as any)
 const AuthenticatedJobsIdRoute = AuthenticatedJobsIdRouteImport.update({
   id: '/$id',
@@ -145,6 +193,12 @@ const AuthenticatedAgentsIdRoute = AuthenticatedAgentsIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => AuthenticatedAgentsRoute,
 } as any)
+const AuthenticatedAgentsIdRatingsRoute =
+  AuthenticatedAgentsIdRatingsRouteImport.update({
+    id: '/ratings',
+    path: '/ratings',
+    getParentRoute: () => AuthenticatedAgentsIdRoute,
+  } as any)
 const AuthenticatedAgentsIdEvalRunsRunIdRoute =
   AuthenticatedAgentsIdEvalRunsRunIdRouteImport.update({
     id: '/eval-runs/$runId',
@@ -157,6 +211,12 @@ const AuthenticatedAgentsIdDraftsDraftIdRoute =
     path: '/drafts/$draftId',
     getParentRoute: () => AuthenticatedAgentsIdRoute,
   } as any)
+const AuthenticatedAgentsIdBenchmarksRunIdRoute =
+  AuthenticatedAgentsIdBenchmarksRunIdRouteImport.update({
+    id: '/benchmarks/$runId',
+    path: '/benchmarks/$runId',
+    getParentRoute: () => AuthenticatedAgentsIdRoute,
+  } as any)
 const AuthenticatedAgentsIdDraftsDraftIdCompareRoute =
   AuthenticatedAgentsIdDraftsDraftIdCompareRouteImport.update({
     id: '/compare',
@@ -167,6 +227,7 @@ const AuthenticatedAgentsIdDraftsDraftIdCompareRoute =
 export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
   '/login': typeof LoginRoute
+  '/account': typeof AuthenticatedAccountRoute
   '/agents': typeof AuthenticatedAgentsRouteWithChildren
   '/analytics': typeof AuthenticatedAnalyticsRoute
   '/channels': typeof AuthenticatedChannelsRouteWithChildren
@@ -175,22 +236,31 @@ export interface FileRoutesByFullPath {
   '/cron': typeof AuthenticatedCronRoute
   '/jobs': typeof AuthenticatedJobsRouteWithChildren
   '/notifications': typeof AuthenticatedNotificationsRoute
+  '/ratings': typeof AuthenticatedRatingsRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/workflows': typeof AuthenticatedWorkflowsRouteWithChildren
   '/agents/$id': typeof AuthenticatedAgentsIdRouteWithChildren
   '/agents/new': typeof AuthenticatedAgentsNewRoute
   '/channels/$slug': typeof AuthenticatedChannelsSlugRoute
   '/conversations/$id': typeof AuthenticatedConversationsIdRoute
   '/jobs/$id': typeof AuthenticatedJobsIdRoute
+  '/workflows/$id': typeof AuthenticatedWorkflowsIdRoute
   '/adapters/': typeof AuthenticatedAdaptersIndexRoute
   '/approvals/': typeof AuthenticatedApprovalsIndexRoute
   '/inbox/': typeof AuthenticatedInboxIndexRoute
   '/security/': typeof AuthenticatedSecurityIndexRoute
+  '/compliance/': typeof AuthenticatedComplianceIndexRoute
+  '/fleet/': typeof AuthenticatedFleetIndexRoute
+  '/settings/otel': typeof AuthenticatedSettingsOtelRoute
+  '/agents/$id/ratings': typeof AuthenticatedAgentsIdRatingsRoute
+  '/agents/$id/benchmarks/$runId': typeof AuthenticatedAgentsIdBenchmarksRunIdRoute
   '/agents/$id/drafts/$draftId': typeof AuthenticatedAgentsIdDraftsDraftIdRouteWithChildren
   '/agents/$id/eval-runs/$runId': typeof AuthenticatedAgentsIdEvalRunsRunIdRoute
   '/agents/$id/drafts/$draftId/compare': typeof AuthenticatedAgentsIdDraftsDraftIdCompareRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
+  '/account': typeof AuthenticatedAccountRoute
   '/agents': typeof AuthenticatedAgentsRouteWithChildren
   '/analytics': typeof AuthenticatedAnalyticsRoute
   '/channels': typeof AuthenticatedChannelsRouteWithChildren
@@ -199,17 +269,25 @@ export interface FileRoutesByTo {
   '/cron': typeof AuthenticatedCronRoute
   '/jobs': typeof AuthenticatedJobsRouteWithChildren
   '/notifications': typeof AuthenticatedNotificationsRoute
+  '/ratings': typeof AuthenticatedRatingsRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/workflows': typeof AuthenticatedWorkflowsRouteWithChildren
   '/': typeof AuthenticatedIndexRoute
   '/agents/$id': typeof AuthenticatedAgentsIdRouteWithChildren
   '/agents/new': typeof AuthenticatedAgentsNewRoute
   '/channels/$slug': typeof AuthenticatedChannelsSlugRoute
   '/conversations/$id': typeof AuthenticatedConversationsIdRoute
   '/jobs/$id': typeof AuthenticatedJobsIdRoute
+  '/workflows/$id': typeof AuthenticatedWorkflowsIdRoute
   '/adapters': typeof AuthenticatedAdaptersIndexRoute
   '/approvals': typeof AuthenticatedApprovalsIndexRoute
   '/inbox': typeof AuthenticatedInboxIndexRoute
   '/security': typeof AuthenticatedSecurityIndexRoute
+  '/compliance': typeof AuthenticatedComplianceIndexRoute
+  '/fleet': typeof AuthenticatedFleetIndexRoute
+  '/settings/otel': typeof AuthenticatedSettingsOtelRoute
+  '/agents/$id/ratings': typeof AuthenticatedAgentsIdRatingsRoute
+  '/agents/$id/benchmarks/$runId': typeof AuthenticatedAgentsIdBenchmarksRunIdRoute
   '/agents/$id/drafts/$draftId': typeof AuthenticatedAgentsIdDraftsDraftIdRouteWithChildren
   '/agents/$id/eval-runs/$runId': typeof AuthenticatedAgentsIdEvalRunsRunIdRoute
   '/agents/$id/drafts/$draftId/compare': typeof AuthenticatedAgentsIdDraftsDraftIdCompareRoute
@@ -218,6 +296,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/login': typeof LoginRoute
+  '/_authenticated/account': typeof AuthenticatedAccountRoute
   '/_authenticated/agents': typeof AuthenticatedAgentsRouteWithChildren
   '/_authenticated/analytics': typeof AuthenticatedAnalyticsRoute
   '/_authenticated/channels': typeof AuthenticatedChannelsRouteWithChildren
@@ -226,17 +305,25 @@ export interface FileRoutesById {
   '/_authenticated/cron': typeof AuthenticatedCronRoute
   '/_authenticated/jobs': typeof AuthenticatedJobsRouteWithChildren
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
+  '/_authenticated/ratings': typeof AuthenticatedRatingsRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
+  '/_authenticated/workflows': typeof AuthenticatedWorkflowsRouteWithChildren
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/agents/$id': typeof AuthenticatedAgentsIdRouteWithChildren
   '/_authenticated/agents/new': typeof AuthenticatedAgentsNewRoute
   '/_authenticated/channels/$slug': typeof AuthenticatedChannelsSlugRoute
   '/_authenticated/conversations/$id': typeof AuthenticatedConversationsIdRoute
   '/_authenticated/jobs/$id': typeof AuthenticatedJobsIdRoute
+  '/_authenticated/workflows/$id': typeof AuthenticatedWorkflowsIdRoute
   '/_authenticated/adapters/': typeof AuthenticatedAdaptersIndexRoute
   '/_authenticated/approvals/': typeof AuthenticatedApprovalsIndexRoute
   '/_authenticated/inbox/': typeof AuthenticatedInboxIndexRoute
   '/_authenticated/security/': typeof AuthenticatedSecurityIndexRoute
+  '/_authenticated/compliance/': typeof AuthenticatedComplianceIndexRoute
+  '/_authenticated/fleet/': typeof AuthenticatedFleetIndexRoute
+  '/_authenticated/settings_/otel': typeof AuthenticatedSettingsOtelRoute
+  '/_authenticated/agents/$id/ratings': typeof AuthenticatedAgentsIdRatingsRoute
+  '/_authenticated/agents/$id/benchmarks/$runId': typeof AuthenticatedAgentsIdBenchmarksRunIdRoute
   '/_authenticated/agents/$id/drafts/$draftId': typeof AuthenticatedAgentsIdDraftsDraftIdRouteWithChildren
   '/_authenticated/agents/$id/eval-runs/$runId': typeof AuthenticatedAgentsIdEvalRunsRunIdRoute
   '/_authenticated/agents/$id/drafts/$draftId/compare': typeof AuthenticatedAgentsIdDraftsDraftIdCompareRoute
@@ -246,6 +333,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/login'
+    | '/account'
     | '/agents'
     | '/analytics'
     | '/channels'
@@ -254,22 +342,31 @@ export interface FileRouteTypes {
     | '/cron'
     | '/jobs'
     | '/notifications'
+    | '/ratings'
     | '/settings'
+    | '/workflows'
     | '/agents/$id'
     | '/agents/new'
     | '/channels/$slug'
     | '/conversations/$id'
     | '/jobs/$id'
+    | '/workflows/$id'
     | '/adapters/'
     | '/approvals/'
     | '/inbox/'
     | '/security/'
+    | '/compliance/'
+    | '/fleet/'
+    | '/settings/otel'
+    | '/agents/$id/ratings'
+    | '/agents/$id/benchmarks/$runId'
     | '/agents/$id/drafts/$draftId'
     | '/agents/$id/eval-runs/$runId'
     | '/agents/$id/drafts/$draftId/compare'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/login'
+    | '/account'
     | '/agents'
     | '/analytics'
     | '/channels'
@@ -278,17 +375,25 @@ export interface FileRouteTypes {
     | '/cron'
     | '/jobs'
     | '/notifications'
+    | '/ratings'
     | '/settings'
+    | '/workflows'
     | '/'
     | '/agents/$id'
     | '/agents/new'
     | '/channels/$slug'
     | '/conversations/$id'
     | '/jobs/$id'
+    | '/workflows/$id'
     | '/adapters'
     | '/approvals'
     | '/inbox'
     | '/security'
+    | '/compliance'
+    | '/fleet'
+    | '/settings/otel'
+    | '/agents/$id/ratings'
+    | '/agents/$id/benchmarks/$runId'
     | '/agents/$id/drafts/$draftId'
     | '/agents/$id/eval-runs/$runId'
     | '/agents/$id/drafts/$draftId/compare'
@@ -296,6 +401,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/_authenticated'
     | '/login'
+    | '/_authenticated/account'
     | '/_authenticated/agents'
     | '/_authenticated/analytics'
     | '/_authenticated/channels'
@@ -304,17 +410,25 @@ export interface FileRouteTypes {
     | '/_authenticated/cron'
     | '/_authenticated/jobs'
     | '/_authenticated/notifications'
+    | '/_authenticated/ratings'
     | '/_authenticated/settings'
+    | '/_authenticated/workflows'
     | '/_authenticated/'
     | '/_authenticated/agents/$id'
     | '/_authenticated/agents/new'
     | '/_authenticated/channels/$slug'
     | '/_authenticated/conversations/$id'
     | '/_authenticated/jobs/$id'
+    | '/_authenticated/workflows/$id'
     | '/_authenticated/adapters/'
     | '/_authenticated/approvals/'
     | '/_authenticated/inbox/'
     | '/_authenticated/security/'
+    | '/_authenticated/compliance/'
+    | '/_authenticated/fleet/'
+    | '/_authenticated/settings_/otel'
+    | '/_authenticated/agents/$id/ratings'
+    | '/_authenticated/agents/$id/benchmarks/$runId'
     | '/_authenticated/agents/$id/drafts/$draftId'
     | '/_authenticated/agents/$id/eval-runs/$runId'
     | '/_authenticated/agents/$id/drafts/$draftId/compare'
@@ -348,11 +462,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/workflows': {
+      id: '/_authenticated/workflows'
+      path: '/workflows'
+      fullPath: '/workflows'
+      preLoaderRoute: typeof AuthenticatedWorkflowsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/settings': {
       id: '/_authenticated/settings'
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof AuthenticatedSettingsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/ratings': {
+      id: '/_authenticated/ratings'
+      path: '/ratings'
+      fullPath: '/ratings'
+      preLoaderRoute: typeof AuthenticatedRatingsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/notifications': {
@@ -411,11 +539,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAgentsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/account': {
+      id: '/_authenticated/account'
+      path: '/account'
+      fullPath: '/account'
+      preLoaderRoute: typeof AuthenticatedAccountRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/security/': {
       id: '/_authenticated/security/'
       path: '/security'
       fullPath: '/security/'
       preLoaderRoute: typeof AuthenticatedSecurityIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/compliance/': {
+      id: '/_authenticated/compliance/'
+      path: '/compliance'
+      fullPath: '/compliance/'
+      preLoaderRoute: typeof AuthenticatedComplianceIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/fleet/': {
+      id: '/_authenticated/fleet/'
+      path: '/fleet'
+      fullPath: '/fleet/'
+      preLoaderRoute: typeof AuthenticatedFleetIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/settings_/otel': {
+      id: '/_authenticated/settings_/otel'
+      path: '/settings/otel'
+      fullPath: '/settings/otel'
+      preLoaderRoute: typeof AuthenticatedSettingsOtelRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/inbox/': {
@@ -438,6 +594,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/adapters/'
       preLoaderRoute: typeof AuthenticatedAdaptersIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/workflows/$id': {
+      id: '/_authenticated/workflows/$id'
+      path: '/$id'
+      fullPath: '/workflows/$id'
+      preLoaderRoute: typeof AuthenticatedWorkflowsIdRouteImport
+      parentRoute: typeof AuthenticatedWorkflowsRoute
     }
     '/_authenticated/jobs/$id': {
       id: '/_authenticated/jobs/$id'
@@ -474,6 +637,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAgentsIdRouteImport
       parentRoute: typeof AuthenticatedAgentsRoute
     }
+    '/_authenticated/agents/$id/ratings': {
+      id: '/_authenticated/agents/$id/ratings'
+      path: '/ratings'
+      fullPath: '/agents/$id/ratings'
+      preLoaderRoute: typeof AuthenticatedAgentsIdRatingsRouteImport
+      parentRoute: typeof AuthenticatedAgentsIdRoute
+    }
     '/_authenticated/agents/$id/eval-runs/$runId': {
       id: '/_authenticated/agents/$id/eval-runs/$runId'
       path: '/eval-runs/$runId'
@@ -486,6 +656,13 @@ declare module '@tanstack/react-router' {
       path: '/drafts/$draftId'
       fullPath: '/agents/$id/drafts/$draftId'
       preLoaderRoute: typeof AuthenticatedAgentsIdDraftsDraftIdRouteImport
+      parentRoute: typeof AuthenticatedAgentsIdRoute
+    }
+    '/_authenticated/agents/$id/benchmarks/$runId': {
+      id: '/_authenticated/agents/$id/benchmarks/$runId'
+      path: '/benchmarks/$runId'
+      fullPath: '/agents/$id/benchmarks/$runId'
+      preLoaderRoute: typeof AuthenticatedAgentsIdBenchmarksRunIdRouteImport
       parentRoute: typeof AuthenticatedAgentsIdRoute
     }
     '/_authenticated/agents/$id/drafts/$draftId/compare': {
@@ -514,11 +691,16 @@ const AuthenticatedAgentsIdDraftsDraftIdRouteWithChildren =
   )
 
 interface AuthenticatedAgentsIdRouteChildren {
+  AuthenticatedAgentsIdRatingsRoute: typeof AuthenticatedAgentsIdRatingsRoute
+  AuthenticatedAgentsIdBenchmarksRunIdRoute: typeof AuthenticatedAgentsIdBenchmarksRunIdRoute
   AuthenticatedAgentsIdDraftsDraftIdRoute: typeof AuthenticatedAgentsIdDraftsDraftIdRouteWithChildren
   AuthenticatedAgentsIdEvalRunsRunIdRoute: typeof AuthenticatedAgentsIdEvalRunsRunIdRoute
 }
 
 const AuthenticatedAgentsIdRouteChildren: AuthenticatedAgentsIdRouteChildren = {
+  AuthenticatedAgentsIdRatingsRoute: AuthenticatedAgentsIdRatingsRoute,
+  AuthenticatedAgentsIdBenchmarksRunIdRoute:
+    AuthenticatedAgentsIdBenchmarksRunIdRoute,
   AuthenticatedAgentsIdDraftsDraftIdRoute:
     AuthenticatedAgentsIdDraftsDraftIdRouteWithChildren,
   AuthenticatedAgentsIdEvalRunsRunIdRoute:
@@ -581,7 +763,22 @@ const AuthenticatedJobsRouteChildren: AuthenticatedJobsRouteChildren = {
 const AuthenticatedJobsRouteWithChildren =
   AuthenticatedJobsRoute._addFileChildren(AuthenticatedJobsRouteChildren)
 
+interface AuthenticatedWorkflowsRouteChildren {
+  AuthenticatedWorkflowsIdRoute: typeof AuthenticatedWorkflowsIdRoute
+}
+
+const AuthenticatedWorkflowsRouteChildren: AuthenticatedWorkflowsRouteChildren =
+  {
+    AuthenticatedWorkflowsIdRoute: AuthenticatedWorkflowsIdRoute,
+  }
+
+const AuthenticatedWorkflowsRouteWithChildren =
+  AuthenticatedWorkflowsRoute._addFileChildren(
+    AuthenticatedWorkflowsRouteChildren,
+  )
+
 interface AuthenticatedRouteChildren {
+  AuthenticatedAccountRoute: typeof AuthenticatedAccountRoute
   AuthenticatedAgentsRoute: typeof AuthenticatedAgentsRouteWithChildren
   AuthenticatedAnalyticsRoute: typeof AuthenticatedAnalyticsRoute
   AuthenticatedChannelsRoute: typeof AuthenticatedChannelsRouteWithChildren
@@ -590,15 +787,21 @@ interface AuthenticatedRouteChildren {
   AuthenticatedCronRoute: typeof AuthenticatedCronRoute
   AuthenticatedJobsRoute: typeof AuthenticatedJobsRouteWithChildren
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
+  AuthenticatedRatingsRoute: typeof AuthenticatedRatingsRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
+  AuthenticatedWorkflowsRoute: typeof AuthenticatedWorkflowsRouteWithChildren
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
   AuthenticatedAdaptersIndexRoute: typeof AuthenticatedAdaptersIndexRoute
   AuthenticatedApprovalsIndexRoute: typeof AuthenticatedApprovalsIndexRoute
   AuthenticatedInboxIndexRoute: typeof AuthenticatedInboxIndexRoute
   AuthenticatedSecurityIndexRoute: typeof AuthenticatedSecurityIndexRoute
+  AuthenticatedComplianceIndexRoute: typeof AuthenticatedComplianceIndexRoute
+  AuthenticatedFleetIndexRoute: typeof AuthenticatedFleetIndexRoute
+  AuthenticatedSettingsOtelRoute: typeof AuthenticatedSettingsOtelRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
+  AuthenticatedAccountRoute: AuthenticatedAccountRoute,
   AuthenticatedAgentsRoute: AuthenticatedAgentsRouteWithChildren,
   AuthenticatedAnalyticsRoute: AuthenticatedAnalyticsRoute,
   AuthenticatedChannelsRoute: AuthenticatedChannelsRouteWithChildren,
@@ -607,12 +810,17 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedCronRoute: AuthenticatedCronRoute,
   AuthenticatedJobsRoute: AuthenticatedJobsRouteWithChildren,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
+  AuthenticatedRatingsRoute: AuthenticatedRatingsRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
+  AuthenticatedWorkflowsRoute: AuthenticatedWorkflowsRouteWithChildren,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
   AuthenticatedAdaptersIndexRoute: AuthenticatedAdaptersIndexRoute,
   AuthenticatedApprovalsIndexRoute: AuthenticatedApprovalsIndexRoute,
   AuthenticatedInboxIndexRoute: AuthenticatedInboxIndexRoute,
   AuthenticatedSecurityIndexRoute: AuthenticatedSecurityIndexRoute,
+  AuthenticatedComplianceIndexRoute: AuthenticatedComplianceIndexRoute,
+  AuthenticatedFleetIndexRoute: AuthenticatedFleetIndexRoute,
+  AuthenticatedSettingsOtelRoute: AuthenticatedSettingsOtelRoute,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
