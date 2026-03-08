@@ -217,7 +217,7 @@
     "id": "F-154",
     "name": "Fleet: API endpoints /fleet, /fleet/batch, /fleet/summary",
     "description": "Implementar endpoints: GET /fleet (visão consolidada de todos os agentes com métricas de saúde, consumo, atividade, circuit-breaker — query params: owner, status, sortBy, sortDir), POST /fleet/batch (operação em lote: enable, disable, trigger_heartbeat, activate_kill_switch, deactivate_kill_switch — resposta individual por agente), GET /fleet/summary (cards: totalAgents, activeAgents, pausedAgents, errorAgents, killedAgents, totalTokensToday, totalCostToday, avgHealthRate, activeAlerts). Agrega dados de AgentRegistry, heartbeat_log, circuit_breaker e custos.",
-    "status": "pending",
+    "status": "passing",
     "priority": 11,
     "agent": "coder",
     "task": "vibe-code",
@@ -232,7 +232,8 @@
       "GET /fleet/summary retorna totais corretos",
       "`npm run typecheck` passa sem erros"
     ],
-    "prp_path": "sprints/sprint-7/3-prps/PRP-44-fleet-management-dashboard.md"
+    "prp_path": "sprints/sprint-7/3-prps/PRP-44-fleet-management-dashboard.md",
+    "completed_at": "2026-03-08T17:00:00Z"
   },
   {
     "id": "F-155",
