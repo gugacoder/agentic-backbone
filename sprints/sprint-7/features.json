@@ -119,7 +119,7 @@
     "priority": 7,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-149"],
+    "dependencies": ["F-149", "F-145"],
     "tests": [
       "Classificar agente como high-risk gera 10 items de checklist automaticamente",
       "Classificar como limited-risk gera 4 items, minimal-risk gera 1 item",
