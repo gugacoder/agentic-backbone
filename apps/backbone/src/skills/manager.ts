@@ -13,7 +13,8 @@ import {
   agentResourceDir,
   type ResourceKind,
 } from "../context/paths.js";
-import { parseFrontmatter, serializeFrontmatter } from "../context/frontmatter.js";
+import { parseFrontmatter, serializeFrontmatter } from "../context/readers.js";
+import { SkillMdSchema } from "../context/schemas.js";
 import { resolveSkills, type ResolvedResource } from "../context/resolver.js";
 
 const KIND: ResourceKind = "skills";
@@ -51,11 +52,16 @@ export function createSkill(input: CreateSkillInput): ResolvedResource {
 
   mkdirSync(skillDir, { recursive: true });
 
-  const meta: Record<string, unknown> = {
+  const metaRaw: Record<string, unknown> = {
     name: input.name,
     description: input.description ?? "",
     ...input.metadata,
   };
+  const result = SkillMdSchema.safeParse(metaRaw);
+  if (!result.success) {
+    throw new Error(`Invalid skill metadata: ${result.error.message}`);
+  }
+  const meta = result.data;
 
   const body = input.body ?? `# ${input.name}\n`;
   writeFileSync(mdPath, serializeFrontmatter(meta, body));
@@ -64,7 +70,7 @@ export function createSkill(input: CreateSkillInput): ResolvedResource {
     slug: input.slug,
     path: mdPath,
     source: input.scope,
-    metadata: meta,
+    metadata: meta as Record<string, unknown>,
     content: body,
   };
 }

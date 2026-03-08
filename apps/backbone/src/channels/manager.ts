@@ -1,13 +1,11 @@
 import {
   existsSync,
-  readFileSync,
-  writeFileSync,
   mkdirSync,
   rmSync,
 } from "node:fs";
 import { join } from "node:path";
 import { channelDir } from "../context/paths.js";
-import { parseFrontmatter, serializeFrontmatter } from "../context/frontmatter.js";
+import { readYaml, writeYaml } from "../context/readers.js";
 import { refreshChannelRegistry, getChannel } from "./registry.js";
 import type { ChannelConfig } from "./types.js";
 
@@ -27,23 +25,23 @@ export interface UpdateChannelInput {
 
 export function createChannel(input: CreateChannelInput): ChannelConfig {
   const dir = channelDir(input.userSlug, input.slug);
-  const mdPath = join(dir, "CHANNEL.md");
+  const ymlPath = join(dir, "CHANNEL.yml");
 
-  if (existsSync(mdPath)) {
+  if (existsSync(ymlPath)) {
     throw new Error(`Channel ${input.slug} already exists`);
   }
 
   mkdirSync(dir, { recursive: true });
 
-  const meta: Record<string, unknown> = {
+  const config: Record<string, unknown> = {
     slug: input.slug,
     owner: input.userSlug,
     type: input.type ?? "generic",
+    description: input.description ?? "",
     ...input.metadata,
   };
 
-  const content = input.description ?? `# ${input.slug}\n`;
-  writeFileSync(mdPath, serializeFrontmatter(meta, content));
+  writeYaml(ymlPath, config);
 
   refreshChannelRegistry();
   return getChannel(input.slug)!;
@@ -55,24 +53,23 @@ export function updateChannel(
   updates: UpdateChannelInput
 ): ChannelConfig {
   const dir = channelDir(userSlug, slug);
-  const mdPath = join(dir, "CHANNEL.md");
+  const ymlPath = join(dir, "CHANNEL.yml");
 
-  if (!existsSync(mdPath)) {
+  if (!existsSync(ymlPath)) {
     throw new Error(`Channel ${slug} not found`);
   }
 
-  const raw = readFileSync(mdPath, "utf-8");
-  const { metadata, content } = parseFrontmatter(raw);
+  const config = readYaml(ymlPath);
 
-  if (updates.type !== undefined) metadata.type = updates.type;
+  if (updates.type !== undefined) config.type = updates.type;
+  if (updates.description !== undefined) config.description = updates.description;
   if (updates.metadata) {
     for (const [key, value] of Object.entries(updates.metadata)) {
-      metadata[key] = value;
+      config[key] = value;
     }
   }
 
-  const newContent = updates.description !== undefined ? updates.description : content;
-  writeFileSync(mdPath, serializeFrontmatter(metadata, newContent));
+  writeYaml(ymlPath, config);
 
   refreshChannelRegistry();
   return getChannel(slug)!;

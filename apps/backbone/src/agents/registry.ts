@@ -1,10 +1,10 @@
 import { readdirSync, existsSync } from "node:fs";
 import { agentsDir, agentConfigPath, parseAgentId } from "../context/paths.js";
-import { parseFrontmatter, readContextFile } from "../context/frontmatter.js";
+import { readYaml } from "../context/readers.js";
+import { AgentYmlSchema } from "../context/schemas.js";
 import {
   type AgentConfig,
   type HeartbeatConfig,
-  DEFAULT_HEARTBEAT_CONFIG,
 } from "./types.js";
 
 let cache: Map<string, AgentConfig> | null = null;
@@ -13,29 +13,30 @@ function parseAgentConfig(agentId: string): AgentConfig | null {
   const configPath = agentConfigPath(agentId);
   if (!existsSync(configPath)) return null;
 
-  const raw = readContextFile(configPath);
-  const { metadata, content } = parseFrontmatter(raw);
+  const raw = readYaml(configPath);
+  const result = AgentYmlSchema.safeParse(raw);
+  if (!result.success) {
+    console.warn(`[agents] invalid AGENT.yml for ${agentId}:`, result.error.issues);
+    return null;
+  }
+
+  const data = result.data;
   const { owner, slug } = parseAgentId(agentId);
 
   const heartbeat: HeartbeatConfig = {
-    enabled: metadata["heartbeat-enabled"] === true,
-    intervalMs:
-      typeof metadata["heartbeat-interval"] === "number"
-        ? metadata["heartbeat-interval"]
-        : DEFAULT_HEARTBEAT_CONFIG.intervalMs,
+    enabled: data["heartbeat-enabled"],
+    intervalMs: data["heartbeat-interval"],
   };
 
-  const enabled = metadata.enabled === true;
-
   return {
-    id: (metadata.id as string) ?? agentId,
-    owner: (metadata.owner as string) ?? owner,
-    slug: (metadata.slug as string) ?? slug,
-    delivery: (metadata.delivery as string) ?? "",
-    enabled,
+    id: data.id ?? agentId,
+    owner: data.owner ?? owner,
+    slug: data.slug ?? slug,
+    delivery: data.delivery,
+    enabled: data.enabled,
     heartbeat,
-    metadata,
-    description: content.trim(),
+    metadata: data,
+    description: data.description,
   };
 }
 

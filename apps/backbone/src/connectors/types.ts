@@ -33,7 +33,7 @@ export interface ConnectorDef {
   health?(): ConnectorHealth;
 }
 
-// --- Resolved Adapter (from ADAPTER.yaml) ---
+// --- Resolved Adapter (from ADAPTER.yml) ---
 
 export interface ResolvedAdapter {
   slug: string;

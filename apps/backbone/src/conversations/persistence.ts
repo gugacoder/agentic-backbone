@@ -1,12 +1,13 @@
 import {
   existsSync,
   mkdirSync,
-  writeFileSync,
   appendFileSync,
   readFileSync,
 } from "node:fs";
 import { join } from "node:path";
 import { agentDir } from "../context/paths.js";
+import { readYaml, writeYaml } from "../context/readers.js";
+import { SessionYmlSchema } from "../context/schemas.js";
 
 export interface PersistentMessage {
   ts: string;
@@ -30,19 +31,16 @@ export function initSession(
   const dir = sessionDir(agentId, sessionId);
   mkdirSync(dir, { recursive: true });
 
-  const sessionMd = join(dir, "SESSION.md");
-  if (!existsSync(sessionMd)) {
-    const frontmatter = [
-      "---",
-      `session-id: ${sessionId}`,
-      `user-id: ${userId}`,
-      `agent-id: ${agentId}`,
-      `created-at: ${new Date().toISOString()}`,
-      `message-count: 0`,
-      "---",
-    ].join("\n");
-
-    writeFileSync(sessionMd, `${frontmatter}\n\n# Session\n`);
+  const sessionYml = join(dir, "SESSION.yml");
+  if (!existsSync(sessionYml)) {
+    const sessionData = SessionYmlSchema.parse({
+      "session-id": sessionId,
+      "user-id": userId,
+      "agent-id": agentId,
+      "created-at": new Date().toISOString(),
+      "message-count": 0,
+    });
+    writeYaml(sessionYml, sessionData);
   }
 }
 
@@ -69,17 +67,14 @@ export function updateSessionMetadata(
   updates: Record<string, string | number>
 ): void {
   const dir = sessionDir(agentId, sessionId);
-  const sessionMd = join(dir, "SESSION.md");
-  if (!existsSync(sessionMd)) return;
+  const sessionYml = join(dir, "SESSION.yml");
+  if (!existsSync(sessionYml)) return;
 
-  let raw = readFileSync(sessionMd, "utf-8");
+  const config = readYaml(sessionYml);
   for (const [key, value] of Object.entries(updates)) {
-    const regex = new RegExp(`^${key}:.*$`, "m");
-    if (regex.test(raw)) {
-      raw = raw.replace(regex, `${key}: ${value}`);
-    }
+    config[key] = value;
   }
-  writeFileSync(sessionMd, raw);
+  writeYaml(sessionYml, config);
 }
 
 // --- Read messages ---
