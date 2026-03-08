@@ -21,7 +21,7 @@
     "id": "F-127",
     "name": "Rating: Tabela message_ratings + API de Rating",
     "description": "Criar tabela `message_ratings` no SQLite com indexes (agent_id, session_id, rating, rated_at) e migracao automatica. Implementar endpoints: POST /conversations/:sessionId/messages/:index/rate (upsert por session+index), GET /agents/:agentId/ratings (paginado), GET /agents/:agentId/ratings/summary (taxa aprovacao + breakdown + tendencia diaria), POST /agents/:agentId/ratings/export-golden-set (cria eval set a partir de ratings down), GET /ratings (dashboard global de todos os agentes). Validacao: messageIndex deve referenciar mensagem com role 'assistant'.",
-    "status": "failing",
+    "status": "passing",
     "priority": 2,
     "agent": "coder",
     "task": "vibe-code",
@@ -34,7 +34,8 @@
       "GET /ratings lista todos os agentes com metricas comparativas",
       "`npm run typecheck` passa sem erros"
     ],
-    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-6/worktree/sprints/sprint-6/3-prps/PRP-36-feedback-loop-rating.md"
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-6/worktree/sprints/sprint-6/3-prps/PRP-36-feedback-loop-rating.md",
+    "completed_at": "2026-03-08T05:14:30Z"
   },
   {
     "id": "F-130",
@@ -137,7 +138,7 @@
     "id": "F-124",
     "name": "MCP: Connector MCP Cliente (stdio + HTTP)",
     "description": "Criar connector `mcp` em `src/connectors/mcp/` seguindo o padrao existente. Suporte a transporte `stdio` (via command/args/env) e `http` (via URL + api_key opcional). Descoberta dinamica de tools do servidor MCP e injecao em `runAgent()` com prefixo `mcp_{adapter_slug}_{tool_name}`. Cada chamada auditada em `mcp_tool_calls`. Schema Zod para ADAPTER.yaml. Endpoints GET /agents/:id/mcp-tools e GET /agents/:id/mcp-calls. Dependencia: `@modelcontextprotocol/sdk`.",
-    "status": "blocked",
+    "status": "pending",
     "priority": 8,
     "agent": "coder",
     "task": "vibe-code",
