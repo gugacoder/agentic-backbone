@@ -147,5 +147,14 @@ function invalidateByEvent(event: SystemEvent) {
     case "approval:pending":
       queryClient.invalidateQueries({ queryKey: ["approvals", "pending"] });
       break;
+    case "agent:quota-exceeded": {
+      const agentId = event.data?.agentId as string | undefined;
+      if (agentId) {
+        queryClient.invalidateQueries({ queryKey: ["quota", agentId] });
+        queryClient.invalidateQueries({ queryKey: ["agents", agentId] });
+      }
+      queryClient.invalidateQueries({ queryKey: ["agents"] });
+      break;
+    }
   }
 }

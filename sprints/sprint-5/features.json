@@ -390,7 +390,7 @@
     "id": "F-115",
     "name": "Rate Limiting: telas Hub — aba Quotas e widget no dashboard",
     "description": "Nova aba 'Quotas' na pagina do agente com QuotasTab: 2 gauges circulares (tokens/hora e heartbeats/dia com pctUsed), badge de status Ativo/Pausado por quota, tabela de configuracao editavel inline com botao Salvar (PUT), botao Resetar janela com dialog de confirmacao (POST /reset). Widget no /dashboard: lista agentes com consumo > 80% em qualquer quota (amarelo) ou pausados (vermelho), link para aba de quotas. Toast SSE no Hub quando agent:quota-exceeded recebido (nome do agente, qual quota, link).",
-    "status": "blocked",
+    "status": "passing",
     "priority": 19,
     "agent": "coder",
     "task": "vibe-code",
@@ -406,7 +406,8 @@
       "Toast aparece no Hub quando evento SSE agent:quota-exceeded recebido",
       "`npm run build:hub` e `npm run typecheck` passam sem erros"
     ],
-    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-5/worktree/sprints/sprint-5/3-prps/PRP-29-rate-limiting-quotas.md"
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-5/worktree/sprints/sprint-5/3-prps/PRP-29-rate-limiting-quotas.md",
+    "completed_at": "2026-03-08T00:18:48.760Z"
   },
   {
     "id": "F-123",

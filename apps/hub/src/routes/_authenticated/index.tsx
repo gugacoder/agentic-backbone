@@ -12,6 +12,7 @@ import { PageHeader } from "@/components/shared/page-header";
 import { StatCard } from "@/components/dashboard/stat-card";
 import { ActivityTimeline } from "@/components/dashboard/activity-timeline";
 import { UpcomingCronJobs } from "@/components/dashboard/upcoming-cron-jobs";
+import { QuotaAlertWidget } from "@/components/quotas/quota-alert-widget";
 import { Skeleton } from "@/components/ui/skeleton";
 import { dashboardQueryOptions, type DashboardData } from "@/api/dashboard";
 
@@ -111,6 +112,8 @@ function DashboardPage() {
           <UpcomingCronJobs jobs={data.cronJobs.nextRuns} />
         </div>
       )}
+
+      <QuotaAlertWidget />
     </div>
   );
 }
