@@ -1,22 +1,1286 @@
-[
-  { "id": "D-062", "type": "pain", "score": 9, "sprint": 7, "implemented": false, "summary": "Falha silenciosa e cascata — sem kill-switch ou circuit-breaker por agente" },
-  { "id": "D-063", "type": "pain", "score": 9, "sprint": 7, "implemented": false, "summary": "EU AI Act aplicavel agosto 2026 — sem toolkit de conformidade" },
-  { "id": "G-062", "type": "gain", "score": 9, "sprint": 7, "implemented": false, "summary": "Kill-switch e circuit-breaker por agente" },
-  { "id": "G-063", "type": "gain", "score": 9, "sprint": 7, "implemented": false, "summary": "EU AI Act Compliance Toolkit" },
-  { "id": "D-064", "type": "pain", "score": 8, "sprint": 7, "implemented": false, "summary": "Gestao de frota de agentes em escala — sem Fleet Dashboard" },
-  { "id": "D-065", "type": "pain", "score": 8, "sprint": 7, "implemented": false, "summary": "OpenTelemetry nao exportavel — 3o sprint pendente" },
-  { "id": "D-066", "type": "pain", "score": 8, "sprint": 7, "implemented": false, "summary": "Sem billing e invoicing por cliente para agencias" },
-  { "id": "D-067", "type": "pain", "score": 8, "sprint": 7, "implemented": false, "summary": "Agentes apenas reativos — sem outreach proativo por evento de negocio" },
-  { "id": "G-064", "type": "gain", "score": 8, "sprint": 7, "implemented": false, "summary": "Fleet Management Dashboard" },
-  { "id": "G-065", "type": "gain", "score": 8, "sprint": 7, "implemented": false, "summary": "OpenTelemetry Export com GenAI Semantic Conventions" },
-  { "id": "G-066", "type": "gain", "score": 8, "sprint": 7, "implemented": false, "summary": "Billing e Invoicing por Tenant para agencias" },
-  { "id": "G-067", "type": "gain", "score": 8, "sprint": 7, "implemented": false, "summary": "Outreach Proativo por Agente" },
-  { "id": "D-068", "type": "pain", "score": 7, "sprint": 7, "implemented": false, "summary": "Export de relatorios PDF/CSV — 4o sprint pendente" },
-  { "id": "D-069", "type": "pain", "score": 7, "sprint": 7, "implemented": false, "summary": "Sem marketplace de templates de agente" },
-  { "id": "D-070", "type": "pain", "score": 7, "sprint": 7, "implemented": false, "summary": "WhatsApp Business Calling sem suporte" },
-  { "id": "D-071", "type": "pain", "score": 7, "sprint": 7, "implemented": false, "summary": "Google Workspace nao integrado — 4o sprint pendente" },
-  { "id": "G-068", "type": "gain", "score": 7, "sprint": 7, "implemented": false, "summary": "Export de Relatorios PDF/CSV ANPD-ready" },
-  { "id": "G-069", "type": "gain", "score": 7, "sprint": 7, "implemented": false, "summary": "Template Marketplace com import 1-clique" },
-  { "id": "G-070", "type": "gain", "score": 7, "sprint": 7, "implemented": false, "summary": "WhatsApp Business Calling com transcricao em tempo real" },
-  { "id": "G-071", "type": "gain", "score": 7, "sprint": 7, "implemented": false, "summary": "Google Workspace Integration via OAuth2" }
-]
+{
+  "wave": 7,
+  "sprint": 7,
+  "decision": "go",
+  "decision_rationale": "GO inequivoco. Das 142 discoveries acumuladas (Sprints 1-7), o backlog nao-implementado permanece robusto com 40+ items acima de score 7, incluindo 2 discoveries CRITICAS score 9 descobertas em Sprint 7. Dois vetores estrategicos emergem com urgencia: (1) Seguranca operacional — D-062/G-062 (Kill-switch + circuit-breaker, score 9) representa risco operacional critico do caso IBM real (CNBC mar/2026) onde agente autonomo começou violando politica e escalou indefinidamente; EU AI Act exige mecanismo de parada de emergencia para sistemas high-risk a partir de AGOSTO 2026, criando janela critica de 5 meses. (2) Conformidade regulatoria — D-063/G-063 (EU AI Act Compliance Toolkit, score 9) aplicavel em ago/2026; agencias com clientes europeus expostas a multas e restricoes de mercado sem toolkit integrado; diferencial competitivo imediato para Backbone como UNICA plataforma agentic BR com EU compliance nativo. Adicionalmente, Sprint 7 traz 4 discoveries score 8 de alta impacto: Fleet Management Dashboard (D-064, Gartner 40% apps enterprise com agentes por 2026), OpenTelemetry (D-065, 3 sprints pendente, 70% enterprise AI usa OTel), Billing por Tenant (D-066, bloqueia modelo reseller), Outreach Proativo (D-067, 3x mais conversao vs. reativo). Backlog persistente em score 7 inclui export relatorios (4 sprints), WA Calling (first-mover jan/2026), Google Workspace (4 sprints), Template Marketplace. Criterio de STOP nao se aplica: ha 2 discoveries score 9 nao implementadas + 4 discoveries score 8 nao implementadas + 8+ discoveries score 7 nao implementadas. Product acumula entregas solidas em 6 sprints mas vetores de risco operacional e conformidade regulatoria criam imperativo estrategico para continuidade.",
+  "discoveries": [
+    {
+      "id": "D-001",
+      "type": "pain",
+      "description": "Falta de visibilidade sobre o que o agente esta fazendo — opera como caixa preta, gerando desconfianca",
+      "score": 10,
+      "discovered_at": 1,
+      "last_reclassified_at": 6,
+      "implemented_at": 2
+    },
+    {
+      "id": "D-002",
+      "type": "pain",
+      "description": "Complexidade tecnica para configurar agentes — plataformas existentes exigem codigo (Python, YAML)",
+      "score": 9,
+      "discovered_at": 1,
+      "last_reclassified_at": 6,
+      "implemented_at": 2
+    },
+    {
+      "id": "D-003",
+      "type": "pain",
+      "description": "Dificuldade de integrar agentes com WhatsApp — canal dominante no Brasil mas integracao tecnica e cara",
+      "score": 9,
+      "discovered_at": 1,
+      "last_reclassified_at": 6,
+      "implemented_at": 2
+    },
+    {
+      "id": "D-004",
+      "type": "pain",
+      "description": "Ausencia de governanca sobre respostas autonomas — risco de respostas inadequadas ou vazamento de dados (parcial: toggle + active hours + HITL pendente + prompt injection pendente)",
+      "score": 8,
+      "discovered_at": 1,
+      "last_reclassified_at": 6,
+      "implemented_at": null
+    },
+    {
+      "id": "D-005",
+      "type": "pain",
+      "description": "Fragmentacao de ferramentas — multiplos dashboards, logs e planilhas para operar agentes, sem visao unificada",
+      "score": 8,
+      "discovered_at": 1,
+      "last_reclassified_at": 6,
+      "implemented_at": 2
+    },
+    {
+      "id": "D-006",
+      "type": "pain",
+      "description": "Custo e complexidade de infraestrutura cloud — APIs de LLM, bancos vetoriais, provedores fragmentados",
+      "score": 6,
+      "discovered_at": 1,
+      "last_reclassified_at": 6,
+      "implemented_at": 1
+    },
+    {
+      "id": "D-007",
+      "type": "pain",
+      "description": "Agendamento de tarefas recorrentes exige cron expressions ou ferramentas de workflow externas",
+      "score": 7,
+      "discovered_at": 1,
+      "last_reclassified_at": 6,
+      "implemented_at": 2
+    },
+    {
+      "id": "D-008",
+      "type": "pain",
+      "description": "Memoria e contexto perdidos entre interacoes — chatbots repetem perguntas, frustram usuarios",
+      "score": 8,
+      "discovered_at": 1,
+      "last_reclassified_at": 6,
+      "implemented_at": 2
+    },
+    {
+      "id": "D-009",
+      "type": "pain",
+      "description": "Impossibilidade de auditar historico completo das acoes autonomas do agente para compliance (parcial: historico heartbeat/cron/jobs + trace timeline, sem audit log unificado exportavel)",
+      "score": 8,
+      "discovered_at": 1,
+      "last_reclassified_at": 6,
+      "implemented_at": null
+    },
+    {
+      "id": "D-010",
+      "type": "pain",
+      "description": "Dependencia de consultores externos para qualquer ajuste em agentes — custo recorrente e lentidao",
+      "score": 7,
+      "discovered_at": 1,
+      "last_reclassified_at": 6,
+      "implemented_at": 2
+    },
+    {
+      "id": "D-011",
+      "type": "pain",
+      "description": "Incapacidade de definir horarios de funcionamento do agente — opera fora de horario ou nao opera quando deveria",
+      "score": 7,
+      "discovered_at": 1,
+      "last_reclassified_at": 6,
+      "implemented_at": 2
+    },
+    {
+      "id": "D-012",
+      "type": "pain",
+      "description": "Falta de gestao multi-agente unificada — cada agente em silo, sem visao de conjunto (parcial: lista + dashboard + analytics por agente, orquestracao/handoff agora implementada no Sprint 5)",
+      "score": 7,
+      "discovered_at": 1,
+      "last_reclassified_at": 6,
+      "implemented_at": 5
+    },
+    {
+      "id": "D-013",
+      "type": "pain",
+      "description": "Chatbots tradicionais nao aprendem — respostas estaticas que nao melhoram com o tempo",
+      "score": 8,
+      "discovered_at": 1,
+      "last_reclassified_at": 6,
+      "implemented_at": 2
+    },
+    {
+      "id": "D-014",
+      "type": "pain",
+      "description": "Falta de visibilidade sobre custos e consumo de tokens LLM — surpresas na fatura bloqueiam adocao",
+      "score": 9,
+      "discovered_at": 2,
+      "last_reclassified_at": 6,
+      "implemented_at": 2
+    },
+    {
+      "id": "D-015",
+      "type": "pain",
+      "description": "Ausencia de dashboard com visao geral do sistema — gestor navega multiplas paginas para entender saude",
+      "score": 10,
+      "discovered_at": 2,
+      "last_reclassified_at": 6,
+      "implemented_at": 2
+    },
+    {
+      "id": "D-016",
+      "type": "pain",
+      "description": "Ausencia de gestao de usuarios e permissoes — apenas sysuser, sem acesso segmentado por equipe",
+      "score": 9,
+      "discovered_at": 2,
+      "last_reclassified_at": 6,
+      "implemented_at": 2
+    },
+    {
+      "id": "D-017",
+      "type": "pain",
+      "description": "Onboarding lento — novo agente comeca do zero sem templates; PMEs perdem tempo configurando basico",
+      "score": 7,
+      "discovered_at": 2,
+      "last_reclassified_at": 6,
+      "implemented_at": 3
+    },
+    {
+      "id": "D-018",
+      "type": "pain",
+      "description": "Falhas e eventos criticos passam despercebidos — sem notificacoes push; horas sem atendimento possiveis",
+      "score": 9,
+      "discovered_at": 2,
+      "last_reclassified_at": 6,
+      "implemented_at": 2
+    },
+    {
+      "id": "D-019",
+      "type": "pain",
+      "description": "Jobs de longa duracao sem visibilidade — processos rodam sem UI, exigem acesso a logs do servidor",
+      "score": 8,
+      "discovered_at": 2,
+      "last_reclassified_at": 6,
+      "implemented_at": 2
+    },
+    {
+      "id": "D-020",
+      "type": "pain",
+      "description": "Raciocinio do agente eh opaco — ve saidas mas nao tool calls, decisoes intermediarias ou por que",
+      "score": 7,
+      "discovered_at": 2,
+      "last_reclassified_at": 6,
+      "implemented_at": 3
+    },
+    {
+      "id": "D-021",
+      "type": "pain",
+      "description": "Configuracao de LLM requer edicao manual de llm.json — inacessivel para quem nao tem acesso ao servidor",
+      "score": 8,
+      "discovered_at": 2,
+      "last_reclassified_at": 6,
+      "implemented_at": 2
+    },
+    {
+      "id": "D-022",
+      "type": "pain",
+      "description": "Sem metricas de efetividade dos agentes ao longo do tempo — decisoes baseadas em intuicao, nao dados",
+      "score": 8,
+      "discovered_at": 2,
+      "last_reclassified_at": 6,
+      "implemented_at": 3
+    },
+    {
+      "id": "D-023",
+      "type": "pain",
+      "description": "Agentes operam em silos — sem colaboracao, delegacao ou handoff entre agentes para cenarios complexos",
+      "score": 6,
+      "discovered_at": 2,
+      "last_reclassified_at": 6,
+      "implemented_at": 5
+    },
+    {
+      "id": "D-024",
+      "type": "pain",
+      "description": "Sem gestao de knowledge base — agente depende de edicao manual de SOUL.md/MEMORY.md, sem upload de docs/PDFs para RAG",
+      "score": 9,
+      "discovered_at": 3,
+      "last_reclassified_at": 6,
+      "implemented_at": 3
+    },
+    {
+      "id": "D-025",
+      "type": "pain",
+      "description": "Sem aprovacao humana para acoes criticas — agente executa acoes impactantes sem checkpoint; controle limitado a on/off",
+      "score": 8,
+      "discovered_at": 3,
+      "last_reclassified_at": 6,
+      "implemented_at": 5
+    },
+    {
+      "id": "D-026",
+      "type": "pain",
+      "description": "Sem multi-tenancy para agencias — instancia unica, sem isolamento por cliente, sem branding customizavel",
+      "score": 6,
+      "discovered_at": 3,
+      "last_reclassified_at": 6,
+      "implemented_at": null
+    },
+    {
+      "id": "D-027",
+      "type": "pain",
+      "description": "Sem exportacao de relatorios — dashboard real-time mas sem PDF/CSV para compartilhar metricas com stakeholders",
+      "score": 7,
+      "discovered_at": 3,
+      "last_reclassified_at": 6,
+      "implemented_at": null
+    },
+    {
+      "id": "D-028",
+      "type": "pain",
+      "description": "Sem takeover de conversa — operador nao consegue assumir conversa do agente em tempo real quando necessario",
+      "score": 8,
+      "discovered_at": 3,
+      "last_reclassified_at": 6,
+      "implemented_at": 3
+    },
+    {
+      "id": "D-029",
+      "type": "pain",
+      "description": "Sem versionamento de config — edicoes em SOUL.md/HEARTBEAT.md sobrescrevem sem historico, diff ou rollback",
+      "score": 7,
+      "discovered_at": 3,
+      "last_reclassified_at": 6,
+      "implemented_at": 5
+    },
+    {
+      "id": "D-030",
+      "type": "pain",
+      "description": "Sem metricas de custo por agente — dashboard mostra total do dia mas nao detalha por agente/operacao/periodo",
+      "score": 10,
+      "discovered_at": 3,
+      "last_reclassified_at": 6,
+      "implemented_at": 3
+    },
+    {
+      "id": "D-031",
+      "type": "pain",
+      "description": "Sem analytics de tendencia — nao ha graficos de evolucao temporal; impossivel responder 'o agente melhora?'",
+      "score": 9,
+      "discovered_at": 3,
+      "last_reclassified_at": 6,
+      "implemented_at": 3
+    },
+    {
+      "id": "D-032",
+      "type": "pain",
+      "description": "Raciocinio do agente opaco — sem trace de tool calls e decisoes; debugging requer acesso a spawn.jsonl no servidor",
+      "score": 9,
+      "discovered_at": 3,
+      "last_reclassified_at": 6,
+      "implemented_at": 3
+    },
+    {
+      "id": "D-033",
+      "type": "pain",
+      "description": "Agentes operam em silos — sem handoff, delegacao ou compartilhamento de contexto entre agentes",
+      "score": 8,
+      "discovered_at": 3,
+      "last_reclassified_at": 6,
+      "implemented_at": 5
+    },
+    {
+      "id": "D-034",
+      "type": "pain",
+      "description": "Sem avaliacao sistematica de qualidade — mudancas em instrucoes podem degradar agente sem que operador perceba; nao ha golden sets, LLM-as-judge ou regressao de qualidade",
+      "score": 9,
+      "discovered_at": 4,
+      "last_reclassified_at": 6,
+      "implemented_at": 5
+    },
+    {
+      "id": "D-035",
+      "type": "pain",
+      "description": "Sem protecao contra prompt injection — agente manipulavel por usuarios mal-intencionados que podem vazar dados internos, ignorar instrucoes ou acionar tools indevidamente (OWASP LLM #1, +340% ataques em 2025)",
+      "score": 8,
+      "discovered_at": 4,
+      "last_reclassified_at": 6,
+      "implemented_at": 5
+    },
+    {
+      "id": "D-036",
+      "type": "pain",
+      "description": "Sem GUI para gerenciar adaptadores — criar/editar conectores (MySQL, Postgres, APIs) exige edicao manual de YAML no filesystem; inacessivel para P1 nao-tecnico",
+      "score": 8,
+      "discovered_at": 4,
+      "last_reclassified_at": 6,
+      "implemented_at": 5
+    },
+    {
+      "id": "D-037",
+      "type": "pain",
+      "description": "Sem feedback de usuarios sobre respostas — agente nao tem sinal de qualidade percebida; operador nao sabe quais respostas foram ruins ou identificar padroes de falha",
+      "score": 8,
+      "discovered_at": 4,
+      "last_reclassified_at": 6,
+      "implemented_at": null
+    },
+    {
+      "id": "D-038",
+      "type": "pain",
+      "description": "Sem sandbox de agente — mudancas em SOUL.md, instrucoes e ferramentas vao direto para producao sem ambiente de teste isolado; inibe experimentacao e aumenta risco",
+      "score": 7,
+      "discovered_at": 4,
+      "last_reclassified_at": 6,
+      "implemented_at": 5
+    },
+    {
+      "id": "D-039",
+      "type": "pain",
+      "description": "Sem integracao nativa com ferramentas de produtividade (Google Calendar, Google Sheets, Notion) — agente nao acessa dados do negocio em tempo real; operador copia dados manualmente",
+      "score": 7,
+      "discovered_at": 4,
+      "last_reclassified_at": 6,
+      "implemented_at": null
+    },
+    {
+      "id": "D-040",
+      "type": "pain",
+      "description": "Fragmentacao de canais — conversas de WhatsApp, chat web e voz gerenciadas em paginas separadas; sem visao panoramica de todas as conversas ativas de todos os canais",
+      "score": 7,
+      "discovered_at": 4,
+      "last_reclassified_at": 6,
+      "implemented_at": 5
+    },
+    {
+      "id": "D-041",
+      "type": "pain",
+      "description": "WhatsApp via Evolution API: risco de banimento — Meta bane numeros nao-oficiais; Cloud API oficial aberta para Brasil em marco 2026 mas migracao nao existe no Hub",
+      "score": 9,
+      "discovered_at": 5,
+      "last_reclassified_at": 6,
+      "implemented_at": 5
+    },
+    {
+      "id": "D-042",
+      "type": "pain",
+      "description": "Conformidade LGPD sem ferramentas — ANPD priorizou AI para fiscalizacao 2026-2027; operadores nao sabem quais dados pessoais o agente processa, nao tem DPIA nem canal de direitos de titular (parcial: F-101-102 passing, F-103 in_progress)",
+      "score": 9,
+      "discovered_at": 5,
+      "last_reclassified_at": 6,
+      "implemented_at": null
+    },
+    {
+      "id": "D-043",
+      "type": "pain",
+      "description": "Sem triggers externos por webhook — agentes so reagem a heartbeat ou mensagem; nao podem ser ativados por eventos externos de SaaS (ticket, pagamento, commit, lead)",
+      "score": 8,
+      "discovered_at": 5,
+      "last_reclassified_at": 6,
+      "implemented_at": 5
+    },
+    {
+      "id": "D-044",
+      "type": "pain",
+      "description": "Orquestracao multi-agente inexistente — 50% dos agentes em producao operam em silos (Salesforce 2026); workflows complexos com handoff e supervisor pattern requerem codigo customizado",
+      "score": 8,
+      "discovered_at": 5,
+      "last_reclassified_at": 6,
+      "implemented_at": 5
+    },
+    {
+      "id": "D-045",
+      "type": "pain",
+      "description": "Sem controles de rate limiting e quotas por agente — agente mal configurado consome tokens sem limite, gerando custos explosivos; sem throttle, pausa automatica ou alerta proativo",
+      "score": 8,
+      "discovered_at": 5,
+      "last_reclassified_at": 6,
+      "implemented_at": 5
+    },
+    {
+      "id": "D-046",
+      "type": "pain",
+      "description": "Sem canais enterprise (Slack, Teams, Email) — WhatsApp atende consumidor final, mas P3/P4 precisam de agentes em Slack, Microsoft Teams e Email para casos enterprise e B2B (Slack/Teams implementados, Email pendente)",
+      "score": 7,
+      "discovered_at": 5,
+      "last_reclassified_at": 6,
+      "implemented_at": null
+    },
+    {
+      "id": "D-047",
+      "type": "pain",
+      "description": "Telemetria nao exportavel para stacks externas — sem endpoint OTLP; times com Datadog/Grafana/Langfuse nao conseguem integrar dados do backbone; silos de observabilidade",
+      "score": 6,
+      "discovered_at": 5,
+      "last_reclassified_at": 6,
+      "implemented_at": null
+    },
+    {
+      "id": "D-048",
+      "type": "pain",
+      "description": "Sem sandbox de agente (D-038 reafirmado) — experimentacao inibida porque mudancas vao direto para producao; comparacao before/after impossivel sem filesystem access",
+      "score": 7,
+      "discovered_at": 5,
+      "last_reclassified_at": 6,
+      "implemented_at": 5
+    },
+    {
+      "id": "D-049",
+      "type": "pain",
+      "description": "Sem versionamento de config de agente (D-029 reafirmado) — regressoes de qualidade impossiveis de rastrear; rollback exige SSH ao servidor",
+      "score": 7,
+      "discovered_at": 5,
+      "last_reclassified_at": 6,
+      "implemented_at": 5
+    },
+    {
+      "id": "D-050",
+      "type": "pain",
+      "description": "Sem exportacao de relatorios (D-027 reafirmado) — operadores capturam screenshots para reunioes de cliente; impossibilita demonstrar ROI com dados formais",
+      "score": 7,
+      "discovered_at": 5,
+      "last_reclassified_at": 6,
+      "implemented_at": null
+    },
+    {
+      "id": "D-051",
+      "type": "pain",
+      "description": "Sem feedback loop de qualidade com rating de usuario — LLM-as-judge interno nao captura satisfacao real do usuario final; padroes de falha invisiveis sem sinal humano; impossivel melhoria continua baseada em experiencia percebida",
+      "score": 8,
+      "discovered_at": 6,
+      "last_reclassified_at": 6,
+      "implemented_at": null
+    },
+    {
+      "id": "D-052",
+      "type": "pain",
+      "description": "Conector Email (IMAP/SMTP) ausente — Slack e Teams implementados no Sprint 5 mas Email permanece pendente (F-118); canal dominante para comunicacao B2B formal; agencias nao conseguem automatizar inbox de clientes via Hub",
+      "score": 8,
+      "discovered_at": 6,
+      "last_reclassified_at": 6,
+      "implemented_at": null
+    },
+    {
+      "id": "D-053",
+      "type": "pain",
+      "description": "Export de relatorios PDF/CSV bloqueado (F-126-128 pending) — gestores tiram screenshots do dashboard para reunioes; insustentavel para compliance e auditoria; impossivel demonstrar ROI formalmente a stakeholders",
+      "score": 7,
+      "discovered_at": 6,
+      "last_reclassified_at": 6,
+      "implemented_at": null
+    },
+    {
+      "id": "D-054",
+      "type": "pain",
+      "description": "Sem suporte a MCP (Model Context Protocol) — padrao universal com 97M downloads/mes em 2026 e 1200+ servidores; devs e agencias nao conseguem conectar agentes do Backbone ao ecossistema MCP sem codigo customizado; sistema de adaptadores proprietario nao interopera",
+      "score": 9,
+      "discovered_at": 6,
+      "last_reclassified_at": 6,
+      "implemented_at": null
+    },
+    {
+      "id": "D-055",
+      "type": "pain",
+      "description": "Sem marketplace de templates de agente compartilhaveis — templates existem por instancia mas nao sao exportaveis/importaveis; agencias recriam configs similares para cada cliente; PMEs nao descobrem configuracoes otimizadas para seus casos de uso",
+      "score": 7,
+      "discovered_at": 6,
+      "last_reclassified_at": 6,
+      "implemented_at": null
+    },
+    {
+      "id": "D-056",
+      "type": "pain",
+      "description": "Sem otimizacao inteligente de custos LLM por complexidade — task simples (heartbeat, FAQ) usa mesmo modelo que task complexa (analise, codigo); cost-per-task poderia cair 60-80% com model routing; nenhuma regra de roteamento configuravel existe",
+      "score": 8,
+      "discovered_at": 6,
+      "last_reclassified_at": 6,
+      "implemented_at": null
+    },
+    {
+      "id": "D-057",
+      "type": "pain",
+      "description": "Sem suporte a WhatsApp Business Calling — canal de voz via WhatsApp aberto para Brasil em marco 2026 com Cloud API; agentes nao recebem chamadas de voz WhatsApp; Twilio connector so suporta telefonia tradicional; PMEs de atendimento perdem canal de alto valor",
+      "score": 7,
+      "discovered_at": 6,
+      "last_reclassified_at": 6,
+      "implemented_at": null
+    },
+    {
+      "id": "D-058",
+      "type": "pain",
+      "description": "Sem visual workflow builder para orquestracao de agentes — handoffs implementados mas exigem edicao de YAML; P1 nao-tecnico nao consegue desenhar fluxos entre agentes sem programar; concorrentes (n8n, Make) oferecem canvas visual; gap critico para adocao mainstream",
+      "score": 8,
+      "discovered_at": 6,
+      "last_reclassified_at": 6,
+      "implemented_at": null
+    },
+    {
+      "id": "D-059",
+      "type": "pain",
+      "description": "Sem integracao Google Workspace (Calendar + Sheets + Drive) — identificado Sprint 4 (D-039), persistente ate Sprint 6; agentes nao acessam dados do negocio em tempo real; operadores copiam dados manualmente; Google Workspace dominante entre PMEs brasileiras",
+      "score": 7,
+      "discovered_at": 6,
+      "last_reclassified_at": 6,
+      "implemented_at": null
+    },
+    {
+      "id": "D-060",
+      "type": "pain",
+      "description": "Sem multi-tenancy para agencias — identificado Sprint 3 (D-026), persistente; instancia unica sem isolamento de dados por cliente; sem branding customizavel; risco de vazamento entre clientes; bloqueia modelo de negocio de agencia/reseller",
+      "score": 7,
+      "discovered_at": 6,
+      "last_reclassified_at": 6,
+      "implemented_at": null
+    },
+    {
+      "id": "D-061",
+      "type": "pain",
+      "description": "OpenTelemetry nao exportavel (F-129-131 bloqueado) — times com Datadog/Grafana/Langfuse nao integram dados do Backbone; silos de observabilidade; debugging em producao exige acesso direto ao servidor",
+      "score": 6,
+      "discovered_at": 6,
+      "last_reclassified_at": 6,
+      "implemented_at": null
+    },
+    {
+      "id": "G-001",
+      "type": "gain",
+      "description": "Atendimento ao cliente 24/7 sem custo de equipe — agente responde a qualquer hora",
+      "score": 9,
+      "discovered_at": 1,
+      "last_reclassified_at": 6,
+      "implemented_at": 2
+    },
+    {
+      "id": "G-002",
+      "type": "gain",
+      "description": "Produtividade amplificada — agentes autonomos (heartbeat) liberam humanos para trabalho estrategico",
+      "score": 7,
+      "discovered_at": 1,
+      "last_reclassified_at": 6,
+      "implemented_at": 2
+    },
+    {
+      "id": "G-003",
+      "type": "gain",
+      "description": "Visao unificada e controle centralizado de todos os agentes num unico painel",
+      "score": 10,
+      "discovered_at": 1,
+      "last_reclassified_at": 6,
+      "implemented_at": 2
+    },
+    {
+      "id": "G-004",
+      "type": "gain",
+      "description": "Personalizacao da identidade do agente — personalidade, tom e limites definidos pela marca",
+      "score": 7,
+      "discovered_at": 1,
+      "last_reclassified_at": 6,
+      "implemented_at": 2
+    },
+    {
+      "id": "G-005",
+      "type": "gain",
+      "description": "Integracao nativa com WhatsApp sem provedores terceiros caros",
+      "score": 9,
+      "discovered_at": 1,
+      "last_reclassified_at": 6,
+      "implemented_at": 2
+    },
+    {
+      "id": "G-006",
+      "type": "gain",
+      "description": "Memoria semantica que evolui — agente aprende com o tempo e melhora respostas",
+      "score": 8,
+      "discovered_at": 1,
+      "last_reclassified_at": 6,
+      "implemented_at": 2
+    },
+    {
+      "id": "G-007",
+      "type": "gain",
+      "description": "Independencia tecnica — criar e operar agentes sem tocar em codigo, YAML ou terminal",
+      "score": 9,
+      "discovered_at": 1,
+      "last_reclassified_at": 6,
+      "implemented_at": 2
+    },
+    {
+      "id": "G-008",
+      "type": "gain",
+      "description": "Auditabilidade completa — historico de tudo que o agente fez, quando e por que (parcial: historico heartbeat/cron/jobs + trace timeline, sem audit trail unificado exportavel para compliance)",
+      "score": 8,
+      "discovered_at": 1,
+      "last_reclassified_at": 6,
+      "implemented_at": null
+    },
+    {
+      "id": "G-009",
+      "type": "gain",
+      "description": "Calendario visual de tarefas do agente — agendar sem cron expressions",
+      "score": 7,
+      "discovered_at": 1,
+      "last_reclassified_at": 6,
+      "implemented_at": 2
+    },
+    {
+      "id": "G-010",
+      "type": "gain",
+      "description": "Self-hosted sem vendor lock-in — controle total dos dados e custos previsiveis",
+      "score": 6,
+      "discovered_at": 1,
+      "last_reclassified_at": 6,
+      "implemented_at": 1
+    },
+    {
+      "id": "G-011",
+      "type": "gain",
+      "description": "Interface em portugues brasileiro — sistema feito para o mercado local",
+      "score": 7,
+      "discovered_at": 1,
+      "last_reclassified_at": 6,
+      "implemented_at": 2
+    },
+    {
+      "id": "G-012",
+      "type": "gain",
+      "description": "Onboarding rapido — do zero ao primeiro agente operando em minutos, nao semanas",
+      "score": 8,
+      "discovered_at": 1,
+      "last_reclassified_at": 6,
+      "implemented_at": 3
+    },
+    {
+      "id": "G-013",
+      "type": "gain",
+      "description": "Controle de active hours — agente opera apenas em horarios definidos, com flexibilidade",
+      "score": 7,
+      "discovered_at": 1,
+      "last_reclassified_at": 6,
+      "implemented_at": 2
+    },
+    {
+      "id": "G-014",
+      "type": "gain",
+      "description": "Dashboard de custos com breakdown por agente/tarefa, budget alerts e comparacao de planos LLM",
+      "score": 9,
+      "discovered_at": 2,
+      "last_reclassified_at": 6,
+      "implemented_at": 2
+    },
+    {
+      "id": "G-015",
+      "type": "gain",
+      "description": "Dashboard de sistema — home page com visao panoramica de saude, atividade recente e alertas",
+      "score": 10,
+      "discovered_at": 2,
+      "last_reclassified_at": 6,
+      "implemented_at": 2
+    },
+    {
+      "id": "G-016",
+      "type": "gain",
+      "description": "Gestao de equipe com roles (admin/operador/viewer) e controle de acesso segmentado",
+      "score": 9,
+      "discovered_at": 2,
+      "last_reclassified_at": 6,
+      "implemented_at": 2
+    },
+    {
+      "id": "G-017",
+      "type": "gain",
+      "description": "Templates de agente para onboarding instantaneo — galeria de configs pre-prontas para casos comuns",
+      "score": 7,
+      "discovered_at": 2,
+      "last_reclassified_at": 6,
+      "implemented_at": 3
+    },
+    {
+      "id": "G-018",
+      "type": "gain",
+      "description": "Notificacoes push (PWA) + central de alertas para falhas, completions e limites de custo",
+      "score": 9,
+      "discovered_at": 2,
+      "last_reclassified_at": 6,
+      "implemented_at": 2
+    },
+    {
+      "id": "G-019",
+      "type": "gain",
+      "description": "Supervisor de jobs — UI com lista, stdout streaming, metricas CPU/mem e cancelamento",
+      "score": 8,
+      "discovered_at": 2,
+      "last_reclassified_at": 6,
+      "implemented_at": 2
+    },
+    {
+      "id": "G-020",
+      "type": "gain",
+      "description": "Selector de plano LLM pela interface — trocar modelo/plano sem editar arquivos de config",
+      "score": 8,
+      "discovered_at": 2,
+      "last_reclassified_at": 6,
+      "implemented_at": 2
+    },
+    {
+      "id": "G-021",
+      "type": "gain",
+      "description": "Analytics e metricas de performance — graficos de tendencia, ROI, filtros por agente/periodo",
+      "score": 8,
+      "discovered_at": 2,
+      "last_reclassified_at": 6,
+      "implemented_at": 3
+    },
+    {
+      "id": "G-022",
+      "type": "gain",
+      "description": "Transparencia de raciocinio — trace timeline com tool calls e decisoes dentro de heartbeats/conversas",
+      "score": 7,
+      "discovered_at": 2,
+      "last_reclassified_at": 6,
+      "implemented_at": 3
+    },
+    {
+      "id": "G-023",
+      "type": "gain",
+      "description": "Voice channels Twilio — setup, gerenciamento de chamadas, transcricoes via interface",
+      "score": 6,
+      "discovered_at": 2,
+      "last_reclassified_at": 6,
+      "implemented_at": null
+    },
+    {
+      "id": "G-024",
+      "type": "gain",
+      "description": "Knowledge base com upload de docs — alimentar agente com PDFs, FAQs, procedimentos via RAG indexado automaticamente",
+      "score": 9,
+      "discovered_at": 3,
+      "last_reclassified_at": 6,
+      "implemented_at": 3
+    },
+    {
+      "id": "G-025",
+      "type": "gain",
+      "description": "Workflows de aprovacao humana — checkpoint configuravel antes de acoes criticas, com notificacao e timeout",
+      "score": 8,
+      "discovered_at": 3,
+      "last_reclassified_at": 6,
+      "implemented_at": 5
+    },
+    {
+      "id": "G-026",
+      "type": "gain",
+      "description": "Multi-tenancy com branding — cada cliente da agencia como tenant isolado com logo, cores e dados separados",
+      "score": 6,
+      "discovered_at": 3,
+      "last_reclassified_at": 6,
+      "implemented_at": null
+    },
+    {
+      "id": "G-027",
+      "type": "gain",
+      "description": "Exportacao de relatorios PDF/CSV — metricas, custos e historico exportaveis e compartilhaveis",
+      "score": 7,
+      "discovered_at": 3,
+      "last_reclassified_at": 6,
+      "implemented_at": null
+    },
+    {
+      "id": "G-028",
+      "type": "gain",
+      "description": "Takeover de conversa — operador assume do agente em tempo real, agente retoma quando operador finaliza",
+      "score": 8,
+      "discovered_at": 3,
+      "last_reclassified_at": 6,
+      "implemented_at": 3
+    },
+    {
+      "id": "G-029",
+      "type": "gain",
+      "description": "Versionamento de config — historico de mudancas com diff visual e rollback one-click para configs de agente",
+      "score": 7,
+      "discovered_at": 3,
+      "last_reclassified_at": 6,
+      "implemented_at": 5
+    },
+    {
+      "id": "G-030",
+      "type": "gain",
+      "description": "Dashboard de custos granular — breakdown por agente/operacao, tendencias, budget alerts, comparador de planos LLM",
+      "score": 10,
+      "discovered_at": 3,
+      "last_reclassified_at": 6,
+      "implemented_at": 3
+    },
+    {
+      "id": "G-031",
+      "type": "gain",
+      "description": "Analytics com graficos de tendencia — conversas/dia, custo/semana, taxa de erro temporal, anomaly detection",
+      "score": 9,
+      "discovered_at": 3,
+      "last_reclassified_at": 6,
+      "implemented_at": 3
+    },
+    {
+      "id": "G-032",
+      "type": "gain",
+      "description": "Trace timeline — arvore de decisoes com tool calls, tokens por step, tempo de cada etapa, replay visual",
+      "score": 9,
+      "discovered_at": 3,
+      "last_reclassified_at": 6,
+      "implemented_at": 3
+    },
+    {
+      "id": "G-033",
+      "type": "gain",
+      "description": "Templates de agente + wizard — galeria pre-configurada para onboarding em 2 minutos, SOUL.md pre-pronto",
+      "score": 7,
+      "discovered_at": 3,
+      "last_reclassified_at": 6,
+      "implemented_at": 3
+    },
+    {
+      "id": "G-034",
+      "type": "gain",
+      "description": "Orquestracao multi-agente — handoff por regras, roteamento de conversas, contexto compartilhado",
+      "score": 8,
+      "discovered_at": 3,
+      "last_reclassified_at": 6,
+      "implemented_at": 5
+    },
+    {
+      "id": "G-035",
+      "type": "gain",
+      "description": "Avaliacao automatica de agentes — golden sets configuravel + LLM-as-judge + score historico + comparacao de versoes de instrucoes antes de publicar",
+      "score": 9,
+      "discovered_at": 4,
+      "last_reclassified_at": 6,
+      "implemented_at": 5
+    },
+    {
+      "id": "G-036",
+      "type": "gain",
+      "description": "Monitoramento de seguranca — deteccao de prompt injection, baseline de comportamento (UEBA), alertas de anomalia, dashboard de eventos bloqueados",
+      "score": 8,
+      "discovered_at": 4,
+      "last_reclassified_at": 6,
+      "implemented_at": 5
+    },
+    {
+      "id": "G-037",
+      "type": "gain",
+      "description": "GUI de adaptadores — pagina /adapters com CRUD visual de conectores, campos dinamicos por tipo, test de conexao, mascaramento automatico de credenciais sensiveis",
+      "score": 8,
+      "discovered_at": 4,
+      "last_reclassified_at": 6,
+      "implemented_at": 5
+    },
+    {
+      "id": "G-038",
+      "type": "gain",
+      "description": "Feedback loop — thumbs up/down em mensagens do agente + motivo opcional + dashboard de qualidade por agente + export de baixo-avaliados para golden sets",
+      "score": 8,
+      "discovered_at": 4,
+      "last_reclassified_at": 6,
+      "implemented_at": null
+    },
+    {
+      "id": "G-039",
+      "type": "gain",
+      "description": "Sandbox de agente — clonar agente como rascunho isolado, testar via chat sem afetar producao, comparar resposta atual vs. rascunho side-by-side, publicar com versionamento",
+      "score": 7,
+      "discovered_at": 4,
+      "last_reclassified_at": 6,
+      "implemented_at": 5
+    },
+    {
+      "id": "G-040",
+      "type": "gain",
+      "description": "Integracao Google Calendar — adaptador OAuth2, agente consulta/cria eventos, cron jobs baseados em eventos de calendario, configuracao via GUI",
+      "score": 7,
+      "discovered_at": 4,
+      "last_reclassified_at": 6,
+      "implemented_at": null
+    },
+    {
+      "id": "G-041",
+      "type": "gain",
+      "description": "Hub unificado de mensagens (/inbox) — todas as conversas ativas de todos os canais, filtros por canal/agente/status, metricas consolidadas, SSE em tempo real",
+      "score": 7,
+      "discovered_at": 4,
+      "last_reclassified_at": 6,
+      "implemented_at": 5
+    },
+    {
+      "id": "G-042",
+      "type": "gain",
+      "description": "WhatsApp Cloud API oficial — migracao guiada para API oficial da Meta, eliminando risco de banimento e abrindo recursos premium (botoes, flows, Business Calling)",
+      "score": 9,
+      "discovered_at": 5,
+      "last_reclassified_at": 6,
+      "implemented_at": 5
+    },
+    {
+      "id": "G-043",
+      "type": "gain",
+      "description": "LGPD Compliance Dashboard — mapa de dados pessoais por agente, DPIA assistido, canal de direitos de titular (acesso/correcao/exclusao), log de consentimentos, relatorio exportavel para ANPD (parcial: F-101-102 passing, F-103 in_progress)",
+      "score": 9,
+      "discovered_at": 5,
+      "last_reclassified_at": 6,
+      "implemented_at": null
+    },
+    {
+      "id": "G-044",
+      "type": "gain",
+      "description": "Webhook Inbound Triggers — endpoint HTTP por agente para receber eventos externos; configuracao de filtros, autenticacao HMAC, mapeamento de payload; reacao imediata a eventos de SaaS",
+      "score": 9,
+      "discovered_at": 5,
+      "last_reclassified_at": 6,
+      "implemented_at": 5
+    },
+    {
+      "id": "G-045",
+      "type": "gain",
+      "description": "Orquestracao Multi-Agente — supervisor-agent pattern via GUI; handoff de tarefas; roteamento por intencao detectada; passagem de contexto; historico unificado de conversa multi-agente",
+      "score": 8,
+      "discovered_at": 5,
+      "last_reclassified_at": 6,
+      "implemented_at": 5
+    },
+    {
+      "id": "G-046",
+      "type": "gain",
+      "description": "Rate Limiting e Quotas por Agente — configurar limite de tokens/hora, max heartbeats/dia, timeout de tool call; pausa automatica ao atingir limite com notificacao; dashboard de consumo vs. quota",
+      "score": 8,
+      "discovered_at": 5,
+      "last_reclassified_at": 6,
+      "implemented_at": 5
+    },
+    {
+      "id": "G-047",
+      "type": "gain",
+      "description": "Conectores Slack, Teams e Email — novos conectores nativos; agente como bot de Slack, assistente de Teams ou resposta automatica de email; GUI de configuracao no Hub (Slack/Teams implementados, Email pendente)",
+      "score": 7,
+      "discovered_at": 5,
+      "last_reclassified_at": 6,
+      "implemented_at": null
+    },
+    {
+      "id": "G-048",
+      "type": "gain",
+      "description": "Agent Sandbox — clonar agente como rascunho isolado; chat de teste sem afetar producao; comparar resposta rascunho vs. producao side-by-side; publicar com versao registrada",
+      "score": 7,
+      "discovered_at": 5,
+      "last_reclassified_at": 6,
+      "implemented_at": 5
+    },
+    {
+      "id": "G-049",
+      "type": "gain",
+      "description": "Config Versioning com Diff e Rollback — historico de mudancas em SOUL.md/HEARTBEAT.md/CONVERSATION.md; diff visual linha a linha; rollback one-click; associar versao a eval score",
+      "score": 7,
+      "discovered_at": 5,
+      "last_reclassified_at": 6,
+      "implemented_at": 5
+    },
+    {
+      "id": "G-050",
+      "type": "gain",
+      "description": "Export de Relatorios PDF/CSV — historico de conversas, metricas de custo, analytics e eval scores; templates formatados para reunioes de cliente e auditorias internas",
+      "score": 7,
+      "discovered_at": 5,
+      "last_reclassified_at": 6,
+      "implemented_at": null
+    },
+    {
+      "id": "G-051",
+      "type": "gain",
+      "description": "OpenTelemetry Export — endpoint OTLP compativel com Datadog, Grafana, Langfuse; exportar traces, metricas de token, latencia e erros em formato padrao; configuracao no Settings",
+      "score": 6,
+      "discovered_at": 5,
+      "last_reclassified_at": 6,
+      "implemented_at": null
+    },
+    {
+      "id": "G-052",
+      "type": "gain",
+      "description": "Feedback loop de qualidade com rating de usuario — thumbs up/down em mensagens do agente + motivo opcional + dashboard de aprovacao por agente/periodo + export de baixo-avaliados para golden sets de eval; fecha ciclo LLM-as-judge + sinal humano real",
+      "score": 8,
+      "discovered_at": 6,
+      "last_reclassified_at": 6,
+      "implemented_at": null
+    },
+    {
+      "id": "G-053",
+      "type": "gain",
+      "description": "Email connector (IMAP/SMTP) nativo com GUI no Hub — agente como inbox de email; resposta automatica com personalidade e contexto; config via GUI (servidor, filtros, assinatura); channel-adapter para conversas SSE; tools reply/forward/create_draft",
+      "score": 8,
+      "discovered_at": 6,
+      "last_reclassified_at": 6,
+      "implemented_at": null
+    },
+    {
+      "id": "G-054",
+      "type": "gain",
+      "description": "Export de relatorios PDF/CSV formatados — relatorios de conversas, custos, metricas de eval e historico de auditoria; templates para reunioes de cliente e auditorias internas; filtros por agente/periodo/canal; download direto pela UI",
+      "score": 7,
+      "discovered_at": 6,
+      "last_reclassified_at": 6,
+      "implemented_at": null
+    },
+    {
+      "id": "G-055",
+      "type": "gain",
+      "description": "Suporte MCP (Model Context Protocol) como cliente e servidor — agentes conectam a qualquer servidor MCP (Notion, GitHub, Jira, Postgres, Drive) via Hub; agentes expostos como servidores MCP para Claude Desktop, Cursor, etc.; UI de descoberta e configuracao de MCP servers",
+      "score": 9,
+      "discovered_at": 6,
+      "last_reclassified_at": 6,
+      "implemented_at": null
+    },
+    {
+      "id": "G-056",
+      "type": "gain",
+      "description": "Model routing inteligente por complexidade — configurar regras: heartbeat simples → modelo economico (Haiku/Flash), conversas complexas → modelo avancado (Sonnet); economia mensuravel no dashboard; config visual por agente; potencial de 60-80% de reducao de custo",
+      "score": 8,
+      "discovered_at": 6,
+      "last_reclassified_at": 6,
+      "implemented_at": null
+    },
+    {
+      "id": "G-057",
+      "type": "gain",
+      "description": "WhatsApp Business Calling — agente atende chamadas de voz via WhatsApp Cloud API; transcricao em tempo real; resposta por voz sintetizada; log de chamadas com transcricao no Hub; sem numero Twilio adicional",
+      "score": 7,
+      "discovered_at": 6,
+      "last_reclassified_at": 6,
+      "implemented_at": null
+    },
+    {
+      "id": "G-058",
+      "type": "gain",
+      "description": "Visual Workflow Builder para orquestracao multi-agent — canvas drag-and-drop; nos sao agentes; arestas sao condicoes de handoff; config visual de criterios (intencao, palavras-chave, horario); gera frontmatter YAML automaticamente; preview com simulacao",
+      "score": 8,
+      "discovered_at": 6,
+      "last_reclassified_at": 6,
+      "implemented_at": null
+    },
+    {
+      "id": "G-059",
+      "type": "gain",
+      "description": "Integracao Google Workspace (Calendar, Sheets, Drive) via OAuth2 — adaptador OAuth2 para Google; tools: consultar/criar eventos, ler/escrever Sheets, listar/ler Drive; cron jobs baseados em eventos do Calendar; config via GUI com OAuth flow integrado",
+      "score": 7,
+      "discovered_at": 6,
+      "last_reclassified_at": 6,
+      "implemented_at": null
+    },
+    {
+      "id": "G-060",
+      "type": "gain",
+      "description": "Multi-tenancy para agencias — tenants isolados com dados segregados; branding customizavel (logo, cores, nome); billing separado por tenant; URL por tenant (subdominio ou path prefix); painel de agencia com visao consolidada cross-tenant",
+      "score": 7,
+      "discovered_at": 6,
+      "last_reclassified_at": 6,
+      "implemented_at": null
+    },
+    {
+      "id": "G-061",
+      "type": "gain",
+      "description": "Agent Performance Benchmarking automatico — ao publicar nova versao de instrucoes, rodar golden sets e comparar score vs. versao anterior; dashboard de tendencia de qualidade por versao; alerta de regressao; integrado com config versioning",
+      "score": 7,
+      "discovered_at": 6,
+      "last_reclassified_at": 6,
+      "implemented_at": null
+    },
+    {
+      "id": "D-062",
+      "type": "pain",
+      "description": "Falha silenciosa e cascata em agentes autonomos — sem kill-switch por agente; sem circuit-breaker automatico; IBM reportou agente aprovando reembolsos fora de política indefinidamente (CNBC, marco 2026); EU AI Act exige parada de emergencia para sistemas high-risk a partir de agosto 2026",
+      "score": 9,
+      "discovered_at": 7,
+      "last_reclassified_at": 7,
+      "implemented_at": null
+    },
+    {
+      "id": "D-063",
+      "type": "pain",
+      "description": "EU AI Act aplicavel em agosto 2026 — plataforma sem toolkit de conformidade; exige classificacao de risco, supervisao humana documentada, explicabilidade de decisoes automatizadas; agencias com clientes europeus expostas a multas; janela de conformidade se fechando",
+      "score": 9,
+      "discovered_at": 7,
+      "last_reclassified_at": 7,
+      "implemented_at": null
+    },
+    {
+      "id": "D-064",
+      "type": "pain",
+      "description": "Gestao de frota de agentes em escala — sem Fleet Dashboard consolidado; habilitacao individual por tela nao escala para 20-50+ agentes; sem operacoes em lote; Gartner preve 40% dos apps enterprise com agentes por tarefa",
+      "score": 8,
+      "discovered_at": 7,
+      "last_reclassified_at": 7,
+      "implemented_at": null
+    },
+    {
+      "id": "D-065",
+      "type": "pain",
+      "description": "OpenTelemetry nao exportavel (D-047/D-061 reafirmados — 3 sprints) — 70% dos deployments enterprise de AI em 2026 usam OTel; New Relic lancou ferramentas AI OTel em fev/2026; P2/P3 nao conseguem integrar dados do Backbone",
+      "score": 8,
+      "discovered_at": 7,
+      "last_reclassified_at": 7,
+      "implemented_at": null
+    },
+    {
+      "id": "D-066",
+      "type": "pain",
+      "description": "Sem billing e invoicing por cliente para agencias — sem breakdown de consumo por tenant; bloqueia modelo de negocio de reseller/SaaS",
+      "score": 8,
+      "discovered_at": 7,
+      "last_reclassified_at": 7,
+      "implemented_at": null
+    },
+    {
+      "id": "D-067",
+      "type": "pain",
+      "description": "Agentes apenas reativos — sem outreach proativo; CRMs com IA proativa reportam 3x mais conversao",
+      "score": 8,
+      "discovered_at": 7,
+      "last_reclassified_at": 7,
+      "implemented_at": null
+    },
+    {
+      "id": "D-068",
+      "type": "pain",
+      "description": "Export de relatorios PDF/CSV (D-053 reafirmado — 4 sprints) — ANPD fiscalizacoes mais tecnicas; screenshots insustentaveis para auditoria",
+      "score": 7,
+      "discovered_at": 7,
+      "last_reclassified_at": 7,
+      "implemented_at": null
+    },
+    {
+      "id": "D-069",
+      "type": "pain",
+      "description": "Sem marketplace de templates (D-055 reafirmado) — agencias recriam configs; sem efeito de rede",
+      "score": 7,
+      "discovered_at": 7,
+      "last_reclassified_at": 7,
+      "implemented_at": null
+    },
+    {
+      "id": "D-070",
+      "type": "pain",
+      "description": "WhatsApp Business Calling sem suporte (D-057 reafirmado) — canal aberto marco 2026; first-mover window fechando",
+      "score": 7,
+      "discovered_at": 7,
+      "last_reclassified_at": 7,
+      "implemented_at": null
+    },
+    {
+      "id": "D-071",
+      "type": "pain",
+      "description": "Google Workspace nao integrado (D-059 reafirmado — 4 sprints) — 65%+ PMEs BR usam Google; agentes desconectados",
+      "score": 7,
+      "discovered_at": 7,
+      "last_reclassified_at": 7,
+      "implemented_at": null
+    },
+    {
+      "id": "G-062",
+      "type": "gain",
+      "description": "Kill-switch e circuit-breaker — parada de emergencia; circuit-breaker automatico; limite de acoes; requisito EU AI Act",
+      "score": 9,
+      "discovered_at": 7,
+      "last_reclassified_at": 7,
+      "implemented_at": null
+    },
+    {
+      "id": "G-063",
+      "type": "gain",
+      "description": "EU AI Act Compliance Toolkit — checklist; documentacao HITL; explicabilidade; DPIA; relatorio auditoria",
+      "score": 9,
+      "discovered_at": 7,
+      "last_reclassified_at": 7,
+      "implemented_at": null
+    },
+    {
+      "id": "G-064",
+      "type": "gain",
+      "description": "Fleet Management Dashboard — grid consolidado; operacoes lote; SSE tempo real",
+      "score": 8,
+      "discovered_at": 7,
+      "last_reclassified_at": 7,
+      "implemented_at": null
+    },
+    {
+      "id": "G-065",
+      "type": "gain",
+      "description": "OpenTelemetry Export — OTLP com GenAI conventions; compativel stack enterprise",
+      "score": 8,
+      "discovered_at": 7,
+      "last_reclassified_at": 7,
+      "implemented_at": null
+    },
+    {
+      "id": "G-066",
+      "type": "gain",
+      "description": "Billing e Invoicing por Tenant — consumo/custo breakdown; invoice PDF white-label; NFS-e export",
+      "score": 8,
+      "discovered_at": 7,
+      "last_reclassified_at": 7,
+      "implemented_at": null
+    },
+    {
+      "id": "G-067",
+      "type": "gain",
+      "description": "Outreach Proativo — agente inicia conversa por trigger; limite frequencia; SSE",
+      "score": 8,
+      "discovered_at": 7,
+      "last_reclassified_at": 7,
+      "implemented_at": null
+    },
+    {
+      "id": "G-068",
+      "type": "gain",
+      "description": "Export Relatorios PDF/CSV — conversas, custos, compliance, audit trail; ANPD-ready",
+      "score": 7,
+      "discovered_at": 7,
+      "last_reclassified_at": 7,
+      "implemented_at": null
+    },
+    {
+      "id": "G-069",
+      "type": "gain",
+      "description": "Template Marketplace — galeria casos uso; import 1-clique; categorias; rating comunidade",
+      "score": 7,
+      "discovered_at": 7,
+      "last_reclassified_at": 7,
+      "implemented_at": null
+    },
+    {
+      "id": "G-070",
+      "type": "gain",
+      "description": "WhatsApp Business Calling — agente atende voz; transcricao <1s; TTS; contexto",
+      "score": 7,
+      "discovered_at": 7,
+      "last_reclassified_at": 7,
+      "implemented_at": null
+    },
+    {
+      "id": "G-071",
+      "type": "gain",
+      "description": "Google Workspace Integration — OAuth2; Calendar/Sheets/Drive; revogacao via Hub",
+      "score": 7,
+      "discovered_at": 7,
+      "last_reclassified_at": 7,
+      "implemented_at": null
+    }
+  ]
+}
