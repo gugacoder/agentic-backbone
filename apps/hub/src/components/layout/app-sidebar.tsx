@@ -13,6 +13,7 @@ import {
   Settings,
   ShieldCheck,
   ShieldAlert,
+  ClipboardCheck,
   Plug,
   Inbox,
   UserCircle,
@@ -96,6 +97,7 @@ export function AppSidebar() {
   const isApprovalsActive = !!matchRoute({ to: "/approvals", fuzzy: true });
   const isAdaptersActive = !!matchRoute({ to: "/adapters", fuzzy: true });
   const isSecurityActive = !!matchRoute({ to: "/security", fuzzy: true });
+  const isComplianceActive = !!matchRoute({ to: "/compliance", fuzzy: true });
 
   return (
     <Sidebar>
@@ -196,6 +198,15 @@ export function AppSidebar() {
                   {hasCriticalEvents && (
                     <span className="ml-auto inline-flex h-2 w-2 rounded-full bg-destructive" />
                   )}
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  isActive={isComplianceActive}
+                  render={<Link to="/compliance" />}
+                >
+                  <ClipboardCheck />
+                  <span>Conformidade</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>

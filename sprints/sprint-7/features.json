@@ -195,7 +195,7 @@
     "id": "F-153",
     "name": "Compliance: Hub — painel /compliance + compliance do agente",
     "description": "Página /compliance: overview cards (agentes por risco, taxa conformidade), tabela de agentes (risco, % checklist, próxima revisão), alertas de items não-conformes e revisões vencidas, botão Gerar Relatório de Sistema. Página /agents/:id/compliance: selector de risco com justificativa, checklist interativo agrupado por categoria (toggle status + evidência), barra de progresso, lista de relatórios + gerar novo, explicabilidade (busca por trace). Integração bidirecional com LGPD Dashboard (links + items compartilhados).",
-    "status": "blocked",
+    "status": "passing",
     "priority": 10,
     "agent": "coder",
     "task": "vibe-code",
@@ -210,7 +210,8 @@
       "Link bidirecional com LGPD Dashboard funciona",
       "`npm run build` e `npm run typecheck` passam sem erros"
     ],
-    "prp_path": "sprints/sprint-7/3-prps/PRP-43-eu-ai-act-compliance-toolkit.md"
+    "prp_path": "sprints/sprint-7/3-prps/PRP-43-eu-ai-act-compliance-toolkit.md",
+    "completed_at": "2026-03-08T16:00:00Z"
   },
   {
     "id": "F-154",

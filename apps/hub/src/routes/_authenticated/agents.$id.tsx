@@ -24,6 +24,7 @@ import {
   TrendingUp,
   Network,
   ShieldAlert,
+  ClipboardCheck,
 } from "lucide-react";
 import {
   agentQueryOptions,
@@ -55,6 +56,7 @@ import { EmailChannelsTab } from "@/components/email/email-channels-tab";
 import { BenchmarkTab } from "@/components/agents/benchmark-tab";
 import { WorkflowsTab } from "@/components/agents/workflows-tab";
 import { CircuitBreakerTab } from "@/components/agents/circuit-breaker-tab";
+import { ComplianceTab } from "@/components/agents/compliance-tab";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { useSSEEvent } from "@/hooks/use-sse";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -80,6 +82,7 @@ const tabs = [
   { value: "benchmarks", label: "Benchmarks", icon: BarChart3 },
   { value: "workflows", label: "Workflows", icon: Network },
   { value: "circuit-breaker", label: "Circuit-breaker", icon: ShieldAlert },
+  { value: "compliance", label: "Conformidade", icon: ClipboardCheck },
 ] as const;
 
 type TabValue = (typeof tabs)[number]["value"];
@@ -332,6 +335,9 @@ function AgentDetailPage() {
         </TabsContent>
         <TabsContent value="circuit-breaker">
           <CircuitBreakerTab agentId={id} />
+        </TabsContent>
+        <TabsContent value="compliance">
+          <ComplianceTab agentId={id} />
         </TabsContent>
       </Tabs>
     </div>
