@@ -9,8 +9,10 @@ function hasPlaintextSensitiveFields(obj: Record<string, unknown>): boolean {
   for (const [key, value] of Object.entries(obj)) {
     if (typeof value === "object" && value !== null && !Array.isArray(value)) {
       if (hasPlaintextSensitiveFields(value as Record<string, unknown>)) return true;
-    } else if (typeof value === "string" && isSensitiveField(key)) {
-      if (value !== "" && !isEncrypted(value) && !/^\$\{.+\}$/.test(value)) {
+    } else if (isSensitiveField(key) && value !== null && value !== undefined) {
+      // Convert non-string values to string for sensitive field check
+      const strValue = String(value);
+      if (strValue !== "" && !isEncrypted(strValue) && !/^\$\{.+\}$/.test(strValue)) {
         return true;
       }
     }

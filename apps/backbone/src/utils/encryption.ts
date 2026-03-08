@@ -65,10 +65,12 @@ export function processYamlFields(
   for (const [key, value] of Object.entries(obj)) {
     if (typeof value === "object" && value !== null && !Array.isArray(value)) {
       result[key] = processYamlFields(value as Record<string, unknown>, direction);
-    } else if (typeof value === "string" && isSensitiveField(key)) {
-      if (direction === "encrypt" && !isEncrypted(value) && value !== "" && !/^\$\{.+\}$/.test(value)) {
-        result[key] = encryptValue(value);
-      } else if (direction === "decrypt" && isEncrypted(value)) {
+    } else if (isSensitiveField(key) && value !== null && value !== undefined) {
+      const strValue = String(value);
+      if (direction === "encrypt" && !isEncrypted(strValue) && strValue !== "" && !/^\$\{.+\}$/.test(strValue)) {
+        // Encrypt non-string values by converting to string first
+        result[key] = encryptValue(strValue);
+      } else if (direction === "decrypt" && typeof value === "string" && isEncrypted(value)) {
         result[key] = decryptValue(value);
       } else {
         result[key] = value;
