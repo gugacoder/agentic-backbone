@@ -386,7 +386,7 @@
     "id": "F-162",
     "name": "Billing: BillingManager â€” consolidaÃ§Ã£o, invoice JSON, export CSV",
     "description": "Criar mÃ³dulo `src/billing/` com index.ts (BillingManager, registro de cron consolidaÃ§Ã£o dia 1 02:00), config.ts (CRUD billing_config), consolidator.ts (agrega consumo existente por tenant: soma tokens por agente/modelo/operaÃ§Ã£o, calcula custo base, aplica markup override>default, upsert tenant_billing+detail), invoice.ts (gera Invoice JSON com dados agÃªncia, breakdown, totais), export.ts (CSV: tenant, agente, modelo, operaÃ§Ã£o, tokens, custo, markup, custo final), schemas.ts (Zod).",
-    "status": "blocked",
+    "status": "passing",
     "priority": 19,
     "agent": "coder",
     "task": "vibe-code",
@@ -401,7 +401,8 @@
       "ConsolidaÃ§Ã£o automÃ¡tica registrada como cron interno",
       "`npm run typecheck` passa sem erros"
     ],
-    "prp_path": "sprints/sprint-7/3-prps/PRP-46-billing-por-tenant.md"
+    "prp_path": "sprints/sprint-7/3-prps/PRP-46-billing-por-tenant.md",
+    "completed_at": "2026-03-08T17:30:00Z"
   },
   {
     "id": "F-163",
