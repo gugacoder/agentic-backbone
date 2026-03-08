@@ -1,5 +1,5 @@
-[
-  {
+{
+  "0": {
     "id": "F-097",
     "name": "Webhook DB: tabelas webhooks + webhook_events",
     "description": "Criar tabelas `webhooks` e `webhook_events` no SQLite do backbone com indexes e migracao automatica no startup. Seguir o padrao de migracao existente em `apps/backbone/src/db/`. Incluir: id (TEXT PK), agent_id, name, secret, enabled, description, filters, created_at, updated_at para `webhooks`; id, webhook_id (FK ON DELETE CASCADE), agent_id, received_at, headers, payload, status (pending/done/failed), error, processed_at para `webhook_events`.",
@@ -17,7 +17,7 @@
     "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-5/worktree/sprints/sprint-5/3-prps/PRP-25-webhook-inbound-triggers.md",
     "completed_at": "2026-03-07T23:03:54.757Z"
   },
-  {
+  "1": {
     "id": "F-098",
     "name": "Webhook: CRUD autenticado + endpoint publico HMAC-SHA256",
     "description": "Criar `apps/backbone/src/routes/webhooks.ts` com rotas autenticadas (GET/POST/PATCH/DELETE /agents/:agentId/webhooks, GET /events) e rota publica POST /webhooks/:agentId/:webhookId. Validacao HMAC-SHA256 timing-safe no endpoint publico. Secret retornado apenas na criacao, mascarado em listagens. Retornar { eventId } em 200, 401 para HMAC invalido, 404 webhook desativado, 422 filtro falhou. Montar rotas no index.ts do backbone. Criar `apps/hub/src/api/webhooks.ts` com queryOptions para webhooks e webhook-events.",
@@ -40,7 +40,7 @@
     "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-5/worktree/sprints/sprint-5/3-prps/PRP-25-webhook-inbound-triggers.md",
     "completed_at": "2026-03-07T23:15:00.000Z"
   },
-  {
+  "2": {
     "id": "F-099",
     "name": "Webhook: execucao assincrona do agente ao receber evento",
     "description": "Apos registrar evento webhook com status `pending`, disparar execucao assincrona do agente sem bloquear a resposta HTTP. Injetar prompt `<webhook_event>{payload JSON}</webhook_event>`. Modo de execucao: `webhook` (similar a conversation, sem SSE ao chamador). Atualizar webhook_events.status para `done` ou `failed` ao concluir, preenchendo processed_at e error. Executar com runAgent() usando o agente referenciado pelo webhook.",
@@ -62,7 +62,7 @@
     "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-5/worktree/sprints/sprint-5/3-prps/PRP-25-webhook-inbound-triggers.md",
     "completed_at": "2026-03-07T23:12:59.155Z"
   },
-  {
+  "3": {
     "id": "F-100",
     "name": "Webhook: telas Hub — aba Webhooks e historico de eventos",
     "description": "Criar aba 'Webhooks' na pagina do agente (/agents/:id) com rota routes/_authenticated/agents/$agentId/webhooks.tsx. Componentes: WebhooksTab, WebhookCard (nome, URL copiavel, toggle enabled, status do ultimo evento, menu Editar/Revogar), WebhookCreateDialog (campos Nome, Descricao, Filtro event_type; exibe URL+secret apos criacao com aviso de one-time), WebhookEventsTable (tabela Data/Event Type/Status badge/Payload expandivel/Error, paginacao 50/pagina, botao Reprocessar para failed). Usar queryOptions de api/webhooks.ts.",
@@ -86,7 +86,7 @@
     "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-5/worktree/sprints/sprint-5/3-prps/PRP-25-webhook-inbound-triggers.md",
     "completed_at": "2026-03-07T23:25:00.000Z"
   },
-  {
+  "4": {
     "id": "F-101",
     "name": "LGPD DB: tabelas lgpd_data_map, lgpd_consent_log, lgpd_rights_requests",
     "description": "Criar tabelas LGPD no SQLite com migracao automatica no startup. lgpd_data_map: id AUTOINCREMENT, agent_id, data_type, label, purpose, legal_basis, retention_days, updated_at; unique index (agent_id, data_type). lgpd_consent_log: id, agent_id, channel_id, user_ref, action, purpose, ip_address, recorded_at; indexes por agent_id e user_ref. lgpd_rights_requests: id TEXT PK, user_ref, right_type, agent_id, description, status (open/closed/pending), response, requested_at, resolved_at; indexes por user_ref e status.",
@@ -104,7 +104,7 @@
     "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-5/worktree/sprints/sprint-5/3-prps/PRP-26-lgpd-compliance-dashboard.md",
     "completed_at": "2026-03-07T23:23:31.153Z"
   },
-  {
+  "5": {
     "id": "F-102",
     "name": "LGPD: endpoints backend + API Hub",
     "description": "Criar apps/backbone/src/routes/lgpd.ts com: GET/PUT /lgpd/data-map/:agentId, GET /lgpd/consent-log (filtros: agentId, userRef, dateRange), GET/POST /lgpd/rights-requests, PATCH /lgpd/rights-requests/:id (atualiza status+response+resolved_at), POST /lgpd/report (retorna JSON com mapa+pedidos+log). Middleware de verificacao de permissao admin ou compliance. Montar no index.ts. Criar apps/hub/src/api/lgpd.ts com queryOptions para data-map e rights-requests.",
@@ -127,7 +127,7 @@
     "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-5/worktree/sprints/sprint-5/3-prps/PRP-26-lgpd-compliance-dashboard.md",
     "completed_at": "2026-03-07T23:27:06.151Z"
   },
-  {
+  "6": {
     "id": "F-103",
     "name": "LGPD: telas Hub — dashboard, pedidos de direitos, log de consentimento",
     "description": "Criar rotas /lgpd (dashboard), /lgpd/rights-requests e /lgpd/consent-log no Hub. Dashboard: 4 cards de resumo (agentes mapeados, tipos de dados, pedidos abertos, ultima atualizacao), tabela Mapa de Dados expansivel por agente com DataMapEditDialog (selects de data_type e legal_basis, textarea finalidade, campo retencao). Pedidos: lista com filtros de status e tipo, modal de detalhes com campo de resposta e botao de mudanca de status. Log: tabela com filtros de agente/canal/periodo. Botao 'Exportar relatorio' gera download JSON via POST /lgpd/report.",
@@ -150,7 +150,7 @@
     "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-5/worktree/sprints/sprint-5/3-prps/PRP-26-lgpd-compliance-dashboard.md",
     "retries": 1
   },
-  {
+  "7": {
     "id": "F-104",
     "name": "WhatsApp Cloud: estrutura do conector + client + schemas",
     "description": "Criar src/connectors/whatsapp-cloud/ com index.ts (ConnectorDef), client.ts (WhatsAppCloudClient para Graph API v19+ com metodos sendText, sendTemplate, getMediaUrl, markAsRead) e schemas.ts (Zod: credential: access_token, phone_number_id, webhook_verify_token, business_account_id, app_secret; options: api_version, auto_reply_read). Registrar conector no registry existente. Seguir exatamente o padrao do conector evolution.",
@@ -170,7 +170,7 @@
     "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-5/worktree/sprints/sprint-5/3-prps/PRP-27-whatsapp-cloud-api.md",
     "completed_at": "2026-03-07T23:55:00.000Z"
   },
-  {
+  "8": {
     "id": "F-105",
     "name": "WhatsApp Cloud: routes (webhook Meta) + channel-adapter",
     "description": "Criar routes.ts com GET /connectors/whatsapp-cloud/:adapterId/webhook (verificacao hub.challenge) e POST (recepcao de eventos). Validar X-Hub-Signature-256 com app_secret timing-safe; retornar 401 se invalido. Extrair mensagens do payload Meta (entry[].changes[].value.messages[]). Criar channel-adapter.ts seguindo padrao do evolution: sessao por numero de telefone, executa agente, envia resposta via sendText, chama markAsRead se auto_reply_read: true.",
@@ -193,7 +193,7 @@
     "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-5/worktree/sprints/sprint-5/3-prps/PRP-27-whatsapp-cloud-api.md",
     "completed_at": "2026-03-07T23:36:00.864619+00:00"
   },
-  {
+  "9": {
     "id": "F-106",
     "name": "WhatsApp Cloud: tools send_whatsapp_text, send_whatsapp_template, get_whatsapp_media",
     "description": "Criar tools/send-text.ts (send_whatsapp_text: {to, body} -> {ok, messageId}), tools/send-template.ts (send_whatsapp_template: {to, templateName, languageCode?} -> {ok, messageId}), tools/get-media.ts (get_whatsapp_media: {mediaId} -> {url, mimeType}). Criar tools/index.ts exportando createWhatsAppCloudTools(slugs). Seguir o padrao one-tool-per-file do projeto.",
@@ -214,7 +214,7 @@
     "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-5/worktree/sprints/sprint-5/3-prps/PRP-27-whatsapp-cloud-api.md",
     "completed_at": "2026-03-07T23:39:41.806Z"
   },
-  {
+  "10": {
     "id": "F-107",
     "name": "WhatsApp Cloud: GUI Hub — URL do webhook no detalhe do adapter",
     "description": "Na GUI de adapters existente (/adapters), quando connector === 'whatsapp-cloud', adicionar bloco informativo exibindo: 'Webhook URL: {backboneUrl}/connectors/whatsapp-cloud/{adapterId}/webhook' com instrucao para configurar no Meta Business Manager e botao 'Copiar URL'. Campos access_token, app_secret mascarados com maskSensitiveFields de utils/sensitive.ts. Nenhuma nova pagina necessaria, apenas adicionar bloco ao componente de detalhe existente.",
@@ -235,7 +235,7 @@
     "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-5/worktree/sprints/sprint-5/3-prps/PRP-27-whatsapp-cloud-api.md",
     "completed_at": "2026-03-07T23:55:00.000Z"
   },
-  {
+  "11": {
     "id": "F-108",
     "name": "Multi-agent DB: tabela agent_handoffs + colunas em sessions + frontmatter",
     "description": "Criar tabela agent_handoffs (supervisor_id, member_id, label, trigger_intent, priority, enabled, created_at; unique index supervisor+member). Adicionar colunas orchestration_path TEXT e current_agent_id TEXT na tabela sessions via ALTER TABLE seguro (verificar existencia antes). Estender parser de agentes para reconhecer campos role (supervisor) e members: [] no frontmatter do AGENT.md. Todos como migracao no startup do backbone.",
@@ -254,7 +254,7 @@
     "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-5/worktree/sprints/sprint-5/3-prps/PRP-28-multi-agent-orchestration.md",
     "completed_at": "2026-03-07T23:46:19.811Z"
   },
-  {
+  "12": {
     "id": "F-109",
     "name": "Multi-agent: CRUD endpoints de handoffs + API Hub",
     "description": "Criar apps/backbone/src/routes/handoffs.ts com GET/POST /agents/:agentId/handoffs, PATCH/DELETE /agents/:agentId/handoffs/:id. POST body: {memberId, label, triggerIntent, priority}. Montar rotas no index.ts. Criar apps/hub/src/api/handoffs.ts com handoffsQueryOptions.",
@@ -275,7 +275,7 @@
     "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-5/worktree/sprints/sprint-5/3-prps/PRP-28-multi-agent-orchestration.md",
     "completed_at": "2026-03-07T23:55:00.000Z"
   },
-  {
+  "13": {
     "id": "F-110",
     "name": "Multi-agent: logica de orquestracao em runAgent()",
     "description": "Quando agente tem role: supervisor, antes de executar normalmente chamar LLM com prompt de roteamento XML (lista de handoffs como context). Se action: delegate — atualizar sessions.current_agent_id e sessions.orchestration_path (append), executar runAgent() do membro com contexto completo da conversa, anotar mensagem em messages.jsonl com campo agentId. Se action: respond ou nenhum membro adequado — supervisor responde diretamente. Implementar sem blocar o fluxo de streaming existente.",
@@ -299,7 +299,7 @@
     "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-5/worktree/sprints/sprint-5/3-prps/PRP-28-multi-agent-orchestration.md",
     "completed_at": "2026-03-07T23:54:30.609Z"
   },
-  {
+  "14": {
     "id": "F-111",
     "name": "Multi-agent: telas Hub — aba Handoffs e badges no Inbox",
     "description": "Nova aba 'Handoffs' na pagina do agente com HandoffsTab (aviso se agente nao e supervisor, lista de handoffs com toggle enabled, drag-and-drop para reordenar prioridade), HandoffCard, HandoffCreateDialog (select de agente membro, label, textarea de intencao, prioridade). No Inbox e Conversation view: badge por mensagem indicando qual agente respondeu (quando agentId presente), painel lateral com orchestrationPath da sessao.",
@@ -322,7 +322,7 @@
     "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-5/worktree/sprints/sprint-5/3-prps/PRP-28-multi-agent-orchestration.md",
     "completed_at": "2026-03-08T00:10:00.000Z"
   },
-  {
+  "15": {
     "id": "F-112",
     "name": "Rate Limiting DB: tabelas agent_quotas + agent_quota_usage + quota-manager + frontmatter",
     "description": "Criar tabelas agent_quotas (agent_id UNIQUE, max_tokens_per_hour, max_heartbeats_day, max_tool_timeout_ms, max_tokens_per_run, pause_on_exceed, updated_at) e agent_quota_usage (agent_id, window_type, window_start, tokens_used, heartbeats, tool_calls; unique index agent+window_type+window_start). Estender parser de agentes para campo quotas no frontmatter. Criar src/quotas/quota-manager.ts com: getQuotas (DB override sobre frontmatter), getUsage, recordUsage, checkExceeded.",
@@ -342,7 +342,7 @@
     "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-5/worktree/sprints/sprint-5/3-prps/PRP-29-rate-limiting-quotas.md",
     "completed_at": "2026-03-08T00:05:43.574Z"
   },
-  {
+  "16": {
     "id": "F-113",
     "name": "Rate Limiting: enforcement em runAgent() + tool timeout",
     "description": "Antes de cada execucao: checkExceeded(agentId, mode). Se exceeded E pause_on_exceed: escrever enabled: false no AGENT.md, emitir SSE agent:quota-exceeded {agentId, quota, value}, retornar sem executar. Se exceeded E !pause_on_exceed: logar aviso e continuar. Para heartbeat: skip silencioso se heartbeats >= max_heartbeats_day. Ao concluir: recordUsage com tokens da resposta. Tool call timeout: AbortSignal.timeout(max_tool_timeout_ms) em cada tool call, retornando {error: 'timeout', ms: N} sem abortar o agente. Adicionar tipo agent:quota-exceeded ao event bus.",
@@ -365,7 +365,7 @@
     "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-5/worktree/sprints/sprint-5/3-prps/PRP-29-rate-limiting-quotas.md",
     "completed_at": "2026-03-08T00:10:52.348281Z"
   },
-  {
+  "17": {
     "id": "F-114",
     "name": "Rate Limiting: endpoints de gestao de quotas + API Hub",
     "description": "Criar apps/backbone/src/routes/quotas.ts com: GET /agents/:agentId/quota (config + consumo atual em JSON com pctUsed calculado), PUT (atualizar config no DB), DELETE (remover override DB), POST /quota/reset (zerar janela atual). Response do GET inclui config, usage.hourly e usage.daily com pctUsed. Montar rotas no index.ts. Criar apps/hub/src/api/quotas.ts com quotaQueryOptions.",
@@ -386,7 +386,7 @@
     "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-5/worktree/sprints/sprint-5/3-prps/PRP-29-rate-limiting-quotas.md",
     "completed_at": "2026-03-08T00:13:50.019Z"
   },
-  {
+  "18": {
     "id": "F-115",
     "name": "Rate Limiting: telas Hub — aba Quotas e widget no dashboard",
     "description": "Nova aba 'Quotas' na pagina do agente com QuotasTab: 2 gauges circulares (tokens/hora e heartbeats/dia com pctUsed), badge de status Ativo/Pausado por quota, tabela de configuracao editavel inline com botao Salvar (PUT), botao Resetar janela com dialog de confirmacao (POST /reset). Widget no /dashboard: lista agentes com consumo > 80% em qualquer quota (amarelo) ou pausados (vermelho), link para aba de quotas. Toast SSE no Hub quando agent:quota-exceeded recebido (nome do agente, qual quota, link).",
@@ -409,7 +409,7 @@
     "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-5/worktree/sprints/sprint-5/3-prps/PRP-29-rate-limiting-quotas.md",
     "completed_at": "2026-03-08T00:18:48.760Z"
   },
-  {
+  "19": {
     "id": "F-123",
     "name": "Config Versioning DB: tabela config_versions + version-manager + trigger automatico",
     "description": "Criar tabela config_versions (agent_id, file_name, version_num, file_path, size_bytes, change_note, eval_run_id, created_at, created_by; index agent_id+file_name). Modelo em disco: context/agents/{owner}.{slug}/.versions/{filename}/v{NNN}_{timestamp}.md. Criar src/versions/version-manager.ts com: createVersion(agentId, fileName, currentContent, opts), nextVersionNum, pruneVersions (limit 50). Estender PATCH /agents/:id/files/:filename (ou equivalente existente) para chamar createVersion() antes de sobrescrever.",
@@ -429,7 +429,7 @@
     "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-5/worktree/sprints/sprint-5/3-prps/PRP-32-config-versioning.md",
     "completed_at": "2026-03-07T23:00:00Z"
   },
-  {
+  "20": {
     "id": "F-124",
     "name": "Config Versioning: endpoints list/get/diff/rollback + API Hub",
     "description": "Criar apps/backbone/src/routes/versions.ts com: GET /agents/:agentId/versions (todos os arquivos), GET /versions/:filename (lista versoes em ordem decrescente), GET /versions/:filename/:versionNum (conteudo), GET /versions/:filename/:versionNum/diff (diff linha a linha vs. anterior, sem lib externa: split por newline + comparacao LCS simples, retorna array de {type: unchanged|added|removed, line, content}), POST /versions/:filename/:versionNum/rollback (cria versao de seguranca, copia arquivo, hot reload). Montar no index.ts. Criar apps/hub/src/api/versions.ts com versionsQueryOptions.",
@@ -451,7 +451,7 @@
     "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-5/worktree/sprints/sprint-5/3-prps/PRP-32-config-versioning.md",
     "completed_at": "2026-03-08T00:28:11Z"
   },
-  {
+  "21": {
     "id": "F-125",
     "name": "Config Versioning: telas Hub — aba Versoes, diff visual, rollback",
     "description": "Nova aba 'Versoes' na pagina do agente. VersionsTab: select de arquivo (SOUL.md, AGENT.md, etc.), lista de versoes com numero/data/autor/tamanho/nota/badge Atual, botoes Ver conteudo/Ver diff/Restaurar por versao. DiffModal: diff visual linha a linha (verde=adicionado, vermelho=removido, cinza=inalterado), botao Restaurar no rodape. RollbackDialog: confirmacao descritiva com numero de versao e data. Editor existente de agente: campo opcional 'Nota sobre esta mudanca' ao salvar (enviado no change_note da versao).",
@@ -474,7 +474,7 @@
     "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-5/worktree/sprints/sprint-5/3-prps/PRP-32-config-versioning.md",
     "completed_at": "2026-03-08T00:41:21Z"
   },
-  {
+  "22": {
     "id": "F-120",
     "name": "Agent Sandbox: endpoints de rascunhos + modelo de filesystem",
     "description": "Criar modelo de filesystem context/agents/{owner}.{slug}/drafts/{draftId}/ com AGENT.md, SOUL.md (e outros .md existentes) + draft.json (id, agentId, label, createdAt, updatedAt, status). Criar apps/backbone/src/routes/drafts.ts com: GET/POST /agents/:agentId/drafts, GET/PATCH/DELETE /drafts/:draftId, POST /drafts/:draftId/publish (cria versao F-123, copia arquivos, hot reload, retorna {publishedAt, versionId}), POST /drafts/:draftId/chat (SSE, runAgent com contexto do rascunho, sem persistir sessao em SQLite), POST /drafts/:draftId/compare (executa em paralelo prod+rascunho, retorna ambas respostas). Criar apps/hub/src/api/drafts.ts com draftsQueryOptions.",
@@ -499,7 +499,7 @@
     "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-5/worktree/sprints/sprint-5/3-prps/PRP-31-agent-sandbox.md",
     "completed_at": "2026-03-08T00:47:49Z"
   },
-  {
+  "23": {
     "id": "F-121",
     "name": "Agent Sandbox: telas Hub — aba Sandbox e editor de rascunho",
     "description": "Nova aba 'Sandbox' na pagina do agente com SandboxTab: lista de rascunhos (label, criado em, ultima atualizacao), botao 'Criar rascunho' com input de label, por rascunho botoes Editar/Comparar/Publicar (com confirmacao)/Descartar. DraftEditor em /agents/:id/drafts/:draftId: tabs por arquivo (SOUL.md, AGENT.md, etc. apenas os existentes), textarea editavel, botao Salvar (PATCH), botao 'Testar no chat' (abre DraftChatPanel como painel lateral com SSE), botao Publicar com dialog de confirmacao. DraftChatPanel: input + stream SSE.",
@@ -523,7 +523,7 @@
     "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-5/worktree/sprints/sprint-5/3-prps/PRP-31-agent-sandbox.md",
     "completed_at": "2026-03-08T00:55:43Z"
   },
-  {
+  "24": {
     "id": "F-122",
     "name": "Agent Sandbox: view de comparacao side-by-side",
     "description": "Nova rota /agents/:id/drafts/:draftId/compare com DraftCompareView: campo de input para mensagem de teste, botao 'Executar comparacao' (POST /compare), layout 2 colunas 'Producao' | 'Rascunho {label}', cada coluna exibe resposta completa do agente, diferenca de palavras destacada visualmente em amarelo (diff simples de palavras entre as duas respostas).",
@@ -545,7 +545,7 @@
     "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-5/worktree/sprints/sprint-5/3-prps/PRP-31-agent-sandbox.md",
     "completed_at": "2026-03-08T01:00:13.462Z"
   },
-  {
+  "25": {
     "id": "F-116",
     "name": "Conector Slack: estrutura completa (client, routes, channel-adapter, tool)",
     "description": "Criar src/connectors/slack/ com index.ts (ConnectorDef), client.ts (Slack Web API via @slack/web-api), schemas.ts (credential: bot_token, signing_secret, app_token?; options: listen_events, channel_whitelist), routes.ts (POST /connectors/slack/:adapterId/events: validar X-Slack-Signature HMAC, responder url_verification challenge, filtrar por listen_events e channel_whitelist, extrair user/channel/text), channel-adapter.ts (sessao por user+channel, resposta via chat.postMessage), tools/send-message.ts (send_slack_message: {channel, text, thread_ts?} -> {ok, ts}), tools/index.ts. Dependencia npm: @slack/web-api.",
@@ -565,11 +565,11 @@
     "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-5/worktree/sprints/sprint-5/3-prps/PRP-30-canais-enterprise.md",
     "completed_at": "2026-03-07T22:50:00Z"
   },
-  {
+  "26": {
     "id": "F-117",
     "name": "Conector Teams: estrutura completa (client, routes, channel-adapter, tool)",
     "description": "Criar src/connectors/teams/ com index.ts, client.ts (HTTP client para Incoming Webhook URL), schemas.ts (credential: incoming_webhook_url, bot_endpoint_secret; options: adaptive_cards: false), routes.ts (POST /connectors/teams/:adapterId/events: validar bot_endpoint_secret, payload Power Automate {from, channel, text, timestamp}, sessao por email from), channel-adapter.ts, tools/send-message.ts (send_teams_message: {text, title?} -> {ok}). Sem dependencias npm extras alem do fetch nativo.",
-    "status": "pending",
+    "status": "passing",
     "priority": 27,
     "agent": "coder",
     "task": "vibe-code",
@@ -581,9 +581,10 @@
       "Conector coexiste com outros conectores sem conflito",
       "`npm run typecheck` passa sem erros"
     ],
-    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-5/worktree/sprints/sprint-5/3-prps/PRP-30-canais-enterprise.md"
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-5/worktree/sprints/sprint-5/3-prps/PRP-30-canais-enterprise.md",
+    "completed_at": "2026-03-08T01:10:38.826Z"
   },
-  {
+  "27": {
     "id": "F-118",
     "name": "Conector Email IMAP/SMTP: estrutura completa (client, polling, channel-adapter, tool)",
     "description": "Criar src/connectors/email/ com index.ts, client.ts (nodemailer para SMTP + imapflow para IMAP), schemas.ts (credential: imap_host/port/user/pass, smtp_host/port/user/pass; options: mailbox, poll_interval_seconds, mark_seen, reply_prefix), channel-adapter.ts (polling IMAP a cada poll_interval_seconds, SEARCH mensagens nao lidas, sessao por Message-ID do thread, executa agente, SMTP reply com In-Reply-To e References, mark_seen se configurado), tools/send-email.ts (send_email_reply: {to, subject, body, inReplyTo?} -> {ok, messageId}). Dependencias npm: nodemailer, imapflow.",
@@ -602,7 +603,7 @@
     ],
     "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-5/worktree/sprints/sprint-5/3-prps/PRP-30-canais-enterprise.md"
   },
-  {
+  "28": {
     "id": "F-119",
     "name": "Enterprise connectors: GUI Hub — bloco informativo e mascaramento no detalhe de adapter",
     "description": "Na GUI de adapters existente, adicionar por conector: Slack — bloco 'URL de Eventos: {backboneUrl}/connectors/slack/{adapterId}/events' com instrucao e botao Copiar. Teams — bloco 'URL do Endpoint: {backboneUrl}/connectors/teams/{adapterId}/events' com instrucao Power Automate. Email — botao 'Testar conectividade IMAP' ao salvar (exibe sucesso/erro), badge 'IMAP Conectado'/'Erro de conexao'. Mascarar campos sensiveis (bot_token, signing_secret, app_token, bot_endpoint_secret, imap_pass, smtp_pass) com maskSensitiveFields.",
@@ -625,7 +626,7 @@
     ],
     "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-5/worktree/sprints/sprint-5/3-prps/PRP-30-canais-enterprise.md"
   },
-  {
+  "29": {
     "id": "F-126",
     "name": "Reports: endpoints /reports/* com suporte a CSV",
     "description": "Criar apps/backbone/src/routes/reports.ts com POST /reports/conversations (filtros: agentId, channelType, from, to, limit; CSV: sessionId/agentId/agentLabel/channelType/channelId/startedAt/lastMessageAt/messageCount/userRef/status), POST /reports/costs (filtros: from, to; CSV: agentId/agentLabel/tokensIn/tokensOut/totalTokens/costUsdEstimate/executionCount), POST /reports/analytics (CSV: date/agentId/conversations/messages/tokensIn/tokensOut/avgResponseMs), POST /reports/evals (CSV: runId/setName/agentId/scoreAvg/totalCases/passed/failed/status/startedAt/finishedAt). Todos aceitam format: 'csv' | 'pdf' no body. CSV com Content-Disposition attachment. Montar no index.ts. Criar apps/hub/src/api/reports.ts com downloadReport.",
@@ -645,7 +646,7 @@
     ],
     "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-5/worktree/sprints/sprint-5/3-prps/PRP-33-export-relatorios.md"
   },
-  {
+  "30": {
     "id": "F-127",
     "name": "Reports: geracao de PDF com pdfkit",
     "description": "Criar src/reports/pdf-builder.ts com classe PdfBuilder: metodos header(systemName, reportTitle, generatedAt), summary(items: {label, value}[]), table(columns, rows), barChart(data: {label, value}[]) com SVG embutido, footer(totalPages?), build(): Buffer. Templates PDF por tipo: conversas (header+resumo+tabela+rodape), custos (header+resumo+grafico barras SVG+tabela), analytics (header+tabela metricas diarias), evals (header+historico runs+linha SVG de evolucao de score). Quando format: 'pdf': Content-Type application/pdf, Content-Disposition attachment. Dependencia npm: pdfkit.",
@@ -666,7 +667,7 @@
     ],
     "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-5/worktree/sprints/sprint-5/3-prps/PRP-33-export-relatorios.md"
   },
-  {
+  "31": {
     "id": "F-128",
     "name": "Reports: pagina /reports no Hub com cards e modais de filtro",
     "description": "Nova rota /reports no Hub com ReportsPage: 4 cards (Conversas, Custos, Analytics, Evals) cada com descricao breve e botoes 'Exportar CSV' e 'Exportar PDF'. Ao clicar abre ReportFiltersModal com: campos comuns (date range picker, agente select), campos especificos por tipo (Conversas: canal+status; Custos: agrupamento; Evals: eval set). Botao 'Gerar e baixar' dispara POST e inicia download. Atalhos: /agents/:id com botao 'Exportar relatorio' no menu de acoes, /analytics com botao 'Exportar CSV', /agents/:id/evaluation com botao 'Exportar PDF'. Link 'Relatorios' na sidebar.",
@@ -688,7 +689,7 @@
     ],
     "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-5/worktree/sprints/sprint-5/3-prps/PRP-33-export-relatorios.md"
   },
-  {
+  "32": {
     "id": "F-129",
     "name": "OpenTelemetry: SDK setup + instrumentacao em runAgent() e tool calls",
     "description": "Criar context/system/telemetry.json com {enabled: false, otlp: {endpoint, headers, protocol}, sampling: {rate: 1.0}}. Criar src/telemetry/index.ts com initTelemetry(config) usando @opentelemetry/sdk-node + OTLPTraceExporter, resolveEnvVars para ${VAR} nos headers, e getTracer(). Chamar initTelemetry no startup do backbone. Instrumentar runAgent() com span agent.{mode} (atributos: agent.id/slug/owner, session.id, channel.type; evento de tokens; status OK/ERROR). Tool calls como spans filhos com tool.name e duration_ms. Sampler simples quando rate < 1.0. Zero overhead quando enabled: false. Dependencias: @opentelemetry/sdk-node, @opentelemetry/exporter-trace-otlp-http, @opentelemetry/api, @opentelemetry/resources.",
@@ -708,7 +709,7 @@
     ],
     "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-5/worktree/sprints/sprint-5/3-prps/PRP-34-opentelemetry-export.md"
   },
-  {
+  "33": {
     "id": "F-130",
     "name": "OpenTelemetry: endpoints /settings/telemetry + API Hub",
     "description": "Adicionar (ou criar) rotas em apps/backbone/src/routes/settings.ts: GET /settings/telemetry (le telemetry.json), PUT (persiste telemetry.json e reinicializa SDK se necessario), POST /settings/telemetry/test (envia span de teste, retorna {ok, latencyMs, message}, timeout 5s). Montar no index.ts. Criar apps/hub/src/api/telemetry.ts com telemetryQueryOptions.",
@@ -728,7 +729,7 @@
     ],
     "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-5/worktree/sprints/sprint-5/3-prps/PRP-34-opentelemetry-export.md"
   },
-  {
+  "34": {
     "id": "F-131",
     "name": "OpenTelemetry: secao Telemetria em /settings no Hub",
     "description": "Adicionar secao 'Telemetria' na pagina /settings existente do Hub com componente TelemetrySection: toggle 'Habilitar exportacao OTLP', campo Endpoint URL, editor de headers (pares chave-valor, valores mascarados quando isSensitiveField de utils/sensitive.ts), slider de sampling rate (0.0-1.0 com exibicao de percentual), botao Salvar (PUT), botao 'Testar conexao' (POST /test) com feedback inline (checkmark verde com latencia ou mensagem de erro vermelha).",
@@ -749,4 +750,4 @@
     ],
     "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-5/worktree/sprints/sprint-5/3-prps/PRP-34-opentelemetry-export.md"
   }
-]
+}
