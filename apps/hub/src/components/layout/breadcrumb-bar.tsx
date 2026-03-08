@@ -3,8 +3,10 @@ import { Moon, Sun } from "lucide-react";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { useUIStore } from "@/lib/store";
 import { NotificationBell } from "@/components/notifications/notification-bell";
+import { useAuthStore } from "@/lib/auth";
 
 const routeLabels: Record<string, string> = {
   "/agents": "Agentes",
@@ -25,6 +27,8 @@ export function BreadcrumbBar() {
   const matches = useMatches();
   const theme = useUIStore((s) => s.theme);
   const setTheme = useUIStore((s) => s.setTheme);
+  const userRole = useAuthStore((s) => s.user?.role);
+  const isSysadmin = userRole === "sysuser";
 
   const crumbs: string[] = [];
   for (const match of matches) {
@@ -67,7 +71,12 @@ export function BreadcrumbBar() {
           </nav>
         </>
       )}
-      <div className="ml-auto flex items-center gap-1">
+      <div className="ml-auto flex items-center gap-2">
+        {isSysadmin && (
+          <Badge variant="secondary" className="text-xs font-semibold">
+            Admin
+          </Badge>
+        )}
         <NotificationBell />
         <Button variant="ghost" size="icon" onClick={toggleTheme} aria-label="Alternar tema">
           {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}

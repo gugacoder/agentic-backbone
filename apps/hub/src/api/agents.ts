@@ -20,10 +20,10 @@ export interface AgentStats {
   lastTimestamp?: string;
 }
 
-export function agentsQueryOptions() {
+export function agentsQueryOptions(scope?: "all") {
   return queryOptions({
-    queryKey: ["agents"],
-    queryFn: () => request<Agent[]>("/agents"),
+    queryKey: scope ? ["agents", "scope", scope] : ["agents"],
+    queryFn: () => request<Agent[]>(scope ? `/agents?scope=${scope}` : "/agents"),
   });
 }
 
