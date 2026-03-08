@@ -1,7 +1,7 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
-import { parseFrontmatter } from "../context/frontmatter.js";
+import { parseFrontmatter } from "../context/readers.js";
 import { sharedDir, systemDir, agentDir } from "../context/paths.js";
 import type { HookEntry, HookEventName, HookHandler } from "./types.js";
 import { formatError } from "../utils/errors.js";

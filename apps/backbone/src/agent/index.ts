@@ -1,5 +1,5 @@
 import { runAgent as runProxyAgent, type AgentEvent, type UsageData } from "@agentic-backbone/ai-sdk";
-import { resolveModel, resolveEffort, resolveThinking } from "../settings/llm.js";
+import { resolveModel, resolveParameters } from "../settings/llm.js";
 import { loadWebSearchConfig } from "../settings/web-search.js";
 import { readFileSync, appendFileSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
@@ -28,8 +28,7 @@ export async function* runAgent(
 ): AsyncGenerator<AgentEvent> {
   const role = options?.role ?? "conversation";
   const model = resolveModel(role);
-  const effort = resolveEffort();
-  const thinking = resolveThinking();
+  const params = resolveParameters(role);
   const webSearch = loadWebSearchConfig();
 
   const systemLen = options?.system?.length ?? 0;
@@ -71,8 +70,7 @@ export async function* runAgent(
     maxTurns: 100,
     ...(options?.system ? { system: options.system } : {}),
     providerConfig: {
-      ...(effort ? { effort } : {}),
-      ...(thinking ? { thinking } : {}),
+      ...params,
       webSearch: webSearch.provider,
       ...(braveApiKey ? { braveApiKey } : {}),
     },

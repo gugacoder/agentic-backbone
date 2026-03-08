@@ -1,6 +1,6 @@
 import { readdirSync, existsSync } from "node:fs";
 import { join } from "node:path";
-import { parseFrontmatter, readContextFile } from "./frontmatter.js";
+import { parseFrontmatter, readContextFile, readMarkdown } from "./readers.js";
 import {
   type ResourceKind,
   sharedResourceDir,
@@ -9,7 +9,6 @@ import {
   parseAgentId,
   userResourceDir,
   agentSoulPath,
-  agentUserPath,
   ownerUserPath,
   systemDir,
   agentHeartbeatPath,
@@ -137,25 +136,14 @@ export function resolveModeInstructions(
 
 export function resolveUserProfile(agentId: string): string {
   const { owner } = parseAgentId(agentId);
-  const parts: string[] = [];
 
-  // Owner-level (lower precedence — comes first)
-  if (owner !== "system") {
-    const ownerPath = ownerUserPath(owner);
-    if (existsSync(ownerPath)) {
-      const { content } = parseFrontmatter(readContextFile(ownerPath));
-      if (content.trim()) parts.push(content.trim());
-    }
-  }
+  if (owner === "system") return "";
 
-  // Agent-level (higher precedence — appended, can override/extend)
-  const agentPath = agentUserPath(agentId);
-  if (existsSync(agentPath)) {
-    const { content } = parseFrontmatter(readContextFile(agentPath));
-    if (content.trim()) parts.push(content.trim());
-  }
+  const ownerPath = ownerUserPath(owner);
+  if (!existsSync(ownerPath)) return "";
 
-  return parts.join("\n\n");
+  const { content } = readMarkdown(ownerPath);
+  return content.trim();
 }
 
 // --- Services ---

@@ -33,7 +33,7 @@ export interface ConnectorDef {
   health?(): ConnectorHealth;
 }
 
-// --- Resolved Adapter (from ADAPTER.yaml) ---
+// --- Resolved Adapter (from ADAPTER.yml) ---
 
 export interface ResolvedAdapter {
   slug: string;
@@ -44,7 +44,6 @@ export interface ResolvedAdapter {
   name: string;
   description: string;
   source: string;
-  enabled: boolean;
   dir: string;
   content: string;
   metadata: Record<string, unknown>;

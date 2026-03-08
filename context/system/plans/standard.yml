@@ -1,0 +1,106 @@
+name: standard
+title: Padrao
+description: Equilibrio entre custo e qualidade. Sonnet para conversas, Flash Lite para tarefas leves.
+
+slugs:
+  small.low:
+    class: small
+    effort: low
+    llm:
+      model: google/gemini-2.0-flash-lite-001
+      parameters: {}
+    tags: [triagem, classificacao, barato]
+    title: Pequeno direto
+    description: Modelo leve sem raciocinio
+
+  small.mid:
+    class: small
+    effort: mid
+    llm:
+      model: google/gemini-2.0-flash-lite-001
+      parameters:
+        thinking: adaptive
+    tags: [triagem, raciocinio-leve]
+    title: Pequeno com raciocinio
+    description: Modelo leve com raciocinio quando necessario
+
+  small.high:
+    class: small
+    effort: high
+    llm:
+      model: google/gemini-2.0-flash-001
+      parameters:
+        thinking: adaptive
+    tags: [triagem, raciocinio-completo]
+    title: Pequeno com raciocinio completo
+    description: Flash com raciocinio forcado para tarefas que exigem mais
+
+  medium.low:
+    class: medium
+    effort: low
+    llm:
+      model: anthropic/claude-sonnet-4
+      parameters: {}
+    tags: [conversacao, tool-calling]
+    title: Medio direto
+    description: Sonnet sem thinking — rapido e capaz
+
+  medium.mid:
+    class: medium
+    effort: mid
+    llm:
+      model: anthropic/claude-sonnet-4
+      parameters:
+        thinking: adaptive
+    tags: [conversacao, tool-calling, raciocinio-moderado]
+    title: Medio com raciocinio
+    description: Sonnet com thinking adaptativo — equilibrio ideal
+
+  medium.high:
+    class: medium
+    effort: high
+    llm:
+      model: anthropic/claude-sonnet-4
+      parameters:
+        thinking: adaptive
+    tags: [conversacao, raciocinio-completo]
+    title: Medio com raciocinio completo
+    description: Sonnet com thinking sempre ativo
+
+  large.low:
+    class: large
+    effort: low
+    llm:
+      model: anthropic/claude-sonnet-4
+      parameters: {}
+    tags: [analise, sintese]
+    title: Grande direto
+    description: Sonnet para tarefas complexas sem thinking
+
+  large.mid:
+    class: large
+    effort: mid
+    llm:
+      model: anthropic/claude-sonnet-4
+      parameters:
+        thinking: adaptive
+    tags: [analise, sintese, raciocinio]
+    title: Grande com raciocinio
+    description: Sonnet com thinking para tarefas complexas
+
+  large.high:
+    class: large
+    effort: high
+    llm:
+      model: anthropic/claude-sonnet-4
+      parameters:
+        thinking: adaptive
+    tags: [analise, sintese, raciocinio-maximo]
+    title: Grande com raciocinio maximo
+    description: Sonnet com thinking completo — maximo do plan padrao
+
+roles:
+  conversation: medium.mid
+  heartbeat: small.low
+  memory: small.low
+  cron: medium.low

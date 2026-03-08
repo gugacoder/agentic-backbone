@@ -1,6 +1,7 @@
-import { readFileSync, writeFileSync } from "node:fs";
+import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { systemDir } from "../context/paths.js";
+import { readYaml, writeYaml } from "../context/readers.js";
 
 // --- Types ---
 
@@ -14,27 +15,31 @@ const VALID_PROVIDERS: WebSearchProviderType[] = ["duckduckgo", "brave", "none"]
 
 // --- Path ---
 
-function llmConfigPath(): string {
-  return join(systemDir(), "llm.json");
+function settingsPath(): string {
+  return join(systemDir(), "settings.yml");
 }
 
 // --- Read / Write ---
 
 export function loadWebSearchConfig(): WebSearchConfig {
-  const raw = readFileSync(llmConfigPath(), "utf-8");
-  const json = JSON.parse(raw);
-  const ws = json.webSearch;
-  if (ws && VALID_PROVIDERS.includes(ws.provider)) {
-    return { provider: ws.provider };
+  if (!existsSync(settingsPath())) {
+    return { provider: "duckduckgo" };
+  }
+
+  const settings = readYaml(settingsPath()) as Record<string, unknown>;
+  const ws = settings["web-search"] as Record<string, unknown> | undefined;
+  if (ws && VALID_PROVIDERS.includes(ws.provider as WebSearchProviderType)) {
+    return { provider: ws.provider as WebSearchProviderType };
   }
   return { provider: "duckduckgo" };
 }
 
 export function saveWebSearchConfig(config: WebSearchConfig): void {
-  const raw = readFileSync(llmConfigPath(), "utf-8");
-  const json = JSON.parse(raw);
-  json.webSearch = { provider: config.provider };
-  writeFileSync(llmConfigPath(), JSON.stringify(json, null, 2) + "\n", "utf-8");
+  const settings = existsSync(settingsPath())
+    ? (readYaml(settingsPath()) as Record<string, unknown>)
+    : {};
+  settings["web-search"] = { provider: config.provider };
+  writeYaml(settingsPath(), settings);
 }
 
 export function isValidWebSearchProvider(value: string): value is WebSearchProviderType {

@@ -8,7 +8,7 @@ import {
 } from "node:fs";
 import { join } from "node:path";
 import { CONTEXT_DIR } from "../context/paths.js";
-import { parseFrontmatter, serializeFrontmatter } from "../context/frontmatter.js";
+import { parseFrontmatter, serializeFrontmatter } from "../context/readers.js";
 import { createAgent } from "../agents/manager.js";
 import { formatError } from "../utils/errors.js";
 

@@ -1,0 +1,106 @@
+name: economic
+title: Economico
+description: Modelos de baixo custo para todas as funcoes. Ideal para desenvolvimento e testes.
+
+slugs:
+  small.low:
+    class: small
+    effort: low
+    llm:
+      model: google/gemini-2.0-flash-lite-001
+      parameters: {}
+    tags: [triagem, classificacao, barato]
+    title: Pequeno direto
+    description: Modelo leve sem raciocinio
+
+  small.mid:
+    class: small
+    effort: mid
+    llm:
+      model: google/gemini-2.0-flash-lite-001
+      parameters:
+        thinking: adaptive
+    tags: [triagem, raciocinio-leve]
+    title: Pequeno com raciocinio
+    description: Modelo leve com raciocinio quando necessario
+
+  small.high:
+    class: small
+    effort: high
+    llm:
+      model: google/gemini-2.0-flash-lite-001
+      parameters:
+        thinking: adaptive
+    tags: [triagem, raciocinio-completo]
+    title: Pequeno com raciocinio completo
+    description: Modelo leve forcando raciocinio
+
+  medium.low:
+    class: medium
+    effort: low
+    llm:
+      model: google/gemini-2.0-flash-001
+      parameters: {}
+    tags: [conversacao, tool-calling]
+    title: Medio direto
+    description: Modelo medio sem raciocinio
+
+  medium.mid:
+    class: medium
+    effort: mid
+    llm:
+      model: google/gemini-2.0-flash-001
+      parameters:
+        thinking: adaptive
+    tags: [conversacao, tool-calling, raciocinio-moderado]
+    title: Medio com raciocinio
+    description: Modelo medio com raciocinio adaptativo
+
+  medium.high:
+    class: medium
+    effort: high
+    llm:
+      model: google/gemini-2.0-flash-001
+      parameters:
+        thinking: adaptive
+    tags: [conversacao, raciocinio-completo]
+    title: Medio com raciocinio completo
+    description: Modelo medio forcando raciocinio
+
+  large.low:
+    class: large
+    effort: low
+    llm:
+      model: google/gemini-2.0-flash-001
+      parameters: {}
+    tags: [analise, sintese]
+    title: Grande direto
+    description: Modelo grande sem raciocinio — versao economica usa flash
+
+  large.mid:
+    class: large
+    effort: mid
+    llm:
+      model: google/gemini-2.0-flash-001
+      parameters:
+        thinking: adaptive
+    tags: [analise, sintese, raciocinio]
+    title: Grande com raciocinio
+    description: Modelo grande com raciocinio adaptativo — versao economica usa flash
+
+  large.high:
+    class: large
+    effort: high
+    llm:
+      model: google/gemini-2.0-flash-001
+      parameters:
+        thinking: adaptive
+    tags: [analise, sintese, raciocinio-maximo]
+    title: Grande com raciocinio maximo
+    description: Modelo grande com raciocinio completo — versao economica usa flash
+
+roles:
+  conversation: medium.mid
+  heartbeat: small.low
+  memory: small.low
+  cron: small.mid

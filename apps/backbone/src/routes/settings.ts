@@ -1,7 +1,6 @@
 import { Hono } from "hono";
 import { requireSysuser } from "./auth-helpers.js";
-import { loadLlmConfig, saveLlmConfig } from "../settings/llm.js";
-
+import { getActivePlan, listPlans, setActivePlan } from "../settings/llm.js";
 import { loadWebSearchConfig, saveWebSearchConfig, isValidWebSearchProvider } from "../settings/web-search.js";
 
 export const settingsRoutes = new Hono();
@@ -12,8 +11,9 @@ settingsRoutes.get("/settings/llm", (c) => {
   const denied = requireSysuser(c);
   if (denied) return denied;
 
-  const config = loadLlmConfig();
-  return c.json(config);
+  const active = getActivePlan();
+  const all = listPlans();
+  return c.json({ activePlan: active.name, plans: all });
 });
 
 // --- PATCH /settings/llm ---
@@ -22,21 +22,22 @@ settingsRoutes.patch("/settings/llm", async (c) => {
   const denied = requireSysuser(c);
   if (denied) return denied;
 
-  const body = await c.req.json<{ active?: string }>();
+  const body = await c.req.json<{ activePlan?: string }>();
 
-  if (!body.active) {
-    return c.json({ error: "'active' is required" }, 400);
+  if (!body.activePlan) {
+    return c.json({ error: "'activePlan' is required" }, 400);
   }
 
-  const config = loadLlmConfig();
-
-  if (!config.plans[body.active]) {
-    return c.json({ error: `plan "${body.active}" not found in llm.json` }, 404);
+  try {
+    setActivePlan(body.activePlan);
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    return c.json({ error: msg }, 404);
   }
 
-  config.active = body.active;
-  saveLlmConfig(config);
-  return c.json(config);
+  const active = getActivePlan();
+  const all = listPlans();
+  return c.json({ activePlan: active.name, plans: all });
 });
 
 // --- GET /settings/web-search ---

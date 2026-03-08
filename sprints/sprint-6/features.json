@@ -386,5 +386,42 @@
       "`npm run build:hub` e `npm run typecheck` passam sem erros"
     ],
     "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-6/worktree/sprints/sprint-6/3-prps/PRP-40-agent-performance-benchmarking.md"
+  },
+  "19": {
+    "id": "F-142",
+    "name": "Hub: Área do Usuário (perfil + logout)",
+    "description": "Criar página /account no Hub com informações do usuário logado (nome, role, ID) e botão de logout que limpa o token JWT e redireciona para /login. Adicionar link para /account na navegação principal (header ou sidebar). Usar useAuthStore para dados do usuário e ação de logout. Components: shadcn Card, Button, Avatar. Rota via TanStack Router.",
+    "status": "failing",
+    "priority": 20,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [],
+    "tests": [
+      "Página /account renderiza informações do usuário logado (nome, role)",
+      "Botão Sair limpa o token JWT e redireciona para /login",
+      "Link para /account aparece na navegação principal",
+      "npm run build:hub passa sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-6/worktree/sprints/sprint-6/3-prps/PRP-41-hub-user-area-sysadmin.md"
+  },
+  "20": {
+    "id": "F-143",
+    "name": "Hub + API: Visão Sysadmin — Agentes de Todos os Usuários",
+    "description": "Quando usuário logado tem role=sysadmin, a listagem de agentes no Hub exibe todos os agentes de todos os owners. Backend: GET /agents aceita ?scope=all (apenas sysadmin, retorna 403 caso contrário) usando listAgents() do registry sem filtro de owner. Hub: verificar role no useAuthStore, chamar ?scope=all se sysadmin, exibir badge com owner do agente na listagem (ID já contém owner.slug). Adicionar badge visual Admin no header quando sysadmin.",
+    "status": "failing",
+    "priority": 21,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-142"
+    ],
+    "tests": [
+      "Com role=sysadmin, listagem exibe agentes de todos os owners com badge de owner",
+      "Com role comum, listagem exibe apenas agentes do próprio usuário",
+      "GET /agents?scope=all sem sysadmin retorna 403",
+      "Badge Admin aparece no header quando logado como sysadmin",
+      "npm run build:hub passa sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-6/worktree/sprints/sprint-6/3-prps/PRP-41-hub-user-area-sysadmin.md"
   }
 }

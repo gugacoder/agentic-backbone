@@ -1,8 +1,8 @@
-import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync, rmSync } from "node:fs";
+import { existsSync, readdirSync, rmSync } from "node:fs";
 import { join, dirname } from "node:path";
 import type { Hono } from "hono";
-import yaml from "js-yaml";
-import { readContextFile } from "../context/frontmatter.js";
+import { readYaml, writeYaml } from "../context/readers.js";
+import { AdapterYmlSchema } from "../context/schemas.js";
 import {
   type ResourceKind,
   sharedResourceDir,
@@ -12,7 +12,7 @@ import {
 } from "../context/paths.js";
 import { getResourceDirs } from "../context/resolver.js";
 import { formatError } from "../utils/errors.js";
-import { maskSensitiveFields, warnPlainTextSecrets } from "../utils/sensitive.js";
+import { maskSensitiveFields } from "../utils/sensitive.js";
 import type {
   ConnectorDef,
   ConnectorContext,
@@ -22,7 +22,7 @@ import type {
 } from "./types.js";
 
 const KIND: ResourceKind = "adapters";
-const FILENAME = "ADAPTER.yaml";
+const FILENAME = "ADAPTER.yml";
 
 function maskCredentials(adapter: ResolvedAdapter): ResolvedAdapter {
   return { ...adapter, credential: maskSensitiveFields(adapter.credential) };
@@ -54,31 +54,33 @@ export class ConnectorRegistry {
 
     const entries: ResolvedAdapter[] = [];
     for (const slug of readdirSync(dir)) {
-      const yamlPath = join(dir, slug, FILENAME);
-      if (!existsSync(yamlPath)) continue;
+      const ymlPath = join(dir, slug, FILENAME);
+      if (!existsSync(ymlPath)) continue;
 
-      const raw = readContextFile(yamlPath);
-      const parsed = yaml.load(raw);
-      const metadata = (parsed && typeof parsed === "object" ? parsed : {}) as Record<string, unknown>;
+      const raw = readYaml(ymlPath);
+      const result = AdapterYmlSchema.safeParse(raw);
+      if (!result.success) {
+        console.warn(`[connectors] invalid ADAPTER.yml for ${slug}:`, result.error.issues);
+        continue;
+      }
+      const data = result.data;
 
-      const connector = (metadata.connector as string) ?? "";
-      const params = (metadata.params as Record<string, unknown>) ?? {};
-      const credential = (metadata.credential as Record<string, unknown>) ?? params;
-      const options = (metadata.options as Record<string, unknown>) ?? {};
+      const params = data.params ?? {};
+      const credential = data.credential ?? params;
+      const options = data.options ?? {};
 
       entries.push({
         slug,
-        connector,
+        connector: data.connector,
         credential,
         options,
-        policy: (metadata.policy as string) ?? "readonly",
-        name: (metadata.name as string) ?? slug,
-        description: (metadata.description as string) ?? "",
+        policy: data.policy,
+        name: data.name ?? slug,
+        description: data.description ?? "",
         source,
-        enabled: (metadata.enabled as boolean) ?? true,
-        dir: dirname(yamlPath),
-        content: raw,
-        metadata,
+        dir: dirname(ymlPath),
+        content: "",
+        metadata: data as Record<string, unknown>,
       });
     }
     return entries;
@@ -291,14 +293,13 @@ export class ConnectorRegistry {
     updates: { name?: string; description?: string; policy?: string; params?: Record<string, unknown>; enabled?: boolean }
   ): ResolvedAdapter {
     const adapterDir = join(this.resolveDir(scope), slug);
-    const yamlPath = join(adapterDir, FILENAME);
+    const ymlPath = join(adapterDir, FILENAME);
 
-    if (!existsSync(yamlPath)) {
+    if (!existsSync(ymlPath)) {
       throw new Error(`Adapter ${slug} not found in scope ${scope}`);
     }
 
-    const raw = readFileSync(yamlPath, "utf-8");
-    const config = (yaml.load(raw) as Record<string, unknown>) ?? {};
+    const config = readYaml(ymlPath);
 
     if (updates.name !== undefined) config.name = updates.name;
     if (updates.description !== undefined) config.description = updates.description;
@@ -306,11 +307,7 @@ export class ConnectorRegistry {
     if (updates.params !== undefined) config.params = updates.params;
     if (updates.enabled !== undefined) config.enabled = updates.enabled;
 
-    // Warn about plain text credentials
-    const credential = (config.credential ?? config.params) as Record<string, unknown> | undefined;
-    if (credential) warnPlainTextSecrets(credential, `adapters:${slug}`);
-
-    writeFileSync(yamlPath, yaml.dump(config, { lineWidth: -1, quotingType: '"' }));
+    writeYaml(ymlPath, config);
 
     this.invalidateClient(slug);
 
@@ -324,44 +321,6 @@ export class ConnectorRegistry {
     if (!existsSync(adapterDir)) return false;
     rmSync(adapterDir, { recursive: true, force: true });
     return true;
-  }
-
-  // --- Create adapter ---
-
-  createAdapter(
-    scope: "shared" | "system",
-    slug: string,
-    data: {
-      connector: string;
-      label?: string;
-      policy?: string;
-      credential?: Record<string, unknown>;
-      options?: Record<string, unknown>;
-    }
-  ): ResolvedAdapter {
-    const adapterDir = join(this.resolveDir(scope), slug);
-    const yamlPath = join(adapterDir, FILENAME);
-
-    if (existsSync(yamlPath)) {
-      throw new Error(`Adapter "${slug}" already exists in scope "${scope}"`);
-    }
-
-    const config: Record<string, unknown> = {
-      connector: data.connector,
-      name: data.label ?? slug,
-      policy: data.policy ?? "readonly",
-    };
-    if (data.credential) config.credential = data.credential;
-    if (data.options) config.options = data.options;
-
-    if (data.credential) warnPlainTextSecrets(data.credential, `adapters:${slug}`);
-
-    mkdirSync(adapterDir, { recursive: true });
-    writeFileSync(yamlPath, yaml.dump(config, { lineWidth: -1, quotingType: '"' }));
-
-    const created = this.getAdapter(scope, slug);
-    if (!created) throw new Error(`Failed to read adapter after create`);
-    return created;
   }
 
   // --- Test adapter connection ---

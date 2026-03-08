@@ -77,6 +77,7 @@ function contentTypeFromExt(filename: string): string {
 
 async function convertPdfToMarkdown(buffer: Buffer): Promise<string> {
   // Dynamic import — pdf-parse is optional and only loaded when needed
+  // @ts-ignore — pdf-parse has no type declarations
   const pdfParse = (await import("pdf-parse")).default;
   const data = await pdfParse(buffer);
   return data.text;
