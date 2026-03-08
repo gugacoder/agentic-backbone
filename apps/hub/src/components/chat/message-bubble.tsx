@@ -1,7 +1,8 @@
 import { useState } from "react";
 import Markdown from "react-markdown";
-import { Copy, Check, Activity } from "lucide-react";
+import { Copy, Check, Activity, Bot } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { StreamingIndicator } from "./streaming-indicator";
 import { MessageFeedback } from "@/components/conversations/message-feedback";
@@ -59,6 +60,15 @@ export function MessageBubble({ message, isStreaming, sessionId, onTrace, messag
           <div className="prose prose-sm dark:prose-invert max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
             <Markdown>{message.content}</Markdown>
             {isStreaming && <StreamingIndicator />}
+          </div>
+        )}
+
+        {!isUser && Boolean(message.metadata?.agentId) && (
+          <div className="mt-1.5">
+            <Badge variant="outline" className="gap-1 text-[10px] px-1.5 py-0">
+              <Bot className="size-2.5" />
+              {message.metadata?.agentId as string}
+            </Badge>
           </div>
         )}
 

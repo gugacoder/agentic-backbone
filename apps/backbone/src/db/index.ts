@@ -336,4 +336,134 @@ for (const rule of systemRules) {
   insertRule.run(rule);
 }
 
+db.exec(`
+  CREATE TABLE IF NOT EXISTS webhooks (
+    id          TEXT PRIMARY KEY,
+    agent_id    TEXT NOT NULL,
+    name        TEXT NOT NULL,
+    secret      TEXT NOT NULL,
+    enabled     INTEGER NOT NULL DEFAULT 1,
+    description TEXT,
+    filters     TEXT,
+    created_at  TEXT NOT NULL DEFAULT (datetime('now')),
+    updated_at  TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+  CREATE INDEX IF NOT EXISTS idx_webhooks_agent ON webhooks(agent_id);
+
+  CREATE TABLE IF NOT EXISTS webhook_events (
+    id           TEXT PRIMARY KEY,
+    webhook_id   TEXT NOT NULL REFERENCES webhooks(id) ON DELETE CASCADE,
+    agent_id     TEXT NOT NULL,
+    received_at  TEXT NOT NULL DEFAULT (datetime('now')),
+    headers      TEXT NOT NULL,
+    payload      TEXT NOT NULL,
+    status       TEXT NOT NULL DEFAULT 'pending',
+    error        TEXT,
+    processed_at TEXT
+  );
+  CREATE INDEX IF NOT EXISTS idx_webhook_events_webhook ON webhook_events(webhook_id);
+  CREATE INDEX IF NOT EXISTS idx_webhook_events_status ON webhook_events(status);
+`);
+
+db.exec(`
+  CREATE TABLE IF NOT EXISTS lgpd_data_map (
+    id             INTEGER PRIMARY KEY AUTOINCREMENT,
+    agent_id       TEXT NOT NULL,
+    data_type      TEXT NOT NULL,
+    label          TEXT NOT NULL,
+    purpose        TEXT NOT NULL,
+    legal_basis    TEXT NOT NULL,
+    retention_days INTEGER,
+    updated_at     TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+  CREATE UNIQUE INDEX IF NOT EXISTS idx_lgpd_map_agent_type ON lgpd_data_map(agent_id, data_type);
+
+  CREATE TABLE IF NOT EXISTS lgpd_consent_log (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    agent_id    TEXT NOT NULL,
+    channel_id  TEXT NOT NULL,
+    user_ref    TEXT NOT NULL,
+    action      TEXT NOT NULL,
+    purpose     TEXT NOT NULL,
+    ip_address  TEXT,
+    recorded_at TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+  CREATE INDEX IF NOT EXISTS idx_lgpd_consent_agent ON lgpd_consent_log(agent_id);
+  CREATE INDEX IF NOT EXISTS idx_lgpd_consent_user ON lgpd_consent_log(user_ref);
+
+  CREATE TABLE IF NOT EXISTS lgpd_rights_requests (
+    id           TEXT PRIMARY KEY,
+    user_ref     TEXT NOT NULL,
+    right_type   TEXT NOT NULL,
+    agent_id     TEXT,
+    description  TEXT,
+    status       TEXT NOT NULL DEFAULT 'open',
+    response     TEXT,
+    requested_at TEXT NOT NULL DEFAULT (datetime('now')),
+    resolved_at  TEXT
+  );
+  CREATE INDEX IF NOT EXISTS idx_lgpd_rights_user ON lgpd_rights_requests(user_ref);
+  CREATE INDEX IF NOT EXISTS idx_lgpd_rights_status ON lgpd_rights_requests(status);
+`);
+
+db.exec(`
+  CREATE TABLE IF NOT EXISTS agent_handoffs (
+    id             INTEGER PRIMARY KEY AUTOINCREMENT,
+    supervisor_id  TEXT NOT NULL,
+    member_id      TEXT NOT NULL,
+    label          TEXT NOT NULL,
+    trigger_intent TEXT NOT NULL,
+    priority       INTEGER DEFAULT 0,
+    enabled        INTEGER DEFAULT 1,
+    created_at     TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+  CREATE UNIQUE INDEX IF NOT EXISTS idx_handoffs_sup_member ON agent_handoffs(supervisor_id, member_id);
+  CREATE INDEX IF NOT EXISTS idx_handoffs_supervisor ON agent_handoffs(supervisor_id);
+`);
+
+// Idempotent migration: add orchestration columns to sessions
+try { db.exec(`ALTER TABLE sessions ADD COLUMN orchestration_path TEXT`); } catch {}
+try { db.exec(`ALTER TABLE sessions ADD COLUMN current_agent_id TEXT`); } catch {}
+
+db.exec(`
+  CREATE TABLE IF NOT EXISTS agent_quotas (
+    id                   INTEGER PRIMARY KEY AUTOINCREMENT,
+    agent_id             TEXT NOT NULL UNIQUE,
+    max_tokens_per_hour  INTEGER,
+    max_heartbeats_day   INTEGER,
+    max_tool_timeout_ms  INTEGER DEFAULT 30000,
+    max_tokens_per_run   INTEGER,
+    pause_on_exceed      INTEGER NOT NULL DEFAULT 1,
+    updated_at           TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+
+  CREATE TABLE IF NOT EXISTS agent_quota_usage (
+    id           INTEGER PRIMARY KEY AUTOINCREMENT,
+    agent_id     TEXT NOT NULL,
+    window_type  TEXT NOT NULL,
+    window_start TEXT NOT NULL,
+    tokens_used  INTEGER NOT NULL DEFAULT 0,
+    heartbeats   INTEGER NOT NULL DEFAULT 0,
+    tool_calls   INTEGER NOT NULL DEFAULT 0,
+    updated_at   TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+  CREATE UNIQUE INDEX IF NOT EXISTS idx_quota_usage_agent_window ON agent_quota_usage(agent_id, window_type, window_start);
+`);
+
+db.exec(`
+  CREATE TABLE IF NOT EXISTS config_versions (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    agent_id    TEXT NOT NULL,
+    file_name   TEXT NOT NULL,
+    version_num INTEGER NOT NULL,
+    file_path   TEXT NOT NULL,
+    size_bytes  INTEGER,
+    change_note TEXT,
+    eval_run_id INTEGER,
+    created_at  TEXT NOT NULL DEFAULT (datetime('now')),
+    created_by  TEXT
+  );
+  CREATE INDEX IF NOT EXISTS idx_versions_agent_file ON config_versions(agent_id, file_name);
+`);
+
 export { db };

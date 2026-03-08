@@ -11,6 +11,11 @@ import {
   ChevronRight,
   FlaskConical,
   Star,
+  Webhook,
+  GitMerge,
+  Gauge,
+  History,
+  Layers,
 } from "lucide-react";
 import {
   agentQueryOptions,
@@ -28,6 +33,11 @@ import { AgentCronTab } from "@/components/agents/agent-cron-tab";
 import { KnowledgeTab } from "@/components/agents/knowledge-tab";
 import { EvalTab } from "@/components/agents/eval-tab";
 import { QualityTab } from "@/components/quality/quality-tab";
+import { WebhooksTab } from "@/components/webhooks/webhooks-tab";
+import { HandoffsTab } from "@/components/handoffs/handoffs-tab";
+import { QuotasTab } from "@/components/quotas/quotas-tab";
+import { VersionsTab } from "@/components/versions/versions-tab";
+import { SandboxTab } from "@/components/sandbox/sandbox-tab";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { useSSEEvent } from "@/hooks/use-sse";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -42,6 +52,11 @@ const tabs = [
   { value: "cron", label: "Agenda", icon: Clock },
   { value: "evaluation", label: "Avaliacao", icon: FlaskConical },
   { value: "quality", label: "Qualidade", icon: Star },
+  { value: "webhooks", label: "Webhooks", icon: Webhook },
+  { value: "handoffs", label: "Handoffs", icon: GitMerge },
+  { value: "quotas", label: "Quotas", icon: Gauge },
+  { value: "versions", label: "Versoes", icon: History },
+  { value: "sandbox", label: "Sandbox", icon: Layers },
 ] as const;
 
 type TabValue = (typeof tabs)[number]["value"];
@@ -207,6 +222,21 @@ function AgentDetailPage() {
         </TabsContent>
         <TabsContent value="quality">
           <QualityTab agentId={id} days={days ?? 30} />
+        </TabsContent>
+        <TabsContent value="webhooks">
+          <WebhooksTab agentId={id} />
+        </TabsContent>
+        <TabsContent value="handoffs">
+          <HandoffsTab agentId={id} />
+        </TabsContent>
+        <TabsContent value="quotas">
+          <QuotasTab agentId={id} />
+        </TabsContent>
+        <TabsContent value="versions">
+          <VersionsTab agentId={id} />
+        </TabsContent>
+        <TabsContent value="sandbox">
+          <SandboxTab agentId={id} />
         </TabsContent>
       </Tabs>
     </div>

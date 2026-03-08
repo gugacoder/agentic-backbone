@@ -8,6 +8,8 @@ export interface Agent {
   enabled: boolean;
   description?: string;
   heartbeatEnabled?: boolean;
+  role?: string;
+  members?: string[];
 }
 
 export interface AgentStats {
@@ -93,10 +95,11 @@ export async function saveAgentFile(
   id: string,
   filename: string,
   content: string,
+  changeNote?: string,
 ): Promise<void> {
   await request(`/agents/${id}/files/${filename}`, {
     method: "PUT",
-    body: JSON.stringify({ content }),
+    body: JSON.stringify({ content, change_note: changeNote }),
   });
 }
 

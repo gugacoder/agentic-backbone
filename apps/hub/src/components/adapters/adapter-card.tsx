@@ -7,6 +7,7 @@ import {
   XCircle,
   Pencil,
   Trash2,
+  Copy,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -28,7 +29,32 @@ const CONNECTOR_LABELS: Record<string, string> = {
   evolution: "Evolution",
   twilio: "Twilio",
   http: "HTTP",
+  "whatsapp-cloud": "WhatsApp Cloud",
 };
+
+function WhatsAppWebhookInfo({ adapterId }: { adapterId: string }) {
+  const webhookUrl = `${window.location.origin}/api/v1/ai/connectors/whatsapp-cloud/${adapterId}/webhook`;
+
+  function copyUrl() {
+    navigator.clipboard.writeText(webhookUrl).then(() => {
+      toast.success("URL copiada!");
+    });
+  }
+
+  return (
+    <div className="mt-3 rounded-md border p-3 space-y-2">
+      <p className="text-xs font-medium">URL do Webhook</p>
+      <p className="text-xs font-mono break-all text-muted-foreground">{webhookUrl}</p>
+      <p className="text-xs text-muted-foreground">
+        Configure esta URL no Meta Business Manager como webhook do aplicativo.
+      </p>
+      <Button size="sm" variant="outline" className="h-7 text-xs" onClick={copyUrl}>
+        <Copy className="mr-1.5 h-3.5 w-3.5" />
+        Copiar URL
+      </Button>
+    </div>
+  );
+}
 
 type TestState = "idle" | "loading" | "ok" | "error";
 
@@ -150,6 +176,10 @@ export function AdapterCard({ adapter, onEdit }: Props) {
         </div>
         {testState === "error" && testError && (
           <p className="text-xs text-destructive">{testError}</p>
+        )}
+
+        {adapter.connector === "whatsapp-cloud" && (
+          <WhatsAppWebhookInfo adapterId={adapter.slug} />
         )}
       </CardContent>
     </Card>

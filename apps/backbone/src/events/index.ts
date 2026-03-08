@@ -87,6 +87,13 @@ export interface SecurityAlertEvent {
   windowMinutes: number;
 }
 
+export interface AgentQuotaExceededEvent {
+  ts: number;
+  agentId: string;
+  quota: string;
+  value: number;
+}
+
 export interface BackboneEventMap {
   "heartbeat:status": HeartbeatStatusEvent;
   "channel:message": ChannelMessageEvent;
@@ -99,6 +106,7 @@ export interface BackboneEventMap {
   "session:takeover": SessionTakeoverEvent;
   "approval:pending": ApprovalPendingEvent;
   "security:alert": SecurityAlertEvent;
+  "agent:quota-exceeded": AgentQuotaExceededEvent;
 }
 
 // --- Typed Event Bus ---

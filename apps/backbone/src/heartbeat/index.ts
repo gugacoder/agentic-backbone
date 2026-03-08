@@ -14,6 +14,7 @@ import { formatError } from "../utils/errors.js";
 import { emitNotification } from "../notifications/index.js";
 import { trackCost } from "../db/costs.js";
 import { trackHeartbeat } from "../db/analytics.js";
+import { checkExceeded, getQuotas, recordUsage, pauseAgent } from "../quotas/quota-manager.js";
 
 const HEARTBEAT_OK = "HEARTBEAT_OK";
 const ACK_MAX_CHARS = 300;
@@ -121,6 +122,25 @@ async function tick(agentId: string): Promise<void> {
     }
   }
 
+  // Guard: quota
+  const quotaCheck = checkExceeded(agentId, "heartbeat");
+  if (quotaCheck.exceeded) {
+    const quotas = getQuotas(agentId);
+    if (quotas.pauseOnExceed !== false) {
+      pauseAgent(agentId);
+      eventBus.emit("agent:quota-exceeded", {
+        ts: Date.now(),
+        agentId,
+        quota: quotaCheck.reason ?? "unknown",
+        value: 0,
+      });
+      skipWithReason(state, agentId, "agent-disabled");
+      return;
+    } else {
+      console.warn(`[heartbeat:${agentId}] quota exceeded (pause_on_exceed=false): ${quotaCheck.reason}`);
+    }
+  }
+
   // Guard: empty instructions
   const assembled = await assemblePrompt(agentId, "heartbeat");
   if (!assembled) {
@@ -174,6 +194,7 @@ async function tick(agentId: string): Promise<void> {
         tokensOut: usageData.outputTokens,
         costUsd: usageData.totalCostUsd,
       });
+      recordUsage(agentId, usageData.inputTokens, usageData.outputTokens, "heartbeat");
     }
 
     const { shouldSkip, cleanText } = normalizeReply(fullText);

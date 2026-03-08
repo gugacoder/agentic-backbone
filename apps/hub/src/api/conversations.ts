@@ -20,6 +20,8 @@ export interface Session {
   title: string | null;
   takeover_by: string | null;
   takeover_at: string | null;
+  orchestration_path: string | null;
+  current_agent_id: string | null;
   created_at: string;
   updated_at: string;
 }

@@ -114,9 +114,15 @@ function FileEditor({ agentId, filename }: { agentId: string; filename: string }
   const { data, isLoading, isError } = useQuery(agentFileQueryOptions(agentId, filename));
 
   const [content, setContent] = useState<string | null>(null);
+  const [changeNote, setChangeNote] = useState("");
   const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const savedRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const changeNoteRef = useRef(changeNote);
+
+  useEffect(() => {
+    changeNoteRef.current = changeNote;
+  }, [changeNote]);
 
   // Sync fetched content to local state once
   useEffect(() => {
@@ -147,7 +153,7 @@ function FileEditor({ agentId, filename }: { agentId: string; filename: string }
       debounceRef.current = setTimeout(async () => {
         setSaveStatus("saving");
         try {
-          await saveAgentFile(agentId, filename, value);
+          await saveAgentFile(agentId, filename, value, changeNoteRef.current || undefined);
           setSaveStatus("saved");
           savedRef.current = setTimeout(() => setSaveStatus("idle"), 3000);
         } catch {
@@ -168,12 +174,26 @@ function FileEditor({ agentId, filename }: { agentId: string; filename: string }
   }
 
   return (
-    <MarkdownEditor
-      value={content ?? ""}
-      onChange={handleChange}
-      saveStatus={saveStatus}
-      placeholder={`Escreva o conteudo de ${filename}...`}
-    />
+    <div className="space-y-3">
+      <MarkdownEditor
+        value={content ?? ""}
+        onChange={handleChange}
+        saveStatus={saveStatus}
+        placeholder={`Escreva o conteudo de ${filename}...`}
+      />
+      <div className="flex flex-col gap-1">
+        <label className="text-xs text-muted-foreground">
+          Nota sobre esta mudanca (opcional)
+        </label>
+        <input
+          type="text"
+          value={changeNote}
+          onChange={(e) => setChangeNote(e.target.value)}
+          placeholder="Ex: Ajuste no tom de comunicacao"
+          className="h-8 rounded-md border border-input bg-background px-3 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        />
+      </div>
+    </div>
   );
 }
 

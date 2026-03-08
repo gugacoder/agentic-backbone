@@ -13,6 +13,7 @@ import {
   Pencil,
   Download,
   Trash2,
+  GitMerge,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -289,8 +290,19 @@ function ConversationChatPage() {
     );
   }
 
+  const orchestrationPath: string[] = (() => {
+    try {
+      return session?.orchestration_path
+        ? (JSON.parse(session.orchestration_path) as string[])
+        : [];
+    } catch {
+      return [];
+    }
+  })();
+
   return (
-    <div className="flex h-[calc(100vh-theme(spacing.12)-2rem)] flex-col">
+    <div className="flex h-[calc(100vh-theme(spacing.12)-2rem)] gap-3">
+      <div className="flex flex-1 flex-col overflow-hidden">
       {/* Header */}
       <div className="flex items-center gap-3 border-b px-4 py-3">
         <Button
@@ -442,6 +454,27 @@ function ConversationChatPage() {
         onAbort={handleAbort}
         isStreaming={isStreaming}
       />
+      </div>
+
+      {/* Orchestration path sidebar */}
+      {orchestrationPath.length > 0 && (
+        <div className="hidden w-56 shrink-0 overflow-y-auto rounded-lg border bg-muted/30 p-3 lg:block">
+          <div className="mb-3 flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+            <GitMerge className="size-3.5" />
+            Caminho de delegacao
+          </div>
+          <ol className="space-y-2">
+            {orchestrationPath.map((agentId, idx) => (
+              <li key={idx} className="flex items-center gap-2 text-xs">
+                <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-primary/10 text-[10px] font-medium text-primary">
+                  {idx + 1}
+                </span>
+                <span className="truncate font-mono">{agentId}</span>
+              </li>
+            ))}
+          </ol>
+        </div>
+      )}
     </div>
   );
 }
