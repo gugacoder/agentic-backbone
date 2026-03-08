@@ -10,6 +10,7 @@ import {
   writeAgentFile,
   listAgentFiles,
 } from "../agents/manager.js";
+import { createVersion } from "../versions/version-manager.js";
 import {
   getHeartbeatStatus,
   updateHeartbeatAgent,
@@ -150,8 +151,13 @@ agentRoutes.put("/agents/:id/files/*", async (c) => {
   const denied = assertAgentOwnership(c, agentId);
   if (denied) return denied;
   const filename = c.req.path.replace(new RegExp(`^/agents/${agentId.replace(".", "\\.")}/files/`), "");
-  const { content } = await c.req.json<{ content: string }>();
+  const { content, changeNote, createdBy } = await c.req.json<{ content: string; changeNote?: string; createdBy?: string }>();
   try {
+    // Save current content as a version before overwriting
+    const current = readAgentFile(agentId, filename);
+    if (current !== null) {
+      createVersion(agentId, filename, current, { changeNote, createdBy });
+    }
     writeAgentFile(agentId, filename, content);
     return c.json({ status: "saved" });
   } catch (err) {
