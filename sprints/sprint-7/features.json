@@ -302,7 +302,7 @@
     "id": "F-158",
     "name": "OTel: InstrumentaÃ§Ã£o de runAgent(), tool calls e MCP calls",
     "description": "Criar instrumentor.ts: wrapper instrumentedRunAgent() que cria span gen_ai.{mode} com atributos GenAI Semantic Conventions (gen_ai.system, gen_ai.request.model, gen_ai.usage.*). Tool calls geram child spans gen_ai.tool_call (name, duration_ms, status). MCP calls geram child spans gen_ai.mcp_call (adapter_id, server_label). Spans tipos: chat (CLIENT), heartbeat (CLIENT), cron (CLIENT), tool_call (INTERNAL), mcp_call (CLIENT). Contexto de propagaÃ§Ã£o: trace_id vinculado a session ID ou heartbeat/cron run ID. Sampling rate aplicado conforme config.",
-    "status": "pending",
+    "status": "passing",
     "priority": 15,
     "agent": "coder",
     "task": "vibe-code",
@@ -318,7 +318,8 @@
       "Falha no exportador nÃ£o impacta operaÃ§Ã£o do backbone",
       "`npm run typecheck` passa sem erros"
     ],
-    "prp_path": "sprints/sprint-7/3-prps/PRP-45-opentelemetry-export.md"
+    "prp_path": "sprints/sprint-7/3-prps/PRP-45-opentelemetry-export.md",
+    "completed_at": "2026-03-08T16:32:20Z"
   },
   {
     "id": "F-159",
@@ -344,7 +345,7 @@
     "id": "F-160",
     "name": "OTel: Hub â€” pÃ¡gina /settings/otel com presets",
     "description": "PÃ¡gina /settings/otel: toggle habilitar exportaÃ§Ã£o, campo endpoint URL (placeholder localhost:4318), key-value editor de headers (password), slider sampling rate 0-100%, multi-select filtro por agente, multi-select filtro por tipo operaÃ§Ã£o, botÃ£o Testar ConexÃ£o (feedback visual sucesso/erro + latÃªncia), status card (spans exportados, erros, Ãºltimo export). Presets (botÃµes que preenchem endpoint+headers): Grafana Cloud, Datadog (DD-API-KEY), New Relic (Api-Key), Langfuse, Local Jaeger.",
-    "status": "pending",
+    "status": "blocked",
     "priority": 17,
     "agent": "coder",
     "task": "vibe-code",

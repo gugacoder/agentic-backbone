@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import { db } from "../db/index.js";
 import { assemblePrompt } from "../context/index.js";
 import { runAgent, type AgentEvent } from "../agent/index.js";
+import { instrumentedRunAgent } from "../telemetry/instrumentor.js";
 import {
   initSession as initPersistentSession,
   appendMessage,
@@ -412,10 +413,11 @@ export async function* sendMessage(
     prompt: assembled.userMessage,
   });
 
-  for await (const event of runAgent(assembled.userMessage, {
+  const conversationTools = composeAgentTools(effectiveAgentId, "conversation", { sessionId, userId });
+  for await (const event of instrumentedRunAgent(effectiveAgentId, "chat", assembled.userMessage, {
     sessionId: effectiveAgentId === agentId ? sdkSessionId : undefined,
     role: "conversation",
-    tools: composeAgentTools(effectiveAgentId, "conversation", { sessionId, userId }),
+    tools: conversationTools,
     system: assembled.system,
   })) {
     // Capture SDK session on first init for future resume

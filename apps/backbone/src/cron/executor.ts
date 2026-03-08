@@ -1,4 +1,5 @@
-import { runAgent, type UsageData, type RoutingContext, type RoutingRule, type ModelResult } from "../agent/index.js";
+import { type UsageData, type RoutingContext, type RoutingRule, type ModelResult } from "../agent/index.js";
+import { instrumentedRunAgent } from "../telemetry/instrumentor.js";
 import { triggerManualHeartbeat } from "../heartbeat/index.js";
 import { deliverToSystemChannel } from "../channels/system-channel.js";
 import { assemblePrompt } from "../context/index.js";
@@ -134,13 +135,15 @@ async function executeMessagePayload(
   process.env.AGENT_ID = job.agentId;
   const execution = (async () => {
     const result = await collectAgentResult(
-      runAgent(assembled.userMessage, {
+      instrumentedRunAgent(job.agentId, "cron", assembled.userMessage, {
         role: "cron",
         tools,
         system: assembled.system,
         routingContext: routingCtx,
         agentRoutingRules: agentRules,
         onRoutingResolved: (r) => { routingResult = r; },
+        cronJobId: job.slug,
+        cronSchedule: JSON.stringify(job.def.schedule),
       })
     );
     fullText = result.fullText;

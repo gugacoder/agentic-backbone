@@ -1,5 +1,6 @@
 import { assemblePrompt } from "../context/index.js";
-import { runAgent, type RoutingContext, type RoutingRule, type ModelResult } from "../agent/index.js";
+import { type RoutingContext, type RoutingRule, type ModelResult } from "../agent/index.js";
+import { instrumentedRunAgent } from "../telemetry/instrumentor.js";
 import { eventBus } from "../events/index.js";
 import { deliverToSystemChannel, deliverToChannel } from "../channels/system-channel.js";
 import { resolveLastActiveChannel } from "../conversations/index.js";
@@ -190,7 +191,7 @@ async function tick(agentId: string): Promise<void> {
     let routingResult: ModelResult | undefined;
 
     const { fullText, usage: usageData } = await collectAgentResult(
-      runAgent(assembled.userMessage, {
+      instrumentedRunAgent(agentId, "heartbeat", assembled.userMessage, {
         role: "heartbeat",
         tools,
         system: assembled.system,
