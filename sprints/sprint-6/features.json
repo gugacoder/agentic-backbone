@@ -125,7 +125,7 @@
     "id": "F-142",
     "name": "Hub: Área do Usuário (perfil + logout)",
     "description": "Criar página /account no Hub com informações do usuário logado (nome, role, ID) e botão de logout que limpa o token JWT e redireciona para /login. Adicionar link para /account na navegação principal (header ou sidebar). Usar useAuthStore para dados do usuário e ação de logout. Components: shadcn Card, Button, Avatar. Rota via TanStack Router.",
-    "status": "failing",
+    "status": "passing",
     "priority": 7,
     "agent": "coder",
     "task": "vibe-code",
@@ -136,7 +136,8 @@
       "Link para /account aparece na navegação principal",
       "npm run build:hub passa sem erros"
     ],
-    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-6/worktree/sprints/sprint-6/3-prps/PRP-41-hub-user-area-sysadmin.md"
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-6/worktree/sprints/sprint-6/3-prps/PRP-41-hub-user-area-sysadmin.md",
+    "completed_at": "2026-03-08T10:30:00Z"
   },
   {
     "id": "F-124",
