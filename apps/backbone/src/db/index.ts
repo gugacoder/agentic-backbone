@@ -425,4 +425,29 @@ db.exec(`
 try { db.exec(`ALTER TABLE sessions ADD COLUMN orchestration_path TEXT`); } catch {}
 try { db.exec(`ALTER TABLE sessions ADD COLUMN current_agent_id TEXT`); } catch {}
 
+db.exec(`
+  CREATE TABLE IF NOT EXISTS agent_quotas (
+    id                   INTEGER PRIMARY KEY AUTOINCREMENT,
+    agent_id             TEXT NOT NULL UNIQUE,
+    max_tokens_per_hour  INTEGER,
+    max_heartbeats_day   INTEGER,
+    max_tool_timeout_ms  INTEGER DEFAULT 30000,
+    max_tokens_per_run   INTEGER,
+    pause_on_exceed      INTEGER NOT NULL DEFAULT 1,
+    updated_at           TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+
+  CREATE TABLE IF NOT EXISTS agent_quota_usage (
+    id           INTEGER PRIMARY KEY AUTOINCREMENT,
+    agent_id     TEXT NOT NULL,
+    window_type  TEXT NOT NULL,
+    window_start TEXT NOT NULL,
+    tokens_used  INTEGER NOT NULL DEFAULT 0,
+    heartbeats   INTEGER NOT NULL DEFAULT 0,
+    tool_calls   INTEGER NOT NULL DEFAULT 0,
+    updated_at   TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+  CREATE UNIQUE INDEX IF NOT EXISTS idx_quota_usage_agent_window ON agent_quota_usage(agent_id, window_type, window_start);
+`);
+
 export { db };

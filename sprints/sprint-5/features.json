@@ -326,7 +326,7 @@
     "id": "F-112",
     "name": "Rate Limiting DB: tabelas agent_quotas + agent_quota_usage + quota-manager + frontmatter",
     "description": "Criar tabelas agent_quotas (agent_id UNIQUE, max_tokens_per_hour, max_heartbeats_day, max_tool_timeout_ms, max_tokens_per_run, pause_on_exceed, updated_at) e agent_quota_usage (agent_id, window_type, window_start, tokens_used, heartbeats, tool_calls; unique index agent+window_type+window_start). Estender parser de agentes para campo quotas no frontmatter. Criar src/quotas/quota-manager.ts com: getQuotas (DB override sobre frontmatter), getUsage, recordUsage, checkExceeded.",
-    "status": "pending",
+    "status": "passing",
     "priority": 16,
     "agent": "coder",
     "task": "vibe-code",
@@ -339,7 +339,8 @@
       "recordUsage atualiza janela horaria e diaria corretamente",
       "`npm run typecheck` passa sem erros"
     ],
-    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-5/worktree/sprints/sprint-5/3-prps/PRP-29-rate-limiting-quotas.md"
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-5/worktree/sprints/sprint-5/3-prps/PRP-29-rate-limiting-quotas.md",
+    "completed_at": "2026-03-08T00:05:43.574Z"
   },
   {
     "id": "F-113",
