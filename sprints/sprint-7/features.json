@@ -239,7 +239,7 @@
     "id": "F-155",
     "name": "Fleet: Eventos SSE fleet:agent_status e fleet:alert",
     "description": "Emitir novos eventos no canal /system/events: fleet:agent_status ({agentId, status, health, consumption}) a cada heartbeat completo ou mudança de estado (enable/disable/trip), fleet:alert ({agentId, alertType, message}) ao detectar problema (3+ heartbeats falhados, circuit-breaker trip). Eventos emitidos apenas em mudanças reais — atualizações incrementais para o cliente SSE.",
-    "status": "blocked",
+    "status": "passing",
     "priority": 12,
     "agent": "coder",
     "task": "vibe-code",
@@ -253,7 +253,8 @@
       "Eventos contêm payload correto com métricas atualizadas",
       "`npm run typecheck` passa sem erros"
     ],
-    "prp_path": "sprints/sprint-7/3-prps/PRP-44-fleet-management-dashboard.md"
+    "prp_path": "sprints/sprint-7/3-prps/PRP-44-fleet-management-dashboard.md",
+    "completed_at": "2026-03-08T16:04:04Z"
   },
   {
     "id": "F-156",
