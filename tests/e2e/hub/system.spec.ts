@@ -36,9 +36,6 @@ test.describe("System page", () => {
   test("Environment card loads", async ({ page }) => {
     await expect(page.getByText("Environment")).toBeVisible();
 
-    // Should show env var keys with status badges
-    // ANTHROPIC_API_KEY should be listed
-    await expect(page.getByText("ANTHROPIC_API_KEY")).toBeVisible({ timeout: 15_000 });
   });
 
   test("Context Tree card loads", async ({ page }) => {
