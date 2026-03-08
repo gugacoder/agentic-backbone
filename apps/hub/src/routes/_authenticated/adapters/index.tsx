@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Plug, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -28,6 +28,7 @@ const FILTER_LABELS: Record<ConnectorFilter, string> = {
 };
 
 function AdaptersPage() {
+  const navigate = useNavigate();
   const { data: adapters, isLoading } = useQuery(adaptersQueryOptions());
   const [filter, setFilter] = useState<ConnectorFilter>("Todos");
   const [editingAdapter, setEditingAdapter] = useState<Adapter | null>(null);
@@ -43,7 +44,7 @@ function AdaptersPage() {
         title="Adaptadores"
         description="Gerencie conectores de integracao com servicos externos"
         actions={
-          <Button size="sm" onClick={() => setEditingAdapter({} as Adapter)}>
+          <Button size="sm" onClick={() => navigate({ to: "/adapters/new" })}>
             <Plus className="mr-1.5 h-4 w-4" />
             Novo Adaptador
           </Button>
@@ -83,7 +84,7 @@ function AdaptersPage() {
           }
           action={
             filter === "Todos" ? (
-              <Button size="sm" onClick={() => setEditingAdapter({} as Adapter)}>
+              <Button size="sm" onClick={() => navigate({ to: "/adapters/new" })}>
                 <Plus className="mr-1.5 h-4 w-4" />
                 Novo Adaptador
               </Button>
