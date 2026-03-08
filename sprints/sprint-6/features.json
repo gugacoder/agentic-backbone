@@ -62,7 +62,7 @@
     "id": "F-133",
     "name": "Email: Connector IMAP/SMTP + Channel-Adapter + Polling",
     "description": "Criar connector `email` em `src/connectors/email/` seguindo padrao existente. Arquivos: index.ts (ConnectorDef), client.ts (ImapFlow + Nodemailer), schemas.ts (Zod para ADAPTER.yaml), channel-adapter.ts (polling IMAP). Schema ADAPTER.yaml inclui: imap/smtp credentials, poll_interval_seconds, mark_seen, reply_prefix, from_name, sender_whitelist, subject_filter, auto_reply. Estado de polling em data/email-state/{adapterId}.json. Fluxo: polling IMAP SEARCH UNSEEN, verificacao por Message-ID, criacao/continuacao de sessao backbone (channelType: 'email'), prompt XML ao agente, resposta via SMTP com In-Reply-To e References corretos, emissao de evento channel:message. Dependencias: imapflow, nodemailer.",
-    "status": "failing",
+    "status": "passing",
     "priority": 4,
     "agent": "coder",
     "task": "vibe-code",
@@ -77,7 +77,8 @@
       "Estado de polling persiste entre reinicializacoes (sem reprocessar emails ja vistos)",
       "`npm run typecheck` passa sem erros"
     ],
-    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-6/worktree/sprints/sprint-6/3-prps/PRP-38-email-connector.md"
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-6/worktree/sprints/sprint-6/3-prps/PRP-38-email-connector.md",
+    "completed_at": "2026-03-08T05:39:11Z"
   },
   {
     "id": "F-136",
@@ -182,7 +183,7 @@
     "id": "F-131",
     "name": "Model Routing: API de Routing — Estatisticas e Simulacao",
     "description": "Implementar endpoints: GET /settings/routing (config global), PUT /settings/routing (atualizar regras), GET /agents/:id/routing-stats (distribuicao de modelos, economia estimada em USD, rule hits; query params: from, to), POST /settings/routing/simulate (retorna modelo selecionado e regra para contexto dado). Economia estimada usa tabela de precos estatica por modelo. Dados de routing-stats obtidos de heartbeat_log.model_used e routing_rule.",
-    "status": "blocked",
+    "status": "pending",
     "priority": 10,
     "agent": "coder",
     "task": "vibe-code",

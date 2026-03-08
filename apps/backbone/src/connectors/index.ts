@@ -6,6 +6,7 @@ import { twilioConnector } from "./twilio/index.js";
 import { whatsappCloudConnector } from "./whatsapp-cloud/index.js";
 import { slackConnector } from "./slack/index.js";
 import { teamsConnector } from "./teams/index.js";
+import { emailConnector } from "./email/index.js";
 
 export const connectorRegistry = new ConnectorRegistry();
 
@@ -19,5 +20,6 @@ connectorRegistry.register(twilioConnector);
 connectorRegistry.register(whatsappCloudConnector);
 connectorRegistry.register(slackConnector);
 connectorRegistry.register(teamsConnector);
+connectorRegistry.register(emailConnector);
 
 export type { ConnectorDef, ConnectorContext, ConnectorHealth, ResolvedAdapter, AdapterInstance } from "./types.js";
