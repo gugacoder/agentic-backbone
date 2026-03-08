@@ -23,6 +23,8 @@ import {
   agentHeartbeatHistoryQueryOptions,
 } from "@/api/agents";
 import type { HeartbeatLogEntry } from "@/api/agents";
+import { agentRatingsSummaryQueryOptions } from "@/api/ratings";
+import { cn } from "@/lib/utils";
 import { AgentMetrics } from "@/components/agents/agent-metrics";
 import { HeartbeatTimeline } from "@/components/agents/heartbeat-timeline";
 import { AgentActions } from "@/components/agents/agent-actions";
@@ -94,6 +96,7 @@ function AgentDetailPage() {
   const { data: history, isLoading: historyLoading } = useQuery(
     agentHeartbeatHistoryQueryOptions(id),
   );
+  const { data: ratingsSummary } = useQuery(agentRatingsSummaryQueryOptions(id));
 
   const [sseEntries, setSseEntries] = useState<HeartbeatLogEntry[]>([]);
 
@@ -167,11 +170,27 @@ function AgentDetailPage() {
           <ChevronRight className="size-3.5" />
           <span className="text-foreground font-medium">{agent.slug}</span>
         </nav>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 flex-wrap">
           <h1 className="text-2xl font-semibold tracking-tight">
             {agent.slug}
           </h1>
           <StatusBadge status={isActive ? "active" : "inactive"} />
+          {ratingsSummary && ratingsSummary.total > 0 && (
+            <Link
+              to="/agents/$id/ratings"
+              params={{ id }}
+              className={cn(
+                "inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium transition-colors hover:opacity-80",
+                ratingsSummary.approvalRate >= 0.8
+                  ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
+                  : ratingsSummary.approvalRate >= 0.6
+                    ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400"
+                    : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400",
+              )}
+            >
+              {Math.round(ratingsSummary.approvalRate * 100)}% aprovacao
+            </Link>
+          )}
         </div>
       </div>
 
