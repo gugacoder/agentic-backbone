@@ -8,7 +8,6 @@ import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import {
   ArrowLeft,
   Bot,
-  ChevronRight,
   MoreVertical,
   Pencil,
   Download,
@@ -52,10 +51,11 @@ import { useAuthStore } from "@/lib/auth";
 import { TakeoverButton } from "@/components/conversations/takeover-button";
 import { TakeoverBanner } from "@/components/conversations/takeover-banner";
 import { ApprovalInlineActions } from "@/components/approvals/approval-inline-actions";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 type ConversationSearch = { action?: "rename" | "delete" };
 
-export const Route = createFileRoute("/_authenticated/conversations_/$id")({
+export const Route = createFileRoute("/_authenticated/conversations/$id")({
   staticData: { title: "Conversa" },
   validateSearch: (search: Record<string, unknown>): ConversationSearch => ({
     action:
@@ -84,6 +84,7 @@ function ConversationChatPage() {
   const { action } = Route.useSearch();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const isMobile = useIsMobile();
 
   const { data: conversation, isLoading: convLoading } = useQuery(
     conversationQueryOptions(id),
@@ -102,6 +103,16 @@ function ConversationChatPage() {
   const abortRef = useRef<AbortController | null>(null);
   const [inputValue, setInputValue] = useState("");
   const [renameValue, setRenameValue] = useState("");
+
+  // Reset local messages when switching conversations
+  useEffect(() => {
+    setLocalMessages([]);
+    setStreamingContent(undefined);
+    setIsStreaming(false);
+    setInputValue("");
+    abortRef.current?.abort();
+    abortRef.current = null;
+  }, [id]);
 
   useEffect(() => {
     if (action === "rename") {
@@ -174,7 +185,6 @@ function ConversationChatPage() {
       if (!content.trim() || isStreaming) return;
 
       if (isCurrentOperator) {
-        // Operator mode: add message optimistically as operator style, skip streaming display
         const operatorMsg: ChatMessage = {
           role: "assistant",
           content: content.trim(),
@@ -191,14 +201,12 @@ function ConversationChatPage() {
           await streamMessage(
             id,
             content.trim(),
-            () => {
-              // Ignore events — operator message already shown optimistically
-            },
+            () => {},
             controller.signal,
           );
         } catch (err) {
           if ((err as Error).name === "AbortError") {
-            // aborted, nothing to do
+            // aborted
           }
         } finally {
           setIsStreaming(false);
@@ -210,7 +218,6 @@ function ConversationChatPage() {
         return;
       }
 
-      // Normal mode
       const userMsg: ChatMessage = { role: "user", content: content.trim() };
       setLocalMessages((prev) => [...prev, userMsg]);
       setInputValue("");
@@ -242,7 +249,6 @@ function ConversationChatPage() {
           controller.signal,
         );
 
-        // If no result event came, use accumulated text
         if (!gotResult && accumulated) {
           setStreamingContent(undefined);
           setLocalMessages((prev) => [
@@ -278,7 +284,7 @@ function ConversationChatPage() {
 
   if (convLoading || msgsLoading) {
     return (
-      <div className="flex h-full flex-col gap-4">
+      <div className="flex h-full flex-col gap-4 p-4">
         <Skeleton className="h-10 w-64" />
         <Skeleton className="h-96 w-full flex-1" />
       </div>
@@ -287,14 +293,16 @@ function ConversationChatPage() {
 
   if (!conversation) {
     return (
-      <div className="space-y-4">
-        <p className="text-muted-foreground">Conversa nao encontrada.</p>
-        <Link
-          to="/conversations"
-          className="text-sm text-primary underline"
-        >
-          Voltar para Conversas
-        </Link>
+      <div className="flex h-full items-center justify-center">
+        <div className="space-y-4 text-center">
+          <p className="text-muted-foreground">Conversa nao encontrada.</p>
+          <Link
+            to="/conversations"
+            className="text-sm text-primary underline"
+          >
+            Voltar para Conversas
+          </Link>
+        </div>
       </div>
     );
   }
@@ -310,159 +318,148 @@ function ConversationChatPage() {
   })();
 
   return (
-    <div className="flex h-[calc(100vh-theme(spacing.12)-2rem)] gap-3">
+    <div className="chat-active flex h-full gap-3">
       <div className="flex flex-1 flex-col overflow-hidden">
-      {/* Header */}
-      <div className="flex items-center gap-3 border-b px-4 py-3">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="size-8 shrink-0"
-          onClick={() => navigate({ to: "/conversations" })}
-        >
-          <ArrowLeft className="size-4" />
-        </Button>
+        {/* Header */}
+        <div className="flex items-center gap-3 border-b px-4 py-3">
+          {isMobile && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-8 shrink-0"
+              onClick={() => navigate({ to: "/conversations" })}
+            >
+              <ArrowLeft className="size-4" />
+            </Button>
+          )}
 
-        <nav className="hidden items-center gap-1 text-sm text-muted-foreground sm:flex">
-          <Link
-            to="/conversations"
-            className="transition-colors hover:text-foreground"
-          >
-            Conversas
-          </Link>
-          <ChevronRight className="size-3.5" />
-          <span className="font-medium text-foreground">
+          <span className="truncate text-sm font-medium">
             {conversation.title || "Sem titulo"}
           </span>
-        </nav>
 
-        <span className="truncate text-sm font-medium sm:hidden">
-          {conversation.title || "Sem titulo"}
-        </span>
+          <Badge variant="outline" className="ml-auto shrink-0 text-xs">
+            <Bot className="mr-1 size-3" />
+            {agentLabel}
+          </Badge>
 
-        <Badge variant="outline" className="ml-auto shrink-0 text-xs">
-          <Bot className="mr-1 size-3" />
-          {agentLabel}
-        </Badge>
+          {!isUnderTakeover && (
+            <TakeoverButton
+              sessionId={id}
+              onTakeover={() => takeoverMutation.mutate()}
+              isPending={takeoverMutation.isPending}
+            />
+          )}
 
-        {!isUnderTakeover && (
-          <TakeoverButton
-            sessionId={id}
-            onTakeover={() => takeoverMutation.mutate()}
-            isPending={takeoverMutation.isPending}
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              render={
+                <Button variant="ghost" size="icon" className="size-8 shrink-0">
+                  <MoreVertical className="size-4" />
+                </Button>
+              }
+            />
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onSelect={() => navigate({ search: { action: "rename" } })}>
+                <Pencil className="mr-2 size-4" />
+                Renomear
+              </DropdownMenuItem>
+              <DropdownMenuItem onSelect={handleExport}>
+                <Download className="mr-2 size-4" />
+                Exportar
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onSelect={() => navigate({ search: { action: "delete" } })}
+                className="text-destructive focus:text-destructive"
+              >
+                <Trash2 className="mr-2 size-4" />
+                Excluir
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+
+        {/* Rename dialog */}
+        <Dialog open={action === "rename"} onOpenChange={(open) => { if (!open) navigate({ search: {} }); }}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Renomear conversa</DialogTitle>
+            </DialogHeader>
+            <Input
+              value={renameValue}
+              onChange={(e) => setRenameValue(e.target.value)}
+              placeholder="Titulo da conversa"
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && renameValue.trim()) {
+                  renameMutation.mutate(renameValue.trim());
+                }
+              }}
+            />
+            <DialogFooter>
+              <Button variant="outline" onClick={() => navigate({ search: {} })}>
+                Cancelar
+              </Button>
+              <Button
+                onClick={() => renameMutation.mutate(renameValue.trim())}
+                disabled={!renameValue.trim() || renameMutation.isPending}
+              >
+                Salvar
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Delete confirmation dialog */}
+        <Dialog open={action === "delete"} onOpenChange={(open) => { if (!open) navigate({ search: {} }); }}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Excluir conversa</DialogTitle>
+              <DialogDescription>
+                Esta conversa sera removida permanentemente.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => navigate({ search: {} })}>
+                Cancelar
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={() => deleteMutation.mutate()}
+                disabled={deleteMutation.isPending}
+              >
+                Excluir
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Takeover banner */}
+        {isUnderTakeover && session?.takeover_by && session?.takeover_at && (
+          <TakeoverBanner
+            takenOverBy={session.takeover_by}
+            takenOverAt={session.takeover_at}
+            onRelease={() => releaseMutation.mutate()}
+            isPending={releaseMutation.isPending}
           />
         )}
 
-        <DropdownMenu>
-          <DropdownMenuTrigger
-            render={
-              <Button variant="ghost" size="icon" className="size-8 shrink-0">
-                <MoreVertical className="size-4" />
-              </Button>
-            }
-          />
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onSelect={() => navigate({ search: { action: "rename" } })}>
-              <Pencil className="mr-2 size-4" />
-              Renomear
-            </DropdownMenuItem>
-            <DropdownMenuItem onSelect={handleExport}>
-              <Download className="mr-2 size-4" />
-              Exportar
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onSelect={() => navigate({ search: { action: "delete" } })}
-              className="text-destructive focus:text-destructive"
-            >
-              <Trash2 className="mr-2 size-4" />
-              Excluir
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
+        {/* Inline approval requests for this session */}
+        <ApprovalInlineActions sessionId={id} />
 
-      {/* Rename dialog */}
-      <Dialog open={action === "rename"} onOpenChange={(open) => { if (!open) navigate({ search: {} }); }}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Renomear conversa</DialogTitle>
-          </DialogHeader>
-          <Input
-            value={renameValue}
-            onChange={(e) => setRenameValue(e.target.value)}
-            placeholder="Titulo da conversa"
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && renameValue.trim()) {
-                renameMutation.mutate(renameValue.trim());
-              }
-            }}
-          />
-          <DialogFooter>
-            <Button variant="outline" onClick={() => navigate({ search: {} })}>
-              Cancelar
-            </Button>
-            <Button
-              onClick={() => renameMutation.mutate(renameValue.trim())}
-              disabled={!renameValue.trim() || renameMutation.isPending}
-            >
-              Salvar
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Delete confirmation dialog */}
-      <Dialog open={action === "delete"} onOpenChange={(open) => { if (!open) navigate({ search: {} }); }}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Excluir conversa</DialogTitle>
-            <DialogDescription>
-              Esta conversa sera removida permanentemente.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => navigate({ search: {} })}>
-              Cancelar
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={() => deleteMutation.mutate()}
-              disabled={deleteMutation.isPending}
-            >
-              Excluir
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Takeover banner */}
-      {isUnderTakeover && session?.takeover_by && session?.takeover_at && (
-        <TakeoverBanner
-          takenOverBy={session.takeover_by}
-          takenOverAt={session.takeover_at}
-          onRelease={() => releaseMutation.mutate()}
-          isPending={releaseMutation.isPending}
+        {/* Message area */}
+        <MessageList
+          messages={allMessages}
+          streamingContent={streamingContent}
+          sessionId={id}
         />
-      )}
 
-      {/* Inline approval requests for this session */}
-      <ApprovalInlineActions sessionId={id} />
-
-      {/* Message area */}
-      <MessageList
-        messages={allMessages}
-        streamingContent={streamingContent}
-        sessionId={id}
-      />
-
-      {/* Input area */}
-      <MessageInput
-        value={inputValue}
-        onChange={setInputValue}
-        onSend={handleSend}
-        onAbort={handleAbort}
-        isStreaming={isStreaming}
-      />
+        {/* Input area */}
+        <MessageInput
+          value={inputValue}
+          onChange={setInputValue}
+          onSend={handleSend}
+          onAbort={handleAbort}
+          isStreaming={isStreaming}
+        />
       </div>
 
       {/* Orchestration path sidebar */}

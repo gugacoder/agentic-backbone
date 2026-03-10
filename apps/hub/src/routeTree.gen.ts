@@ -38,8 +38,8 @@ import { Route as AuthenticatedWorkflowsNewRouteImport } from './routes/_authent
 import { Route as AuthenticatedWorkflowsIdRouteImport } from './routes/_authenticated/workflows.$id'
 import { Route as AuthenticatedSettingsOtelRouteImport } from './routes/_authenticated/settings_.otel'
 import { Route as AuthenticatedJobsIdRouteImport } from './routes/_authenticated/jobs.$id'
-import { Route as AuthenticatedConversationsIdRouteImport } from './routes/_authenticated/conversations_.$id'
 import { Route as AuthenticatedConversationsNewRouteImport } from './routes/_authenticated/conversations/new'
+import { Route as AuthenticatedConversationsIdRouteImport } from './routes/_authenticated/conversations/$id'
 import { Route as AuthenticatedChannelsNewRouteImport } from './routes/_authenticated/channels/new'
 import { Route as AuthenticatedChannelsSlugRouteImport } from './routes/_authenticated/channels.$slug'
 import { Route as AuthenticatedAgentsNewRouteImport } from './routes/_authenticated/agents.new'
@@ -227,16 +227,16 @@ const AuthenticatedJobsIdRoute = AuthenticatedJobsIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => AuthenticatedJobsRoute,
 } as any)
-const AuthenticatedConversationsIdRoute =
-  AuthenticatedConversationsIdRouteImport.update({
-    id: '/conversations_/$id',
-    path: '/conversations/$id',
-    getParentRoute: () => AuthenticatedRoute,
-  } as any)
 const AuthenticatedConversationsNewRoute =
   AuthenticatedConversationsNewRouteImport.update({
     id: '/new',
     path: '/new',
+    getParentRoute: () => AuthenticatedConversationsRoute,
+  } as any)
+const AuthenticatedConversationsIdRoute =
+  AuthenticatedConversationsIdRouteImport.update({
+    id: '/$id',
+    path: '/$id',
     getParentRoute: () => AuthenticatedConversationsRoute,
   } as any)
 const AuthenticatedChannelsNewRoute =
@@ -439,8 +439,8 @@ export interface FileRoutesByFullPath {
   '/agents/new': typeof AuthenticatedAgentsNewRoute
   '/channels/$slug': typeof AuthenticatedChannelsSlugRoute
   '/channels/new': typeof AuthenticatedChannelsNewRoute
-  '/conversations/new': typeof AuthenticatedConversationsNewRoute
   '/conversations/$id': typeof AuthenticatedConversationsIdRoute
+  '/conversations/new': typeof AuthenticatedConversationsNewRoute
   '/jobs/$id': typeof AuthenticatedJobsIdRoute
   '/settings/otel': typeof AuthenticatedSettingsOtelRoute
   '/workflows/$id': typeof AuthenticatedWorkflowsIdRoute
@@ -496,8 +496,8 @@ export interface FileRoutesByTo {
   '/agents/new': typeof AuthenticatedAgentsNewRoute
   '/channels/$slug': typeof AuthenticatedChannelsSlugRoute
   '/channels/new': typeof AuthenticatedChannelsNewRoute
-  '/conversations/new': typeof AuthenticatedConversationsNewRoute
   '/conversations/$id': typeof AuthenticatedConversationsIdRoute
+  '/conversations/new': typeof AuthenticatedConversationsNewRoute
   '/jobs/$id': typeof AuthenticatedJobsIdRoute
   '/settings/otel': typeof AuthenticatedSettingsOtelRoute
   '/workflows/$id': typeof AuthenticatedWorkflowsIdRoute
@@ -560,8 +560,8 @@ export interface FileRoutesById {
   '/_authenticated/agents/new': typeof AuthenticatedAgentsNewRoute
   '/_authenticated/channels/$slug': typeof AuthenticatedChannelsSlugRoute
   '/_authenticated/channels/new': typeof AuthenticatedChannelsNewRoute
+  '/_authenticated/conversations/$id': typeof AuthenticatedConversationsIdRoute
   '/_authenticated/conversations/new': typeof AuthenticatedConversationsNewRoute
-  '/_authenticated/conversations_/$id': typeof AuthenticatedConversationsIdRoute
   '/_authenticated/jobs/$id': typeof AuthenticatedJobsIdRoute
   '/_authenticated/settings_/otel': typeof AuthenticatedSettingsOtelRoute
   '/_authenticated/workflows/$id': typeof AuthenticatedWorkflowsIdRoute
@@ -624,8 +624,8 @@ export interface FileRouteTypes {
     | '/agents/new'
     | '/channels/$slug'
     | '/channels/new'
-    | '/conversations/new'
     | '/conversations/$id'
+    | '/conversations/new'
     | '/jobs/$id'
     | '/settings/otel'
     | '/workflows/$id'
@@ -681,8 +681,8 @@ export interface FileRouteTypes {
     | '/agents/new'
     | '/channels/$slug'
     | '/channels/new'
-    | '/conversations/new'
     | '/conversations/$id'
+    | '/conversations/new'
     | '/jobs/$id'
     | '/settings/otel'
     | '/workflows/$id'
@@ -744,8 +744,8 @@ export interface FileRouteTypes {
     | '/_authenticated/agents/new'
     | '/_authenticated/channels/$slug'
     | '/_authenticated/channels/new'
+    | '/_authenticated/conversations/$id'
     | '/_authenticated/conversations/new'
-    | '/_authenticated/conversations_/$id'
     | '/_authenticated/jobs/$id'
     | '/_authenticated/settings_/otel'
     | '/_authenticated/workflows/$id'
@@ -996,18 +996,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedJobsIdRouteImport
       parentRoute: typeof AuthenticatedJobsRoute
     }
-    '/_authenticated/conversations_/$id': {
-      id: '/_authenticated/conversations_/$id'
-      path: '/conversations/$id'
-      fullPath: '/conversations/$id'
-      preLoaderRoute: typeof AuthenticatedConversationsIdRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
     '/_authenticated/conversations/new': {
       id: '/_authenticated/conversations/new'
       path: '/new'
       fullPath: '/conversations/new'
       preLoaderRoute: typeof AuthenticatedConversationsNewRouteImport
+      parentRoute: typeof AuthenticatedConversationsRoute
+    }
+    '/_authenticated/conversations/$id': {
+      id: '/_authenticated/conversations/$id'
+      path: '/$id'
+      fullPath: '/conversations/$id'
+      preLoaderRoute: typeof AuthenticatedConversationsIdRouteImport
       parentRoute: typeof AuthenticatedConversationsRoute
     }
     '/_authenticated/channels/new': {
@@ -1361,12 +1361,14 @@ const AuthenticatedChannelsRouteWithChildren =
   )
 
 interface AuthenticatedConversationsRouteChildren {
+  AuthenticatedConversationsIdRoute: typeof AuthenticatedConversationsIdRoute
   AuthenticatedConversationsNewRoute: typeof AuthenticatedConversationsNewRoute
   AuthenticatedConversationsIndexRoute: typeof AuthenticatedConversationsIndexRoute
 }
 
 const AuthenticatedConversationsRouteChildren: AuthenticatedConversationsRouteChildren =
   {
+    AuthenticatedConversationsIdRoute: AuthenticatedConversationsIdRoute,
     AuthenticatedConversationsNewRoute: AuthenticatedConversationsNewRoute,
     AuthenticatedConversationsIndexRoute: AuthenticatedConversationsIndexRoute,
   }
@@ -1420,7 +1422,6 @@ interface AuthenticatedRouteChildren {
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedWorkflowsRoute: typeof AuthenticatedWorkflowsRouteWithChildren
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
-  AuthenticatedConversationsIdRoute: typeof AuthenticatedConversationsIdRoute
   AuthenticatedSettingsOtelRoute: typeof AuthenticatedSettingsOtelRoute
   AuthenticatedApprovalsIndexRoute: typeof AuthenticatedApprovalsIndexRoute
   AuthenticatedComplianceIndexRoute: typeof AuthenticatedComplianceIndexRoute
@@ -1444,7 +1445,6 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedWorkflowsRoute: AuthenticatedWorkflowsRouteWithChildren,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
-  AuthenticatedConversationsIdRoute: AuthenticatedConversationsIdRoute,
   AuthenticatedSettingsOtelRoute: AuthenticatedSettingsOtelRoute,
   AuthenticatedApprovalsIndexRoute: AuthenticatedApprovalsIndexRoute,
   AuthenticatedComplianceIndexRoute: AuthenticatedComplianceIndexRoute,

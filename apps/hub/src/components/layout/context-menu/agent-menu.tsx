@@ -1,6 +1,7 @@
 import { Link, useMatchRoute } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import {
-  Eye,
+  Bot,
   Settings,
   MessageSquare,
   Brain,
@@ -22,6 +23,7 @@ import {
   ClipboardCheck,
   ArrowLeft,
 } from "lucide-react";
+import { agentQueryOptions } from "@/api/agents";
 import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
 
@@ -37,9 +39,8 @@ interface MenuGroup {
 const groups = (agentId: string): MenuGroup[] => [
   {
     items: [
-      { label: "Visão Geral", icon: Eye, to: `/agents/${agentId}` },
       { label: "Configuração", icon: Settings, to: `/agents/${agentId}/config` },
-      { label: "Conversas", icon: MessageSquare, to: `/agents/${agentId}/conversations` },
+      { label: "Conversas", icon: MessageSquare, to: `/conversations?agent=${agentId}` },
     ],
   },
   {
@@ -94,19 +95,46 @@ interface AgentNavMenuProps {
 
 export function AgentNavMenu({ agentId, onNavigate }: AgentNavMenuProps) {
   const matchRoute = useMatchRoute();
+  const { data: agent } = useQuery(agentQueryOptions(agentId));
+
+  const isOverviewActive = !!matchRoute({
+    to: "/agents/$id/",
+    params: { id: agentId },
+    fuzzy: false,
+  });
 
   return (
     <div className="flex flex-col gap-0.5">
+      {/* Avatar do agente — link para Visão Geral */}
+      <Link
+        to={`/agents/${agentId}` as any}
+        onClick={onNavigate}
+        className={cn(
+          "flex items-center gap-3 rounded-md px-3 py-3 transition-colors",
+          isOverviewActive
+            ? "bg-sidebar-accent"
+            : "hover:bg-sidebar-accent",
+        )}
+      >
+        <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-muted-foreground/20">
+          <Bot className="size-5 text-muted-foreground" />
+        </div>
+        <div className="min-w-0">
+          <p className="text-sm font-semibold leading-tight truncate">{agent?.slug ?? agentId}</p>
+          <p className="text-xs text-muted-foreground">Agente</p>
+        </div>
+      </Link>
+
       <Link
         to="/agents"
         onClick={onNavigate}
-        className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground mb-1"
+        className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
       >
         <ArrowLeft className="size-4 shrink-0" />
         <span>Agentes</span>
       </Link>
 
-      <Separator className="mb-1" />
+      <Separator className="my-1" />
 
       {groups(agentId).map((group, gi) => (
         <div key={gi}>
@@ -119,11 +147,7 @@ export function AgentNavMenu({ agentId, onNavigate }: AgentNavMenuProps) {
           <div className="flex flex-col gap-0.5">
             {group.items.map((item) => {
               const Icon = item.icon;
-              // Visão Geral usa match exato (index); os outros usam fuzzy
-              const isOverview = item.to === `/agents/${agentId}`;
-              const isActive = isOverview
-                ? !!matchRoute({ to: "/agents/$id/", params: { id: agentId }, fuzzy: false })
-                : !!matchRoute({ to: item.to as any, fuzzy: true });
+              const isActive = !!matchRoute({ to: item.to as any, fuzzy: true });
 
               return (
                 <Link

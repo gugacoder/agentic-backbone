@@ -1,8 +1,7 @@
 import { useState, useMemo, useEffect } from "react";
-import { createFileRoute, useNavigate, useMatch } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, useMatch, Outlet } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { MessageSquare, Plus, Search, Bot, User } from "lucide-react";
-import { EmptyState } from "@/components/shared/empty-state";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,9 +26,16 @@ import {
   type Conversation,
 } from "@/api/conversations";
 import { agentsQueryOptions, type Agent } from "@/api/agents";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { cn } from "@/lib/utils";
+
+type ConversationsSearch = { agent?: string };
 
 export const Route = createFileRoute("/_authenticated/conversations")({
   staticData: { title: "Conversas", description: "Histórico de conversas com agentes" },
+  validateSearch: (search: Record<string, unknown>): ConversationsSearch => ({
+    agent: typeof search.agent === "string" ? search.agent : undefined,
+  }),
   component: ConversationsLayout,
 });
 
@@ -51,13 +57,15 @@ function getAgentLabel(agents: Agent[] | undefined, agentId: string): string {
   return agent?.slug ?? agentId;
 }
 
-function ConversationItem({
+function ConversationListItem({
   conversation,
   agentLabel,
+  isActive,
   onClick,
 }: {
   conversation: Conversation;
   agentLabel: string;
+  isActive: boolean;
   onClick: () => void;
 }) {
   const hasOperator = !!conversation.takeover_by;
@@ -65,37 +73,35 @@ function ConversationItem({
   return (
     <button
       type="button"
-      className="flex w-full items-center gap-4 rounded-lg border px-4 py-3 text-left transition-colors hover:bg-muted/50"
+      className={cn(
+        "flex w-full flex-col gap-1 rounded-lg px-3 py-2.5 text-left transition-colors hover:bg-muted/50",
+        isActive && "bg-accent",
+      )}
       onClick={onClick}
     >
-      <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-muted">
-        <MessageSquare className="size-4 text-muted-foreground" />
-      </div>
-      <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-2">
-          <Badge variant="outline" className="shrink-0 text-xs">
-            <Bot className="mr-1 size-3" />
-            {agentLabel}
+      <div className="flex items-center gap-2">
+        <Badge variant="outline" className="shrink-0 px-1.5 py-0 text-[10px]">
+          <Bot className="mr-0.5 size-2.5" />
+          {agentLabel}
+        </Badge>
+        {hasOperator && (
+          <Badge variant="default" className="shrink-0 px-1.5 py-0 text-[10px]">
+            <User className="mr-0.5 size-2.5" />
+            Op
           </Badge>
-          {hasOperator && (
-            <Badge variant="default" className="shrink-0 text-xs">
-              <User className="mr-1 size-3" />
-              Operador
-            </Badge>
-          )}
-          <span className="truncate text-sm font-medium">
-            {conversation.title || "Sem titulo"}
-          </span>
-        </div>
-        {conversation.lastMessage && (
-          <p className="mt-0.5 truncate text-sm text-muted-foreground">
-            {conversation.lastMessage}
-          </p>
         )}
+        <span className="ml-auto shrink-0 text-[10px] text-muted-foreground">
+          {formatRelativeTime(conversation.updatedAt)}
+        </span>
       </div>
-      <span className="shrink-0 text-xs text-muted-foreground">
-        {formatRelativeTime(conversation.updatedAt)}
+      <span className="truncate text-sm font-medium">
+        {conversation.title || "Sem titulo"}
       </span>
+      {conversation.lastMessage && (
+        <p className="truncate text-xs text-muted-foreground">
+          {conversation.lastMessage}
+        </p>
+      )}
     </button>
   );
 }
@@ -103,12 +109,17 @@ function ConversationItem({
 function ConversationsLayout() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const isMobile = useIsMobile();
+  const { agent: agentParam } = Route.useSearch();
   const [search, setSearch] = useState("");
-  const [agentFilter, setAgentFilter] = useState<string>("all");
+  const [agentFilter, setAgentFilter] = useState<string>(agentParam ?? "all");
   const [operatorFilter, setOperatorFilter] = useState(false);
   const [selectedAgent, setSelectedAgent] = useState<string>("");
 
   const isNewRoute = useMatch({ from: "/_authenticated/conversations/new", shouldThrow: false });
+  const activeMatch = useMatch({ from: "/_authenticated/conversations/$id", shouldThrow: false });
+  const activeId = activeMatch?.params?.id;
+  const hasActiveChat = !!activeId;
 
   const { data: conversations, isLoading: loadingConversations } = useQuery(
     conversationsQueryOptions(),
@@ -169,86 +180,120 @@ function ConversationsLayout() {
     createMutation.mutate(selectedAgent);
   }
 
-  return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-        <div className="relative max-w-xs flex-1">
-          <Search className="absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            placeholder="Buscar por titulo..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-8"
-          />
-        </div>
-        <Select
-          value={agentFilter}
-          onValueChange={(v) => v && setAgentFilter(v)}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Todos os agentes" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Todos os agentes</SelectItem>
-            {filterAgents.map((a) => (
-              <SelectItem key={a.id} value={a.id}>
-                {a.slug}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Button
-          variant={operatorFilter ? "default" : "outline"}
-          size="sm"
-          onClick={() => setOperatorFilter((v) => !v)}
-          className="shrink-0"
-        >
-          <User className="mr-1 size-4" />
-          Com operador
-        </Button>
-        <div className="sm:ml-auto">
-          <Button size="sm" onClick={() => navigate({ to: "/conversations/new" })}>
-            <Plus className="mr-1 size-4" />
-            Nova Conversa
-          </Button>
-        </div>
-      </div>
+  // Mobile: hide list when chat is active
+  const showList = !isMobile || !hasActiveChat;
+  // Mobile: hide outlet when no chat (show only list)
+  const showOutlet = !isMobile || hasActiveChat;
 
-      {loadingConversations ? (
-        <div className="space-y-3">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <Skeleton key={i} className="h-16 w-full rounded-lg" />
-          ))}
-        </div>
-      ) : filtered.length === 0 ? (
-        <EmptyState
-          icon={<MessageSquare />}
-          title={
-            conversations?.length
-              ? "Nenhuma conversa encontrada"
-              : "Nenhuma conversa"
-          }
-          description={
-            conversations?.length
-              ? "Tente ajustar sua busca ou filtro."
-              : "Inicie uma conversa com um agente para comecar."
-          }
-        />
-      ) : (
-        <div className="space-y-2">
-          {filtered.map((conv) => (
-            <ConversationItem
-              key={conv.id}
-              conversation={conv}
-              agentLabel={getAgentLabel(agents, conv.agentId)}
-              onClick={() =>
-                navigate({ to: `/conversations/${conv.id}` as string })
-              }
-            />
-          ))}
-        </div>
+  return (
+    <div className="flex h-[calc(100vh-theme(spacing.12)-2rem)] overflow-hidden">
+      {/* Left panel: conversation list */}
+      {showList && (
+        <aside className={cn(
+          "flex shrink-0 flex-col overflow-hidden border-r",
+          isMobile ? "w-full" : "w-80",
+        )}>
+          {/* List header */}
+          <div className="flex items-center gap-2 border-b px-3 py-2.5">
+            <div className="relative flex-1">
+              <Search className="absolute left-2 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                placeholder="Buscar..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="h-8 pl-7 text-sm"
+              />
+            </div>
+            <Button
+              variant={operatorFilter ? "default" : "ghost"}
+              size="icon"
+              className="size-8 shrink-0"
+              onClick={() => setOperatorFilter((v) => !v)}
+              title="Filtrar com operador"
+            >
+              <User className="size-3.5" />
+            </Button>
+            <Button
+              size="icon"
+              className="size-8 shrink-0"
+              onClick={() => navigate({ to: "/conversations/new" })}
+              title="Nova conversa"
+            >
+              <Plus className="size-3.5" />
+            </Button>
+          </div>
+
+          {/* Agent filter */}
+          {filterAgents.length > 1 && (
+            <div className="border-b px-3 py-1.5">
+              <Select
+                value={agentFilter}
+                onValueChange={(v) => v && setAgentFilter(v)}
+              >
+                <SelectTrigger className="h-7 text-xs">
+                  <SelectValue placeholder="Todos os agentes" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos os agentes</SelectItem>
+                  {filterAgents.map((a) => (
+                    <SelectItem key={a.id} value={a.id}>
+                      {a.slug}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
+          {/* Conversation list */}
+          <div className="flex-1 overflow-y-auto">
+            {loadingConversations ? (
+              <div className="space-y-2 p-3">
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <Skeleton key={i} className="h-16 w-full rounded-lg" />
+                ))}
+              </div>
+            ) : filtered.length === 0 ? (
+              <div className="flex flex-col items-center justify-center px-4 py-12 text-center">
+                <MessageSquare className="mb-2 size-8 text-muted-foreground" />
+                <p className="text-sm font-medium">
+                  {conversations?.length
+                    ? "Nenhuma conversa encontrada"
+                    : "Nenhuma conversa"}
+                </p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {conversations?.length
+                    ? "Tente ajustar sua busca ou filtro."
+                    : "Inicie uma conversa com um agente."}
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-0.5 p-1.5">
+                {filtered.map((conv) => (
+                  <ConversationListItem
+                    key={conv.id}
+                    conversation={conv}
+                    agentLabel={getAgentLabel(agents, conv.agentId)}
+                    isActive={conv.id === activeId}
+                    onClick={() =>
+                      navigate({ to: `/conversations/${conv.id}` as string })
+                    }
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        </aside>
       )}
 
+      {/* Right panel: chat or empty state */}
+      {showOutlet && (
+        <main className="flex-1 overflow-hidden">
+          <Outlet />
+        </main>
+      )}
+
+      {/* New conversation dialog */}
       <Dialog
         open={!!isNewRoute}
         onOpenChange={(open) => {
@@ -303,7 +348,6 @@ function ConversationsLayout() {
           </div>
         </DialogContent>
       </Dialog>
-
     </div>
   );
 }
