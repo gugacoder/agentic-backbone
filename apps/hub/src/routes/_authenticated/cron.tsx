@@ -44,6 +44,7 @@ import { toast } from "sonner";
 type StatusFilter = "all" | "active" | "inactive";
 
 export const Route = createFileRoute("/_authenticated/cron")({
+  staticData: { title: "Agenda", description: "Tarefas agendadas dos agentes" },
   component: CronPage,
 });
 
@@ -207,8 +208,6 @@ function CronPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Agenda"
-        description="Tarefas agendadas dos agentes"
         actions={
           <Button
             size="sm"

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { RoutingRule, RoutingConditions } from "@/api/settings";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -63,6 +63,14 @@ export function RoutingRuleForm({
   const [useCustomModel, setUseCustomModel] = useState(
     !POPULAR_MODELS.includes(rule.model),
   );
+
+  // Sync state when initial prop changes (e.g. editing a different rule)
+  useEffect(() => {
+    const next = initial ?? emptyRule();
+    setRule(next);
+    setCustomModel(!POPULAR_MODELS.includes(next.model) ? next.model : "");
+    setUseCustomModel(!POPULAR_MODELS.includes(next.model));
+  }, [initial]);
 
   function setCond<K extends keyof RoutingConditions>(
     key: K,

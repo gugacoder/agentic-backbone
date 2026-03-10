@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Upload, FileText, X } from "lucide-react";
 import { toast } from "sonner";
@@ -68,25 +68,22 @@ export function KnowledgeUploadDialog({
     setFile(f);
   }
 
-  const handleDrop = useCallback(
-    (e: React.DragEvent) => {
-      e.preventDefault();
-      setDragOver(false);
-      const f = e.dataTransfer.files[0];
-      if (f) handleFileSelect(f);
-    },
-    [],
-  );
-
-  const handleDragOver = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    setDragOver(true);
-  }, []);
-
-  const handleDragLeave = useCallback((e: React.DragEvent) => {
+  function handleDrop(e: React.DragEvent) {
     e.preventDefault();
     setDragOver(false);
-  }, []);
+    const f = e.dataTransfer.files[0];
+    if (f) handleFileSelect(f);
+  }
+
+  function handleDragOver(e: React.DragEvent) {
+    e.preventDefault();
+    setDragOver(true);
+  }
+
+  function handleDragLeave(e: React.DragEvent) {
+    e.preventDefault();
+    setDragOver(false);
+  }
 
   function handleInputChange(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0];

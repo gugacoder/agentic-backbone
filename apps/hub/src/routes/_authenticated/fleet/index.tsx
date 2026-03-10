@@ -30,7 +30,6 @@ import {
   type FleetQueryParams,
   type BatchAction,
 } from "@/api/fleet";
-import { PageHeader } from "@/components/shared/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -64,6 +63,7 @@ import { useSSEEvent, type SystemEvent } from "@/hooks/use-sse";
 // ─── Route ────────────────────────────────────────────────────────────────────
 
 export const Route = createFileRoute("/_authenticated/fleet/")({
+  staticData: { title: "Fleet", description: "Gerenciamento de todos os agentes" },
   component: FleetPage,
 });
 
@@ -734,11 +734,6 @@ function FleetPage() {
 
   return (
     <div className="space-y-5">
-      <PageHeader
-        title="Fleet"
-        description="Visão geral e gerenciamento de todos os agentes"
-      />
-
       {/* Summary Cards */}
       <SummaryCards />
 

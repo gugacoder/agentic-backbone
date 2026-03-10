@@ -23,21 +23,49 @@ import { Route as AuthenticatedConversationsRouteImport } from './routes/_authen
 import { Route as AuthenticatedChannelsRouteImport } from './routes/_authenticated/channels'
 import { Route as AuthenticatedAnalyticsRouteImport } from './routes/_authenticated/analytics'
 import { Route as AuthenticatedAgentsRouteImport } from './routes/_authenticated/agents'
+import { Route as AuthenticatedAdaptersRouteImport } from './routes/_authenticated/adapters'
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
+import { Route as AuthenticatedWorkflowsIndexRouteImport } from './routes/_authenticated/workflows/index'
 import { Route as AuthenticatedSecurityIndexRouteImport } from './routes/_authenticated/security/index'
 import { Route as AuthenticatedInboxIndexRouteImport } from './routes/_authenticated/inbox/index'
 import { Route as AuthenticatedFleetIndexRouteImport } from './routes/_authenticated/fleet/index'
+import { Route as AuthenticatedConversationsIndexRouteImport } from './routes/_authenticated/conversations/index'
 import { Route as AuthenticatedComplianceIndexRouteImport } from './routes/_authenticated/compliance/index'
+import { Route as AuthenticatedChannelsIndexRouteImport } from './routes/_authenticated/channels/index'
 import { Route as AuthenticatedApprovalsIndexRouteImport } from './routes/_authenticated/approvals/index'
 import { Route as AuthenticatedAdaptersIndexRouteImport } from './routes/_authenticated/adapters/index'
+import { Route as AuthenticatedWorkflowsNewRouteImport } from './routes/_authenticated/workflows/new'
 import { Route as AuthenticatedWorkflowsIdRouteImport } from './routes/_authenticated/workflows.$id'
 import { Route as AuthenticatedSettingsOtelRouteImport } from './routes/_authenticated/settings_.otel'
 import { Route as AuthenticatedJobsIdRouteImport } from './routes/_authenticated/jobs.$id'
-import { Route as AuthenticatedConversationsIdRouteImport } from './routes/_authenticated/conversations.$id'
+import { Route as AuthenticatedConversationsIdRouteImport } from './routes/_authenticated/conversations_.$id'
+import { Route as AuthenticatedConversationsNewRouteImport } from './routes/_authenticated/conversations/new'
+import { Route as AuthenticatedChannelsNewRouteImport } from './routes/_authenticated/channels/new'
 import { Route as AuthenticatedChannelsSlugRouteImport } from './routes/_authenticated/channels.$slug'
 import { Route as AuthenticatedAgentsNewRouteImport } from './routes/_authenticated/agents.new'
 import { Route as AuthenticatedAgentsIdRouteImport } from './routes/_authenticated/agents.$id'
+import { Route as AuthenticatedAdaptersNewRouteImport } from './routes/_authenticated/adapters/new'
+import { Route as AuthenticatedAgentsIdIndexRouteImport } from './routes/_authenticated/agents.$id.index'
+import { Route as AuthenticatedAgentsIdWorkflowsRouteImport } from './routes/_authenticated/agents.$id.workflows'
+import { Route as AuthenticatedAgentsIdWebhooksRouteImport } from './routes/_authenticated/agents.$id.webhooks'
+import { Route as AuthenticatedAgentsIdVersionsRouteImport } from './routes/_authenticated/agents.$id.versions'
+import { Route as AuthenticatedAgentsIdSandboxRouteImport } from './routes/_authenticated/agents.$id.sandbox'
+import { Route as AuthenticatedAgentsIdRoutingRouteImport } from './routes/_authenticated/agents.$id.routing'
 import { Route as AuthenticatedAgentsIdRatingsRouteImport } from './routes/_authenticated/agents.$id.ratings'
+import { Route as AuthenticatedAgentsIdQuotasRouteImport } from './routes/_authenticated/agents.$id.quotas'
+import { Route as AuthenticatedAgentsIdQualityRouteImport } from './routes/_authenticated/agents.$id.quality'
+import { Route as AuthenticatedAgentsIdMemoryRouteImport } from './routes/_authenticated/agents.$id.memory'
+import { Route as AuthenticatedAgentsIdMcpToolsRouteImport } from './routes/_authenticated/agents.$id.mcp-tools'
+import { Route as AuthenticatedAgentsIdKnowledgeRouteImport } from './routes/_authenticated/agents.$id.knowledge'
+import { Route as AuthenticatedAgentsIdHandoffsRouteImport } from './routes/_authenticated/agents.$id.handoffs'
+import { Route as AuthenticatedAgentsIdEvaluationRouteImport } from './routes/_authenticated/agents.$id.evaluation'
+import { Route as AuthenticatedAgentsIdCronRouteImport } from './routes/_authenticated/agents.$id.cron'
+import { Route as AuthenticatedAgentsIdConversationsRouteImport } from './routes/_authenticated/agents.$id.conversations'
+import { Route as AuthenticatedAgentsIdConfigRouteImport } from './routes/_authenticated/agents.$id.config'
+import { Route as AuthenticatedAgentsIdComplianceRouteImport } from './routes/_authenticated/agents.$id.compliance'
+import { Route as AuthenticatedAgentsIdCircuitBreakerRouteImport } from './routes/_authenticated/agents.$id.circuit-breaker'
+import { Route as AuthenticatedAgentsIdChannelsRouteImport } from './routes/_authenticated/agents.$id.channels'
+import { Route as AuthenticatedAgentsIdBenchmarksRouteImport } from './routes/_authenticated/agents.$id.benchmarks'
 import { Route as AuthenticatedAgentsIdEvalRunsRunIdRouteImport } from './routes/_authenticated/agents.$id.eval-runs.$runId'
 import { Route as AuthenticatedAgentsIdDraftsDraftIdRouteImport } from './routes/_authenticated/agents.$id.drafts.$draftId'
 import { Route as AuthenticatedAgentsIdBenchmarksRunIdRouteImport } from './routes/_authenticated/agents.$id.benchmarks.$runId'
@@ -114,11 +142,22 @@ const AuthenticatedAgentsRoute = AuthenticatedAgentsRouteImport.update({
   path: '/agents',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedAdaptersRoute = AuthenticatedAdaptersRouteImport.update({
+  id: '/adapters',
+  path: '/adapters',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedAccountRoute = AuthenticatedAccountRouteImport.update({
   id: '/account',
   path: '/account',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedWorkflowsIndexRoute =
+  AuthenticatedWorkflowsIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedWorkflowsRoute,
+  } as any)
 const AuthenticatedSecurityIndexRoute =
   AuthenticatedSecurityIndexRouteImport.update({
     id: '/security/',
@@ -135,11 +174,23 @@ const AuthenticatedFleetIndexRoute = AuthenticatedFleetIndexRouteImport.update({
   path: '/fleet/',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedConversationsIndexRoute =
+  AuthenticatedConversationsIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedConversationsRoute,
+  } as any)
 const AuthenticatedComplianceIndexRoute =
   AuthenticatedComplianceIndexRouteImport.update({
     id: '/compliance/',
     path: '/compliance/',
     getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedChannelsIndexRoute =
+  AuthenticatedChannelsIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedChannelsRoute,
   } as any)
 const AuthenticatedApprovalsIndexRoute =
   AuthenticatedApprovalsIndexRouteImport.update({
@@ -149,9 +200,15 @@ const AuthenticatedApprovalsIndexRoute =
   } as any)
 const AuthenticatedAdaptersIndexRoute =
   AuthenticatedAdaptersIndexRouteImport.update({
-    id: '/adapters/',
-    path: '/adapters/',
-    getParentRoute: () => AuthenticatedRoute,
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedAdaptersRoute,
+  } as any)
+const AuthenticatedWorkflowsNewRoute =
+  AuthenticatedWorkflowsNewRouteImport.update({
+    id: '/new',
+    path: '/new',
+    getParentRoute: () => AuthenticatedWorkflowsRoute,
   } as any)
 const AuthenticatedWorkflowsIdRoute =
   AuthenticatedWorkflowsIdRouteImport.update({
@@ -172,9 +229,21 @@ const AuthenticatedJobsIdRoute = AuthenticatedJobsIdRouteImport.update({
 } as any)
 const AuthenticatedConversationsIdRoute =
   AuthenticatedConversationsIdRouteImport.update({
-    id: '/$id',
-    path: '/$id',
+    id: '/conversations_/$id',
+    path: '/conversations/$id',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedConversationsNewRoute =
+  AuthenticatedConversationsNewRouteImport.update({
+    id: '/new',
+    path: '/new',
     getParentRoute: () => AuthenticatedConversationsRoute,
+  } as any)
+const AuthenticatedChannelsNewRoute =
+  AuthenticatedChannelsNewRouteImport.update({
+    id: '/new',
+    path: '/new',
+    getParentRoute: () => AuthenticatedChannelsRoute,
   } as any)
 const AuthenticatedChannelsSlugRoute =
   AuthenticatedChannelsSlugRouteImport.update({
@@ -192,10 +261,136 @@ const AuthenticatedAgentsIdRoute = AuthenticatedAgentsIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => AuthenticatedAgentsRoute,
 } as any)
+const AuthenticatedAdaptersNewRoute =
+  AuthenticatedAdaptersNewRouteImport.update({
+    id: '/new',
+    path: '/new',
+    getParentRoute: () => AuthenticatedAdaptersRoute,
+  } as any)
+const AuthenticatedAgentsIdIndexRoute =
+  AuthenticatedAgentsIdIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedAgentsIdRoute,
+  } as any)
+const AuthenticatedAgentsIdWorkflowsRoute =
+  AuthenticatedAgentsIdWorkflowsRouteImport.update({
+    id: '/workflows',
+    path: '/workflows',
+    getParentRoute: () => AuthenticatedAgentsIdRoute,
+  } as any)
+const AuthenticatedAgentsIdWebhooksRoute =
+  AuthenticatedAgentsIdWebhooksRouteImport.update({
+    id: '/webhooks',
+    path: '/webhooks',
+    getParentRoute: () => AuthenticatedAgentsIdRoute,
+  } as any)
+const AuthenticatedAgentsIdVersionsRoute =
+  AuthenticatedAgentsIdVersionsRouteImport.update({
+    id: '/versions',
+    path: '/versions',
+    getParentRoute: () => AuthenticatedAgentsIdRoute,
+  } as any)
+const AuthenticatedAgentsIdSandboxRoute =
+  AuthenticatedAgentsIdSandboxRouteImport.update({
+    id: '/sandbox',
+    path: '/sandbox',
+    getParentRoute: () => AuthenticatedAgentsIdRoute,
+  } as any)
+const AuthenticatedAgentsIdRoutingRoute =
+  AuthenticatedAgentsIdRoutingRouteImport.update({
+    id: '/routing',
+    path: '/routing',
+    getParentRoute: () => AuthenticatedAgentsIdRoute,
+  } as any)
 const AuthenticatedAgentsIdRatingsRoute =
   AuthenticatedAgentsIdRatingsRouteImport.update({
     id: '/ratings',
     path: '/ratings',
+    getParentRoute: () => AuthenticatedAgentsIdRoute,
+  } as any)
+const AuthenticatedAgentsIdQuotasRoute =
+  AuthenticatedAgentsIdQuotasRouteImport.update({
+    id: '/quotas',
+    path: '/quotas',
+    getParentRoute: () => AuthenticatedAgentsIdRoute,
+  } as any)
+const AuthenticatedAgentsIdQualityRoute =
+  AuthenticatedAgentsIdQualityRouteImport.update({
+    id: '/quality',
+    path: '/quality',
+    getParentRoute: () => AuthenticatedAgentsIdRoute,
+  } as any)
+const AuthenticatedAgentsIdMemoryRoute =
+  AuthenticatedAgentsIdMemoryRouteImport.update({
+    id: '/memory',
+    path: '/memory',
+    getParentRoute: () => AuthenticatedAgentsIdRoute,
+  } as any)
+const AuthenticatedAgentsIdMcpToolsRoute =
+  AuthenticatedAgentsIdMcpToolsRouteImport.update({
+    id: '/mcp-tools',
+    path: '/mcp-tools',
+    getParentRoute: () => AuthenticatedAgentsIdRoute,
+  } as any)
+const AuthenticatedAgentsIdKnowledgeRoute =
+  AuthenticatedAgentsIdKnowledgeRouteImport.update({
+    id: '/knowledge',
+    path: '/knowledge',
+    getParentRoute: () => AuthenticatedAgentsIdRoute,
+  } as any)
+const AuthenticatedAgentsIdHandoffsRoute =
+  AuthenticatedAgentsIdHandoffsRouteImport.update({
+    id: '/handoffs',
+    path: '/handoffs',
+    getParentRoute: () => AuthenticatedAgentsIdRoute,
+  } as any)
+const AuthenticatedAgentsIdEvaluationRoute =
+  AuthenticatedAgentsIdEvaluationRouteImport.update({
+    id: '/evaluation',
+    path: '/evaluation',
+    getParentRoute: () => AuthenticatedAgentsIdRoute,
+  } as any)
+const AuthenticatedAgentsIdCronRoute =
+  AuthenticatedAgentsIdCronRouteImport.update({
+    id: '/cron',
+    path: '/cron',
+    getParentRoute: () => AuthenticatedAgentsIdRoute,
+  } as any)
+const AuthenticatedAgentsIdConversationsRoute =
+  AuthenticatedAgentsIdConversationsRouteImport.update({
+    id: '/conversations',
+    path: '/conversations',
+    getParentRoute: () => AuthenticatedAgentsIdRoute,
+  } as any)
+const AuthenticatedAgentsIdConfigRoute =
+  AuthenticatedAgentsIdConfigRouteImport.update({
+    id: '/config',
+    path: '/config',
+    getParentRoute: () => AuthenticatedAgentsIdRoute,
+  } as any)
+const AuthenticatedAgentsIdComplianceRoute =
+  AuthenticatedAgentsIdComplianceRouteImport.update({
+    id: '/compliance',
+    path: '/compliance',
+    getParentRoute: () => AuthenticatedAgentsIdRoute,
+  } as any)
+const AuthenticatedAgentsIdCircuitBreakerRoute =
+  AuthenticatedAgentsIdCircuitBreakerRouteImport.update({
+    id: '/circuit-breaker',
+    path: '/circuit-breaker',
+    getParentRoute: () => AuthenticatedAgentsIdRoute,
+  } as any)
+const AuthenticatedAgentsIdChannelsRoute =
+  AuthenticatedAgentsIdChannelsRouteImport.update({
+    id: '/channels',
+    path: '/channels',
+    getParentRoute: () => AuthenticatedAgentsIdRoute,
+  } as any)
+const AuthenticatedAgentsIdBenchmarksRoute =
+  AuthenticatedAgentsIdBenchmarksRouteImport.update({
+    id: '/benchmarks',
+    path: '/benchmarks',
     getParentRoute: () => AuthenticatedAgentsIdRoute,
   } as any)
 const AuthenticatedAgentsIdEvalRunsRunIdRoute =
@@ -212,9 +407,9 @@ const AuthenticatedAgentsIdDraftsDraftIdRoute =
   } as any)
 const AuthenticatedAgentsIdBenchmarksRunIdRoute =
   AuthenticatedAgentsIdBenchmarksRunIdRouteImport.update({
-    id: '/benchmarks/$runId',
-    path: '/benchmarks/$runId',
-    getParentRoute: () => AuthenticatedAgentsIdRoute,
+    id: '/$runId',
+    path: '/$runId',
+    getParentRoute: () => AuthenticatedAgentsIdBenchmarksRoute,
   } as any)
 const AuthenticatedAgentsIdDraftsDraftIdCompareRoute =
   AuthenticatedAgentsIdDraftsDraftIdCompareRouteImport.update({
@@ -227,6 +422,7 @@ export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
   '/login': typeof LoginRoute
   '/account': typeof AuthenticatedAccountRoute
+  '/adapters': typeof AuthenticatedAdaptersRouteWithChildren
   '/agents': typeof AuthenticatedAgentsRouteWithChildren
   '/analytics': typeof AuthenticatedAnalyticsRoute
   '/channels': typeof AuthenticatedChannelsRouteWithChildren
@@ -238,20 +434,47 @@ export interface FileRoutesByFullPath {
   '/ratings': typeof AuthenticatedRatingsRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/workflows': typeof AuthenticatedWorkflowsRouteWithChildren
+  '/adapters/new': typeof AuthenticatedAdaptersNewRoute
   '/agents/$id': typeof AuthenticatedAgentsIdRouteWithChildren
   '/agents/new': typeof AuthenticatedAgentsNewRoute
   '/channels/$slug': typeof AuthenticatedChannelsSlugRoute
+  '/channels/new': typeof AuthenticatedChannelsNewRoute
+  '/conversations/new': typeof AuthenticatedConversationsNewRoute
   '/conversations/$id': typeof AuthenticatedConversationsIdRoute
   '/jobs/$id': typeof AuthenticatedJobsIdRoute
   '/settings/otel': typeof AuthenticatedSettingsOtelRoute
   '/workflows/$id': typeof AuthenticatedWorkflowsIdRoute
+  '/workflows/new': typeof AuthenticatedWorkflowsNewRoute
   '/adapters/': typeof AuthenticatedAdaptersIndexRoute
   '/approvals/': typeof AuthenticatedApprovalsIndexRoute
+  '/channels/': typeof AuthenticatedChannelsIndexRoute
   '/compliance/': typeof AuthenticatedComplianceIndexRoute
+  '/conversations/': typeof AuthenticatedConversationsIndexRoute
   '/fleet/': typeof AuthenticatedFleetIndexRoute
   '/inbox/': typeof AuthenticatedInboxIndexRoute
   '/security/': typeof AuthenticatedSecurityIndexRoute
+  '/workflows/': typeof AuthenticatedWorkflowsIndexRoute
+  '/agents/$id/benchmarks': typeof AuthenticatedAgentsIdBenchmarksRouteWithChildren
+  '/agents/$id/channels': typeof AuthenticatedAgentsIdChannelsRoute
+  '/agents/$id/circuit-breaker': typeof AuthenticatedAgentsIdCircuitBreakerRoute
+  '/agents/$id/compliance': typeof AuthenticatedAgentsIdComplianceRoute
+  '/agents/$id/config': typeof AuthenticatedAgentsIdConfigRoute
+  '/agents/$id/conversations': typeof AuthenticatedAgentsIdConversationsRoute
+  '/agents/$id/cron': typeof AuthenticatedAgentsIdCronRoute
+  '/agents/$id/evaluation': typeof AuthenticatedAgentsIdEvaluationRoute
+  '/agents/$id/handoffs': typeof AuthenticatedAgentsIdHandoffsRoute
+  '/agents/$id/knowledge': typeof AuthenticatedAgentsIdKnowledgeRoute
+  '/agents/$id/mcp-tools': typeof AuthenticatedAgentsIdMcpToolsRoute
+  '/agents/$id/memory': typeof AuthenticatedAgentsIdMemoryRoute
+  '/agents/$id/quality': typeof AuthenticatedAgentsIdQualityRoute
+  '/agents/$id/quotas': typeof AuthenticatedAgentsIdQuotasRoute
   '/agents/$id/ratings': typeof AuthenticatedAgentsIdRatingsRoute
+  '/agents/$id/routing': typeof AuthenticatedAgentsIdRoutingRoute
+  '/agents/$id/sandbox': typeof AuthenticatedAgentsIdSandboxRoute
+  '/agents/$id/versions': typeof AuthenticatedAgentsIdVersionsRoute
+  '/agents/$id/webhooks': typeof AuthenticatedAgentsIdWebhooksRoute
+  '/agents/$id/workflows': typeof AuthenticatedAgentsIdWorkflowsRoute
+  '/agents/$id/': typeof AuthenticatedAgentsIdIndexRoute
   '/agents/$id/benchmarks/$runId': typeof AuthenticatedAgentsIdBenchmarksRunIdRoute
   '/agents/$id/drafts/$draftId': typeof AuthenticatedAgentsIdDraftsDraftIdRouteWithChildren
   '/agents/$id/eval-runs/$runId': typeof AuthenticatedAgentsIdEvalRunsRunIdRoute
@@ -262,30 +485,53 @@ export interface FileRoutesByTo {
   '/account': typeof AuthenticatedAccountRoute
   '/agents': typeof AuthenticatedAgentsRouteWithChildren
   '/analytics': typeof AuthenticatedAnalyticsRoute
-  '/channels': typeof AuthenticatedChannelsRouteWithChildren
-  '/conversations': typeof AuthenticatedConversationsRouteWithChildren
   '/costs': typeof AuthenticatedCostsRoute
   '/cron': typeof AuthenticatedCronRoute
   '/jobs': typeof AuthenticatedJobsRouteWithChildren
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/ratings': typeof AuthenticatedRatingsRoute
   '/settings': typeof AuthenticatedSettingsRoute
-  '/workflows': typeof AuthenticatedWorkflowsRouteWithChildren
   '/': typeof AuthenticatedIndexRoute
-  '/agents/$id': typeof AuthenticatedAgentsIdRouteWithChildren
+  '/adapters/new': typeof AuthenticatedAdaptersNewRoute
   '/agents/new': typeof AuthenticatedAgentsNewRoute
   '/channels/$slug': typeof AuthenticatedChannelsSlugRoute
+  '/channels/new': typeof AuthenticatedChannelsNewRoute
+  '/conversations/new': typeof AuthenticatedConversationsNewRoute
   '/conversations/$id': typeof AuthenticatedConversationsIdRoute
   '/jobs/$id': typeof AuthenticatedJobsIdRoute
   '/settings/otel': typeof AuthenticatedSettingsOtelRoute
   '/workflows/$id': typeof AuthenticatedWorkflowsIdRoute
+  '/workflows/new': typeof AuthenticatedWorkflowsNewRoute
   '/adapters': typeof AuthenticatedAdaptersIndexRoute
   '/approvals': typeof AuthenticatedApprovalsIndexRoute
+  '/channels': typeof AuthenticatedChannelsIndexRoute
   '/compliance': typeof AuthenticatedComplianceIndexRoute
+  '/conversations': typeof AuthenticatedConversationsIndexRoute
   '/fleet': typeof AuthenticatedFleetIndexRoute
   '/inbox': typeof AuthenticatedInboxIndexRoute
   '/security': typeof AuthenticatedSecurityIndexRoute
+  '/workflows': typeof AuthenticatedWorkflowsIndexRoute
+  '/agents/$id/benchmarks': typeof AuthenticatedAgentsIdBenchmarksRouteWithChildren
+  '/agents/$id/channels': typeof AuthenticatedAgentsIdChannelsRoute
+  '/agents/$id/circuit-breaker': typeof AuthenticatedAgentsIdCircuitBreakerRoute
+  '/agents/$id/compliance': typeof AuthenticatedAgentsIdComplianceRoute
+  '/agents/$id/config': typeof AuthenticatedAgentsIdConfigRoute
+  '/agents/$id/conversations': typeof AuthenticatedAgentsIdConversationsRoute
+  '/agents/$id/cron': typeof AuthenticatedAgentsIdCronRoute
+  '/agents/$id/evaluation': typeof AuthenticatedAgentsIdEvaluationRoute
+  '/agents/$id/handoffs': typeof AuthenticatedAgentsIdHandoffsRoute
+  '/agents/$id/knowledge': typeof AuthenticatedAgentsIdKnowledgeRoute
+  '/agents/$id/mcp-tools': typeof AuthenticatedAgentsIdMcpToolsRoute
+  '/agents/$id/memory': typeof AuthenticatedAgentsIdMemoryRoute
+  '/agents/$id/quality': typeof AuthenticatedAgentsIdQualityRoute
+  '/agents/$id/quotas': typeof AuthenticatedAgentsIdQuotasRoute
   '/agents/$id/ratings': typeof AuthenticatedAgentsIdRatingsRoute
+  '/agents/$id/routing': typeof AuthenticatedAgentsIdRoutingRoute
+  '/agents/$id/sandbox': typeof AuthenticatedAgentsIdSandboxRoute
+  '/agents/$id/versions': typeof AuthenticatedAgentsIdVersionsRoute
+  '/agents/$id/webhooks': typeof AuthenticatedAgentsIdWebhooksRoute
+  '/agents/$id/workflows': typeof AuthenticatedAgentsIdWorkflowsRoute
+  '/agents/$id': typeof AuthenticatedAgentsIdIndexRoute
   '/agents/$id/benchmarks/$runId': typeof AuthenticatedAgentsIdBenchmarksRunIdRoute
   '/agents/$id/drafts/$draftId': typeof AuthenticatedAgentsIdDraftsDraftIdRouteWithChildren
   '/agents/$id/eval-runs/$runId': typeof AuthenticatedAgentsIdEvalRunsRunIdRoute
@@ -296,6 +542,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/login': typeof LoginRoute
   '/_authenticated/account': typeof AuthenticatedAccountRoute
+  '/_authenticated/adapters': typeof AuthenticatedAdaptersRouteWithChildren
   '/_authenticated/agents': typeof AuthenticatedAgentsRouteWithChildren
   '/_authenticated/analytics': typeof AuthenticatedAnalyticsRoute
   '/_authenticated/channels': typeof AuthenticatedChannelsRouteWithChildren
@@ -308,20 +555,47 @@ export interface FileRoutesById {
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/workflows': typeof AuthenticatedWorkflowsRouteWithChildren
   '/_authenticated/': typeof AuthenticatedIndexRoute
+  '/_authenticated/adapters/new': typeof AuthenticatedAdaptersNewRoute
   '/_authenticated/agents/$id': typeof AuthenticatedAgentsIdRouteWithChildren
   '/_authenticated/agents/new': typeof AuthenticatedAgentsNewRoute
   '/_authenticated/channels/$slug': typeof AuthenticatedChannelsSlugRoute
-  '/_authenticated/conversations/$id': typeof AuthenticatedConversationsIdRoute
+  '/_authenticated/channels/new': typeof AuthenticatedChannelsNewRoute
+  '/_authenticated/conversations/new': typeof AuthenticatedConversationsNewRoute
+  '/_authenticated/conversations_/$id': typeof AuthenticatedConversationsIdRoute
   '/_authenticated/jobs/$id': typeof AuthenticatedJobsIdRoute
   '/_authenticated/settings_/otel': typeof AuthenticatedSettingsOtelRoute
   '/_authenticated/workflows/$id': typeof AuthenticatedWorkflowsIdRoute
+  '/_authenticated/workflows/new': typeof AuthenticatedWorkflowsNewRoute
   '/_authenticated/adapters/': typeof AuthenticatedAdaptersIndexRoute
   '/_authenticated/approvals/': typeof AuthenticatedApprovalsIndexRoute
+  '/_authenticated/channels/': typeof AuthenticatedChannelsIndexRoute
   '/_authenticated/compliance/': typeof AuthenticatedComplianceIndexRoute
+  '/_authenticated/conversations/': typeof AuthenticatedConversationsIndexRoute
   '/_authenticated/fleet/': typeof AuthenticatedFleetIndexRoute
   '/_authenticated/inbox/': typeof AuthenticatedInboxIndexRoute
   '/_authenticated/security/': typeof AuthenticatedSecurityIndexRoute
+  '/_authenticated/workflows/': typeof AuthenticatedWorkflowsIndexRoute
+  '/_authenticated/agents/$id/benchmarks': typeof AuthenticatedAgentsIdBenchmarksRouteWithChildren
+  '/_authenticated/agents/$id/channels': typeof AuthenticatedAgentsIdChannelsRoute
+  '/_authenticated/agents/$id/circuit-breaker': typeof AuthenticatedAgentsIdCircuitBreakerRoute
+  '/_authenticated/agents/$id/compliance': typeof AuthenticatedAgentsIdComplianceRoute
+  '/_authenticated/agents/$id/config': typeof AuthenticatedAgentsIdConfigRoute
+  '/_authenticated/agents/$id/conversations': typeof AuthenticatedAgentsIdConversationsRoute
+  '/_authenticated/agents/$id/cron': typeof AuthenticatedAgentsIdCronRoute
+  '/_authenticated/agents/$id/evaluation': typeof AuthenticatedAgentsIdEvaluationRoute
+  '/_authenticated/agents/$id/handoffs': typeof AuthenticatedAgentsIdHandoffsRoute
+  '/_authenticated/agents/$id/knowledge': typeof AuthenticatedAgentsIdKnowledgeRoute
+  '/_authenticated/agents/$id/mcp-tools': typeof AuthenticatedAgentsIdMcpToolsRoute
+  '/_authenticated/agents/$id/memory': typeof AuthenticatedAgentsIdMemoryRoute
+  '/_authenticated/agents/$id/quality': typeof AuthenticatedAgentsIdQualityRoute
+  '/_authenticated/agents/$id/quotas': typeof AuthenticatedAgentsIdQuotasRoute
   '/_authenticated/agents/$id/ratings': typeof AuthenticatedAgentsIdRatingsRoute
+  '/_authenticated/agents/$id/routing': typeof AuthenticatedAgentsIdRoutingRoute
+  '/_authenticated/agents/$id/sandbox': typeof AuthenticatedAgentsIdSandboxRoute
+  '/_authenticated/agents/$id/versions': typeof AuthenticatedAgentsIdVersionsRoute
+  '/_authenticated/agents/$id/webhooks': typeof AuthenticatedAgentsIdWebhooksRoute
+  '/_authenticated/agents/$id/workflows': typeof AuthenticatedAgentsIdWorkflowsRoute
+  '/_authenticated/agents/$id/': typeof AuthenticatedAgentsIdIndexRoute
   '/_authenticated/agents/$id/benchmarks/$runId': typeof AuthenticatedAgentsIdBenchmarksRunIdRoute
   '/_authenticated/agents/$id/drafts/$draftId': typeof AuthenticatedAgentsIdDraftsDraftIdRouteWithChildren
   '/_authenticated/agents/$id/eval-runs/$runId': typeof AuthenticatedAgentsIdEvalRunsRunIdRoute
@@ -333,6 +607,7 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/account'
+    | '/adapters'
     | '/agents'
     | '/analytics'
     | '/channels'
@@ -344,20 +619,47 @@ export interface FileRouteTypes {
     | '/ratings'
     | '/settings'
     | '/workflows'
+    | '/adapters/new'
     | '/agents/$id'
     | '/agents/new'
     | '/channels/$slug'
+    | '/channels/new'
+    | '/conversations/new'
     | '/conversations/$id'
     | '/jobs/$id'
     | '/settings/otel'
     | '/workflows/$id'
+    | '/workflows/new'
     | '/adapters/'
     | '/approvals/'
+    | '/channels/'
     | '/compliance/'
+    | '/conversations/'
     | '/fleet/'
     | '/inbox/'
     | '/security/'
+    | '/workflows/'
+    | '/agents/$id/benchmarks'
+    | '/agents/$id/channels'
+    | '/agents/$id/circuit-breaker'
+    | '/agents/$id/compliance'
+    | '/agents/$id/config'
+    | '/agents/$id/conversations'
+    | '/agents/$id/cron'
+    | '/agents/$id/evaluation'
+    | '/agents/$id/handoffs'
+    | '/agents/$id/knowledge'
+    | '/agents/$id/mcp-tools'
+    | '/agents/$id/memory'
+    | '/agents/$id/quality'
+    | '/agents/$id/quotas'
     | '/agents/$id/ratings'
+    | '/agents/$id/routing'
+    | '/agents/$id/sandbox'
+    | '/agents/$id/versions'
+    | '/agents/$id/webhooks'
+    | '/agents/$id/workflows'
+    | '/agents/$id/'
     | '/agents/$id/benchmarks/$runId'
     | '/agents/$id/drafts/$draftId'
     | '/agents/$id/eval-runs/$runId'
@@ -368,30 +670,53 @@ export interface FileRouteTypes {
     | '/account'
     | '/agents'
     | '/analytics'
-    | '/channels'
-    | '/conversations'
     | '/costs'
     | '/cron'
     | '/jobs'
     | '/notifications'
     | '/ratings'
     | '/settings'
-    | '/workflows'
     | '/'
-    | '/agents/$id'
+    | '/adapters/new'
     | '/agents/new'
     | '/channels/$slug'
+    | '/channels/new'
+    | '/conversations/new'
     | '/conversations/$id'
     | '/jobs/$id'
     | '/settings/otel'
     | '/workflows/$id'
+    | '/workflows/new'
     | '/adapters'
     | '/approvals'
+    | '/channels'
     | '/compliance'
+    | '/conversations'
     | '/fleet'
     | '/inbox'
     | '/security'
+    | '/workflows'
+    | '/agents/$id/benchmarks'
+    | '/agents/$id/channels'
+    | '/agents/$id/circuit-breaker'
+    | '/agents/$id/compliance'
+    | '/agents/$id/config'
+    | '/agents/$id/conversations'
+    | '/agents/$id/cron'
+    | '/agents/$id/evaluation'
+    | '/agents/$id/handoffs'
+    | '/agents/$id/knowledge'
+    | '/agents/$id/mcp-tools'
+    | '/agents/$id/memory'
+    | '/agents/$id/quality'
+    | '/agents/$id/quotas'
     | '/agents/$id/ratings'
+    | '/agents/$id/routing'
+    | '/agents/$id/sandbox'
+    | '/agents/$id/versions'
+    | '/agents/$id/webhooks'
+    | '/agents/$id/workflows'
+    | '/agents/$id'
     | '/agents/$id/benchmarks/$runId'
     | '/agents/$id/drafts/$draftId'
     | '/agents/$id/eval-runs/$runId'
@@ -401,6 +726,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/login'
     | '/_authenticated/account'
+    | '/_authenticated/adapters'
     | '/_authenticated/agents'
     | '/_authenticated/analytics'
     | '/_authenticated/channels'
@@ -413,20 +739,47 @@ export interface FileRouteTypes {
     | '/_authenticated/settings'
     | '/_authenticated/workflows'
     | '/_authenticated/'
+    | '/_authenticated/adapters/new'
     | '/_authenticated/agents/$id'
     | '/_authenticated/agents/new'
     | '/_authenticated/channels/$slug'
-    | '/_authenticated/conversations/$id'
+    | '/_authenticated/channels/new'
+    | '/_authenticated/conversations/new'
+    | '/_authenticated/conversations_/$id'
     | '/_authenticated/jobs/$id'
     | '/_authenticated/settings_/otel'
     | '/_authenticated/workflows/$id'
+    | '/_authenticated/workflows/new'
     | '/_authenticated/adapters/'
     | '/_authenticated/approvals/'
+    | '/_authenticated/channels/'
     | '/_authenticated/compliance/'
+    | '/_authenticated/conversations/'
     | '/_authenticated/fleet/'
     | '/_authenticated/inbox/'
     | '/_authenticated/security/'
+    | '/_authenticated/workflows/'
+    | '/_authenticated/agents/$id/benchmarks'
+    | '/_authenticated/agents/$id/channels'
+    | '/_authenticated/agents/$id/circuit-breaker'
+    | '/_authenticated/agents/$id/compliance'
+    | '/_authenticated/agents/$id/config'
+    | '/_authenticated/agents/$id/conversations'
+    | '/_authenticated/agents/$id/cron'
+    | '/_authenticated/agents/$id/evaluation'
+    | '/_authenticated/agents/$id/handoffs'
+    | '/_authenticated/agents/$id/knowledge'
+    | '/_authenticated/agents/$id/mcp-tools'
+    | '/_authenticated/agents/$id/memory'
+    | '/_authenticated/agents/$id/quality'
+    | '/_authenticated/agents/$id/quotas'
     | '/_authenticated/agents/$id/ratings'
+    | '/_authenticated/agents/$id/routing'
+    | '/_authenticated/agents/$id/sandbox'
+    | '/_authenticated/agents/$id/versions'
+    | '/_authenticated/agents/$id/webhooks'
+    | '/_authenticated/agents/$id/workflows'
+    | '/_authenticated/agents/$id/'
     | '/_authenticated/agents/$id/benchmarks/$runId'
     | '/_authenticated/agents/$id/drafts/$draftId'
     | '/_authenticated/agents/$id/eval-runs/$runId'
@@ -538,12 +891,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAgentsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/adapters': {
+      id: '/_authenticated/adapters'
+      path: '/adapters'
+      fullPath: '/adapters'
+      preLoaderRoute: typeof AuthenticatedAdaptersRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/account': {
       id: '/_authenticated/account'
       path: '/account'
       fullPath: '/account'
       preLoaderRoute: typeof AuthenticatedAccountRouteImport
       parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/workflows/': {
+      id: '/_authenticated/workflows/'
+      path: '/'
+      fullPath: '/workflows/'
+      preLoaderRoute: typeof AuthenticatedWorkflowsIndexRouteImport
+      parentRoute: typeof AuthenticatedWorkflowsRoute
     }
     '/_authenticated/security/': {
       id: '/_authenticated/security/'
@@ -566,12 +933,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedFleetIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/conversations/': {
+      id: '/_authenticated/conversations/'
+      path: '/'
+      fullPath: '/conversations/'
+      preLoaderRoute: typeof AuthenticatedConversationsIndexRouteImport
+      parentRoute: typeof AuthenticatedConversationsRoute
+    }
     '/_authenticated/compliance/': {
       id: '/_authenticated/compliance/'
       path: '/compliance'
       fullPath: '/compliance/'
       preLoaderRoute: typeof AuthenticatedComplianceIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/channels/': {
+      id: '/_authenticated/channels/'
+      path: '/'
+      fullPath: '/channels/'
+      preLoaderRoute: typeof AuthenticatedChannelsIndexRouteImport
+      parentRoute: typeof AuthenticatedChannelsRoute
     }
     '/_authenticated/approvals/': {
       id: '/_authenticated/approvals/'
@@ -582,10 +963,17 @@ declare module '@tanstack/react-router' {
     }
     '/_authenticated/adapters/': {
       id: '/_authenticated/adapters/'
-      path: '/adapters'
+      path: '/'
       fullPath: '/adapters/'
       preLoaderRoute: typeof AuthenticatedAdaptersIndexRouteImport
-      parentRoute: typeof AuthenticatedRoute
+      parentRoute: typeof AuthenticatedAdaptersRoute
+    }
+    '/_authenticated/workflows/new': {
+      id: '/_authenticated/workflows/new'
+      path: '/new'
+      fullPath: '/workflows/new'
+      preLoaderRoute: typeof AuthenticatedWorkflowsNewRouteImport
+      parentRoute: typeof AuthenticatedWorkflowsRoute
     }
     '/_authenticated/workflows/$id': {
       id: '/_authenticated/workflows/$id'
@@ -608,12 +996,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedJobsIdRouteImport
       parentRoute: typeof AuthenticatedJobsRoute
     }
-    '/_authenticated/conversations/$id': {
-      id: '/_authenticated/conversations/$id'
-      path: '/$id'
+    '/_authenticated/conversations_/$id': {
+      id: '/_authenticated/conversations_/$id'
+      path: '/conversations/$id'
       fullPath: '/conversations/$id'
       preLoaderRoute: typeof AuthenticatedConversationsIdRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/conversations/new': {
+      id: '/_authenticated/conversations/new'
+      path: '/new'
+      fullPath: '/conversations/new'
+      preLoaderRoute: typeof AuthenticatedConversationsNewRouteImport
       parentRoute: typeof AuthenticatedConversationsRoute
+    }
+    '/_authenticated/channels/new': {
+      id: '/_authenticated/channels/new'
+      path: '/new'
+      fullPath: '/channels/new'
+      preLoaderRoute: typeof AuthenticatedChannelsNewRouteImport
+      parentRoute: typeof AuthenticatedChannelsRoute
     }
     '/_authenticated/channels/$slug': {
       id: '/_authenticated/channels/$slug'
@@ -636,11 +1038,158 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAgentsIdRouteImport
       parentRoute: typeof AuthenticatedAgentsRoute
     }
+    '/_authenticated/adapters/new': {
+      id: '/_authenticated/adapters/new'
+      path: '/new'
+      fullPath: '/adapters/new'
+      preLoaderRoute: typeof AuthenticatedAdaptersNewRouteImport
+      parentRoute: typeof AuthenticatedAdaptersRoute
+    }
+    '/_authenticated/agents/$id/': {
+      id: '/_authenticated/agents/$id/'
+      path: '/'
+      fullPath: '/agents/$id/'
+      preLoaderRoute: typeof AuthenticatedAgentsIdIndexRouteImport
+      parentRoute: typeof AuthenticatedAgentsIdRoute
+    }
+    '/_authenticated/agents/$id/workflows': {
+      id: '/_authenticated/agents/$id/workflows'
+      path: '/workflows'
+      fullPath: '/agents/$id/workflows'
+      preLoaderRoute: typeof AuthenticatedAgentsIdWorkflowsRouteImport
+      parentRoute: typeof AuthenticatedAgentsIdRoute
+    }
+    '/_authenticated/agents/$id/webhooks': {
+      id: '/_authenticated/agents/$id/webhooks'
+      path: '/webhooks'
+      fullPath: '/agents/$id/webhooks'
+      preLoaderRoute: typeof AuthenticatedAgentsIdWebhooksRouteImport
+      parentRoute: typeof AuthenticatedAgentsIdRoute
+    }
+    '/_authenticated/agents/$id/versions': {
+      id: '/_authenticated/agents/$id/versions'
+      path: '/versions'
+      fullPath: '/agents/$id/versions'
+      preLoaderRoute: typeof AuthenticatedAgentsIdVersionsRouteImport
+      parentRoute: typeof AuthenticatedAgentsIdRoute
+    }
+    '/_authenticated/agents/$id/sandbox': {
+      id: '/_authenticated/agents/$id/sandbox'
+      path: '/sandbox'
+      fullPath: '/agents/$id/sandbox'
+      preLoaderRoute: typeof AuthenticatedAgentsIdSandboxRouteImport
+      parentRoute: typeof AuthenticatedAgentsIdRoute
+    }
+    '/_authenticated/agents/$id/routing': {
+      id: '/_authenticated/agents/$id/routing'
+      path: '/routing'
+      fullPath: '/agents/$id/routing'
+      preLoaderRoute: typeof AuthenticatedAgentsIdRoutingRouteImport
+      parentRoute: typeof AuthenticatedAgentsIdRoute
+    }
     '/_authenticated/agents/$id/ratings': {
       id: '/_authenticated/agents/$id/ratings'
       path: '/ratings'
       fullPath: '/agents/$id/ratings'
       preLoaderRoute: typeof AuthenticatedAgentsIdRatingsRouteImport
+      parentRoute: typeof AuthenticatedAgentsIdRoute
+    }
+    '/_authenticated/agents/$id/quotas': {
+      id: '/_authenticated/agents/$id/quotas'
+      path: '/quotas'
+      fullPath: '/agents/$id/quotas'
+      preLoaderRoute: typeof AuthenticatedAgentsIdQuotasRouteImport
+      parentRoute: typeof AuthenticatedAgentsIdRoute
+    }
+    '/_authenticated/agents/$id/quality': {
+      id: '/_authenticated/agents/$id/quality'
+      path: '/quality'
+      fullPath: '/agents/$id/quality'
+      preLoaderRoute: typeof AuthenticatedAgentsIdQualityRouteImport
+      parentRoute: typeof AuthenticatedAgentsIdRoute
+    }
+    '/_authenticated/agents/$id/memory': {
+      id: '/_authenticated/agents/$id/memory'
+      path: '/memory'
+      fullPath: '/agents/$id/memory'
+      preLoaderRoute: typeof AuthenticatedAgentsIdMemoryRouteImport
+      parentRoute: typeof AuthenticatedAgentsIdRoute
+    }
+    '/_authenticated/agents/$id/mcp-tools': {
+      id: '/_authenticated/agents/$id/mcp-tools'
+      path: '/mcp-tools'
+      fullPath: '/agents/$id/mcp-tools'
+      preLoaderRoute: typeof AuthenticatedAgentsIdMcpToolsRouteImport
+      parentRoute: typeof AuthenticatedAgentsIdRoute
+    }
+    '/_authenticated/agents/$id/knowledge': {
+      id: '/_authenticated/agents/$id/knowledge'
+      path: '/knowledge'
+      fullPath: '/agents/$id/knowledge'
+      preLoaderRoute: typeof AuthenticatedAgentsIdKnowledgeRouteImport
+      parentRoute: typeof AuthenticatedAgentsIdRoute
+    }
+    '/_authenticated/agents/$id/handoffs': {
+      id: '/_authenticated/agents/$id/handoffs'
+      path: '/handoffs'
+      fullPath: '/agents/$id/handoffs'
+      preLoaderRoute: typeof AuthenticatedAgentsIdHandoffsRouteImport
+      parentRoute: typeof AuthenticatedAgentsIdRoute
+    }
+    '/_authenticated/agents/$id/evaluation': {
+      id: '/_authenticated/agents/$id/evaluation'
+      path: '/evaluation'
+      fullPath: '/agents/$id/evaluation'
+      preLoaderRoute: typeof AuthenticatedAgentsIdEvaluationRouteImport
+      parentRoute: typeof AuthenticatedAgentsIdRoute
+    }
+    '/_authenticated/agents/$id/cron': {
+      id: '/_authenticated/agents/$id/cron'
+      path: '/cron'
+      fullPath: '/agents/$id/cron'
+      preLoaderRoute: typeof AuthenticatedAgentsIdCronRouteImport
+      parentRoute: typeof AuthenticatedAgentsIdRoute
+    }
+    '/_authenticated/agents/$id/conversations': {
+      id: '/_authenticated/agents/$id/conversations'
+      path: '/conversations'
+      fullPath: '/agents/$id/conversations'
+      preLoaderRoute: typeof AuthenticatedAgentsIdConversationsRouteImport
+      parentRoute: typeof AuthenticatedAgentsIdRoute
+    }
+    '/_authenticated/agents/$id/config': {
+      id: '/_authenticated/agents/$id/config'
+      path: '/config'
+      fullPath: '/agents/$id/config'
+      preLoaderRoute: typeof AuthenticatedAgentsIdConfigRouteImport
+      parentRoute: typeof AuthenticatedAgentsIdRoute
+    }
+    '/_authenticated/agents/$id/compliance': {
+      id: '/_authenticated/agents/$id/compliance'
+      path: '/compliance'
+      fullPath: '/agents/$id/compliance'
+      preLoaderRoute: typeof AuthenticatedAgentsIdComplianceRouteImport
+      parentRoute: typeof AuthenticatedAgentsIdRoute
+    }
+    '/_authenticated/agents/$id/circuit-breaker': {
+      id: '/_authenticated/agents/$id/circuit-breaker'
+      path: '/circuit-breaker'
+      fullPath: '/agents/$id/circuit-breaker'
+      preLoaderRoute: typeof AuthenticatedAgentsIdCircuitBreakerRouteImport
+      parentRoute: typeof AuthenticatedAgentsIdRoute
+    }
+    '/_authenticated/agents/$id/channels': {
+      id: '/_authenticated/agents/$id/channels'
+      path: '/channels'
+      fullPath: '/agents/$id/channels'
+      preLoaderRoute: typeof AuthenticatedAgentsIdChannelsRouteImport
+      parentRoute: typeof AuthenticatedAgentsIdRoute
+    }
+    '/_authenticated/agents/$id/benchmarks': {
+      id: '/_authenticated/agents/$id/benchmarks'
+      path: '/benchmarks'
+      fullPath: '/agents/$id/benchmarks'
+      preLoaderRoute: typeof AuthenticatedAgentsIdBenchmarksRouteImport
       parentRoute: typeof AuthenticatedAgentsIdRoute
     }
     '/_authenticated/agents/$id/eval-runs/$runId': {
@@ -659,10 +1208,10 @@ declare module '@tanstack/react-router' {
     }
     '/_authenticated/agents/$id/benchmarks/$runId': {
       id: '/_authenticated/agents/$id/benchmarks/$runId'
-      path: '/benchmarks/$runId'
+      path: '/$runId'
       fullPath: '/agents/$id/benchmarks/$runId'
       preLoaderRoute: typeof AuthenticatedAgentsIdBenchmarksRunIdRouteImport
-      parentRoute: typeof AuthenticatedAgentsIdRoute
+      parentRoute: typeof AuthenticatedAgentsIdBenchmarksRoute
     }
     '/_authenticated/agents/$id/drafts/$draftId/compare': {
       id: '/_authenticated/agents/$id/drafts/$draftId/compare'
@@ -673,6 +1222,36 @@ declare module '@tanstack/react-router' {
     }
   }
 }
+
+interface AuthenticatedAdaptersRouteChildren {
+  AuthenticatedAdaptersNewRoute: typeof AuthenticatedAdaptersNewRoute
+  AuthenticatedAdaptersIndexRoute: typeof AuthenticatedAdaptersIndexRoute
+}
+
+const AuthenticatedAdaptersRouteChildren: AuthenticatedAdaptersRouteChildren = {
+  AuthenticatedAdaptersNewRoute: AuthenticatedAdaptersNewRoute,
+  AuthenticatedAdaptersIndexRoute: AuthenticatedAdaptersIndexRoute,
+}
+
+const AuthenticatedAdaptersRouteWithChildren =
+  AuthenticatedAdaptersRoute._addFileChildren(
+    AuthenticatedAdaptersRouteChildren,
+  )
+
+interface AuthenticatedAgentsIdBenchmarksRouteChildren {
+  AuthenticatedAgentsIdBenchmarksRunIdRoute: typeof AuthenticatedAgentsIdBenchmarksRunIdRoute
+}
+
+const AuthenticatedAgentsIdBenchmarksRouteChildren: AuthenticatedAgentsIdBenchmarksRouteChildren =
+  {
+    AuthenticatedAgentsIdBenchmarksRunIdRoute:
+      AuthenticatedAgentsIdBenchmarksRunIdRoute,
+  }
+
+const AuthenticatedAgentsIdBenchmarksRouteWithChildren =
+  AuthenticatedAgentsIdBenchmarksRoute._addFileChildren(
+    AuthenticatedAgentsIdBenchmarksRouteChildren,
+  )
 
 interface AuthenticatedAgentsIdDraftsDraftIdRouteChildren {
   AuthenticatedAgentsIdDraftsDraftIdCompareRoute: typeof AuthenticatedAgentsIdDraftsDraftIdCompareRoute
@@ -690,16 +1269,56 @@ const AuthenticatedAgentsIdDraftsDraftIdRouteWithChildren =
   )
 
 interface AuthenticatedAgentsIdRouteChildren {
+  AuthenticatedAgentsIdBenchmarksRoute: typeof AuthenticatedAgentsIdBenchmarksRouteWithChildren
+  AuthenticatedAgentsIdChannelsRoute: typeof AuthenticatedAgentsIdChannelsRoute
+  AuthenticatedAgentsIdCircuitBreakerRoute: typeof AuthenticatedAgentsIdCircuitBreakerRoute
+  AuthenticatedAgentsIdComplianceRoute: typeof AuthenticatedAgentsIdComplianceRoute
+  AuthenticatedAgentsIdConfigRoute: typeof AuthenticatedAgentsIdConfigRoute
+  AuthenticatedAgentsIdConversationsRoute: typeof AuthenticatedAgentsIdConversationsRoute
+  AuthenticatedAgentsIdCronRoute: typeof AuthenticatedAgentsIdCronRoute
+  AuthenticatedAgentsIdEvaluationRoute: typeof AuthenticatedAgentsIdEvaluationRoute
+  AuthenticatedAgentsIdHandoffsRoute: typeof AuthenticatedAgentsIdHandoffsRoute
+  AuthenticatedAgentsIdKnowledgeRoute: typeof AuthenticatedAgentsIdKnowledgeRoute
+  AuthenticatedAgentsIdMcpToolsRoute: typeof AuthenticatedAgentsIdMcpToolsRoute
+  AuthenticatedAgentsIdMemoryRoute: typeof AuthenticatedAgentsIdMemoryRoute
+  AuthenticatedAgentsIdQualityRoute: typeof AuthenticatedAgentsIdQualityRoute
+  AuthenticatedAgentsIdQuotasRoute: typeof AuthenticatedAgentsIdQuotasRoute
   AuthenticatedAgentsIdRatingsRoute: typeof AuthenticatedAgentsIdRatingsRoute
-  AuthenticatedAgentsIdBenchmarksRunIdRoute: typeof AuthenticatedAgentsIdBenchmarksRunIdRoute
+  AuthenticatedAgentsIdRoutingRoute: typeof AuthenticatedAgentsIdRoutingRoute
+  AuthenticatedAgentsIdSandboxRoute: typeof AuthenticatedAgentsIdSandboxRoute
+  AuthenticatedAgentsIdVersionsRoute: typeof AuthenticatedAgentsIdVersionsRoute
+  AuthenticatedAgentsIdWebhooksRoute: typeof AuthenticatedAgentsIdWebhooksRoute
+  AuthenticatedAgentsIdWorkflowsRoute: typeof AuthenticatedAgentsIdWorkflowsRoute
+  AuthenticatedAgentsIdIndexRoute: typeof AuthenticatedAgentsIdIndexRoute
   AuthenticatedAgentsIdDraftsDraftIdRoute: typeof AuthenticatedAgentsIdDraftsDraftIdRouteWithChildren
   AuthenticatedAgentsIdEvalRunsRunIdRoute: typeof AuthenticatedAgentsIdEvalRunsRunIdRoute
 }
 
 const AuthenticatedAgentsIdRouteChildren: AuthenticatedAgentsIdRouteChildren = {
+  AuthenticatedAgentsIdBenchmarksRoute:
+    AuthenticatedAgentsIdBenchmarksRouteWithChildren,
+  AuthenticatedAgentsIdChannelsRoute: AuthenticatedAgentsIdChannelsRoute,
+  AuthenticatedAgentsIdCircuitBreakerRoute:
+    AuthenticatedAgentsIdCircuitBreakerRoute,
+  AuthenticatedAgentsIdComplianceRoute: AuthenticatedAgentsIdComplianceRoute,
+  AuthenticatedAgentsIdConfigRoute: AuthenticatedAgentsIdConfigRoute,
+  AuthenticatedAgentsIdConversationsRoute:
+    AuthenticatedAgentsIdConversationsRoute,
+  AuthenticatedAgentsIdCronRoute: AuthenticatedAgentsIdCronRoute,
+  AuthenticatedAgentsIdEvaluationRoute: AuthenticatedAgentsIdEvaluationRoute,
+  AuthenticatedAgentsIdHandoffsRoute: AuthenticatedAgentsIdHandoffsRoute,
+  AuthenticatedAgentsIdKnowledgeRoute: AuthenticatedAgentsIdKnowledgeRoute,
+  AuthenticatedAgentsIdMcpToolsRoute: AuthenticatedAgentsIdMcpToolsRoute,
+  AuthenticatedAgentsIdMemoryRoute: AuthenticatedAgentsIdMemoryRoute,
+  AuthenticatedAgentsIdQualityRoute: AuthenticatedAgentsIdQualityRoute,
+  AuthenticatedAgentsIdQuotasRoute: AuthenticatedAgentsIdQuotasRoute,
   AuthenticatedAgentsIdRatingsRoute: AuthenticatedAgentsIdRatingsRoute,
-  AuthenticatedAgentsIdBenchmarksRunIdRoute:
-    AuthenticatedAgentsIdBenchmarksRunIdRoute,
+  AuthenticatedAgentsIdRoutingRoute: AuthenticatedAgentsIdRoutingRoute,
+  AuthenticatedAgentsIdSandboxRoute: AuthenticatedAgentsIdSandboxRoute,
+  AuthenticatedAgentsIdVersionsRoute: AuthenticatedAgentsIdVersionsRoute,
+  AuthenticatedAgentsIdWebhooksRoute: AuthenticatedAgentsIdWebhooksRoute,
+  AuthenticatedAgentsIdWorkflowsRoute: AuthenticatedAgentsIdWorkflowsRoute,
+  AuthenticatedAgentsIdIndexRoute: AuthenticatedAgentsIdIndexRoute,
   AuthenticatedAgentsIdDraftsDraftIdRoute:
     AuthenticatedAgentsIdDraftsDraftIdRouteWithChildren,
   AuthenticatedAgentsIdEvalRunsRunIdRoute:
@@ -726,10 +1345,14 @@ const AuthenticatedAgentsRouteWithChildren =
 
 interface AuthenticatedChannelsRouteChildren {
   AuthenticatedChannelsSlugRoute: typeof AuthenticatedChannelsSlugRoute
+  AuthenticatedChannelsNewRoute: typeof AuthenticatedChannelsNewRoute
+  AuthenticatedChannelsIndexRoute: typeof AuthenticatedChannelsIndexRoute
 }
 
 const AuthenticatedChannelsRouteChildren: AuthenticatedChannelsRouteChildren = {
   AuthenticatedChannelsSlugRoute: AuthenticatedChannelsSlugRoute,
+  AuthenticatedChannelsNewRoute: AuthenticatedChannelsNewRoute,
+  AuthenticatedChannelsIndexRoute: AuthenticatedChannelsIndexRoute,
 }
 
 const AuthenticatedChannelsRouteWithChildren =
@@ -738,12 +1361,14 @@ const AuthenticatedChannelsRouteWithChildren =
   )
 
 interface AuthenticatedConversationsRouteChildren {
-  AuthenticatedConversationsIdRoute: typeof AuthenticatedConversationsIdRoute
+  AuthenticatedConversationsNewRoute: typeof AuthenticatedConversationsNewRoute
+  AuthenticatedConversationsIndexRoute: typeof AuthenticatedConversationsIndexRoute
 }
 
 const AuthenticatedConversationsRouteChildren: AuthenticatedConversationsRouteChildren =
   {
-    AuthenticatedConversationsIdRoute: AuthenticatedConversationsIdRoute,
+    AuthenticatedConversationsNewRoute: AuthenticatedConversationsNewRoute,
+    AuthenticatedConversationsIndexRoute: AuthenticatedConversationsIndexRoute,
   }
 
 const AuthenticatedConversationsRouteWithChildren =
@@ -764,11 +1389,15 @@ const AuthenticatedJobsRouteWithChildren =
 
 interface AuthenticatedWorkflowsRouteChildren {
   AuthenticatedWorkflowsIdRoute: typeof AuthenticatedWorkflowsIdRoute
+  AuthenticatedWorkflowsNewRoute: typeof AuthenticatedWorkflowsNewRoute
+  AuthenticatedWorkflowsIndexRoute: typeof AuthenticatedWorkflowsIndexRoute
 }
 
 const AuthenticatedWorkflowsRouteChildren: AuthenticatedWorkflowsRouteChildren =
   {
     AuthenticatedWorkflowsIdRoute: AuthenticatedWorkflowsIdRoute,
+    AuthenticatedWorkflowsNewRoute: AuthenticatedWorkflowsNewRoute,
+    AuthenticatedWorkflowsIndexRoute: AuthenticatedWorkflowsIndexRoute,
   }
 
 const AuthenticatedWorkflowsRouteWithChildren =
@@ -778,6 +1407,7 @@ const AuthenticatedWorkflowsRouteWithChildren =
 
 interface AuthenticatedRouteChildren {
   AuthenticatedAccountRoute: typeof AuthenticatedAccountRoute
+  AuthenticatedAdaptersRoute: typeof AuthenticatedAdaptersRouteWithChildren
   AuthenticatedAgentsRoute: typeof AuthenticatedAgentsRouteWithChildren
   AuthenticatedAnalyticsRoute: typeof AuthenticatedAnalyticsRoute
   AuthenticatedChannelsRoute: typeof AuthenticatedChannelsRouteWithChildren
@@ -790,8 +1420,8 @@ interface AuthenticatedRouteChildren {
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedWorkflowsRoute: typeof AuthenticatedWorkflowsRouteWithChildren
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
+  AuthenticatedConversationsIdRoute: typeof AuthenticatedConversationsIdRoute
   AuthenticatedSettingsOtelRoute: typeof AuthenticatedSettingsOtelRoute
-  AuthenticatedAdaptersIndexRoute: typeof AuthenticatedAdaptersIndexRoute
   AuthenticatedApprovalsIndexRoute: typeof AuthenticatedApprovalsIndexRoute
   AuthenticatedComplianceIndexRoute: typeof AuthenticatedComplianceIndexRoute
   AuthenticatedFleetIndexRoute: typeof AuthenticatedFleetIndexRoute
@@ -801,6 +1431,7 @@ interface AuthenticatedRouteChildren {
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAccountRoute: AuthenticatedAccountRoute,
+  AuthenticatedAdaptersRoute: AuthenticatedAdaptersRouteWithChildren,
   AuthenticatedAgentsRoute: AuthenticatedAgentsRouteWithChildren,
   AuthenticatedAnalyticsRoute: AuthenticatedAnalyticsRoute,
   AuthenticatedChannelsRoute: AuthenticatedChannelsRouteWithChildren,
@@ -813,8 +1444,8 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedWorkflowsRoute: AuthenticatedWorkflowsRouteWithChildren,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
+  AuthenticatedConversationsIdRoute: AuthenticatedConversationsIdRoute,
   AuthenticatedSettingsOtelRoute: AuthenticatedSettingsOtelRoute,
-  AuthenticatedAdaptersIndexRoute: AuthenticatedAdaptersIndexRoute,
   AuthenticatedApprovalsIndexRoute: AuthenticatedApprovalsIndexRoute,
   AuthenticatedComplianceIndexRoute: AuthenticatedComplianceIndexRoute,
   AuthenticatedFleetIndexRoute: AuthenticatedFleetIndexRoute,

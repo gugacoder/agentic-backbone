@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ChevronRight, Save, MessageSquare, Rocket } from "lucide-react";
 import { draftQueryOptions, updateDraft, publishDraft } from "@/api/drafts";
@@ -15,21 +15,28 @@ import {
 } from "@/components/ui/dialog";
 import { DraftChatPanel } from "@/components/sandbox/draft-chat-panel";
 
+type DraftSearch = { file?: string; action?: "publish" };
+
 export const Route = createFileRoute("/_authenticated/agents/$id/drafts/$draftId")({
+  staticData: { title: "Rascunho" },
+  validateSearch: (search: Record<string, unknown>): DraftSearch => ({
+    file: typeof search.file === "string" ? search.file : undefined,
+    action: search.action === "publish" ? "publish" : undefined,
+  }),
   component: DraftEditorPage,
 });
 
 function DraftEditorPage() {
   const { id: agentId, draftId } = Route.useParams();
+  const { file, action } = Route.useSearch();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
 
   const { data: draft, isLoading } = useQuery(draftQueryOptions(agentId, draftId));
 
   const [fileContents, setFileContents] = useState<Record<string, string>>({});
-  const [activeFile, setActiveFile] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [showChat, setShowChat] = useState(false);
-  const [showPublish, setShowPublish] = useState(false);
   const [publishing, setPublishing] = useState(false);
 
   // Initialize local state when data arrives
@@ -40,7 +47,7 @@ function DraftEditorPage() {
     return fileName in fileContents ? fileContents[fileName]! : (files[fileName] ?? "");
   }
 
-  const currentFile = activeFile ?? fileKeys[0] ?? null;
+  const currentFile = file ?? fileKeys[0] ?? null;
 
   async function handleSave() {
     if (!currentFile) return;
@@ -61,7 +68,7 @@ function DraftEditorPage() {
     try {
       await publishDraft(agentId, draftId);
       queryClient.invalidateQueries({ queryKey: ["drafts", agentId] });
-      setShowPublish(false);
+      navigate({ search: (prev: DraftSearch) => ({ file: prev.file }) });
     } finally {
       setPublishing(false);
     }
@@ -121,7 +128,7 @@ function DraftEditorPage() {
                 <MessageSquare className="size-4 mr-1" />
                 Testar no chat
               </Button>
-              <Button size="sm" variant="outline" onClick={() => setShowPublish(true)}>
+              <Button size="sm" variant="outline" onClick={() => navigate({ search: (prev: DraftSearch) => ({ ...prev, action: "publish" }) })}>
                 <Rocket className="size-4 mr-1" />
                 Publicar
               </Button>
@@ -140,7 +147,7 @@ function DraftEditorPage() {
         {fileKeys.length > 0 && (
           <Tabs
             value={currentFile ?? fileKeys[0]}
-            onValueChange={(v) => setActiveFile(v)}
+            onValueChange={(v) => navigate({ search: (prev: DraftSearch) => ({ ...prev, file: v }) })}
             className="flex-1 flex flex-col"
           >
             <TabsList>
@@ -178,7 +185,7 @@ function DraftEditorPage() {
       )}
 
       {/* Publish dialog */}
-      <Dialog open={showPublish} onOpenChange={setShowPublish}>
+      <Dialog open={action === "publish"} onOpenChange={(open) => { if (!open) navigate({ search: (prev: DraftSearch) => ({ file: prev.file }) }); }}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Publicar rascunho</DialogTitle>
@@ -189,7 +196,7 @@ function DraftEditorPage() {
             versao antes de ser substituido.
           </p>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowPublish(false)}>
+            <Button variant="outline" onClick={() => navigate({ search: (prev: DraftSearch) => ({ file: prev.file }) })}>
               Cancelar
             </Button>
             <Button onClick={handlePublish} disabled={publishing}>

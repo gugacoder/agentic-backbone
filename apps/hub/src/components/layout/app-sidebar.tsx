@@ -1,249 +1,103 @@
-import { useCallback } from "react";
-import { Link, useMatchRoute } from "@tanstack/react-router";
-import {
-  LayoutDashboard,
-  Bot,
-  MessageSquare,
-  Radio,
-  Calendar,
-  Cpu,
-  Bell,
-  DollarSign,
-  TrendingUp,
-  Settings,
-  ShieldCheck,
-  ShieldAlert,
-  ClipboardCheck,
-  Plug,
-  Inbox,
-  UserCircle,
-  GitBranch,
-  Star,
-  Network,
-  Telescope,
-} from "lucide-react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Link } from "@tanstack/react-router";
+import { ChevronsUpDown } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarHeader,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { pendingApprovalsQueryOptions } from "@/api/approvals";
-import { securitySummaryQueryOptions } from "@/api/security";
-import { inboxQueryOptions } from "@/api/inbox";
-import { useSSEEvent, type SystemEvent } from "@/hooks/use-sse";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { NavMenu } from "@/components/layout/nav-menu";
 import { useAuthStore } from "@/lib/auth";
+import { useUIStore } from "@/lib/store";
 
-const navItemsBefore = [
-  { label: "Dashboard", icon: LayoutDashboard, to: "/" as const },
-] as const;
+function UserMenu() {
+  const user = useAuthStore((s) => s.user);
+  const logout = useAuthStore((s) => s.logout);
+  const theme = useUIStore((s) => s.theme);
+  const setTheme = useUIStore((s) => s.setTheme);
 
-const navItemsAfter = [
-  { label: "Agentes", icon: Bot, to: "/agents" as const },
-  { label: "Workflows", icon: GitBranch, to: "/workflows" as const },
-  { label: "Conversas", icon: MessageSquare, to: "/conversations" as const },
-  { label: "Canais", icon: Radio, to: "/channels" as const },
-  { label: "Agenda", icon: Calendar, to: "/cron" as const },
-  { label: "Jobs", icon: Cpu, to: "/jobs" as const },
-  { label: "Custos", icon: DollarSign, to: "/costs" as const },
-  { label: "Analytics", icon: TrendingUp, to: "/analytics" as const },
-  { label: "Ratings", icon: Star, to: "/ratings" as const },
-  { label: "Notificacoes", icon: Bell, to: "/notifications" as const },
-  { label: "Configuracoes", icon: Settings, to: "/settings" as const },
-] as const;
+  const initials = user?.displayName
+    ? user.displayName
+        .split(" ")
+        .slice(0, 2)
+        .map((w) => w[0])
+        .join("")
+        .toUpperCase()
+    : "?";
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger
+        className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+      >
+        <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary text-[11px] font-semibold text-primary-foreground">
+          {initials}
+        </span>
+        <span className="flex-1 truncate">{user?.displayName ?? "Usuário"}</span>
+        <ChevronsUpDown className="size-4 shrink-0 text-muted-foreground" />
+      </DropdownMenuTrigger>
+      <DropdownMenuContent side="top" align="start" className="w-64">
+        <div className="flex items-center gap-3 px-3 py-2">
+          <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground">
+            {initials}
+          </span>
+          <div className="min-w-0">
+            <p className="truncate text-sm font-medium">{user?.displayName}</p>
+            <p className="truncate text-xs text-muted-foreground">{user?.role}</p>
+          </div>
+        </div>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem>
+          <Link to="/account" className="flex w-full">
+            Meu perfil
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <div className="px-2 py-1 text-xs text-muted-foreground">Tema</div>
+        <DropdownMenuRadioGroup value={theme} onValueChange={setTheme}>
+          <DropdownMenuRadioItem value="light">Claro</DropdownMenuRadioItem>
+          <DropdownMenuRadioItem value="dark">Escuro</DropdownMenuRadioItem>
+          <DropdownMenuRadioItem value="system">Automático</DropdownMenuRadioItem>
+        </DropdownMenuRadioGroup>
+        {(user?.role === "admin" || user?.role === "system") && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem>
+              <Link to="/settings" className="flex w-full">
+                Configurações
+              </Link>
+            </DropdownMenuItem>
+          </>
+        )}
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={logout} variant="destructive">
+          Sair
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
 
 export function AppSidebar() {
-  const matchRoute = useMatchRoute();
-  const queryClient = useQueryClient();
-  const user = useAuthStore((s) => s.user);
-  const isAccountActive = !!matchRoute({ to: "/account" });
-
-  const { data: pending } = useQuery(pendingApprovalsQueryOptions());
-  const pendingCount = pending?.length ?? 0;
-
-  const { data: securitySummary } = useQuery(securitySummaryQueryOptions(1));
-  const hasCriticalEvents =
-    (securitySummary?.bySeverity.find((s) => s.severity === "critical")?.count ?? 0) > 0;
-
-  const { data: inboxData } = useQuery(inboxQueryOptions({ status: "waiting", limit: 1 }));
-  const waitingCount = inboxData?.total ?? 0;
-
-  useSSEEvent(
-    "approval:pending",
-    useCallback(
-      (_event: SystemEvent) => {
-        queryClient.invalidateQueries({ queryKey: ["approvals", "pending"] });
-      },
-      [queryClient],
-    ),
-  );
-
-  useSSEEvent(
-    "channel:message",
-    useCallback(
-      (_event: SystemEvent) => {
-        queryClient.invalidateQueries({ queryKey: ["inbox"] });
-      },
-      [queryClient],
-    ),
-  );
-
-  const isInboxActive = !!matchRoute({ to: "/inbox", fuzzy: true });
-  const isApprovalsActive = !!matchRoute({ to: "/approvals", fuzzy: true });
-  const isAdaptersActive = !!matchRoute({ to: "/adapters", fuzzy: true });
-  const isSecurityActive = !!matchRoute({ to: "/security", fuzzy: true });
-  const isComplianceActive = !!matchRoute({ to: "/compliance", fuzzy: true });
-  const isFleetActive = !!matchRoute({ to: "/fleet", fuzzy: true });
-  const isOtelActive = !!matchRoute({ to: "/settings/otel", fuzzy: true });
-
   return (
     <Sidebar>
       <SidebarHeader className="px-4 py-3">
         <span className="text-lg font-semibold tracking-tight">Agentic Backbone</span>
       </SidebarHeader>
-      <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {navItemsBefore.map((item) => {
-                const isActive = !!matchRoute({ to: item.to, fuzzy: item.to !== "/" });
-                return (
-                  <SidebarMenuItem key={item.to}>
-                    <SidebarMenuButton isActive={isActive} render={<Link to={item.to} />}>
-                      <item.icon />
-                      <span>{item.label}</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                );
-              })}
-
-              {/* Inbox with waiting badge */}
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  isActive={isInboxActive}
-                  render={<Link to="/inbox" />}
-                >
-                  <Inbox />
-                  <span className="flex-1">Inbox</span>
-                  {waitingCount > 0 && (
-                    <span className="ml-auto inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold text-destructive-foreground">
-                      {waitingCount > 99 ? "99+" : waitingCount}
-                    </span>
-                  )}
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-
-              {navItemsAfter.map((item) => {
-                const isActive = !!matchRoute({ to: item.to, fuzzy: true });
-                return (
-                  <SidebarMenuItem key={item.to}>
-                    <SidebarMenuButton isActive={isActive} render={<Link to={item.to} />}>
-                      <item.icon />
-                      <span>{item.label}</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                );
-              })}
-
-              {/* Approvals with badge */}
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  isActive={isApprovalsActive}
-                  render={<Link to="/approvals" />}
-                >
-                  <ShieldCheck />
-                  <span className="flex-1">Aprovacoes</span>
-                  {pendingCount > 0 && (
-                    <span className="ml-auto inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold text-destructive-foreground">
-                      {pendingCount > 99 ? "99+" : pendingCount}
-                    </span>
-                  )}
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        <SidebarGroup>
-          <SidebarGroupLabel>Integracoes</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  isActive={isAdaptersActive}
-                  render={<Link to="/adapters" />}
-                >
-                  <Plug />
-                  <span>Adaptadores</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        <SidebarGroup>
-          <SidebarGroupLabel>Sistema</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  isActive={isSecurityActive}
-                  render={<Link to="/security" />}
-                >
-                  <ShieldAlert />
-                  <span className="flex-1">Seguranca</span>
-                  {hasCriticalEvents && (
-                    <span className="ml-auto inline-flex h-2 w-2 rounded-full bg-destructive" />
-                  )}
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  isActive={isComplianceActive}
-                  render={<Link to="/compliance" />}
-                >
-                  <ClipboardCheck />
-                  <span>Conformidade</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  isActive={isFleetActive}
-                  render={<Link to="/fleet" />}
-                >
-                  <Network />
-                  <span>Fleet</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  isActive={isOtelActive}
-                  render={<Link to="/settings/otel" />}
-                >
-                  <Telescope />
-                  <span>OpenTelemetry</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+      <SidebarContent className="py-2">
+        <NavMenu />
       </SidebarContent>
-      <SidebarFooter>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton isActive={isAccountActive} render={<Link to="/account" />}>
-              <UserCircle />
-              <span className="flex-1 truncate">{user?.displayName ?? "Minha Conta"}</span>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
+      <SidebarFooter className="px-2 py-2">
+        <UserMenu />
       </SidebarFooter>
     </Sidebar>
   );

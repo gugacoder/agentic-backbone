@@ -11,6 +11,7 @@ import { AdapterDialog } from "@/components/adapters/adapter-dialog";
 import { adaptersQueryOptions, type Adapter } from "@/api/adapters";
 
 export const Route = createFileRoute("/_authenticated/adapters")({
+  staticData: { title: "Adaptadores", description: "Gerencie conectores de integração" },
   component: AdaptersLayout,
 });
 
@@ -56,8 +57,6 @@ function AdaptersLayout() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Adaptadores"
-        description="Gerencie conectores de integracao com servicos externos"
         actions={
           <Button size="sm" onClick={() => navigate({ to: "/adapters/new" })}>
             <Plus className="mr-1.5 h-4 w-4" />

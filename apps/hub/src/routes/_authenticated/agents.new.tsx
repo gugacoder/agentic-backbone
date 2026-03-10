@@ -1,7 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { FilePlus2 } from "lucide-react";
-import { PageHeader } from "@/components/shared/page-header";
 import { TemplateGallery } from "@/components/agents/template-gallery";
 import { AgentForm } from "@/components/agents/agent-form";
 import { CreateFromTemplateWizard } from "@/components/agents/create-from-template-wizard";
@@ -15,6 +14,7 @@ interface NewAgentSearch {
 }
 
 export const Route = createFileRoute("/_authenticated/agents/new")({
+  staticData: { title: "Novo Agente", description: "Escolha um template ou crie do zero" },
   validateSearch: (search: Record<string, unknown>): NewAgentSearch => ({
     template: typeof search.template === "string" ? search.template : undefined,
   }),
@@ -39,19 +39,6 @@ function NewAgentPage() {
   if (template && template !== "scratch") {
     return (
       <div className="space-y-6">
-        <PageHeader
-          title="Criar agente a partir de template"
-          description="Configure seu novo agente em 3 passos"
-          actions={
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate({ to: "/agents/new", search: {} })}
-            >
-              Voltar para galeria
-            </Button>
-          }
-        />
         <CreateFromTemplateWizard templateSlug={template} />
       </div>
     );
@@ -60,19 +47,6 @@ function NewAgentPage() {
   if (template === "scratch") {
     return (
       <div className="space-y-6">
-        <PageHeader
-          title="Criar agente do zero"
-          description="Preencha os dados para criar um novo agente"
-          actions={
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate({ to: "/agents/new", search: {} })}
-            >
-              Voltar para galeria
-            </Button>
-          }
-        />
         <AgentForm />
       </div>
     );
@@ -80,11 +54,6 @@ function NewAgentPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title="Novo agente"
-        description="Escolha um template para comecar rapidamente ou crie do zero"
-      />
-
       {isLoading ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: 5 }).map((_, i) => (

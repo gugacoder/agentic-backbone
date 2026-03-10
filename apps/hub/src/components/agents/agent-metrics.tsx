@@ -28,16 +28,16 @@ export function AgentMetrics({ stats }: AgentMetricsProps) {
           <Activity className="size-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{formatNumber(stats.totalRuns)}</div>
+          <div className="text-2xl font-bold">{formatNumber(stats.totalExecutions ?? 0)}</div>
           <div className="mt-1 flex gap-2 text-xs text-muted-foreground">
             <span className="text-green-600 dark:text-green-400">
-              {formatNumber(stats.byStatus.ok)} ok
+              {formatNumber(stats.countByStatus?.ok ?? 0)} ok
             </span>
             <span className="text-yellow-600 dark:text-yellow-400">
-              {formatNumber(stats.byStatus.skipped)} skip
+              {formatNumber(stats.countByStatus?.skipped ?? 0)} skip
             </span>
             <span className="text-red-600 dark:text-red-400">
-              {formatNumber(stats.byStatus.error)} erro
+              {formatNumber(stats.countByStatus?.error ?? 0)} erro
             </span>
           </div>
         </CardContent>
@@ -51,13 +51,13 @@ export function AgentMetrics({ stats }: AgentMetricsProps) {
         <CardContent>
           <div className="flex items-baseline gap-3">
             <span className="text-2xl font-bold text-green-600 dark:text-green-400">
-              {formatNumber(stats.byStatus.ok)}
+              {formatNumber(stats.countByStatus?.ok ?? 0)}
             </span>
             <span className="text-lg font-semibold text-yellow-600 dark:text-yellow-400">
-              {formatNumber(stats.byStatus.skipped)}
+              {formatNumber(stats.countByStatus?.skipped ?? 0)}
             </span>
             <span className="text-lg font-semibold text-red-600 dark:text-red-400">
-              {formatNumber(stats.byStatus.error)}
+              {formatNumber(stats.countByStatus?.error ?? 0)}
             </span>
           </div>
           <p className="mt-1 text-xs text-muted-foreground">Por status</p>

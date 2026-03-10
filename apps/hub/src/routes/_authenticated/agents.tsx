@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback } from "react";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, Outlet, useMatch } from "@tanstack/react-router";
 import { useQuery, useQueries, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Bot, Plus, Search } from "lucide-react";
 import { PageHeader } from "@/components/shared/page-header";
@@ -20,12 +20,14 @@ import { useAuthStore } from "@/lib/auth";
 type FilterValue = "all" | "active" | "inactive";
 
 export const Route = createFileRoute("/_authenticated/agents")({
+  staticData: { title: "Agentes", description: "Gerencie seus agentes de IA" },
   component: AgentsPage,
 });
 
 function AgentsPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const isDetailRoute = useMatch({ from: "/_authenticated/agents/$id", shouldThrow: false });
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<FilterValue>("all");
   const [heartbeatMap, setHeartbeatMap] = useState<Record<string, HeartbeatLive>>({});
@@ -132,11 +134,13 @@ function AgentsPage() {
     { value: "inactive", label: "Inativos" },
   ];
 
+  if (isDetailRoute) {
+    return <Outlet />;
+  }
+
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Agentes"
-        description="Gerencie seus agentes de IA"
         actions={
           <Button
             size="sm"
@@ -206,6 +210,7 @@ function AgentsPage() {
           ))}
         </div>
       )}
+      <Outlet />
     </div>
   );
 }

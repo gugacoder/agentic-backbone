@@ -1,51 +1,43 @@
-import { useMatches } from "@tanstack/react-router";
-import { Moon, Sun } from "lucide-react";
-import { SidebarTrigger } from "@/components/ui/sidebar";
-import { Separator } from "@/components/ui/separator";
+import { useMatches, useNavigate } from "@tanstack/react-router";
+import { ChevronLeft, ChevronRight, Moon, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useUIStore } from "@/lib/store";
 import { NotificationBell } from "@/components/notifications/notification-bell";
 import { useAuthStore } from "@/lib/auth";
 
-const routeLabels: Record<string, string> = {
-  "/agents": "Agentes",
-  "/conversations": "Conversas",
-  "/channels": "Canais",
-  "/cron": "Agenda",
-  "/settings": "Configuracoes",
-};
-
-const dynamicRoutePatterns: { pattern: RegExp; parent: string; label?: string }[] = [
-  { pattern: /^\/agents\/new$/, parent: "Agentes", label: "Novo Agente" },
-  { pattern: /^\/agents\/[^/]+$/, parent: "Agentes" },
-  { pattern: /^\/conversations\/[^/]+$/, parent: "Conversas" },
-  { pattern: /^\/channels\/[^/]+$/, parent: "Canais" },
-];
-
 export function BreadcrumbBar() {
   const matches = useMatches();
+  const navigate = useNavigate();
   const theme = useUIStore((s) => s.theme);
   const setTheme = useUIStore((s) => s.setTheme);
   const userRole = useAuthStore((s) => s.user?.role);
   const isSysadmin = userRole === "sysuser";
 
-  const crumbs: string[] = [];
+  // Build crumbs from all matches that declare loaderData.title or staticData.title
+  const crumbs: { title: string; pathname: string }[] = [];
   for (const match of matches) {
-    const label = routeLabels[match.pathname];
-    if (label) {
-      crumbs.push(label);
-    } else {
-      for (const { pattern, parent, label } of dynamicRoutePatterns) {
-        if (pattern.test(match.pathname)) {
-          if (!crumbs.includes(parent)) crumbs.push(parent);
-          const segment = label ?? match.pathname.split("/").pop();
-          if (segment) crumbs.push(segment);
-          break;
-        }
-      }
+    const ld = (match.loaderData as any) ?? {};
+    const sd = (match.staticData as any) ?? {};
+    const t = ld.title ?? sd.title;
+    if (t && t !== crumbs[crumbs.length - 1]?.title) {
+      crumbs.push({ title: t, pathname: match.pathname });
     }
   }
+
+  // Current page data: último match que declare título (loaderData ou staticData)
+  const lastMatchWithTitle = [...matches].reverse().find((m) => {
+    const ld = (m.loaderData as any) ?? {};
+    const sd = (m.staticData as any) ?? {};
+    return ld.title ?? sd.title;
+  });
+  const ld = (lastMatchWithTitle?.loaderData as any) ?? {};
+  const sd = (lastMatchWithTitle?.staticData as any) ?? {};
+  const title: string | undefined = ld.title ?? sd.title;
+  const description: string | undefined = ld.description ?? sd.description;
+
+  const isNested = crumbs.length > 1;
+  const parentCrumbs = crumbs.slice(0, -1);
 
   const isDark =
     theme === "dark" ||
@@ -56,21 +48,46 @@ export function BreadcrumbBar() {
   }
 
   return (
-    <header className="flex h-12 shrink-0 items-center gap-2 border-b px-4">
-      <SidebarTrigger className="md:hidden" />
-      {crumbs.length > 0 && (
-        <>
-          <Separator orientation="vertical" className="mr-2 h-4 md:hidden" />
-          <nav className="flex items-center gap-1.5 text-sm">
-            {crumbs.map((crumb, i) => (
-              <span key={i} className="text-foreground">
-                {i > 0 && <span className="mx-1.5 text-muted-foreground">/</span>}
-                {crumb}
-              </span>
-            ))}
-          </nav>
-        </>
+    <header className="flex h-14 shrink-0 items-center gap-2 border-b px-4">
+      
+      {isNested && (
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => navigate({ to: ".." as any })}
+          aria-label="Voltar"
+          className="shrink-0 sm:hidden"
+        >
+          <ChevronLeft className="h-4 w-4" />
+        </Button>
       )}
+
+      {parentCrumbs.length > 0 && (
+        <nav className="hidden sm:flex items-center gap-1 text-sm text-muted-foreground ml-0">
+          {parentCrumbs.map((crumb, i) => (
+            <span key={i} className="flex items-center gap-1">
+              {i > 0 && <ChevronRight className="size-3" />}
+              <button
+                onClick={() => navigate({ to: crumb.pathname as any })}
+                className="hover:text-foreground transition-colors cursor-pointer"
+              >
+                {crumb.title}
+              </button>
+            </span>
+          ))}
+          <ChevronRight className="size-3" />
+        </nav>
+      )}
+
+      {title && (
+        <div className="flex flex-col justify-center min-w-0">
+          <span className="text-lg font-semibold leading-tight truncate">{title}</span>
+          {description && (
+            <span className="text-xs text-muted-foreground leading-tight truncate">{description}</span>
+          )}
+        </div>
+      )}
+
       <div className="ml-auto flex items-center gap-2">
         {isSysadmin && (
           <Badge variant="secondary" className="text-xs font-semibold">

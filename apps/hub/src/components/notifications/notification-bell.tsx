@@ -1,4 +1,3 @@
-import { useCallback } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { pendingApprovalsQueryOptions } from "@/api/approvals";
@@ -74,21 +73,15 @@ export function NotificationBell() {
     },
   });
 
-  useSSEEvent(
-    "notification:new",
-    useCallback(
-      (event: SystemEvent) => {
-        queryClient.invalidateQueries({ queryKey: ["notifications"] });
+  useSSEEvent("notification:new", (event: SystemEvent) => {
+    queryClient.invalidateQueries({ queryKey: ["notifications"] });
 
-        const severity = event.data?.severity as string | undefined;
-        const title = event.data?.title as string | undefined;
-        if (severity === "error" && title) {
-          toast.error(title);
-        }
-      },
-      [queryClient],
-    ),
-  );
+    const severity = event.data?.severity as string | undefined;
+    const title = event.data?.title as string | undefined;
+    if (severity === "error" && title) {
+      toast.error(title);
+    }
+  });
 
   function handleNotificationClick(n: Notification) {
     if (!n.read) {

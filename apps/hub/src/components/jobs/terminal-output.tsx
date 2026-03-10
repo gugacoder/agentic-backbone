@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAuthStore } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { ArrowDownToLine } from "lucide-react";
@@ -53,7 +53,10 @@ export function TerminalOutput({
       `/api/v1/ai/jobs/${jobId}/stream?token=${encodeURIComponent(token)}`,
     );
 
+    let cancelled = false;
+
     es.addEventListener("stdout", (ev) => {
+      if (cancelled) return;
       try {
         const data = JSON.parse(ev.data) as { line: string };
         setLines((prev) => {
@@ -64,6 +67,7 @@ export function TerminalOutput({
     });
 
     es.addEventListener("stderr", (ev) => {
+      if (cancelled) return;
       try {
         const data = JSON.parse(ev.data) as { line: string };
         setLines((prev) => {
@@ -78,6 +82,7 @@ export function TerminalOutput({
     };
 
     return () => {
+      cancelled = true;
       es.close();
     };
   }, [streaming, jobId, token]);
@@ -90,12 +95,12 @@ export function TerminalOutput({
   }, [lines, autoScroll]);
 
   // Detect manual scroll to disable auto-scroll
-  const handleScroll = useCallback(() => {
+  function handleScroll() {
     const el = containerRef.current;
     if (!el) return;
     const atBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 40;
     setAutoScroll(atBottom);
-  }, []);
+  }
 
   return (
     <div className="relative">

@@ -37,17 +37,34 @@ export interface ReleaseResult {
   released: boolean;
 }
 
+function sessionToConversation(s: Session): Conversation {
+  return {
+    id: s.session_id,
+    agentId: s.agent_id,
+    title: s.title ?? undefined,
+    updatedAt: s.updated_at,
+    takeover_by: s.takeover_by,
+    takeover_at: s.takeover_at,
+  };
+}
+
 export function conversationsQueryOptions() {
   return queryOptions({
     queryKey: ["conversations"],
-    queryFn: () => request<Conversation[]>("/conversations"),
+    queryFn: async () => {
+      const sessions = await request<Session[]>("/conversations");
+      return sessions.map(sessionToConversation);
+    },
   });
 }
 
 export function conversationQueryOptions(id: string) {
   return queryOptions({
     queryKey: ["conversations", id],
-    queryFn: () => request<Conversation>(`/conversations/${id}`),
+    queryFn: async () => {
+      const session = await request<Session>(`/conversations/${id}`);
+      return sessionToConversation(session);
+    },
   });
 }
 
@@ -74,10 +91,11 @@ export function conversationMessagesQueryOptions(id: string) {
 }
 
 export async function createConversation(agentId: string): Promise<Conversation> {
-  return request<Conversation>("/conversations", {
+  const session = await request<Session>("/conversations", {
     method: "POST",
     body: JSON.stringify({ agentId }),
   });
+  return sessionToConversation(session);
 }
 
 export async function renameConversation(id: string, title: string): Promise<void> {
@@ -96,7 +114,10 @@ export async function deleteConversation(id: string): Promise<void> {
 export function agentConversationsQueryOptions(agentId: string) {
   return queryOptions({
     queryKey: ["conversations", { agentId }],
-    queryFn: () => request<Conversation[]>(`/conversations?agent_id=${encodeURIComponent(agentId)}`),
+    queryFn: async () => {
+      const sessions = await request<Session[]>(`/conversations?agent_id=${encodeURIComponent(agentId)}`);
+      return sessions.map(sessionToConversation);
+    },
   });
 }
 

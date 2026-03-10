@@ -2,7 +2,6 @@ import { useMemo } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { DollarSign } from "lucide-react";
-import { PageHeader } from "@/components/shared/page-header";
 import { EmptyState } from "@/components/shared/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
@@ -39,6 +38,7 @@ interface CostsSearch {
 }
 
 export const Route = createFileRoute("/_authenticated/costs")({
+  staticData: { title: "Custos", description: "Visão geral de custos da plataforma" },
   validateSearch: (search: Record<string, unknown>): CostsSearch => ({
     from: typeof search.from === "string" ? search.from : undefined,
     to: typeof search.to === "string" ? search.to : undefined,
@@ -84,11 +84,6 @@ function CostsPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title="Custos"
-        description="Visao geral de custos da plataforma"
-      />
-
       {/* Filters */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
         <div className="grid gap-1.5">

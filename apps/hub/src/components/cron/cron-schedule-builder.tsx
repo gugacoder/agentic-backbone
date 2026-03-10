@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useEffect } from "react";
+import { useState, useMemo, useEffect } from "react";
 import cronstrue from "cronstrue/i18n";
 import { CronExpressionParser } from "cron-parser";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -136,7 +136,7 @@ export function CronScheduleBuilder({ value, onChange }: CronScheduleBuilderProp
   const [customExpr, setCustomExpr] = useState(value || "");
   const [customError, setCustomError] = useState<string | null>(null);
 
-  const buildCron = useCallback((): string => {
+  function buildCron(): string {
     switch (type) {
       case "interval":
         if (intervalUnit === "minutes") return `*/${intervalValue} * * * *`;
@@ -152,7 +152,7 @@ export function CronScheduleBuilder({ value, onChange }: CronScheduleBuilderProp
       case "custom":
         return customExpr;
     }
-  }, [type, intervalValue, intervalUnit, hour, minute, weekdays, dayOfMonth, customExpr]);
+  }
 
   useEffect(() => {
     const cron = buildCron();
@@ -166,7 +166,8 @@ export function CronScheduleBuilder({ value, onChange }: CronScheduleBuilderProp
     } else {
       onChange(cron);
     }
-  }, [type, intervalValue, intervalUnit, hour, minute, weekdays, dayOfMonth, customExpr, buildCron, onChange]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- buildCron is a plain function that reads state directly; onChange is stable from parent
+  }, [type, intervalValue, intervalUnit, hour, minute, weekdays, dayOfMonth, customExpr]);
 
   const currentCron = buildCron();
   const description = describeCron(currentCron);

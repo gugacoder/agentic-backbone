@@ -43,7 +43,7 @@ function TimelineEntry({
   onTrace: (id: string) => void;
 }) {
   const [expanded, setExpanded] = useState(false);
-  const config = statusMap[entry.status];
+  const config = statusMap[entry.status as keyof typeof statusMap] ?? statusMap.error;
 
   return (
     <div className="flex w-full items-start gap-3 rounded-md px-3 py-2.5 transition-colors hover:bg-muted/50">

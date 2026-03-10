@@ -1,12 +1,12 @@
 import { useState } from "react";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, useMatch, Outlet } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { GitBranch, Plus, Clock, Users, CheckCircle, FileText } from "lucide-react";
+import { GitBranch, Plus, Clock, Users, CheckCircle, FileText, Trash2 } from "lucide-react";
 import { PageHeader } from "@/components/shared/page-header";
 import { EmptyState } from "@/components/shared/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
@@ -21,14 +21,17 @@ import { workflowsQueryOptions, createWorkflow, deleteWorkflow } from "@/api/wor
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/workflows")({
-  component: WorkflowsPage,
+  staticData: { title: "Workflows", description: "Orquestração visual de agentes" },
+  component: WorkflowsLayout,
 });
 
-function WorkflowsPage() {
+function WorkflowsLayout() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [isNewDialogOpen, setIsNewDialogOpen] = useState(false);
   const [newLabel, setNewLabel] = useState("");
+
+  const isCanvasRoute = useMatch({ from: "/_authenticated/workflows/$id", shouldThrow: false });
+  const isNewRoute = useMatch({ from: "/_authenticated/workflows/new", shouldThrow: false });
 
   const { data: workflows, isLoading } = useQuery(workflowsQueryOptions());
 
@@ -36,7 +39,6 @@ function WorkflowsPage() {
     mutationFn: createWorkflow,
     onSuccess: (workflow) => {
       queryClient.invalidateQueries({ queryKey: ["workflows"] });
-      setIsNewDialogOpen(false);
       setNewLabel("");
       navigate({ to: "/workflows/$id", params: { id: workflow.id } });
     },
@@ -69,13 +71,15 @@ function WorkflowsPage() {
     });
   }
 
+  if (isCanvasRoute) {
+    return <Outlet />;
+  }
+
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Workflows"
-        description="Orquestracao visual de agentes com handoffs condicionais"
         actions={
-          <Button onClick={() => setIsNewDialogOpen(true)}>
+          <Button onClick={() => navigate({ to: "/workflows/new" })}>
             <Plus className="mr-2 h-4 w-4" />
             Novo Workflow
           </Button>
@@ -94,7 +98,7 @@ function WorkflowsPage() {
           title="Nenhum workflow"
           description="Crie um workflow para orquestrar agentes com handoffs condicionais."
           action={
-            <Button onClick={() => setIsNewDialogOpen(true)}>
+            <Button onClick={() => navigate({ to: "/workflows/new" })}>
               <Plus className="mr-2 h-4 w-4" />
               Novo Workflow
             </Button>
@@ -103,23 +107,43 @@ function WorkflowsPage() {
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {workflows.map((wf) => (
-            <Card key={wf.id} className="flex flex-col">
+            <Card
+              key={wf.id}
+              className="flex flex-col cursor-pointer transition-colors hover:bg-accent/50"
+              onClick={() => navigate({ to: "/workflows/$id", params: { id: wf.id } })}
+            >
               <CardHeader className="pb-2">
                 <div className="flex items-start justify-between gap-2">
                   <CardTitle className="text-base leading-tight">{wf.label}</CardTitle>
-                  <Badge variant={wf.applied ? "default" : "secondary"}>
-                    {wf.applied ? (
-                      <>
-                        <CheckCircle className="mr-1 h-3 w-3" />
-                        Aplicado
-                      </>
-                    ) : (
-                      <>
-                        <FileText className="mr-1 h-3 w-3" />
-                        Rascunho
-                      </>
-                    )}
-                  </Badge>
+                  <div className="flex items-center gap-1.5">
+                    <Badge variant={wf.applied ? "default" : "secondary"}>
+                      {wf.applied ? (
+                        <>
+                          <CheckCircle className="mr-1 h-3 w-3" />
+                          Aplicado
+                        </>
+                      ) : (
+                        <>
+                          <FileText className="mr-1 h-3 w-3" />
+                          Rascunho
+                        </>
+                      )}
+                    </Badge>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6 text-muted-foreground hover:text-destructive"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (confirm(`Remover "${wf.label}"?`)) {
+                          deleteMutation.mutate(wf.id);
+                        }
+                      }}
+                      disabled={deleteMutation.isPending}
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
                 </div>
               </CardHeader>
               <CardContent className="flex-1 space-y-2 text-sm text-muted-foreground">
@@ -132,35 +156,17 @@ function WorkflowsPage() {
                   <span>Atualizado em {formatDate(wf.updatedAt)}</span>
                 </div>
               </CardContent>
-              <CardFooter className="flex gap-2 pt-0">
-                <Button
-                  variant="default"
-                  size="sm"
-                  className="flex-1"
-                  onClick={() => navigate({ to: "/workflows/$id", params: { id: wf.id } })}
-                >
-                  Editar
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-destructive hover:text-destructive"
-                  onClick={() => {
-                    if (confirm(`Remover "${wf.label}"?`)) {
-                      deleteMutation.mutate(wf.id);
-                    }
-                  }}
-                  disabled={deleteMutation.isPending}
-                >
-                  Remover
-                </Button>
-              </CardFooter>
             </Card>
           ))}
         </div>
       )}
 
-      <Dialog open={isNewDialogOpen} onOpenChange={setIsNewDialogOpen}>
+      <Dialog
+        open={!!isNewRoute}
+        onOpenChange={(open) => {
+          if (!open) navigate({ to: "/workflows" });
+        }}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Novo Workflow</DialogTitle>
@@ -178,7 +184,7 @@ function WorkflowsPage() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setIsNewDialogOpen(false)}>
+            <Button variant="ghost" onClick={() => navigate({ to: "/workflows" })}>
               Cancelar
             </Button>
             <Button
@@ -190,6 +196,8 @@ function WorkflowsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <Outlet />
     </div>
   );
 }

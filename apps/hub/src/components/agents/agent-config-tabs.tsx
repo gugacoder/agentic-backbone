@@ -30,7 +30,7 @@ const subtabs = [
   { value: "conversation", label: "Conversa", icon: MessageSquare, kind: "file" as const, filename: "CONVERSATION.md" },
   { value: "heartbeat", label: "Heartbeat", icon: Heart, kind: "file" as const, filename: "HEARTBEAT.md" },
   { value: "skills", label: "Skills", icon: Sparkles, kind: "resource" as const },
-  { value: "tools", label: "Tools", icon: Wrench, kind: "resource" as const },
+  { value: "tools", label: "Tools", icon: Wrench, kind: "resource" as const, disabled: true },
   { value: "routing", label: "Routing", icon: GitBranch, kind: "routing" as const },
   { value: "advanced", label: "Avancado", icon: Shield, kind: "advanced" as const },
 ] as const;
@@ -46,16 +46,16 @@ interface AgentConfigTabsProps {
 export function AgentConfigTabs({ agentId, agent, subtab }: AgentConfigTabsProps) {
   const navigate = useNavigate();
   const activeSubtab = (
-    subtabs.some((s) => s.value === subtab) ? subtab : "identity"
+    subtabs.some((s) => s.value === subtab && !("disabled" in s && s.disabled)) ? subtab : "identity"
   ) as SubtabValue;
 
   const activeConfig = subtabs.find((s) => s.value === activeSubtab)!;
 
   function handleSubtabChange(value: SubtabValue) {
     navigate({
-      to: "/agents/$id",
+      to: "/agents/$id/config",
       params: { id: agentId },
-      search: { tab: "config", subtab: value },
+      search: { subtab: value },
       replace: true,
     });
   }
@@ -67,12 +67,15 @@ export function AgentConfigTabs({ agentId, agent, subtab }: AgentConfigTabsProps
         {subtabs.map((s) => (
           <button
             key={s.value}
-            onClick={() => handleSubtabChange(s.value)}
+            onClick={() => !("disabled" in s && s.disabled) && handleSubtabChange(s.value)}
+            disabled={"disabled" in s && s.disabled}
             className={cn(
               "flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors text-left",
-              activeSubtab === s.value
-                ? "bg-accent text-accent-foreground"
-                : "text-muted-foreground hover:bg-accent/50 hover:text-foreground",
+              "disabled" in s && s.disabled
+                ? "opacity-40 cursor-not-allowed"
+                : activeSubtab === s.value
+                  ? "bg-accent text-accent-foreground"
+                  : "text-muted-foreground hover:bg-accent/50 hover:text-foreground",
             )}
           >
             <s.icon className="size-4 shrink-0" />

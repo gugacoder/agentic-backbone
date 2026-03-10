@@ -13,8 +13,8 @@ export interface Agent {
 }
 
 export interface AgentStats {
-  totalRuns: number;
-  byStatus: { ok: number; skipped: number; error: number };
+  totalExecutions: number;
+  countByStatus: Record<string, number>;
   totalCostUsd: number;
   avgDurationMs: number;
   lastTimestamp?: string;
@@ -52,12 +52,15 @@ export interface HeartbeatLogEntry {
 export function agentHeartbeatHistoryQueryOptions(id: string) {
   return queryOptions({
     queryKey: ["agents", id, "heartbeat-history"],
-    queryFn: () => request<HeartbeatLogEntry[]>(`/agents/${id}/heartbeat/history`),
+    queryFn: () => request<{ rows: HeartbeatLogEntry[]; total: number }>(`/agents/${id}/heartbeat/history`).then((r) => r.rows),
   });
 }
 
-export async function toggleAgentEnabled(id: string): Promise<void> {
-  await request(`/agents/${id}/heartbeat/toggle`, { method: "POST" });
+export async function toggleAgentEnabled(id: string, enabled: boolean): Promise<void> {
+  await request(`/agents/${id}/heartbeat/toggle`, {
+    method: "POST",
+    body: JSON.stringify({ enabled }),
+  });
 }
 
 export async function triggerHeartbeat(id: string): Promise<void> {

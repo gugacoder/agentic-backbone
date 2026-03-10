@@ -2,7 +2,6 @@ import { useCallback } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Inbox, Clock, MessageSquare, Activity } from "lucide-react";
-import { PageHeader } from "@/components/shared/page-header";
 import { EmptyState } from "@/components/shared/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
@@ -25,6 +24,7 @@ interface InboxSearchParams {
 }
 
 export const Route = createFileRoute("/_authenticated/inbox/")({
+  staticData: { title: "Inbox", description: "Conversas ativas em todos os canais e agentes" },
   validateSearch: (search: Record<string, unknown>): InboxSearchParams => ({
     channel: typeof search.channel === "string" ? search.channel : undefined,
     agent_id: typeof search.agent_id === "string" ? search.agent_id : undefined,
@@ -247,11 +247,6 @@ function InboxPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title="Inbox"
-        description="Conversas ativas em todos os canais e agentes"
-      />
-
       <InboxMetricsCards />
 
       {/* Filters */}

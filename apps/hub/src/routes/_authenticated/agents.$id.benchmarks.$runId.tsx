@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -35,9 +34,15 @@ import {
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 
+type BenchmarkRunSearch = { case?: string };
+
 export const Route = createFileRoute(
   "/_authenticated/agents/$id/benchmarks/$runId",
 )({
+  staticData: { title: "Benchmark" },
+  validateSearch: (search: Record<string, unknown>): BenchmarkRunSearch => ({
+    case: typeof search.case === "string" ? search.case : undefined,
+  }),
   component: BenchmarkRunPage,
 });
 
@@ -199,9 +204,8 @@ function CaseDetailModal({
 
 function BenchmarkRunPage() {
   const { id: agentId, runId } = Route.useParams();
+  const { case: caseId } = Route.useSearch();
   const navigate = useNavigate();
-  const [selectedCase, setSelectedCase] = useState<BenchmarkCase | null>(null);
-  const [modalOpen, setModalOpen] = useState(false);
 
   const { data: run, isLoading: runLoading } = useQuery(
     benchmarkRunDetailQueryOptions(agentId, runId),
@@ -216,11 +220,6 @@ function BenchmarkRunPage() {
       params: { id: agentId },
       search: { tab: "benchmarks" },
     });
-  }
-
-  function openCase(c: BenchmarkCase) {
-    setSelectedCase(c);
-    setModalOpen(true);
   }
 
   if (runLoading) {
@@ -250,6 +249,7 @@ function BenchmarkRunPage() {
   }
 
   const cases = casesData?.cases ?? [];
+  const selectedCase = caseId ? cases.find((c) => c.caseId === caseId) ?? null : null;
 
   return (
     <div className="space-y-6">
@@ -392,7 +392,7 @@ function BenchmarkRunPage() {
                         variant="ghost"
                         size="sm"
                         className="h-7 px-2 text-xs"
-                        onClick={() => openCase(c)}
+                        onClick={() => navigate({ search: { case: c.caseId } })}
                       >
                         <Eye className="mr-1 size-3.5" />
                         Ver detalhes
@@ -409,8 +409,8 @@ function BenchmarkRunPage() {
       {/* Case detail modal */}
       <CaseDetailModal
         caseData={selectedCase}
-        open={modalOpen}
-        onOpenChange={setModalOpen}
+        open={!!caseId && !!selectedCase}
+        onOpenChange={(open) => { if (!open) navigate({ search: {} }); }}
       />
     </div>
   );

@@ -19,8 +19,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ConnectorForm, McpConnectorForm, EmailConnectorForm, MASKED } from "@/components/adapters/connector-form";
-import type { ConnectorType, ConnectorCredential, McpOptions, EmailOptions } from "@/components/adapters/connector-form";
+import { ConnectorForm, McpConnectorForm, EmailConnectorForm, EvolutionConnectorForm, MASKED } from "@/components/adapters/connector-form";
+import type { ConnectorType, ConnectorCredential, McpOptions, EmailOptions, EvolutionOptions } from "@/components/adapters/connector-form";
 import { request } from "@/lib/api";
 import type { Adapter } from "@/api/adapters";
 
@@ -93,6 +93,7 @@ export function AdapterDialog({ open, onOpenChange, editingAdapter }: Props) {
     subject_filter: "",
     auto_reply: true,
   });
+  const [evolutionOptions, setEvolutionOptions] = useState<EvolutionOptions>({});
 
   const [testState, setTestState] = useState<TestState>("idle");
   const [testError, setTestError] = useState("");
@@ -140,6 +141,12 @@ export function AdapterDialog({ open, onOpenChange, editingAdapter }: Props) {
           auto_reply: opts.auto_reply ?? true,
         });
       }
+      if (editingAdapter.connector === "evolution") {
+        const opts = (editingAdapter.options ?? {}) as Partial<EvolutionOptions>;
+        setEvolutionOptions({
+          instance_name: opts.instance_name,
+        });
+      }
     } else {
       setConnector("mysql");
       setLabel("");
@@ -160,6 +167,7 @@ export function AdapterDialog({ open, onOpenChange, editingAdapter }: Props) {
         subject_filter: "",
         auto_reply: true,
       });
+      setEvolutionOptions({});
     }
     setTestState("idle");
     setTestError("");
@@ -203,6 +211,11 @@ export function AdapterDialog({ open, onOpenChange, editingAdapter }: Props) {
         subject_filter: "",
         auto_reply: true,
       });
+    }
+    if (value === "evolution") {
+      // Initialize credential with env var defaults
+      setCredential({ host: "${EVOLUTION_URL}", api_key: "${EVOLUTION_API_KEY}" });
+      setEvolutionOptions({});
     }
   }
 
@@ -295,6 +308,8 @@ export function AdapterDialog({ open, onOpenChange, editingAdapter }: Props) {
           ...emailOptions,
           sender_whitelist: whitelist,
         };
+      } else if (connector === "evolution") {
+        optionsPayload = evolutionOptions as unknown as Record<string, unknown>;
       }
       if (isEditing) {
         await request(`/adapters/${editingAdapter!.slug}`, {
@@ -411,7 +426,7 @@ export function AdapterDialog({ open, onOpenChange, editingAdapter }: Props) {
           {/* Dynamic connector fields */}
           <div className="border-t pt-4 space-y-1">
             <p className="text-sm font-medium mb-3">
-              {connector === "mcp" ? "Configuração MCP" : connector === "email" ? "Configuração Email" : "Credenciais"}
+              {connector === "mcp" ? "Configuração MCP" : connector === "email" ? "Configuração Email" : connector === "evolution" ? "Configuração Evolution" : "Credenciais"}
             </p>
             {connector === "mcp" ? (
               <McpConnectorForm
@@ -430,6 +445,16 @@ export function AdapterDialog({ open, onOpenChange, editingAdapter }: Props) {
                 onUnmask={handleUnmask}
                 options={emailOptions}
                 onOptionsChange={setEmailOptions}
+              />
+            ) : connector === "evolution" ? (
+              <EvolutionConnectorForm
+                credential={credential}
+                maskedFields={maskedFields}
+                onChange={setCredential}
+                onUnmask={handleUnmask}
+                options={evolutionOptions}
+                onOptionsChange={setEvolutionOptions}
+                isEditing={isEditing}
               />
             ) : (
               <ConnectorForm

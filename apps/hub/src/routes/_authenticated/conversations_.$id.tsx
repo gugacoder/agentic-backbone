@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import {
   createFileRoute,
   Link,
@@ -53,7 +53,16 @@ import { TakeoverButton } from "@/components/conversations/takeover-button";
 import { TakeoverBanner } from "@/components/conversations/takeover-banner";
 import { ApprovalInlineActions } from "@/components/approvals/approval-inline-actions";
 
-export const Route = createFileRoute("/_authenticated/conversations/$id")({
+type ConversationSearch = { action?: "rename" | "delete" };
+
+export const Route = createFileRoute("/_authenticated/conversations_/$id")({
+  staticData: { title: "Conversa" },
+  validateSearch: (search: Record<string, unknown>): ConversationSearch => ({
+    action:
+      search.action === "rename" || search.action === "delete"
+        ? search.action
+        : undefined,
+  }),
   component: ConversationChatPage,
 });
 
@@ -72,6 +81,7 @@ function getCurrentUserSlug(): string | null {
 
 function ConversationChatPage() {
   const { id } = Route.useParams();
+  const { action } = Route.useSearch();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
@@ -91,16 +101,20 @@ function ConversationChatPage() {
   const [isStreaming, setIsStreaming] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
   const [inputValue, setInputValue] = useState("");
-  const [renameOpen, setRenameOpen] = useState(false);
   const [renameValue, setRenameValue] = useState("");
-  const [deleteOpen, setDeleteOpen] = useState(false);
+
+  useEffect(() => {
+    if (action === "rename") {
+      setRenameValue(conversation?.title ?? "");
+    }
+  }, [action, conversation?.title]);
 
   const renameMutation = useMutation({
     mutationFn: (title: string) => renameConversation(id, title),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["conversations", id] });
       queryClient.invalidateQueries({ queryKey: ["conversations"] });
-      setRenameOpen(false);
+      navigate({ search: {} });
     },
   });
 
@@ -130,11 +144,6 @@ function ConversationChatPage() {
   const isUnderTakeover = session?.takeover_by != null;
   const isCurrentOperator =
     isUnderTakeover && session?.takeover_by === currentUserSlug;
-
-  function handleRenameOpen() {
-    setRenameValue(conversation?.title ?? "");
-    setRenameOpen(true);
-  }
 
   function handleExport() {
     const token = useAuthStore.getState().token;
@@ -353,7 +362,7 @@ function ConversationChatPage() {
             }
           />
           <DropdownMenuContent align="end">
-            <DropdownMenuItem onSelect={handleRenameOpen}>
+            <DropdownMenuItem onSelect={() => navigate({ search: { action: "rename" } })}>
               <Pencil className="mr-2 size-4" />
               Renomear
             </DropdownMenuItem>
@@ -362,7 +371,7 @@ function ConversationChatPage() {
               Exportar
             </DropdownMenuItem>
             <DropdownMenuItem
-              onSelect={() => setDeleteOpen(true)}
+              onSelect={() => navigate({ search: { action: "delete" } })}
               className="text-destructive focus:text-destructive"
             >
               <Trash2 className="mr-2 size-4" />
@@ -373,7 +382,7 @@ function ConversationChatPage() {
       </div>
 
       {/* Rename dialog */}
-      <Dialog open={renameOpen} onOpenChange={setRenameOpen}>
+      <Dialog open={action === "rename"} onOpenChange={(open) => { if (!open) navigate({ search: {} }); }}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Renomear conversa</DialogTitle>
@@ -389,7 +398,7 @@ function ConversationChatPage() {
             }}
           />
           <DialogFooter>
-            <Button variant="outline" onClick={() => setRenameOpen(false)}>
+            <Button variant="outline" onClick={() => navigate({ search: {} })}>
               Cancelar
             </Button>
             <Button
@@ -403,7 +412,7 @@ function ConversationChatPage() {
       </Dialog>
 
       {/* Delete confirmation dialog */}
-      <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+      <Dialog open={action === "delete"} onOpenChange={(open) => { if (!open) navigate({ search: {} }); }}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Excluir conversa</DialogTitle>
@@ -412,7 +421,7 @@ function ConversationChatPage() {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteOpen(false)}>
+            <Button variant="outline" onClick={() => navigate({ search: {} })}>
               Cancelar
             </Button>
             <Button

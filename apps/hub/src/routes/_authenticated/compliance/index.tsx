@@ -45,6 +45,7 @@ interface ComplianceSearch {
 }
 
 export const Route = createFileRoute("/_authenticated/compliance/")({
+  staticData: { title: "Conformidade", description: "Painel EU AI Act + LGPD" },
   validateSearch: (search: Record<string, unknown>): ComplianceSearch => ({
     tab:
       search.tab === "lgpd" || search.tab === "euaiact"
@@ -530,8 +531,6 @@ function CompliancePage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Conformidade"
-        description="Painel unificado EU AI Act + LGPD"
         actions={<SystemReportButton />}
       />
 

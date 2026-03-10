@@ -2,7 +2,6 @@ import { useMemo } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { TrendingUp } from "lucide-react";
-import { PageHeader } from "@/components/shared/page-header";
 import { EmptyState } from "@/components/shared/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
@@ -37,6 +36,7 @@ interface AnalyticsSearch {
 }
 
 export const Route = createFileRoute("/_authenticated/analytics")({
+  staticData: { title: "Analytics", description: "Métricas e tendências da plataforma" },
   validateSearch: (search: Record<string, unknown>): AnalyticsSearch => ({
     from: typeof search.from === "string" ? search.from : undefined,
     to: typeof search.to === "string" ? search.to : undefined,
@@ -73,11 +73,6 @@ function AnalyticsPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title="Analytics"
-        description="Metricas e tendencias da plataforma"
-      />
-
       {/* Filters */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
         <div className="grid gap-1.5">

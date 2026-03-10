@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useAuthStore } from "@/lib/auth";
 import { Cpu, Search, Users, Server, Plug, GitBranch } from "lucide-react";
 import { toast } from "sonner";
-import { PageHeader } from "@/components/shared/page-header";
 import { LlmPlanCard } from "@/components/settings/llm-plan-card";
 import { WebSearchSettings } from "@/components/settings/web-search-settings";
 import { SystemInfo } from "@/components/settings/system-info";
@@ -30,6 +30,7 @@ interface SettingsSearchParams {
 }
 
 export const Route = createFileRoute("/_authenticated/settings")({
+  staticData: { title: "Configurações", description: "Configurações do sistema" },
   validateSearch: (search: Record<string, unknown>): SettingsSearchParams => ({
     tab: settingsTabs.some((t) => t.value === search.tab)
       ? (search.tab as SettingsTab)
@@ -41,7 +42,18 @@ export const Route = createFileRoute("/_authenticated/settings")({
 function SettingsPage() {
   const { tab } = Route.useSearch();
   const navigate = useNavigate();
+  const user = useAuthStore((s) => s.user);
   const activeTab = tab ?? "llm";
+
+  if (user?.role !== "sysuser") {
+    return (
+      <div className="space-y-6">
+        <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-6 text-center text-sm text-destructive">
+          Acesso restrito. Apenas o administrador do sistema pode acessar as configuracoes.
+        </div>
+      </div>
+    );
+  }
 
   function handleTabChange(value: string) {
     navigate({
@@ -53,11 +65,6 @@ function SettingsPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title="Configuracoes"
-        description="Configuracoes do sistema"
-      />
-
       <Tabs value={activeTab} onValueChange={handleTabChange}>
         <TabsList>
           {settingsTabs.map((t) => (

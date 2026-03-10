@@ -2,7 +2,6 @@ import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { ShieldCheck } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { PageHeader } from "@/components/shared/page-header";
 import { EmptyState } from "@/components/shared/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ApprovalCard } from "@/components/approvals/approval-card";
@@ -10,6 +9,7 @@ import { ApprovalHistory } from "@/components/approvals/approval-history";
 import { pendingApprovalsQueryOptions } from "@/api/approvals";
 
 export const Route = createFileRoute("/_authenticated/approvals/")({
+  staticData: { title: "Aprovações", description: "Solicitações de aprovação críticas" },
   component: ApprovalsPage,
 });
 
@@ -20,11 +20,6 @@ function ApprovalsPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title="Aprovacoes"
-        description="Gerencie solicitacoes de aprovacao de acoes criticas dos agentes"
-      />
-
       <Tabs defaultValue="pending">
         <TabsList>
           <TabsTrigger value="pending">

@@ -21,6 +21,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export const Route = createFileRoute("/_authenticated/security/")({
+  staticData: { title: "Segurança", description: "Monitoramento de eventos de segurança" },
   component: SecurityPage,
 });
 
@@ -33,8 +34,6 @@ function SecurityPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Seguranca"
-        description="Monitoramento de eventos de seguranca e gestao de regras de protecao"
         actions={
           <div className="flex gap-2">
             <Button

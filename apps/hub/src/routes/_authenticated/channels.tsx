@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback } from "react";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, useMatch, Outlet } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { Radio, Plus, Search } from "lucide-react";
 import { PageHeader } from "@/components/shared/page-header";
@@ -27,14 +27,16 @@ import {
 type TypeFilter = "all" | "chat" | "whatsapp" | "voice";
 
 export const Route = createFileRoute("/_authenticated/channels")({
-  component: ChannelsPage,
+  staticData: { title: "Canais", description: "Canais de comunicação dos agentes" },
+  component: ChannelsLayout,
 });
 
-function ChannelsPage() {
+function ChannelsLayout() {
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState<TypeFilter>("all");
-  const [whatsappSetupOpen, setWhatsappSetupOpen] = useState(false);
+
+  const isNewRoute = useMatch({ from: "/_authenticated/channels/new", shouldThrow: false });
 
   const { data: channels, isLoading } = useQuery(channelsQueryOptions());
 
@@ -57,10 +59,8 @@ function ChannelsPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Canais"
-        description="Canais de comunicacao dos agentes"
         actions={
-          <Button size="sm" onClick={() => setWhatsappSetupOpen(true)}>
+          <Button size="sm" onClick={() => navigate({ to: "/channels/new" })}>
             <Plus className="mr-1 size-4" />
             Novo Canal
           </Button>
@@ -121,14 +121,21 @@ function ChannelsPage() {
         </div>
       )}
 
-      <Dialog open={whatsappSetupOpen} onOpenChange={setWhatsappSetupOpen}>
+      <Dialog
+        open={!!isNewRoute}
+        onOpenChange={(open) => {
+          if (!open) navigate({ to: "/channels" });
+        }}
+      >
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Configurar WhatsApp</DialogTitle>
           </DialogHeader>
-          <WhatsAppSetup onComplete={() => setWhatsappSetupOpen(false)} />
+          <WhatsAppSetup onComplete={() => navigate({ to: "/channels" })} />
         </DialogContent>
       </Dialog>
+
+      <Outlet />
     </div>
   );
 }

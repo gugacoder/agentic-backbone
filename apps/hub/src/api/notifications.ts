@@ -65,13 +65,7 @@ export async function deleteNotification(id: number) {
 export function vapidKeyQueryOptions() {
   return queryOptions({
     queryKey: ["push", "vapid-key"],
-    queryFn: async () => {
-      try {
-        return await request<{ publicKey: string }>("/push/vapid-key");
-      } catch {
-        return null;
-      }
-    },
+    queryFn: () => request<{ publicKey: string | null }>("/push/vapid-key"),
     staleTime: Infinity,
   });
 }

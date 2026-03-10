@@ -41,6 +41,7 @@ type TypeFilter = "all" | "heartbeat" | "cron" | "job" | "system";
 type ReadFilter = "all" | "unread";
 
 export const Route = createFileRoute("/_authenticated/notifications")({
+  staticData: { title: "Notificações", description: "Central de notificações do sistema" },
   component: NotificationsPage,
 });
 
@@ -169,8 +170,6 @@ function NotificationsPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Notificacoes"
-        description="Central de notificacoes do sistema"
         actions={
           <Button
             variant="outline"

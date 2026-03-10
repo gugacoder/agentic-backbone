@@ -8,7 +8,6 @@ import {
   Calendar,
   Cpu,
 } from "lucide-react";
-import { PageHeader } from "@/components/shared/page-header";
 import { StatCard } from "@/components/dashboard/stat-card";
 import { ActivityTimeline } from "@/components/dashboard/activity-timeline";
 import { UpcomingCronJobs } from "@/components/dashboard/upcoming-cron-jobs";
@@ -17,6 +16,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { dashboardQueryOptions, type DashboardData } from "@/api/dashboard";
 
 export const Route = createFileRoute("/_authenticated/")({
+  staticData: { title: "Dashboard", description: "Visão geral da plataforma" },
   component: DashboardPage,
 });
 
@@ -38,11 +38,6 @@ function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title="Dashboard"
-        description="Visao geral da plataforma"
-      />
-
       {isLoading || !data ? (
         <div className="grid gap-4 grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: 6 }).map((_, i) => (

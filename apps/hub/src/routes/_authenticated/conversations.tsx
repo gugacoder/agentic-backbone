@@ -1,8 +1,7 @@
-import { useState, useMemo } from "react";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useState, useMemo, useEffect } from "react";
+import { createFileRoute, useNavigate, useMatch } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { MessageSquare, Plus, Search, Bot, User } from "lucide-react";
-import { PageHeader } from "@/components/shared/page-header";
 import { EmptyState } from "@/components/shared/empty-state";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -30,7 +29,8 @@ import {
 import { agentsQueryOptions, type Agent } from "@/api/agents";
 
 export const Route = createFileRoute("/_authenticated/conversations")({
-  component: ConversationsPage,
+  staticData: { title: "Conversas", description: "Histórico de conversas com agentes" },
+  component: ConversationsLayout,
 });
 
 function formatRelativeTime(dateStr: string): string {
@@ -100,14 +100,15 @@ function ConversationItem({
   );
 }
 
-function ConversationsPage() {
+function ConversationsLayout() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
   const [agentFilter, setAgentFilter] = useState<string>("all");
   const [operatorFilter, setOperatorFilter] = useState(false);
-  const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedAgent, setSelectedAgent] = useState<string>("");
+
+  const isNewRoute = useMatch({ from: "/_authenticated/conversations/new", shouldThrow: false });
 
   const { data: conversations, isLoading: loadingConversations } = useQuery(
     conversationsQueryOptions(),
@@ -118,7 +119,6 @@ function ConversationsPage() {
     mutationFn: (agentId: string) => createConversation(agentId),
     onSuccess: (conv) => {
       queryClient.invalidateQueries({ queryKey: ["conversations"] });
-      setDialogOpen(false);
       setSelectedAgent("");
       navigate({ to: `/conversations/${conv.id}` as string });
     },
@@ -148,6 +148,12 @@ function ConversationsPage() {
     return agents.filter((a) => a.enabled);
   }, [agents]);
 
+  useEffect(() => {
+    if (isNewRoute && agentOptions.length > 0 && !selectedAgent) {
+      setSelectedAgent(agentOptions[0].id);
+    }
+  }, [isNewRoute, agentOptions, selectedAgent]);
+
   const usedAgentIds = useMemo(() => {
     if (!conversations) return new Set<string>();
     return new Set(conversations.map((c) => c.agentId));
@@ -163,24 +169,8 @@ function ConversationsPage() {
     createMutation.mutate(selectedAgent);
   }
 
-  function handleOpenDialog() {
-    setSelectedAgent(agentOptions[0]?.id ?? "");
-    setDialogOpen(true);
-  }
-
   return (
     <div className="space-y-6">
-      <PageHeader
-        title="Conversas"
-        description="Historico de conversas com agentes"
-        actions={
-          <Button size="sm" onClick={handleOpenDialog}>
-            <Plus className="mr-1 size-4" />
-            Nova Conversa
-          </Button>
-        }
-      />
-
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         <div className="relative max-w-xs flex-1">
           <Search className="absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
@@ -216,6 +206,12 @@ function ConversationsPage() {
           <User className="mr-1 size-4" />
           Com operador
         </Button>
+        <div className="sm:ml-auto">
+          <Button size="sm" onClick={() => navigate({ to: "/conversations/new" })}>
+            <Plus className="mr-1 size-4" />
+            Nova Conversa
+          </Button>
+        </div>
       </div>
 
       {loadingConversations ? (
@@ -253,7 +249,15 @@ function ConversationsPage() {
         </div>
       )}
 
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+      <Dialog
+        open={!!isNewRoute}
+        onOpenChange={(open) => {
+          if (!open) {
+            setSelectedAgent("");
+            navigate({ to: "/conversations" });
+          }
+        }}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Nova Conversa</DialogTitle>
@@ -285,7 +289,7 @@ function ConversationsPage() {
             <div className="flex justify-end gap-2">
               <Button
                 variant="outline"
-                onClick={() => setDialogOpen(false)}
+                onClick={() => navigate({ to: "/conversations" })}
               >
                 Cancelar
               </Button>
@@ -299,6 +303,7 @@ function ConversationsPage() {
           </div>
         </DialogContent>
       </Dialog>
+
     </div>
   );
 }

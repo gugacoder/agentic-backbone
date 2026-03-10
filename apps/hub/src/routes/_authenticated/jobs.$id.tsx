@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/sheet";
 
 export const Route = createFileRoute("/_authenticated/jobs/$id")({
+  staticData: { title: "Job" },
   component: JobDetailDrawer,
 });
 

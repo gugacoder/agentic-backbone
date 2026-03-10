@@ -150,7 +150,7 @@ export function complianceChecklistQueryOptions(agentId: string) {
   return queryOptions({
     queryKey: ["compliance", agentId, "checklist"],
     queryFn: () =>
-      request<ComplianceChecklistItem[]>(`/agents/${agentId}/compliance/checklist`),
+      request<{ checklist: ComplianceChecklistItem[] }>(`/agents/${agentId}/compliance/checklist`).then((r) => r.checklist ?? []),
   });
 }
 
@@ -158,7 +158,7 @@ export function complianceReportsQueryOptions(agentId: string) {
   return queryOptions({
     queryKey: ["compliance", agentId, "reports"],
     queryFn: () =>
-      request<ComplianceReport[]>(`/agents/${agentId}/compliance/reports`),
+      request<{ reports: ComplianceReport[] }>(`/agents/${agentId}/compliance/reports`).then((r) => r.reports ?? []),
   });
 }
 

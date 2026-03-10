@@ -119,6 +119,8 @@
 @layer base {
   * {
     @apply border-border outline-ring/50;
+    scrollbar-color: var(--muted-foreground) transparent;
+    scrollbar-width: thin;
     }
   body {
     @apply bg-background text-foreground;
@@ -126,4 +128,44 @@
   html {
     @apply font-sans;
     }
+
+  /* Webkit scrollbar (Chrome, Edge, Safari) */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background-color: var(--muted-foreground);
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: var(--foreground);
+  }
+}
+
+/* ReactFlow dark mode overrides */
+.dark .react-flow__controls-button {
+  background-color: var(--card);
+  border-color: var(--border);
+  fill: var(--foreground);
+  color: var(--foreground);
+}
+
+.dark .react-flow__controls-button:hover {
+  background-color: var(--accent);
+}
+
+.dark .react-flow__controls-button svg {
+  fill: var(--foreground);
+}
+
+.dark .react-flow__attribution {
+  background: transparent;
+}
+
+.dark .react-flow__attribution a {
+  color: var(--muted-foreground);
 }

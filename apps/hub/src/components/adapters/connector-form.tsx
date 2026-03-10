@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,6 +26,11 @@ export interface McpOptions {
   allowed_tools?: string[];
 }
 
+// Evolution-specific options
+export interface EvolutionOptions {
+  instance_name?: string;
+}
+
 export interface ConnectorCredential {
   // MySQL / Postgres
   host?: string;
@@ -34,10 +39,7 @@ export interface ConnectorCredential {
   password?: string;
   database?: string;
   ssl?: boolean;
-  // Evolution
-  url?: string;
-  apiKey?: string;
-  instance?: string;
+  // Evolution (uses host + api_key like others)
   // Twilio
   accountSid?: string;
   authToken?: string;
@@ -194,38 +196,6 @@ export function ConnectorForm({ connector, credential, maskedFields, onChange, o
     );
   }
 
-  if (connector === "evolution") {
-    return (
-      <div className="space-y-3">
-        <div className="space-y-1.5">
-          <Label htmlFor="cf-url">URL da instância</Label>
-          <Input
-            id="cf-url"
-            value={credential.url ?? ""}
-            onChange={(e) => set("url", e.target.value)}
-            placeholder="https://api.evolution.example.com"
-          />
-        </div>
-        <PasswordField
-          id="cf-apikey"
-          label="API Key"
-          value={credential.apiKey ?? ""}
-          masked={isMasked("apiKey")}
-          onChange={(v) => set("apiKey", v)}
-          onClear={() => onUnmask("apiKey")}
-        />
-        <div className="space-y-1.5">
-          <Label htmlFor="cf-instance">Nome da instância</Label>
-          <Input
-            id="cf-instance"
-            value={credential.instance ?? ""}
-            onChange={(e) => set("instance", e.target.value)}
-            placeholder="minha-instancia"
-          />
-        </div>
-      </div>
-    );
-  }
 
   if (connector === "twilio") {
     return (
@@ -553,6 +523,105 @@ export function EmailConnectorForm({
             className="font-mono text-sm"
           />
         </div>
+      </div>
+    </div>
+  );
+}
+
+// ---- Evolution Connector Form ----
+
+export function EvolutionConnectorForm({
+  credential,
+  maskedFields,
+  onChange,
+  onUnmask,
+  options,
+  onOptionsChange,
+  isEditing,
+}: {
+  credential: ConnectorCredential;
+  maskedFields: Set<string>;
+  onChange: (cred: ConnectorCredential) => void;
+  onUnmask: (field: string) => void;
+  options: EvolutionOptions;
+  onOptionsChange: (opts: EvolutionOptions) => void;
+  isEditing?: boolean;
+}) {
+  // Detect if currently using env var defaults (host and api_key match env var pattern)
+  const isUsingDefault =
+    credential.host === "${EVOLUTION_URL}" && credential.api_key === "${EVOLUTION_API_KEY}";
+  const [useDefault, setUseDefault] = useState(isUsingDefault || !isEditing);
+
+  // Keep refs to avoid stale closures without adding deps that cause loops
+  const onChangeRef = useRef(onChange);
+  onChangeRef.current = onChange;
+  const credentialRef = useRef(credential);
+  credentialRef.current = credential;
+
+  // When toggle changes, set/clear env var references
+  useEffect(() => {
+    if (useDefault) {
+      onChangeRef.current({ ...credentialRef.current, host: "${EVOLUTION_URL}", api_key: "${EVOLUTION_API_KEY}" });
+    }
+  }, [useDefault]);
+
+  function isMasked(field: string) {
+    return maskedFields.has(field);
+  }
+
+  function setOpt<K extends keyof EvolutionOptions>(key: K, value: EvolutionOptions[K]) {
+    onOptionsChange({ ...options, [key]: value });
+  }
+
+  return (
+    <div className="space-y-3">
+      {/* Toggle: Use default server vs personalize */}
+      <div className="flex items-center gap-2">
+        <Switch checked={!useDefault} onCheckedChange={(v) => setUseDefault(!v)} />
+        <Label>Personalizar servidor</Label>
+      </div>
+
+      {/* Server URL - visible only when personalizing */}
+      {!useDefault && (
+        <div className="space-y-1.5">
+          <Label htmlFor="ev-host">URL do servidor</Label>
+          <Input
+            id="ev-host"
+            value={credential.host ?? ""}
+            onChange={(e) => onChange({ ...credential, host: e.target.value })}
+            placeholder="https://api.evolution.example.com"
+          />
+        </div>
+      )}
+
+      {/* API Key - visible only when personalizing */}
+      {!useDefault && (
+        <PasswordField
+          id="ev-apikey"
+          label="API Key"
+          value={credential.api_key ?? ""}
+          masked={isMasked("api_key")}
+          onChange={(v) => onChange({ ...credential, api_key: v })}
+          onClear={() => onUnmask("api_key")}
+        />
+      )}
+
+      {/* Hint when using defaults */}
+      {useDefault && (
+        <p className="text-xs text-muted-foreground rounded-md bg-muted p-2">
+          Usando servidor padrão: <code className="font-mono">$&#123;EVOLUTION_URL&#125;</code> / <code className="font-mono">$&#123;EVOLUTION_API_KEY&#125;</code>
+        </p>
+      )}
+
+      {/* Instance name - always visible */}
+      <div className="space-y-1.5">
+        <Label htmlFor="ev-instance">Nome da instância</Label>
+        <Input
+          id="ev-instance"
+          value={options.instance_name ?? ""}
+          onChange={(e) => setOpt("instance_name", e.target.value)}
+          placeholder="minha-instancia"
+        />
       </div>
     </div>
   );

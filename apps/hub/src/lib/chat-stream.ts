@@ -23,7 +23,7 @@ export async function streamMessage(
       "Content-Type": "application/json",
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
-    body: JSON.stringify({ content }),
+    body: JSON.stringify({ message: content }),
     signal,
   });
 

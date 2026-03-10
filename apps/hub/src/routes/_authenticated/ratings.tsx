@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/table";
 
 export const Route = createFileRoute("/_authenticated/ratings")({
+  staticData: { title: "Ratings", description: "Comparativo de qualidade percebida entre todos os agentes" },
   component: GlobalRatingsDashboard,
 });
 
@@ -50,14 +51,7 @@ function GlobalRatingsDashboard() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between gap-3">
-        <div className="space-y-1">
-          <h1 className="text-2xl font-semibold tracking-tight">Ratings Global</h1>
-          <p className="text-sm text-muted-foreground">
-            Comparativo de qualidade percebida entre todos os agentes
-          </p>
-        </div>
+      <div className="flex items-center justify-end gap-3">
         <div className="flex items-center gap-2">
           <Select value={channelFilter} onValueChange={(v) => setChannelFilter(v ?? "all")}>
             <SelectTrigger className="h-8 w-32 text-xs">

@@ -21,7 +21,7 @@ export function AgentActions({ agent }: AgentActionsProps) {
   const isHeartbeatOn = agent.enabled && agent.heartbeatEnabled;
 
   const toggleMutation = useMutation({
-    mutationFn: () => toggleAgentEnabled(agent.id),
+    mutationFn: (enabled: boolean) => toggleAgentEnabled(agent.id, enabled),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["agents", agent.id] });
       queryClient.invalidateQueries({ queryKey: ["agents"] });
@@ -51,7 +51,7 @@ export function AgentActions({ agent }: AgentActionsProps) {
         <Switch
           id="heartbeat-toggle"
           checked={isHeartbeatOn}
-          onCheckedChange={() => toggleMutation.mutate()}
+          onCheckedChange={(checked) => toggleMutation.mutate(checked)}
           disabled={toggleMutation.isPending}
         />
         <Label htmlFor="heartbeat-toggle" className="text-sm">

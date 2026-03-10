@@ -2,7 +2,6 @@ import { useState, useMemo } from "react";
 import { createFileRoute, Outlet, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { Cpu, Search } from "lucide-react";
-import { PageHeader } from "@/components/shared/page-header";
 import { EmptyState } from "@/components/shared/empty-state";
 import { jobsQueryOptions, type JobSummary } from "@/api/jobs";
 import { agentsQueryOptions } from "@/api/agents";
@@ -33,6 +32,7 @@ import {
 type StatusFilter = "all" | "running" | "completed" | "failed";
 
 export const Route = createFileRoute("/_authenticated/jobs")({
+  staticData: { title: "Jobs", description: "Processos de longa duração dos agentes" },
   component: JobsPage,
 });
 
@@ -136,11 +136,6 @@ function JobsPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title="Jobs"
-        description="Processos de longa duracao dos agentes"
-      />
-
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-1 items-center gap-3">
           <div className="relative max-w-xs flex-1">

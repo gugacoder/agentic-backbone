@@ -1,10 +1,9 @@
 import { useState } from "react";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Activity,
   AlertTriangle,
-  ArrowLeft,
   CheckCircle2,
   Clock,
   Loader2,
@@ -24,7 +23,6 @@ import {
   type OTelTestResult,
 } from "@/api/otel";
 import { agentsQueryOptions } from "@/api/agents";
-import { PageHeader } from "@/components/shared/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -38,6 +36,7 @@ import { Separator } from "@/components/ui/separator";
 // ─── Route ────────────────────────────────────────────────────────────────────
 
 export const Route = createFileRoute("/_authenticated/settings_/otel")({
+  staticData: { title: "OpenTelemetry", description: "Exportação de traces para observabilidade" },
   component: OTelSettingsPage,
 });
 
@@ -433,21 +432,6 @@ function OTelSettingsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-3">
-        <Link
-          to="/settings"
-          className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
-        >
-          <ArrowLeft className="size-4" />
-          Configurações
-        </Link>
-      </div>
-
-      <PageHeader
-        title="OpenTelemetry"
-        description="Exportação de traces para backends de observabilidade"
-      />
-
       {/* Status Card */}
       <StatusCard />
 
