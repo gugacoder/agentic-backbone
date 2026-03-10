@@ -78,10 +78,10 @@ notificationRoutes.delete("/notifications/:id", (c) => {
 
 // ── Push Config ──────────────────────────────────────────
 
-// GET /push/vapid-key — return VAPID public key (or 404 if not configured)
+// GET /push/vapid-key — return VAPID public key (or null if not configured)
 notificationRoutes.get("/push/vapid-key", (c) => {
   if (!isVapidConfigured()) {
-    return c.json({ error: "VAPID not configured" }, 404);
+    return c.json({ publicKey: null });
   }
   return c.json({ publicKey: process.env.VAPID_PUBLIC_KEY });
 });

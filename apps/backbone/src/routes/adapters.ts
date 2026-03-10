@@ -7,7 +7,26 @@ export const connectorAdapterRoutes = new Hono();
 // --- List Adapters ---
 
 connectorAdapterRoutes.get("/adapters", (c) => {
-  return c.json(connectorRegistry.listAdapters());
+  return c.json({ adapters: connectorRegistry.listAdapters() });
+});
+
+// --- Create Adapter ---
+
+connectorAdapterRoutes.post("/adapters", async (c) => {
+  const body = await c.req.json();
+  try {
+    const { slug, scope, connector, label, policy, credential, options } = body;
+    const adapter = connectorRegistry.createAdapter(scope || "shared", slug, {
+      connector,
+      label,
+      policy,
+      credential,
+      options,
+    });
+    return c.json(adapter);
+  } catch (err) {
+    return c.json({ error: formatError(err) }, 400);
+  }
 });
 
 // --- Get Adapter Detail ---
@@ -48,7 +67,11 @@ connectorAdapterRoutes.delete("/adapters/:scope/:slug", (c) => {
 
 connectorAdapterRoutes.post("/adapters/:slug/test", async (c) => {
   const slug = c.req.param("slug");
-  const result = await connectorRegistry.testAdapter(slug);
-  const status = result.ok ? 200 : 502;
-  return c.json(result, status);
+  try {
+    const result = await connectorRegistry.testAdapter(slug);
+    const status = result.ok ? 200 : 502;
+    return c.json(result, status);
+  } catch (err) {
+    return c.json({ ok: false, error: formatError(err) }, 500);
+  }
 });
