@@ -19,8 +19,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ConnectorForm, McpConnectorForm, EmailConnectorForm, EvolutionConnectorForm, MASKED } from "@/components/adapters/connector-form";
-import type { ConnectorType, ConnectorCredential, McpOptions, EmailOptions, EvolutionOptions } from "@/components/adapters/connector-form";
+import { ConnectorForm, McpConnectorForm, EmailConnectorForm, EvolutionConnectorForm, ElevenLabsConnectorForm, GitLabConnectorForm, GitHubConnectorForm, DiscordConnectorForm, MASKED } from "@/components/adapters/connector-form";
+import type { ConnectorType, ConnectorCredential, McpOptions, EmailOptions, EvolutionOptions, ElevenLabsOptions, GitLabOptions, GitHubOptions, DiscordOptions } from "@/components/adapters/connector-form";
 import { request } from "@/lib/api";
 import type { Adapter } from "@/api/adapters";
 
@@ -67,9 +67,10 @@ interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   editingAdapter?: Adapter | null;
+  defaultConnector?: ConnectorType;
 }
 
-export function AdapterDialog({ open, onOpenChange, editingAdapter }: Props) {
+export function AdapterDialog({ open, onOpenChange, editingAdapter, defaultConnector }: Props) {
   const queryClient = useQueryClient();
   const isEditing = !!(editingAdapter?.slug);
 
@@ -94,11 +95,17 @@ export function AdapterDialog({ open, onOpenChange, editingAdapter }: Props) {
     auto_reply: true,
   });
   const [evolutionOptions, setEvolutionOptions] = useState<EvolutionOptions>({});
+  const [elevenLabsOptions, setElevenLabsOptions] = useState<ElevenLabsOptions>({});
+  const [gitlabOptions, setGitlabOptions] = useState<GitLabOptions>({});
+  const [githubOptions, setGithubOptions] = useState<GitHubOptions>({});
+  const [discordOptions, setDiscordOptions] = useState<DiscordOptions>({});
 
   const [testState, setTestState] = useState<TestState>("idle");
   const [testError, setTestError] = useState("");
   const [testOk, setTestOk] = useState(false);
   const [emailTestResult, setEmailTestResult] = useState<EmailTestResult | null>(null);
+  // Track whether a new adapter was already created during the test flow (to avoid double-POST)
+  const [isCreatedByTest, setIsCreatedByTest] = useState(false);
 
   // Reset form when opening / changing editing target
   useEffect(() => {
@@ -147,8 +154,28 @@ export function AdapterDialog({ open, onOpenChange, editingAdapter }: Props) {
           instance_name: opts.instance_name,
         });
       }
+      if (editingAdapter.connector === "elevenlabs") {
+        const opts = (editingAdapter.options ?? {}) as Partial<ElevenLabsOptions>;
+        setElevenLabsOptions({
+          voice_id: opts.voice_id,
+          model_id: opts.model_id,
+          output_format: opts.output_format,
+        });
+      }
+      if (editingAdapter.connector === "gitlab") {
+        const opts = (editingAdapter.options ?? {}) as Partial<GitLabOptions>;
+        setGitlabOptions({ default_project: opts.default_project });
+      }
+      if (editingAdapter.connector === "github") {
+        const opts = (editingAdapter.options ?? {}) as Partial<GitHubOptions>;
+        setGithubOptions({ default_repo: opts.default_repo });
+      }
+      if (editingAdapter.connector === "discord") {
+        const opts = (editingAdapter.options ?? {}) as Partial<DiscordOptions>;
+        setDiscordOptions({ default_guild_id: opts.default_guild_id });
+      }
     } else {
-      setConnector("mysql");
+      setConnector(defaultConnector ?? "mysql");
       setLabel("");
       setSlug("");
       setSlugEdited(false);
@@ -168,13 +195,18 @@ export function AdapterDialog({ open, onOpenChange, editingAdapter }: Props) {
         auto_reply: true,
       });
       setEvolutionOptions({});
+      setElevenLabsOptions({});
+      setGitlabOptions({});
+      setGithubOptions({});
+      setDiscordOptions({});
     }
     setTestState("idle");
     setTestError("");
     setTestOk(false);
     setMcpTools([]);
     setEmailTestResult(null);
-  }, [open, isEditing, editingAdapter]);
+    setIsCreatedByTest(false);
+  }, [open, isEditing, editingAdapter, defaultConnector]);
 
   // Auto-generate slug from label
   function handleLabelChange(value: string) {
@@ -217,6 +249,18 @@ export function AdapterDialog({ open, onOpenChange, editingAdapter }: Props) {
       setCredential({ host: "${EVOLUTION_URL}", api_key: "${EVOLUTION_API_KEY}" });
       setEvolutionOptions({});
     }
+    if (value === "elevenlabs") {
+      setElevenLabsOptions({});
+    }
+    if (value === "gitlab") {
+      setGitlabOptions({});
+    }
+    if (value === "github") {
+      setGithubOptions({});
+    }
+    if (value === "discord") {
+      setDiscordOptions({});
+    }
   }
 
   function handleUnmask(field: string) {
@@ -233,9 +277,10 @@ export function AdapterDialog({ open, onOpenChange, editingAdapter }: Props) {
     setMcpTools([]);
     setEmailTestResult(null);
     try {
-      // For new adapters, save first then test.
-      if (!isEditing) {
+      // For new adapters, save first then test (only if not already created).
+      if (!isEditing && !isCreatedByTest) {
         await saveMutation.mutateAsync(false);
+        setIsCreatedByTest(true);
       }
 
       if (connector === "mcp") {
@@ -310,9 +355,23 @@ export function AdapterDialog({ open, onOpenChange, editingAdapter }: Props) {
         };
       } else if (connector === "evolution") {
         optionsPayload = evolutionOptions as unknown as Record<string, unknown>;
+      } else if (connector === "elevenlabs") {
+        optionsPayload = elevenLabsOptions as unknown as Record<string, unknown>;
+      } else if (connector === "gitlab") {
+        optionsPayload = gitlabOptions as unknown as Record<string, unknown>;
+      } else if (connector === "github") {
+        optionsPayload = githubOptions as unknown as Record<string, unknown>;
+      } else if (connector === "discord") {
+        optionsPayload = discordOptions as unknown as Record<string, unknown>;
       }
       if (isEditing) {
-        await request(`/adapters/${editingAdapter!.slug}`, {
+        await request(`/adapters/${editingAdapter!.source}/${editingAdapter!.slug}`, {
+          method: "PATCH",
+          body: JSON.stringify({ label, slug, scope, policy, credential: credPayload, options: optionsPayload }),
+        });
+      } else if (isCreatedByTest) {
+        // Adapter was already created during the test flow — use PATCH to update
+        await request(`/adapters/${scope}/${slug}`, {
           method: "PATCH",
           body: JSON.stringify({ label, slug, scope, policy, credential: credPayload, options: optionsPayload }),
         });
@@ -337,7 +396,7 @@ export function AdapterDialog({ open, onOpenChange, editingAdapter }: Props) {
     await saveMutation.mutateAsync(true);
   }
 
-  const canSave = isEditing || testOk;
+  const canSave = true;
   const isBusy = saveMutation.isPending || testState === "loading";
 
   return (
@@ -368,6 +427,10 @@ export function AdapterDialog({ open, onOpenChange, editingAdapter }: Props) {
                 <SelectItem value="whatsapp-cloud">WhatsApp Cloud</SelectItem>
                 <SelectItem value="mcp">MCP Server</SelectItem>
                 <SelectItem value="email">Email (IMAP/SMTP)</SelectItem>
+                <SelectItem value="elevenlabs">ElevenLabs (TTS)</SelectItem>
+                <SelectItem value="gitlab">GitLab</SelectItem>
+                <SelectItem value="github">GitHub</SelectItem>
+                <SelectItem value="discord">Discord</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -426,7 +489,14 @@ export function AdapterDialog({ open, onOpenChange, editingAdapter }: Props) {
           {/* Dynamic connector fields */}
           <div className="border-t pt-4 space-y-1">
             <p className="text-sm font-medium mb-3">
-              {connector === "mcp" ? "Configuração MCP" : connector === "email" ? "Configuração Email" : connector === "evolution" ? "Configuração Evolution" : "Credenciais"}
+              {connector === "mcp" ? "Configuração MCP"
+                : connector === "email" ? "Configuração Email"
+                : connector === "evolution" ? "Configuração Evolution"
+                : connector === "elevenlabs" ? "Configuração ElevenLabs"
+                : connector === "gitlab" ? "Configuração GitLab"
+                : connector === "github" ? "Configuração GitHub"
+                : connector === "discord" ? "Configuração Discord"
+                : "Credenciais"}
             </p>
             {connector === "mcp" ? (
               <McpConnectorForm
@@ -455,6 +525,42 @@ export function AdapterDialog({ open, onOpenChange, editingAdapter }: Props) {
                 options={evolutionOptions}
                 onOptionsChange={setEvolutionOptions}
                 isEditing={isEditing}
+              />
+            ) : connector === "elevenlabs" ? (
+              <ElevenLabsConnectorForm
+                credential={credential}
+                maskedFields={maskedFields}
+                onChange={setCredential}
+                onUnmask={handleUnmask}
+                options={elevenLabsOptions}
+                onOptionsChange={setElevenLabsOptions}
+              />
+            ) : connector === "gitlab" ? (
+              <GitLabConnectorForm
+                credential={credential}
+                maskedFields={maskedFields}
+                onChange={setCredential}
+                onUnmask={handleUnmask}
+                options={gitlabOptions}
+                onOptionsChange={setGitlabOptions}
+              />
+            ) : connector === "github" ? (
+              <GitHubConnectorForm
+                credential={credential}
+                maskedFields={maskedFields}
+                onChange={setCredential}
+                onUnmask={handleUnmask}
+                options={githubOptions}
+                onOptionsChange={setGithubOptions}
+              />
+            ) : connector === "discord" ? (
+              <DiscordConnectorForm
+                credential={credential}
+                maskedFields={maskedFields}
+                onChange={setCredential}
+                onUnmask={handleUnmask}
+                options={discordOptions}
+                onOptionsChange={setDiscordOptions}
               />
             ) : (
               <ConnectorForm

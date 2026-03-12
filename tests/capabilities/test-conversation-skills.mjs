@@ -18,8 +18,8 @@ if (!process.env.BACKBONE_PORT) {
   console.error("BACKBONE_PORT not set. Run: npm run test:capabilities:skills");
   process.exit(2);
 }
-if (!process.env.SYSUSER || !process.env.SYSPASS) {
-  console.error("SYSUSER/SYSPASS not set. Run: npm run test:capabilities:skills");
+if (!process.env.TEST_USER || !process.env.TEST_PASS) {
+  console.error("TEST_USER/TEST_PASS not set. Run: npm run test:capabilities:skills");
   process.exit(2);
 }
 if (!process.env.CONTEXT_FOLDER) {
@@ -229,7 +229,7 @@ async function login() {
   const res = await fetch(`${BASE}/auth/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ username: process.env.SYSUSER, password: process.env.SYSPASS }),
+    body: JSON.stringify({ username: process.env.TEST_USER, password: process.env.TEST_PASS }),
   });
   const data = await res.json();
   if (!data.token) throw new Error(`Login failed: ${JSON.stringify(data)}`);

@@ -1,0 +1,9 @@
+connector: evolution
+name: "5532998055022"
+policy: readwrite
+credential:
+  host: http://localhost:6012/
+  api_key: ENC(jl3SQE0oOS+uGjJpMomyqJ1fZ3+lSMRUdmrPjBc78/vd3jvKNxaaJS4=)
+options:
+  instance_name: "5532998055022"
+enabled: true

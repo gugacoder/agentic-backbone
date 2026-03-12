@@ -1,0 +1,10 @@
+connector: mcp
+name: Everything MCP Server
+policy: readwrite
+credential: {}
+options:
+  transport: stdio
+  args: []
+  env: {}
+  server_label: Everything MCP
+enabled: true

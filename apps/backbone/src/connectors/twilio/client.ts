@@ -52,6 +52,17 @@ export function createTwilioClient(
       return post(`${baseUrl}/Calls/${callSid}.json`, params);
     },
 
+    async ping(): Promise<{ ok: boolean; error?: string }> {
+      const start = Date.now();
+      const res = await fetch(`${baseUrl}.json`, { headers: { Authorization: authHeader } });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ message: `HTTP ${res.status}` }));
+        const msg = (err as any).message ?? JSON.stringify(err);
+        return { ok: false, error: msg };
+      }
+      return { ok: true };
+    },
+
     async close() { /* no persistent connections */ },
   };
 }

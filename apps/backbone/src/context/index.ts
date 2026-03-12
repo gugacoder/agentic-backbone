@@ -9,7 +9,7 @@ import { buildSkillsSnapshot } from "../skills/prompt.js";
 import { connectorRegistry } from "../connectors/index.js";
 import { formatServicesPrompt } from "../services/prompt.js";
 import { getAgentMemoryManager } from "../memory/manager.js";
-import { agentDir } from "./paths.js";
+import { agentDir, agentWorkspaceDir } from "./paths.js";
 
 export { CONTEXT_DIR } from "./paths.js";
 export type { InteractionMode } from "./resolver.js";
@@ -60,6 +60,7 @@ export async function assemblePrompt(
   // 2. Identity
   const soul = resolveAgentSoul(agentId);
   const dir = agentDir(agentId);
+  const workspace = agentWorkspaceDir(agentId);
 
   let system = "";
 
@@ -74,7 +75,7 @@ export async function assemblePrompt(
   }
 
   // 4. Agent context
-  system += `<agent_context>\nagent_id: ${agentId}\nagent_dir: ${dir}\n</agent_context>\n\n`;
+  system += `<agent_context>\nagent_id: ${agentId}\nagent_dir: ${dir}\nworkspace_dir: ${workspace}\n</agent_context>\n\n`;
 
   // 5. Skills
   system += buildSkillsSnapshot(agentId).prompt;

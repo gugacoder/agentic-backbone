@@ -7,6 +7,7 @@ export interface Conversation {
   title?: string;
   lastMessage?: string;
   updatedAt: string;
+  starred: boolean;
   takeover_by: string | null;
   takeover_at: string | null;
 }
@@ -18,6 +19,7 @@ export interface Session {
   channel_id: string | null;
   sdk_session_id: string | null;
   title: string | null;
+  starred: number;
   takeover_by: string | null;
   takeover_at: string | null;
   orchestration_path: string | null;
@@ -43,6 +45,7 @@ function sessionToConversation(s: Session): Conversation {
     agentId: s.agent_id,
     title: s.title ?? undefined,
     updatedAt: s.updated_at,
+    starred: s.starred === 1,
     takeover_by: s.takeover_by,
     takeover_at: s.takeover_at,
   };
@@ -102,6 +105,13 @@ export async function renameConversation(id: string, title: string): Promise<voi
   await request(`/conversations/${id}`, {
     method: "PATCH",
     body: JSON.stringify({ title }),
+  });
+}
+
+export async function starConversation(id: string, starred: boolean): Promise<void> {
+  await request(`/conversations/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify({ starred }),
   });
 }
 

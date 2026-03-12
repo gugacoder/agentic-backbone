@@ -149,7 +149,7 @@ agentRoutes.get("/agents/:id/files/*", (c) => {
   const agentId = c.req.param("id");
   const denied = assertAgentOwnership(c, agentId);
   if (denied) return denied;
-  const filename = c.req.path.replace(new RegExp(`^/agents/${agentId.replace(".", "\\.")}/files/`), "");
+  const filename = c.req.param("*");
   const content = readAgentFile(agentId, filename);
   if (content === null) return c.json({ error: "not found" }, 404);
   return c.json({ filename, content });
@@ -159,7 +159,7 @@ agentRoutes.put("/agents/:id/files/*", async (c) => {
   const agentId = c.req.param("id");
   const denied = assertAgentOwnership(c, agentId);
   if (denied) return denied;
-  const filename = c.req.path.replace(new RegExp(`^/agents/${agentId.replace(".", "\\.")}/files/`), "");
+  const filename = c.req.param("*");
   const { content, changeNote, createdBy } = await c.req.json<{ content: string; changeNote?: string; createdBy?: string }>();
   try {
     // Save current content as a version before overwriting

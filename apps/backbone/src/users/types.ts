@@ -8,6 +8,7 @@ export interface UserConfig {
   slug: string;
   displayName: string;
   email: string;
+  role?: string;
   permissions: UserPermissions;
 }
 

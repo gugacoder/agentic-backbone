@@ -1,0 +1,8 @@
+connector: github
+name: Third Brain
+policy: readwrite
+credential:
+  token: ENC(wvHDWLm52xqDfEz1iFl7NaFUmN7iTLP1+HEBbMCsQRTAacM1BBURDD2CyukjxQ9J/KmdDwPPNYPC983SVktjUVmqd9s=)
+options:
+  default_repo: git@github.com:gugacoder/third-brain.git
+enabled: true

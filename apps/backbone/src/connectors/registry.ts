@@ -177,13 +177,51 @@ export class ConnectorRegistry {
     const adapters = this.resolveAdapters(agentId);
     if (adapters.size === 0) return "";
 
-    let prompt = "<available_adapters>\n";
+    // Group by connector (same logic as composeTools)
+    const groups = new Map<string, { slug: string; policy: string }[]>();
+    const adaptersBySlug = new Map<string, ResolvedAdapter>();
+
     for (const [slug, a] of adapters) {
-      prompt += `- **${a.name}** (${a.connector}, ${a.policy}): ${a.description}\n`;
-      prompt += `  slug: ${slug}\n`;
+      adaptersBySlug.set(slug, a);
+      if (!a.connector) continue;
+      if (!groups.has(a.connector)) groups.set(a.connector, []);
+      groups.get(a.connector)!.push({ slug, policy: a.policy });
     }
-    prompt += "</available_adapters>\n";
-    prompt += "Use as tools de adapter (ex: mysql_query, postgres_query, evolution_api) para interagir com os adapters.\n\n";
+
+    let prompt = "<available_adapters>\n";
+
+    for (const [connectorSlug, adapterList] of groups) {
+      const connectorDef = this.connectors.get(connectorSlug);
+
+      // Discover tool names via constructive call (no I/O)
+      let toolNames: string[] = [];
+      try {
+        const tools = connectorDef?.createTools?.(adapterList) ?? {};
+        toolNames = Object.keys(tools);
+      } catch {
+        // ignore — connector may require live connections
+      }
+
+      for (const { slug } of adapterList) {
+        const a = adaptersBySlug.get(slug)!;
+        prompt += `- **${a.name}** (${connectorSlug}, ${a.policy})\n`;
+        prompt += `  adapter: ${slug}\n`;
+        if (a.description) prompt += `  descrição: ${a.description}\n`;
+
+        // Include non-empty options (not credentials)
+        const opts = Object.entries(a.options ?? {}).filter(([, v]) => v != null && v !== "");
+        for (const [k, v] of opts) {
+          prompt += `  ${k}: ${v}\n`;
+        }
+
+        if (toolNames.length > 0) {
+          prompt += `  ferramentas: ${toolNames.join(", ")}\n`;
+          prompt += `  → Passe adapter="${slug}" ao chamar estas ferramentas.\n`;
+        }
+      }
+    }
+
+    prompt += "</available_adapters>\n\n";
     return prompt;
   }
 
@@ -292,7 +330,7 @@ export class ConnectorRegistry {
   updateAdapter(
     scope: string,
     slug: string,
-    updates: { name?: string; description?: string; policy?: string; params?: Record<string, unknown>; enabled?: boolean }
+    updates: { name?: string; label?: string; description?: string; policy?: string; params?: Record<string, unknown>; credential?: Record<string, unknown>; options?: Record<string, unknown>; enabled?: boolean }
   ): ResolvedAdapter {
     const adapterDir = join(this.resolveDir(scope), slug);
     const ymlPath = join(adapterDir, FILENAME);
@@ -303,11 +341,18 @@ export class ConnectorRegistry {
 
     const config = readYamlAs(ymlPath, AdapterYmlSchema) as Record<string, unknown>;
 
+    // Support both `name` and `label` (frontend sends `label`)
     if (updates.name !== undefined) config.name = updates.name;
+    if (updates.label !== undefined) config.name = updates.label;
     if (updates.description !== undefined) config.description = updates.description;
     if (updates.policy !== undefined) config.policy = updates.policy;
     if (updates.params !== undefined) config.params = updates.params;
     if (updates.enabled !== undefined) config.enabled = updates.enabled;
+    // Merge credential fields (only non-masked fields are sent from the frontend)
+    if (updates.credential !== undefined && Object.keys(updates.credential).length > 0) {
+      config.credential = { ...(config.credential as Record<string, unknown> ?? {}), ...updates.credential };
+    }
+    if (updates.options !== undefined) config.options = updates.options;
 
     writeYamlAs(ymlPath, config, AdapterYmlSchema);
 
@@ -389,6 +434,11 @@ export class ConnectorRegistry {
 
       if (typeof client["query"] === "function") {
         await (client["query"] as (sql: string) => Promise<unknown>)("SELECT 1");
+      }
+
+      if (typeof (client as any).ping === "function") {
+        const pingResult = await (client as any).ping();
+        if (!pingResult.ok) throw new Error(pingResult.error ?? "ping failed");
       }
 
       if (typeof (client as any).close === "function") {

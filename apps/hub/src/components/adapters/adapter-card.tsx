@@ -72,7 +72,7 @@ export function AdapterCard({ adapter, onEdit }: Props) {
 
   const toggleMutation = useMutation({
     mutationFn: (enabled: boolean) =>
-      request(`/adapters/${adapter.slug}`, {
+      request(`/adapters/${adapter.source}/${adapter.slug}`, {
         method: "PATCH",
         body: JSON.stringify({ enabled }),
       }),
@@ -83,7 +83,7 @@ export function AdapterCard({ adapter, onEdit }: Props) {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: () => request(`/adapters/${adapter.slug}`, { method: "DELETE" }),
+    mutationFn: () => request(`/adapters/${adapter.source}/${adapter.slug}`, { method: "DELETE" }),
     onSuccess: () => {
       toast.success("Adaptador removido");
       queryClient.invalidateQueries({ queryKey: ["adapters"] });
@@ -131,7 +131,7 @@ export function AdapterCard({ adapter, onEdit }: Props) {
               disabled={toggleMutation.isPending}
             />
             <DropdownMenu>
-              <DropdownMenuTrigger render={<Button variant="ghost" size="icon" className="h-7 w-7"><MoreHorizontal className="h-4 w-4" /></Button>} />
+              <DropdownMenuTrigger render={<Button variant="ghost" size="icon" className="h-7 w-7" aria-label="Opções do adaptador"><MoreHorizontal className="h-4 w-4" /></Button>} />
               <DropdownMenuContent align="end">
                 <DropdownMenuItem onClick={() => onEdit(adapter)}>
                   <Pencil className="mr-2 h-4 w-4" />

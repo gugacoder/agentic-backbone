@@ -43,7 +43,7 @@ npm run test:capabilities:identity     # agent identity/context assembly
 npm run test:e2e                       # Playwright end-to-end
 ```
 
-Test credentials come from `.env`: `SYSUSER` / `SYSPASS`.
+Test credentials come from `.env`: `TEST_USER` / `TEST_PASS`.
 
 **IMPORTANT**: Always use `npm run` commands, never run apps directly (tsx, node, etc). The npm scripts use `dotenv-cli` to properly expand env vars like `${PREFIX}`. Hub proxy to backbone (`/api` → `:BACKBONE_PORT`) is already configured in `vite.config.ts` and only works when started via `npm run dev:all`.
 
@@ -56,7 +56,6 @@ All env vars are in the root `.env` file — single source of truth. **Never use
 **Required at startup:**
 - `CONTEXT_FOLDER` — path to context directory, relative to monorepo root (e.g. `context`)
 - `JWT_SECRET` — JWT signing key
-- `SYSUSER` / `SYSPASS` — system admin credentials
 - `BACKBONE_PORT` — HTTP port (currently `6002`)
 
 **API keys:**
@@ -214,3 +213,9 @@ JWT-based. Hybrid: accepts both Laravel JWT (`role_id` + `unidades`) and Backbon
 - `/generate-prp` — Generate PRPs from user stories / feature ideas
 - `/ui-ux` — Plan UI/UX for pages/components before coding
 - `/rocim` — Transform raw text into structured ROCIN/ROCI[TE]N prompts
+
+## HotReload
+
+O comando `npm run dev:all`:
+- **Lança os serviços com hot-reload**
+- **Mantém um log em .tmp\-run.log**

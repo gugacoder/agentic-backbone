@@ -11,6 +11,7 @@ interface MarkdownEditorProps {
   saveStatus: SaveStatus;
   placeholder?: string;
   minHeight?: number;
+  onPreviewChange?: (preview: boolean) => void;
 }
 
 export function MarkdownEditor({
@@ -19,8 +20,14 @@ export function MarkdownEditor({
   saveStatus,
   placeholder = "Escreva em markdown...",
   minHeight = 400,
+  onPreviewChange,
 }: MarkdownEditorProps) {
-  const [preview, setPreview] = useState(false);
+  const [preview, setPreview] = useState(true);
+
+  const togglePreview = (val: boolean) => {
+    setPreview(val);
+    onPreviewChange?.(val);
+  };
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
@@ -42,20 +49,20 @@ export function MarkdownEditor({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1">
           <Button
-            variant={preview ? "ghost" : "secondary"}
-            size="sm"
-            onClick={() => setPreview(false)}
-          >
-            <Pencil className="size-3.5" />
-            <span className="ml-1">Editar</span>
-          </Button>
-          <Button
             variant={preview ? "secondary" : "ghost"}
             size="sm"
-            onClick={() => setPreview(true)}
+            onClick={() => togglePreview(true)}
           >
             <Eye className="size-3.5" />
             <span className="ml-1">Preview</span>
+          </Button>
+          <Button
+            variant={preview ? "ghost" : "secondary"}
+            size="sm"
+            onClick={() => togglePreview(false)}
+          >
+            <Pencil className="size-3.5" />
+            <span className="ml-1">Editar</span>
           </Button>
         </div>
 

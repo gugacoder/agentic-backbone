@@ -13,7 +13,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 
-export type ConnectorType = "mysql" | "postgres" | "evolution" | "twilio" | "http" | "whatsapp-cloud" | "mcp" | "email";
+export type ConnectorType = "mysql" | "postgres" | "evolution" | "twilio" | "http" | "whatsapp-cloud" | "mcp" | "email" | "elevenlabs" | "gitlab" | "github" | "discord";
 
 // MCP-specific options (transport config, not credentials)
 export interface McpOptions {
@@ -29,6 +29,24 @@ export interface McpOptions {
 // Evolution-specific options
 export interface EvolutionOptions {
   instance_name?: string;
+}
+
+export interface ElevenLabsOptions {
+  voice_id?: string;
+  model_id?: string;
+  output_format?: string;
+}
+
+export interface GitLabOptions {
+  default_project?: string;
+}
+
+export interface GitHubOptions {
+  default_repo?: string;
+}
+
+export interface DiscordOptions {
+  default_guild_id?: string;
 }
 
 export interface ConnectorCredential {
@@ -67,10 +85,14 @@ export interface ConnectorCredential {
   smtp_secure?: boolean;
   smtp_user?: string;
   smtp_pass?: string;
+  // GitLab
+  base_url?: string;
+  token?: string;
+  // Discord
+  bot_token?: string;
 }
 
 export interface EmailOptions {
-  agent_id?: string;
   mailbox?: string;
   poll_interval_seconds?: number;
   mark_seen?: boolean;
@@ -280,6 +302,11 @@ export function ConnectorForm({ connector, credential, maskedFields, onChange, o
     );
   }
 
+  if (connector === "elevenlabs" || connector === "gitlab" || connector === "github" || connector === "discord") {
+    // These connectors have dedicated forms handled outside ConnectorForm
+    return null;
+  }
+
   // HTTP
   return (
     <div className="space-y-3">
@@ -383,7 +410,7 @@ export function EmailConnectorForm({
             id="em-imap-user"
             value={credential.imap_user ?? ""}
             onChange={(e) => set("imap_user", e.target.value)}
-            placeholder="${EMAIL_USER}"
+            placeholder="Usuário do email"
           />
         </div>
         <PasswordField
@@ -432,7 +459,7 @@ export function EmailConnectorForm({
             id="em-smtp-user"
             value={credential.smtp_user ?? ""}
             onChange={(e) => set("smtp_user", e.target.value)}
-            placeholder="${EMAIL_USER}"
+            placeholder="Usuário do email"
           />
         </div>
         <PasswordField
@@ -833,6 +860,211 @@ export function McpConnectorForm({
           />
         </>
       )}
+    </div>
+  );
+}
+
+// ---- GitLab Connector Form ----
+
+export function GitLabConnectorForm({
+  credential,
+  maskedFields,
+  onChange,
+  onUnmask,
+  options,
+  onOptionsChange,
+}: {
+  credential: ConnectorCredential;
+  maskedFields: Set<string>;
+  onChange: (cred: ConnectorCredential) => void;
+  onUnmask: (field: string) => void;
+  options: GitLabOptions;
+  onOptionsChange: (opts: GitLabOptions) => void;
+}) {
+  function isMasked(field: string) {
+    return maskedFields.has(field);
+  }
+
+  return (
+    <div className="space-y-3">
+      <div className="space-y-1.5">
+        <Label htmlFor="gl-base-url">URL base</Label>
+        <Input
+          id="gl-base-url"
+          value={credential.base_url ?? "https://gitlab.com"}
+          onChange={(e) => onChange({ ...credential, base_url: e.target.value })}
+          placeholder="https://gitlab.com"
+        />
+        <p className="text-xs text-muted-foreground">Use a URL do seu GitLab self-hosted ou deixe https://gitlab.com</p>
+      </div>
+      <PasswordField
+        id="gl-token"
+        label="Personal Access Token"
+        value={credential.token ?? ""}
+        masked={isMasked("token")}
+        onChange={(v) => onChange({ ...credential, token: v })}
+        onClear={() => onUnmask("token")}
+      />
+      <div className="space-y-1.5">
+        <Label htmlFor="gl-project">Projeto padrão (opcional)</Label>
+        <Input
+          id="gl-project"
+          value={options.default_project ?? ""}
+          onChange={(e) => onOptionsChange({ ...options, default_project: e.target.value })}
+          placeholder="owner/repo"
+          className="font-mono text-sm"
+        />
+      </div>
+    </div>
+  );
+}
+
+// ---- GitHub Connector Form ----
+
+export function GitHubConnectorForm({
+  credential,
+  maskedFields,
+  onChange,
+  onUnmask,
+  options,
+  onOptionsChange,
+}: {
+  credential: ConnectorCredential;
+  maskedFields: Set<string>;
+  onChange: (cred: ConnectorCredential) => void;
+  onUnmask: (field: string) => void;
+  options: GitHubOptions;
+  onOptionsChange: (opts: GitHubOptions) => void;
+}) {
+  function isMasked(field: string) {
+    return maskedFields.has(field);
+  }
+
+  return (
+    <div className="space-y-3">
+      <PasswordField
+        id="gh-token"
+        label="Personal Access Token"
+        value={credential.token ?? ""}
+        masked={isMasked("token")}
+        onChange={(v) => onChange({ ...credential, token: v })}
+        onClear={() => onUnmask("token")}
+      />
+      <div className="space-y-1.5">
+        <Label htmlFor="gh-repo">Repositório padrão (opcional)</Label>
+        <Input
+          id="gh-repo"
+          value={options.default_repo ?? ""}
+          onChange={(e) => onOptionsChange({ ...options, default_repo: e.target.value })}
+          placeholder="owner/repo"
+          className="font-mono text-sm"
+        />
+      </div>
+    </div>
+  );
+}
+
+// ---- Discord Connector Form ----
+
+export function DiscordConnectorForm({
+  credential,
+  maskedFields,
+  onChange,
+  onUnmask,
+  options,
+  onOptionsChange,
+}: {
+  credential: ConnectorCredential;
+  maskedFields: Set<string>;
+  onChange: (cred: ConnectorCredential) => void;
+  onUnmask: (field: string) => void;
+  options: DiscordOptions;
+  onOptionsChange: (opts: DiscordOptions) => void;
+}) {
+  function isMasked(field: string) {
+    return maskedFields.has(field);
+  }
+
+  return (
+    <div className="space-y-3">
+      <PasswordField
+        id="dc-bot-token"
+        label="Bot Token"
+        value={credential.bot_token ?? ""}
+        masked={isMasked("bot_token")}
+        onChange={(v) => onChange({ ...credential, bot_token: v })}
+        onClear={() => onUnmask("bot_token")}
+      />
+      <div className="space-y-1.5">
+        <Label htmlFor="dc-guild-id">Servidor padrão (Guild ID, opcional)</Label>
+        <Input
+          id="dc-guild-id"
+          value={options.default_guild_id ?? ""}
+          onChange={(e) => onOptionsChange({ ...options, default_guild_id: e.target.value })}
+          placeholder="123456789012345678"
+          className="font-mono text-sm"
+        />
+      </div>
+    </div>
+  );
+}
+
+// ---- ElevenLabs Connector Form ----
+
+export function ElevenLabsConnectorForm({
+  credential,
+  maskedFields,
+  onChange,
+  onUnmask,
+  options,
+  onOptionsChange,
+}: {
+  credential: ConnectorCredential;
+  maskedFields: Set<string>;
+  onChange: (cred: ConnectorCredential) => void;
+  onUnmask: (field: string) => void;
+  options: ElevenLabsOptions;
+  onOptionsChange: (opts: ElevenLabsOptions) => void;
+}) {
+  function isMasked(field: string) {
+    return maskedFields.has(field);
+  }
+
+  function setOpt<K extends keyof ElevenLabsOptions>(key: K, value: ElevenLabsOptions[K]) {
+    onOptionsChange({ ...options, [key]: value });
+  }
+
+  return (
+    <div className="space-y-3">
+      <PasswordField
+        id="el-apikey"
+        label="API Key ElevenLabs"
+        value={credential.api_key ?? ""}
+        masked={isMasked("api_key")}
+        onChange={(v) => onChange({ ...credential, api_key: v })}
+        onClear={() => onUnmask("api_key")}
+      />
+      <div className="space-y-1.5">
+        <Label htmlFor="el-voice-id">Voice ID</Label>
+        <Input
+          id="el-voice-id"
+          value={options.voice_id ?? ""}
+          onChange={(e) => setOpt("voice_id", e.target.value)}
+          placeholder="21m00Tcm4TlvDq8ikWAM"
+          className="font-mono text-sm"
+        />
+        <p className="text-xs text-muted-foreground">Padrão: Rachel (21m00Tcm4TlvDq8ikWAM)</p>
+      </div>
+      <div className="space-y-1.5">
+        <Label htmlFor="el-model-id">Model ID</Label>
+        <Input
+          id="el-model-id"
+          value={options.model_id ?? ""}
+          onChange={(e) => setOpt("model_id", e.target.value)}
+          placeholder="eleven_multilingual_v2"
+          className="font-mono text-sm"
+        />
+      </div>
     </div>
   );
 }

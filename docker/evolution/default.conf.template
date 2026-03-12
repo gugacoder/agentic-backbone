@@ -1,0 +1,16 @@
+server {
+    listen 80;
+
+    location = / {
+        add_header Content-Type "text/html; charset=utf-8";
+        return 200 "<!DOCTYPE html><html><head><meta charset='utf-8'><title>Evolution</title></head><body><script>localStorage.setItem('apiUrl','http://localhost:${EVOLUTION_PORT}');localStorage.setItem('token','${EVOLUTION_API_KEY}');window.location.replace('/manager/');</script></body></html>";
+    }
+
+    location / {
+        proxy_pass http://evolution.internal:8080;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_read_timeout 300s;
+    }
+}

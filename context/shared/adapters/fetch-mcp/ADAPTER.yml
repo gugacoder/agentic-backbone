@@ -1,0 +1,10 @@
+connector: mcp
+name: Fetch MCP Server
+policy: readwrite
+credential: {}
+options:
+  transport: stdio
+  args: []
+  env: {}
+  server_label: Fetch MCP
+enabled: true

@@ -1,0 +1,6 @@
+connector: discord
+name: Kai Discord
+policy: readwrite
+credential:
+  bot_token: ENC(PkanLpw7FgSH73PrQ9JenN6YyeArjQPrroD5syknqasq6kvu8o/tvsMqfAU2qU/cd1U4tBePlsve2bT3pUVjBOCazoC0xp6f1qUP6Pmf8UsPxqI1tZAy5DgSRd0VD80urxUyGw==)
+options: {}

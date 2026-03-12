@@ -22,8 +22,8 @@
 // ── Config ──────────────────────────────────────────────────
 
 const BASE = `http://localhost:${process.env.BACKBONE_PORT || 8004}`;
-const SYSUSER = process.env.SYSUSER || "admin";
-const SYSPASS = process.env.SYSPASS || "changeme";
+const TEST_USER = process.env.TEST_USER || "admin@mail.com";
+const TEST_PASS = process.env.TEST_PASS || "12345678";
 const AGENT_ID = "system.probe";
 const SEND_TIMEOUT_MS = 120_000;
 
@@ -54,7 +54,7 @@ async function login() {
   const res = await fetch(`${BASE}/auth/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ username: SYSUSER, password: SYSPASS }),
+    body: JSON.stringify({ username: TEST_USER, password: TEST_PASS }),
   });
   const data = await res.json();
   return { res, data };
@@ -153,7 +153,7 @@ async function run() {
     assert(res.status === 201, "create returns 201");
     assert(!!data.session_id, "response has session_id", `got: ${JSON.stringify(data)}`);
     assert(data.agent_id === AGENT_ID, `agent_id is ${AGENT_ID}`, `got: ${data.agent_id}`);
-    assert(data.user_id === SYSUSER, `user_id is ${SYSUSER}`, `got: ${data.user_id}`);
+    assert(data.user_id === TEST_USER, `user_id is ${TEST_USER}`, `got: ${data.user_id}`);
     assert(data.title === null, "title is null initially");
     sessionId = data.session_id;
   }
@@ -195,7 +195,7 @@ async function run() {
     assert(res.status === 200, "get returns 200");
     assert(data.session_id === sessionId, "session_id matches");
     assert(data.agent_id === AGENT_ID, "agent_id matches");
-    assert(data.user_id === SYSUSER, "user_id matches");
+    assert(data.user_id === TEST_USER, "user_id matches");
   }
 
   // ── 3b. Get non-existent session ───────────────────────

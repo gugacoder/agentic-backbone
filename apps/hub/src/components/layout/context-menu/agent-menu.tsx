@@ -24,6 +24,7 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import { agentQueryOptions } from "@/api/agents";
+import { menuConfigQueryOptions } from "@/api/settings";
 import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
 
@@ -40,7 +41,7 @@ const groups = (agentId: string): MenuGroup[] => [
   {
     items: [
       { label: "Configuração", icon: Settings, to: `/agents/${agentId}/config` },
-      { label: "Conversas", icon: MessageSquare, to: `/conversations?agent=${agentId}` },
+      { label: "Conversas", icon: MessageSquare, to: `/agents/${agentId}/conversations` },
     ],
   },
   {
@@ -93,9 +94,40 @@ interface AgentNavMenuProps {
   onNavigate?: () => void;
 }
 
+const AGENT_PATH_TO_KEY: Record<string, string> = {
+  "/config": "configuracao",
+  "/conversations": "conversas",
+  "/memory": "memoria",
+  "/knowledge": "knowledge",
+  "/cron": "agenda",
+  "/evaluation": "avaliacao",
+  "/quality": "qualidade",
+  "/benchmarks": "benchmarks",
+  "/webhooks": "webhooks",
+  "/channels": "canais",
+  "/mcp-tools": "mcp_tools",
+  "/handoffs": "handoffs",
+  "/routing": "routing",
+  "/workflows": "workflows",
+  "/sandbox": "sandbox",
+  "/versions": "versoes",
+  "/quotas": "quotas",
+  "/circuit-breaker": "circuit_breaker",
+  "/compliance": "conformidade",
+};
+
 export function AgentNavMenu({ agentId, onNavigate }: AgentNavMenuProps) {
   const matchRoute = useMatchRoute();
   const { data: agent } = useQuery(agentQueryOptions(agentId));
+  const { data: menuConfig } = useQuery(menuConfigQueryOptions());
+  const agentCtx = menuConfig?.contexts.agent;
+
+  function visible(key: string) { return agentCtx ? (agentCtx[key] ?? true) : true; }
+
+  function itemKey(to: string): string {
+    const path = to.replace(`/agents/${agentId}`, "");
+    return AGENT_PATH_TO_KEY[path] ?? path;
+  }
 
   const isOverviewActive = !!matchRoute({
     to: "/agents/$id/",
@@ -136,39 +168,43 @@ export function AgentNavMenu({ agentId, onNavigate }: AgentNavMenuProps) {
 
       <Separator className="my-1" />
 
-      {groups(agentId).map((group, gi) => (
-        <div key={gi}>
-          {gi > 0 && <Separator className="my-1.5" />}
-          {group.label && (
-            <span className="px-3 py-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-              {group.label}
-            </span>
-          )}
-          <div className="flex flex-col gap-0.5">
-            {group.items.map((item) => {
-              const Icon = item.icon;
-              const isActive = !!matchRoute({ to: item.to as any, fuzzy: true });
+      {groups(agentId).map((group, gi) => {
+        const visibleItems = group.items.filter((item) => visible(itemKey(item.to)));
+        if (visibleItems.length === 0) return null;
+        return (
+          <div key={gi}>
+            {gi > 0 && <Separator className="my-1.5" />}
+            {group.label && (
+              <span className="px-3 py-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                {group.label}
+              </span>
+            )}
+            <div className="flex flex-col gap-0.5">
+              {visibleItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = !!matchRoute({ to: item.to as any, fuzzy: true });
 
-              return (
-                <Link
-                  key={item.to}
-                  to={item.to as any}
-                  onClick={onNavigate}
-                  className={cn(
-                    "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors",
-                    isActive
-                      ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
-                      : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-                  )}
-                >
-                  <Icon className="size-4 shrink-0" />
-                  <span>{item.label}</span>
-                </Link>
-              );
-            })}
+                return (
+                  <Link
+                    key={item.to}
+                    to={item.to as any}
+                    onClick={onNavigate}
+                    className={cn(
+                      "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors",
+                      isActive
+                        ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
+                        : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                    )}
+                  >
+                    <Icon className="size-4 shrink-0" />
+                    <span>{item.label}</span>
+                  </Link>
+                );
+              })}
+            </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }

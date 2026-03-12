@@ -60,12 +60,12 @@ connector: email
 credential:
   imap_host: "imap.gmail.com"
   imap_port: 993
-  imap_user: "${EMAIL_USER}"
+  imap_user: "Usuário do email"
   imap_pass: "${EMAIL_PASS}"
   smtp_host: "smtp.gmail.com"
   smtp_port: 587
   smtp_secure: false          # true para port 465 (SSL), false para STARTTLS
-  smtp_user: "${EMAIL_USER}"
+  smtp_user: "Usuário do email"
   smtp_pass: "${EMAIL_PASS}"
 options:
   mailbox: "INBOX"

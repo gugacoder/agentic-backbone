@@ -76,6 +76,7 @@ userRoutes.patch("/users/:slug", async (c) => {
     displayName?: string;
     email?: string;
     password?: string;
+    role?: string | null;
     permissions?: {
       canCreateAgents?: boolean;
       canCreateChannels?: boolean;

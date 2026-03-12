@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { sign } from "hono/jwt";
-import { getUserWithPasswordHash, getUser, getUserByEmail } from "../users/manager.js";
+import { getUser, getUserByEmail } from "../users/manager.js";
 import { verifyPassword } from "../users/password.js";
 
 export const authPublicRoutes = new Hono();
@@ -17,28 +17,16 @@ authPublicRoutes.post("/auth/login", async (c) => {
     return c.json({ error: "username and password are required" }, 400);
   }
 
-  let role: "sysuser" | "user";
-  let sub: string;
-
-  if (username === process.env.SYSUSER) {
-    // Sysuser login — validate against env var
-    if (password !== process.env.SYSPASS) {
-      return c.json({ error: "invalid credentials" }, 401);
-    }
-    role = "sysuser";
-    sub = username;
-  } else {
-    // Regular user login — lookup by email
-    const record = getUserByEmail(username);
-    if (!record) {
-      return c.json({ error: "invalid credentials" }, 401);
-    }
-    if (!verifyPassword(password, record.passwordHash)) {
-      return c.json({ error: "invalid credentials" }, 401);
-    }
-    role = "user";
-    sub = record.slug;
+  const record = getUserByEmail(username);
+  if (!record) {
+    return c.json({ error: "invalid credentials" }, 401);
   }
+  if (!verifyPassword(password, record.passwordHash)) {
+    return c.json({ error: "invalid credentials" }, 401);
+  }
+
+  const role: "sysuser" | "user" = record.config.role === "sysadmin" ? "sysuser" : "user";
+  const sub = record.slug;
 
   const now = Math.floor(Date.now() / 1000);
   const payload = {
@@ -55,20 +43,10 @@ authPublicRoutes.post("/auth/login", async (c) => {
 // GET /auth/me — protected (mounted after JWT middleware)
 authProtectedRoutes.get("/auth/me", (c) => {
   const payload = c.get("jwtPayload");
-  const role = payload.role as "sysuser" | "user";
-
-  if (role === "sysuser") {
-    return c.json({
-      user: payload.sub,
-      role: "sysuser",
-      displayName: payload.sub,
-    });
-  }
-
   const userConfig = getUser(payload.sub);
   return c.json({
     user: payload.sub,
-    role: "user",
+    role: payload.role,
     displayName: userConfig?.displayName ?? payload.sub,
   });
 });

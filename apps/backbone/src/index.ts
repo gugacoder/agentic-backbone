@@ -2,7 +2,7 @@
 delete process.env.CLAUDECODE;
 
 // ── Validate required env vars ─────────────────────────────
-const REQUIRED_ENV = ["JWT_SECRET", "SYSUSER", "SYSPASS", "BACKBONE_PORT"] as const;
+const REQUIRED_ENV = ["JWT_SECRET", "BACKBONE_PORT"] as const;
 const missing = REQUIRED_ENV.filter((k) => !process.env[k]);
 if (missing.length) {
   console.error(
@@ -36,6 +36,8 @@ import { initCircuitBreaker } from "./circuit-breaker/index.js";
 import { initFleetEvents } from "./fleet/events.js";
 import { initTelemetry } from "./telemetry/index.js";
 import { initBilling } from "./billing/index.js";
+import { bootstrapProviders } from "./settings/providers-bootstrap.js";
+import { loadNgrokConfig, startNgrok } from "./ngrok/index.js";
 
 import type { ServerType } from "@hono/node-server";
 
@@ -44,6 +46,8 @@ let server: ServerType;
 const app = new Hono();
 
 async function bootstrap() {
+  bootstrapProviders();
+
   // Generate internal auth token for agent tools (job submission, etc.)
   const now = Math.floor(Date.now() / 1000);
   const internalToken = await sign(
@@ -158,6 +162,15 @@ async function bootstrap() {
 
     startJobSweeper();
     startSecurityAnomalyJob();
+
+    // Auto-start ngrok if enabled
+    const ngrokConfig = loadNgrokConfig();
+    if (ngrokConfig.enabled) {
+      startNgrok(info.port).then((status) => {
+        if (status.running) console.log(`[ngrok] tunnel: ${status.url}`);
+        else console.warn(`[ngrok] failed to start: ${status.error}`);
+      }).catch((err) => console.error("[ngrok] auto-start error:", err));
+    }
 
     triggerHook({
       ts: Date.now(),

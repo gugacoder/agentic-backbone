@@ -1,0 +1,8 @@
+connector: elevenlabs
+name: elevenlabs
+policy: readwrite
+credential:
+  api_key: ENC(L2c19uVwW8jZVGXfOhlWgJHo863vKztu6DjrWBE7Z2f+uY0L/iKIC65XETK4s/bzAy1RhIjtk6PyWmff1PxqjgehHWaWmvbc582EAQIFmg==)
+options:
+  voice_id: VD1if7jDVYtAKs4P0FIY
+enabled: true

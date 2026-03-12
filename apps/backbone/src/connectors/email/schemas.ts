@@ -13,7 +13,6 @@ export const credentialSchema = z.object({
 });
 
 export const optionsSchema = z.object({
-  agent_id: z.string().describe("Agent ID to handle incoming emails"),
   mailbox: z.string().default("INBOX").describe("IMAP mailbox to monitor"),
   poll_interval_seconds: z.number().int().default(60).describe("Polling interval in seconds"),
   mark_seen: z.boolean().default(true).describe("Mark emails as read after processing"),

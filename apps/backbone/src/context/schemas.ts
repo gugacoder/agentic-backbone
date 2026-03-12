@@ -23,6 +23,7 @@ export const UserMdSchema = z.object({
   slug: z.string().optional(),
   displayName: z.string().optional(),
   email: z.string().default(""),
+  role: z.string().optional(),
   canCreateAgents: z.boolean().default(true),
   canCreateChannels: z.boolean().default(true),
   maxAgents: z.number().int().positive().default(5),

@@ -13,6 +13,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
 import { Route as AuthenticatedWorkflowsRouteImport } from './routes/_authenticated/workflows'
+import { Route as AuthenticatedTranscriptionRouteImport } from './routes/_authenticated/transcription'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedRatingsRouteImport } from './routes/_authenticated/ratings'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
@@ -46,6 +47,7 @@ import { Route as AuthenticatedAgentsNewRouteImport } from './routes/_authentica
 import { Route as AuthenticatedAgentsIdRouteImport } from './routes/_authenticated/agents.$id'
 import { Route as AuthenticatedAdaptersNewRouteImport } from './routes/_authenticated/adapters/new'
 import { Route as AuthenticatedAgentsIdIndexRouteImport } from './routes/_authenticated/agents.$id.index'
+import { Route as AuthenticatedSettingsUsersSlugRouteImport } from './routes/_authenticated/settings_.users.$slug'
 import { Route as AuthenticatedAgentsIdWorkflowsRouteImport } from './routes/_authenticated/agents.$id.workflows'
 import { Route as AuthenticatedAgentsIdWebhooksRouteImport } from './routes/_authenticated/agents.$id.webhooks'
 import { Route as AuthenticatedAgentsIdVersionsRouteImport } from './routes/_authenticated/agents.$id.versions'
@@ -66,8 +68,12 @@ import { Route as AuthenticatedAgentsIdComplianceRouteImport } from './routes/_a
 import { Route as AuthenticatedAgentsIdCircuitBreakerRouteImport } from './routes/_authenticated/agents.$id.circuit-breaker'
 import { Route as AuthenticatedAgentsIdChannelsRouteImport } from './routes/_authenticated/agents.$id.channels'
 import { Route as AuthenticatedAgentsIdBenchmarksRouteImport } from './routes/_authenticated/agents.$id.benchmarks'
+import { Route as AuthenticatedSettingsUsersSlugIndexRouteImport } from './routes/_authenticated/settings_.users.$slug.index'
+import { Route as AuthenticatedAgentsIdConversationsIndexRouteImport } from './routes/_authenticated/agents.$id.conversations.index'
+import { Route as AuthenticatedSettingsUsersSlugPasswordRouteImport } from './routes/_authenticated/settings_.users.$slug.password'
 import { Route as AuthenticatedAgentsIdEvalRunsRunIdRouteImport } from './routes/_authenticated/agents.$id.eval-runs.$runId'
 import { Route as AuthenticatedAgentsIdDraftsDraftIdRouteImport } from './routes/_authenticated/agents.$id.drafts.$draftId'
+import { Route as AuthenticatedAgentsIdConversationsConvIdRouteImport } from './routes/_authenticated/agents.$id.conversations.$convId'
 import { Route as AuthenticatedAgentsIdBenchmarksRunIdRouteImport } from './routes/_authenticated/agents.$id.benchmarks.$runId'
 import { Route as AuthenticatedAgentsIdDraftsDraftIdCompareRouteImport } from './routes/_authenticated/agents.$id.drafts.$draftId.compare'
 
@@ -90,6 +96,12 @@ const AuthenticatedWorkflowsRoute = AuthenticatedWorkflowsRouteImport.update({
   path: '/workflows',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedTranscriptionRoute =
+  AuthenticatedTranscriptionRouteImport.update({
+    id: '/transcription',
+    path: '/transcription',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
@@ -273,6 +285,12 @@ const AuthenticatedAgentsIdIndexRoute =
     path: '/',
     getParentRoute: () => AuthenticatedAgentsIdRoute,
   } as any)
+const AuthenticatedSettingsUsersSlugRoute =
+  AuthenticatedSettingsUsersSlugRouteImport.update({
+    id: '/settings_/users/$slug',
+    path: '/settings/users/$slug',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedAgentsIdWorkflowsRoute =
   AuthenticatedAgentsIdWorkflowsRouteImport.update({
     id: '/workflows',
@@ -393,6 +411,24 @@ const AuthenticatedAgentsIdBenchmarksRoute =
     path: '/benchmarks',
     getParentRoute: () => AuthenticatedAgentsIdRoute,
   } as any)
+const AuthenticatedSettingsUsersSlugIndexRoute =
+  AuthenticatedSettingsUsersSlugIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedSettingsUsersSlugRoute,
+  } as any)
+const AuthenticatedAgentsIdConversationsIndexRoute =
+  AuthenticatedAgentsIdConversationsIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedAgentsIdConversationsRoute,
+  } as any)
+const AuthenticatedSettingsUsersSlugPasswordRoute =
+  AuthenticatedSettingsUsersSlugPasswordRouteImport.update({
+    id: '/password',
+    path: '/password',
+    getParentRoute: () => AuthenticatedSettingsUsersSlugRoute,
+  } as any)
 const AuthenticatedAgentsIdEvalRunsRunIdRoute =
   AuthenticatedAgentsIdEvalRunsRunIdRouteImport.update({
     id: '/eval-runs/$runId',
@@ -404,6 +440,12 @@ const AuthenticatedAgentsIdDraftsDraftIdRoute =
     id: '/drafts/$draftId',
     path: '/drafts/$draftId',
     getParentRoute: () => AuthenticatedAgentsIdRoute,
+  } as any)
+const AuthenticatedAgentsIdConversationsConvIdRoute =
+  AuthenticatedAgentsIdConversationsConvIdRouteImport.update({
+    id: '/$convId',
+    path: '/$convId',
+    getParentRoute: () => AuthenticatedAgentsIdConversationsRoute,
   } as any)
 const AuthenticatedAgentsIdBenchmarksRunIdRoute =
   AuthenticatedAgentsIdBenchmarksRunIdRouteImport.update({
@@ -433,6 +475,7 @@ export interface FileRoutesByFullPath {
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/ratings': typeof AuthenticatedRatingsRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/transcription': typeof AuthenticatedTranscriptionRoute
   '/workflows': typeof AuthenticatedWorkflowsRouteWithChildren
   '/adapters/new': typeof AuthenticatedAdaptersNewRoute
   '/agents/$id': typeof AuthenticatedAgentsIdRouteWithChildren
@@ -459,7 +502,7 @@ export interface FileRoutesByFullPath {
   '/agents/$id/circuit-breaker': typeof AuthenticatedAgentsIdCircuitBreakerRoute
   '/agents/$id/compliance': typeof AuthenticatedAgentsIdComplianceRoute
   '/agents/$id/config': typeof AuthenticatedAgentsIdConfigRoute
-  '/agents/$id/conversations': typeof AuthenticatedAgentsIdConversationsRoute
+  '/agents/$id/conversations': typeof AuthenticatedAgentsIdConversationsRouteWithChildren
   '/agents/$id/cron': typeof AuthenticatedAgentsIdCronRoute
   '/agents/$id/evaluation': typeof AuthenticatedAgentsIdEvaluationRoute
   '/agents/$id/handoffs': typeof AuthenticatedAgentsIdHandoffsRoute
@@ -474,10 +517,15 @@ export interface FileRoutesByFullPath {
   '/agents/$id/versions': typeof AuthenticatedAgentsIdVersionsRoute
   '/agents/$id/webhooks': typeof AuthenticatedAgentsIdWebhooksRoute
   '/agents/$id/workflows': typeof AuthenticatedAgentsIdWorkflowsRoute
+  '/settings/users/$slug': typeof AuthenticatedSettingsUsersSlugRouteWithChildren
   '/agents/$id/': typeof AuthenticatedAgentsIdIndexRoute
   '/agents/$id/benchmarks/$runId': typeof AuthenticatedAgentsIdBenchmarksRunIdRoute
+  '/agents/$id/conversations/$convId': typeof AuthenticatedAgentsIdConversationsConvIdRoute
   '/agents/$id/drafts/$draftId': typeof AuthenticatedAgentsIdDraftsDraftIdRouteWithChildren
   '/agents/$id/eval-runs/$runId': typeof AuthenticatedAgentsIdEvalRunsRunIdRoute
+  '/settings/users/$slug/password': typeof AuthenticatedSettingsUsersSlugPasswordRoute
+  '/agents/$id/conversations/': typeof AuthenticatedAgentsIdConversationsIndexRoute
+  '/settings/users/$slug/': typeof AuthenticatedSettingsUsersSlugIndexRoute
   '/agents/$id/drafts/$draftId/compare': typeof AuthenticatedAgentsIdDraftsDraftIdCompareRoute
 }
 export interface FileRoutesByTo {
@@ -491,6 +539,7 @@ export interface FileRoutesByTo {
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/ratings': typeof AuthenticatedRatingsRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/transcription': typeof AuthenticatedTranscriptionRoute
   '/': typeof AuthenticatedIndexRoute
   '/adapters/new': typeof AuthenticatedAdaptersNewRoute
   '/agents/new': typeof AuthenticatedAgentsNewRoute
@@ -516,7 +565,6 @@ export interface FileRoutesByTo {
   '/agents/$id/circuit-breaker': typeof AuthenticatedAgentsIdCircuitBreakerRoute
   '/agents/$id/compliance': typeof AuthenticatedAgentsIdComplianceRoute
   '/agents/$id/config': typeof AuthenticatedAgentsIdConfigRoute
-  '/agents/$id/conversations': typeof AuthenticatedAgentsIdConversationsRoute
   '/agents/$id/cron': typeof AuthenticatedAgentsIdCronRoute
   '/agents/$id/evaluation': typeof AuthenticatedAgentsIdEvaluationRoute
   '/agents/$id/handoffs': typeof AuthenticatedAgentsIdHandoffsRoute
@@ -533,8 +581,12 @@ export interface FileRoutesByTo {
   '/agents/$id/workflows': typeof AuthenticatedAgentsIdWorkflowsRoute
   '/agents/$id': typeof AuthenticatedAgentsIdIndexRoute
   '/agents/$id/benchmarks/$runId': typeof AuthenticatedAgentsIdBenchmarksRunIdRoute
+  '/agents/$id/conversations/$convId': typeof AuthenticatedAgentsIdConversationsConvIdRoute
   '/agents/$id/drafts/$draftId': typeof AuthenticatedAgentsIdDraftsDraftIdRouteWithChildren
   '/agents/$id/eval-runs/$runId': typeof AuthenticatedAgentsIdEvalRunsRunIdRoute
+  '/settings/users/$slug/password': typeof AuthenticatedSettingsUsersSlugPasswordRoute
+  '/agents/$id/conversations': typeof AuthenticatedAgentsIdConversationsIndexRoute
+  '/settings/users/$slug': typeof AuthenticatedSettingsUsersSlugIndexRoute
   '/agents/$id/drafts/$draftId/compare': typeof AuthenticatedAgentsIdDraftsDraftIdCompareRoute
 }
 export interface FileRoutesById {
@@ -553,6 +605,7 @@ export interface FileRoutesById {
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/ratings': typeof AuthenticatedRatingsRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
+  '/_authenticated/transcription': typeof AuthenticatedTranscriptionRoute
   '/_authenticated/workflows': typeof AuthenticatedWorkflowsRouteWithChildren
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/adapters/new': typeof AuthenticatedAdaptersNewRoute
@@ -580,7 +633,7 @@ export interface FileRoutesById {
   '/_authenticated/agents/$id/circuit-breaker': typeof AuthenticatedAgentsIdCircuitBreakerRoute
   '/_authenticated/agents/$id/compliance': typeof AuthenticatedAgentsIdComplianceRoute
   '/_authenticated/agents/$id/config': typeof AuthenticatedAgentsIdConfigRoute
-  '/_authenticated/agents/$id/conversations': typeof AuthenticatedAgentsIdConversationsRoute
+  '/_authenticated/agents/$id/conversations': typeof AuthenticatedAgentsIdConversationsRouteWithChildren
   '/_authenticated/agents/$id/cron': typeof AuthenticatedAgentsIdCronRoute
   '/_authenticated/agents/$id/evaluation': typeof AuthenticatedAgentsIdEvaluationRoute
   '/_authenticated/agents/$id/handoffs': typeof AuthenticatedAgentsIdHandoffsRoute
@@ -595,10 +648,15 @@ export interface FileRoutesById {
   '/_authenticated/agents/$id/versions': typeof AuthenticatedAgentsIdVersionsRoute
   '/_authenticated/agents/$id/webhooks': typeof AuthenticatedAgentsIdWebhooksRoute
   '/_authenticated/agents/$id/workflows': typeof AuthenticatedAgentsIdWorkflowsRoute
+  '/_authenticated/settings_/users/$slug': typeof AuthenticatedSettingsUsersSlugRouteWithChildren
   '/_authenticated/agents/$id/': typeof AuthenticatedAgentsIdIndexRoute
   '/_authenticated/agents/$id/benchmarks/$runId': typeof AuthenticatedAgentsIdBenchmarksRunIdRoute
+  '/_authenticated/agents/$id/conversations/$convId': typeof AuthenticatedAgentsIdConversationsConvIdRoute
   '/_authenticated/agents/$id/drafts/$draftId': typeof AuthenticatedAgentsIdDraftsDraftIdRouteWithChildren
   '/_authenticated/agents/$id/eval-runs/$runId': typeof AuthenticatedAgentsIdEvalRunsRunIdRoute
+  '/_authenticated/settings_/users/$slug/password': typeof AuthenticatedSettingsUsersSlugPasswordRoute
+  '/_authenticated/agents/$id/conversations/': typeof AuthenticatedAgentsIdConversationsIndexRoute
+  '/_authenticated/settings_/users/$slug/': typeof AuthenticatedSettingsUsersSlugIndexRoute
   '/_authenticated/agents/$id/drafts/$draftId/compare': typeof AuthenticatedAgentsIdDraftsDraftIdCompareRoute
 }
 export interface FileRouteTypes {
@@ -618,6 +676,7 @@ export interface FileRouteTypes {
     | '/notifications'
     | '/ratings'
     | '/settings'
+    | '/transcription'
     | '/workflows'
     | '/adapters/new'
     | '/agents/$id'
@@ -659,10 +718,15 @@ export interface FileRouteTypes {
     | '/agents/$id/versions'
     | '/agents/$id/webhooks'
     | '/agents/$id/workflows'
+    | '/settings/users/$slug'
     | '/agents/$id/'
     | '/agents/$id/benchmarks/$runId'
+    | '/agents/$id/conversations/$convId'
     | '/agents/$id/drafts/$draftId'
     | '/agents/$id/eval-runs/$runId'
+    | '/settings/users/$slug/password'
+    | '/agents/$id/conversations/'
+    | '/settings/users/$slug/'
     | '/agents/$id/drafts/$draftId/compare'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -676,6 +740,7 @@ export interface FileRouteTypes {
     | '/notifications'
     | '/ratings'
     | '/settings'
+    | '/transcription'
     | '/'
     | '/adapters/new'
     | '/agents/new'
@@ -701,7 +766,6 @@ export interface FileRouteTypes {
     | '/agents/$id/circuit-breaker'
     | '/agents/$id/compliance'
     | '/agents/$id/config'
-    | '/agents/$id/conversations'
     | '/agents/$id/cron'
     | '/agents/$id/evaluation'
     | '/agents/$id/handoffs'
@@ -718,8 +782,12 @@ export interface FileRouteTypes {
     | '/agents/$id/workflows'
     | '/agents/$id'
     | '/agents/$id/benchmarks/$runId'
+    | '/agents/$id/conversations/$convId'
     | '/agents/$id/drafts/$draftId'
     | '/agents/$id/eval-runs/$runId'
+    | '/settings/users/$slug/password'
+    | '/agents/$id/conversations'
+    | '/settings/users/$slug'
     | '/agents/$id/drafts/$draftId/compare'
   id:
     | '__root__'
@@ -737,6 +805,7 @@ export interface FileRouteTypes {
     | '/_authenticated/notifications'
     | '/_authenticated/ratings'
     | '/_authenticated/settings'
+    | '/_authenticated/transcription'
     | '/_authenticated/workflows'
     | '/_authenticated/'
     | '/_authenticated/adapters/new'
@@ -779,10 +848,15 @@ export interface FileRouteTypes {
     | '/_authenticated/agents/$id/versions'
     | '/_authenticated/agents/$id/webhooks'
     | '/_authenticated/agents/$id/workflows'
+    | '/_authenticated/settings_/users/$slug'
     | '/_authenticated/agents/$id/'
     | '/_authenticated/agents/$id/benchmarks/$runId'
+    | '/_authenticated/agents/$id/conversations/$convId'
     | '/_authenticated/agents/$id/drafts/$draftId'
     | '/_authenticated/agents/$id/eval-runs/$runId'
+    | '/_authenticated/settings_/users/$slug/password'
+    | '/_authenticated/agents/$id/conversations/'
+    | '/_authenticated/settings_/users/$slug/'
     | '/_authenticated/agents/$id/drafts/$draftId/compare'
   fileRoutesById: FileRoutesById
 }
@@ -819,6 +893,13 @@ declare module '@tanstack/react-router' {
       path: '/workflows'
       fullPath: '/workflows'
       preLoaderRoute: typeof AuthenticatedWorkflowsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/transcription': {
+      id: '/_authenticated/transcription'
+      path: '/transcription'
+      fullPath: '/transcription'
+      preLoaderRoute: typeof AuthenticatedTranscriptionRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/settings': {
@@ -1052,6 +1133,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAgentsIdIndexRouteImport
       parentRoute: typeof AuthenticatedAgentsIdRoute
     }
+    '/_authenticated/settings_/users/$slug': {
+      id: '/_authenticated/settings_/users/$slug'
+      path: '/settings/users/$slug'
+      fullPath: '/settings/users/$slug'
+      preLoaderRoute: typeof AuthenticatedSettingsUsersSlugRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/agents/$id/workflows': {
       id: '/_authenticated/agents/$id/workflows'
       path: '/workflows'
@@ -1192,6 +1280,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAgentsIdBenchmarksRouteImport
       parentRoute: typeof AuthenticatedAgentsIdRoute
     }
+    '/_authenticated/settings_/users/$slug/': {
+      id: '/_authenticated/settings_/users/$slug/'
+      path: '/'
+      fullPath: '/settings/users/$slug/'
+      preLoaderRoute: typeof AuthenticatedSettingsUsersSlugIndexRouteImport
+      parentRoute: typeof AuthenticatedSettingsUsersSlugRoute
+    }
+    '/_authenticated/agents/$id/conversations/': {
+      id: '/_authenticated/agents/$id/conversations/'
+      path: '/'
+      fullPath: '/agents/$id/conversations/'
+      preLoaderRoute: typeof AuthenticatedAgentsIdConversationsIndexRouteImport
+      parentRoute: typeof AuthenticatedAgentsIdConversationsRoute
+    }
+    '/_authenticated/settings_/users/$slug/password': {
+      id: '/_authenticated/settings_/users/$slug/password'
+      path: '/password'
+      fullPath: '/settings/users/$slug/password'
+      preLoaderRoute: typeof AuthenticatedSettingsUsersSlugPasswordRouteImport
+      parentRoute: typeof AuthenticatedSettingsUsersSlugRoute
+    }
     '/_authenticated/agents/$id/eval-runs/$runId': {
       id: '/_authenticated/agents/$id/eval-runs/$runId'
       path: '/eval-runs/$runId'
@@ -1205,6 +1314,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/agents/$id/drafts/$draftId'
       preLoaderRoute: typeof AuthenticatedAgentsIdDraftsDraftIdRouteImport
       parentRoute: typeof AuthenticatedAgentsIdRoute
+    }
+    '/_authenticated/agents/$id/conversations/$convId': {
+      id: '/_authenticated/agents/$id/conversations/$convId'
+      path: '/$convId'
+      fullPath: '/agents/$id/conversations/$convId'
+      preLoaderRoute: typeof AuthenticatedAgentsIdConversationsConvIdRouteImport
+      parentRoute: typeof AuthenticatedAgentsIdConversationsRoute
     }
     '/_authenticated/agents/$id/benchmarks/$runId': {
       id: '/_authenticated/agents/$id/benchmarks/$runId'
@@ -1253,6 +1369,24 @@ const AuthenticatedAgentsIdBenchmarksRouteWithChildren =
     AuthenticatedAgentsIdBenchmarksRouteChildren,
   )
 
+interface AuthenticatedAgentsIdConversationsRouteChildren {
+  AuthenticatedAgentsIdConversationsConvIdRoute: typeof AuthenticatedAgentsIdConversationsConvIdRoute
+  AuthenticatedAgentsIdConversationsIndexRoute: typeof AuthenticatedAgentsIdConversationsIndexRoute
+}
+
+const AuthenticatedAgentsIdConversationsRouteChildren: AuthenticatedAgentsIdConversationsRouteChildren =
+  {
+    AuthenticatedAgentsIdConversationsConvIdRoute:
+      AuthenticatedAgentsIdConversationsConvIdRoute,
+    AuthenticatedAgentsIdConversationsIndexRoute:
+      AuthenticatedAgentsIdConversationsIndexRoute,
+  }
+
+const AuthenticatedAgentsIdConversationsRouteWithChildren =
+  AuthenticatedAgentsIdConversationsRoute._addFileChildren(
+    AuthenticatedAgentsIdConversationsRouteChildren,
+  )
+
 interface AuthenticatedAgentsIdDraftsDraftIdRouteChildren {
   AuthenticatedAgentsIdDraftsDraftIdCompareRoute: typeof AuthenticatedAgentsIdDraftsDraftIdCompareRoute
 }
@@ -1274,7 +1408,7 @@ interface AuthenticatedAgentsIdRouteChildren {
   AuthenticatedAgentsIdCircuitBreakerRoute: typeof AuthenticatedAgentsIdCircuitBreakerRoute
   AuthenticatedAgentsIdComplianceRoute: typeof AuthenticatedAgentsIdComplianceRoute
   AuthenticatedAgentsIdConfigRoute: typeof AuthenticatedAgentsIdConfigRoute
-  AuthenticatedAgentsIdConversationsRoute: typeof AuthenticatedAgentsIdConversationsRoute
+  AuthenticatedAgentsIdConversationsRoute: typeof AuthenticatedAgentsIdConversationsRouteWithChildren
   AuthenticatedAgentsIdCronRoute: typeof AuthenticatedAgentsIdCronRoute
   AuthenticatedAgentsIdEvaluationRoute: typeof AuthenticatedAgentsIdEvaluationRoute
   AuthenticatedAgentsIdHandoffsRoute: typeof AuthenticatedAgentsIdHandoffsRoute
@@ -1303,7 +1437,7 @@ const AuthenticatedAgentsIdRouteChildren: AuthenticatedAgentsIdRouteChildren = {
   AuthenticatedAgentsIdComplianceRoute: AuthenticatedAgentsIdComplianceRoute,
   AuthenticatedAgentsIdConfigRoute: AuthenticatedAgentsIdConfigRoute,
   AuthenticatedAgentsIdConversationsRoute:
-    AuthenticatedAgentsIdConversationsRoute,
+    AuthenticatedAgentsIdConversationsRouteWithChildren,
   AuthenticatedAgentsIdCronRoute: AuthenticatedAgentsIdCronRoute,
   AuthenticatedAgentsIdEvaluationRoute: AuthenticatedAgentsIdEvaluationRoute,
   AuthenticatedAgentsIdHandoffsRoute: AuthenticatedAgentsIdHandoffsRoute,
@@ -1407,6 +1541,24 @@ const AuthenticatedWorkflowsRouteWithChildren =
     AuthenticatedWorkflowsRouteChildren,
   )
 
+interface AuthenticatedSettingsUsersSlugRouteChildren {
+  AuthenticatedSettingsUsersSlugPasswordRoute: typeof AuthenticatedSettingsUsersSlugPasswordRoute
+  AuthenticatedSettingsUsersSlugIndexRoute: typeof AuthenticatedSettingsUsersSlugIndexRoute
+}
+
+const AuthenticatedSettingsUsersSlugRouteChildren: AuthenticatedSettingsUsersSlugRouteChildren =
+  {
+    AuthenticatedSettingsUsersSlugPasswordRoute:
+      AuthenticatedSettingsUsersSlugPasswordRoute,
+    AuthenticatedSettingsUsersSlugIndexRoute:
+      AuthenticatedSettingsUsersSlugIndexRoute,
+  }
+
+const AuthenticatedSettingsUsersSlugRouteWithChildren =
+  AuthenticatedSettingsUsersSlugRoute._addFileChildren(
+    AuthenticatedSettingsUsersSlugRouteChildren,
+  )
+
 interface AuthenticatedRouteChildren {
   AuthenticatedAccountRoute: typeof AuthenticatedAccountRoute
   AuthenticatedAdaptersRoute: typeof AuthenticatedAdaptersRouteWithChildren
@@ -1420,6 +1572,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedRatingsRoute: typeof AuthenticatedRatingsRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
+  AuthenticatedTranscriptionRoute: typeof AuthenticatedTranscriptionRoute
   AuthenticatedWorkflowsRoute: typeof AuthenticatedWorkflowsRouteWithChildren
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
   AuthenticatedSettingsOtelRoute: typeof AuthenticatedSettingsOtelRoute
@@ -1428,6 +1581,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedFleetIndexRoute: typeof AuthenticatedFleetIndexRoute
   AuthenticatedInboxIndexRoute: typeof AuthenticatedInboxIndexRoute
   AuthenticatedSecurityIndexRoute: typeof AuthenticatedSecurityIndexRoute
+  AuthenticatedSettingsUsersSlugRoute: typeof AuthenticatedSettingsUsersSlugRouteWithChildren
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
@@ -1443,6 +1597,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedRatingsRoute: AuthenticatedRatingsRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
+  AuthenticatedTranscriptionRoute: AuthenticatedTranscriptionRoute,
   AuthenticatedWorkflowsRoute: AuthenticatedWorkflowsRouteWithChildren,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
   AuthenticatedSettingsOtelRoute: AuthenticatedSettingsOtelRoute,
@@ -1451,6 +1606,8 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedFleetIndexRoute: AuthenticatedFleetIndexRoute,
   AuthenticatedInboxIndexRoute: AuthenticatedInboxIndexRoute,
   AuthenticatedSecurityIndexRoute: AuthenticatedSecurityIndexRoute,
+  AuthenticatedSettingsUsersSlugRoute:
+    AuthenticatedSettingsUsersSlugRouteWithChildren,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(

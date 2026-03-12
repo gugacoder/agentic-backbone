@@ -67,7 +67,7 @@ export function LlmPlanCard({
                   <span className="text-muted-foreground">
                     {roleLabels[role] ?? role}
                   </span>
-                  <code className="text-xs bg-muted px-1.5 py-0.5 rounded">
+                  <code className="text-xs bg-muted px-1.5 py-0.5 rounded truncate max-w-[160px]">
                     {slug ? formatModelName(slug.llm.model) : slugName}
                   </code>
                 </div>

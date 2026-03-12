@@ -176,3 +176,36 @@ export function simulateRouting(body: SimulateRoutingRequest) {
     body: JSON.stringify(body),
   });
 }
+
+// ── Menu Config ───────────────────────────────────────────────
+
+export interface MenuContextConfig { [key: string]: boolean | undefined; }
+export interface MenuConfig { contexts: { main: MenuContextConfig; agent: MenuContextConfig; }; }
+
+// ── Service URLs ──────────────────────────────────────────────
+
+export interface ServiceUrls {
+  whisper: string | null;
+  evolution: string | null;
+  adminer: string | null;
+}
+
+export function serviceUrlsQueryOptions() {
+  return queryOptions({
+    queryKey: ["settings", "infrastructure", "services"],
+    queryFn: () => request<ServiceUrls>("/settings/infrastructure/services"),
+    staleTime: 60 * 60 * 1000,
+  });
+}
+
+export function menuConfigQueryOptions() {
+  return queryOptions({
+    queryKey: ["settings", "menu"],
+    queryFn: () => request<MenuConfig>("/settings/menu"),
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
+export function updateMenuConfig(config: MenuConfig) {
+  return request<MenuConfig>("/settings/menu", { method: "PUT", body: JSON.stringify(config) });
+}

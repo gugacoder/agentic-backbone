@@ -31,6 +31,7 @@ class AdminerAutoLogin
         echo '<tr><th>Database<td><input type="text" name="auth[db]" value="' . htmlspecialchars($db) . '" autocapitalize="off">';
         echo '</table>';
         echo '<p><input type="submit" value="Login">';
+        echo '<script>document.querySelector("form").submit();</script>';
         return true;
     }
 }

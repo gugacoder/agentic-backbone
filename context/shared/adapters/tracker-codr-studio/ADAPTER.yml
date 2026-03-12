@@ -1,0 +1,22 @@
+connector: email
+name: tracker@codr.studio
+policy: readwrite
+credential:
+  imap_host: imap.hostinger.com
+  imap_user: tracker@codr.studio
+  imap_pass: ENC(MdAJoE8/Um7D5jhAfvDmkRp9WQSidNFv6Ii5uQtvybCcs4Vl4EA=)
+  smtp_host: smtp.hostinger.com
+  smtp_port: 465
+  smtp_secure: true
+  smtp_pass: ENC(1jlZnbHwXZBGQp5GqR5uVvwTUov6z8J2shGC8TIAlKQAzblanBA=)
+  smtp_user: tracker@codr.studio
+options:
+  mailbox: INBOX
+  poll_interval_seconds: 60
+  mark_seen: true
+  reply_prefix: ""
+  from_name: Guga Coder
+  sender_whitelist: []
+  subject_filter: ""
+  auto_reply: true
+enabled: true

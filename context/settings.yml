@@ -1,3 +1,39 @@
-active-plan: standard
+active-plan: economic
 web-search:
   provider: brave
+menu:
+  contexts:
+    main:
+      workflows: false
+      inbox: false
+      aprovacoes: false
+      analytics: false
+      ratings: false
+      seguranca: false
+      conformidade: false
+      fleet: false
+      opentelemetry: false
+    agent:
+      knowledge: true
+      versoes: false
+      quotas: false
+      conformidade: false
+      circuit_breaker: false
+      avaliacao: false
+      qualidade: false
+      benchmarks: false
+infrastructure:
+  ngrok:
+    authtoken: ENC(OjPp6xqMG/aHI7hDhvoA5qC8EALzo4R2W46arf424JrYzLcDUVh4ZL4Y0uMPBpsx3zYt77mokoWVa5xKRfZP0R5t6fXWYo2ol5IEgUg=)
+    domain: nonporphyritic-microcrystalline-kenya.ngrok-free.dev
+    enabled: true
+  whisper:
+    model: small
+    compute-type: int8
+providers:
+  openrouter:
+    api_key: ENC(e9pvJUQZaBd3ggGZebF39Gg5Ahs+ExndVz2+3r7tRVT+WrsAr0W72wJy/cQB5Ym60tZO0NPVkDMSlPYHoG3RKxBK5qVlEfXOzixHx/TgkMdgwgDXtM05v85qx8/5NwPAy3z0FkY=)
+  openai:
+    api_key: ENC(JXZzD1SPT+BCEAVz+x9xLabusDqZoWrNPt8Wgupu0YvAP3gT+fCs6Ebavh2LBrujFtskte06vJ1ZaOfm7Dd2fSJ/01W9+7xblA/XDNgBwqrpG7VsIDzl8b0pUlNSdKdwBSEw6t5+N6dTUwN6q11YhwppSJy6qUh7frO1feJFbMNQP4UAj5FmFtMc6EIOm+BlXhuhdMZsnKHIbMw0tekCjNeTCkqbNM6RitsvcVai7SZIQeOw5nJbSDBDsuMjLqmt)
+  brave:
+    api_key: ENC(wdjVg9oUTWfV5Jf3rTDUdKU6cnBle+6zretvZ+nJy0bg8G4RIbHNQWedawayJS+qi5e5nMCePypwBUE=)

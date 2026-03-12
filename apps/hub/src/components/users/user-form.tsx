@@ -45,6 +45,7 @@ export function UserForm({
   const [slug, setSlug] = useState(user?.slug ?? "");
   const [displayName, setDisplayName] = useState(user?.displayName ?? "");
   const [email, setEmail] = useState(user?.email ?? "");
+  const [role, setRole] = useState(user?.role ?? "");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [canCreateAgents, setCanCreateAgents] = useState(
@@ -65,6 +66,7 @@ export function UserForm({
       setSlug("");
       setDisplayName("");
       setEmail("");
+      setRole("");
       setPassword("");
       setConfirmPassword("");
       setCanCreateAgents(true);
@@ -128,7 +130,7 @@ export function UserForm({
 
   const agentsQuery = useQuery({
     ...userAgentsQueryOptions(user?.slug ?? ""),
-    enabled: isEditing && !!user?.slug && user.slug !== "system",
+    enabled: isEditing && !!user?.slug,
   });
   const agentCount = agentsQuery.data?.length ?? 0;
 
@@ -171,13 +173,6 @@ export function UserForm({
       if (password !== confirmPassword) {
         errs.confirmPassword = "Senhas nao conferem";
       }
-    } else {
-      if (password && password.length < 6) {
-        errs.password = "Senha deve ter no minimo 6 caracteres";
-      }
-      if (password && password !== confirmPassword) {
-        errs.confirmPassword = "Senhas nao conferem";
-      }
     }
 
     const maxNum = Number(maxAgents);
@@ -202,15 +197,12 @@ export function UserForm({
     };
 
     if (isEditing) {
-      const payload: Parameters<typeof updateUser>[1] = {
+      updateMutation.mutate({
         displayName: displayName.trim(),
         email: email.trim() || undefined,
+        role: role.trim() || null,
         permissions,
-      };
-      if (password) {
-        payload.password = password;
-      }
-      updateMutation.mutate(payload);
+      });
     } else {
       createMutation.mutate({
         slug: slug.trim(),
@@ -300,51 +292,68 @@ export function UserForm({
               )}
             </div>
 
-            {/* Senha */}
-            <div className="space-y-2">
-              <Label htmlFor="user-password">
-                Senha{isEditing ? " (deixe vazio para manter)" : ""}
-              </Label>
-              <Input
-                id="user-password"
-                type="password"
-                placeholder={isEditing ? "Nova senha (opcional)" : "Minimo 6 caracteres"}
-                value={password}
-                onChange={(e) => {
-                  setPassword(e.target.value);
-                  setErrors((prev) => ({
-                    ...prev,
-                    password: undefined!,
-                    confirmPassword: undefined!,
-                  }));
-                }}
-                aria-invalid={!!errors.password}
-              />
-              {errors.password && (
-                <p className="text-sm text-destructive">{errors.password}</p>
-              )}
-            </div>
-
-            {/* Confirmar senha */}
-            <div className="space-y-2">
-              <Label htmlFor="user-confirm-password">Confirmar Senha</Label>
-              <Input
-                id="user-confirm-password"
-                type="password"
-                placeholder="Repita a senha"
-                value={confirmPassword}
-                onChange={(e) => {
-                  setConfirmPassword(e.target.value);
-                  setErrors((prev) => ({ ...prev, confirmPassword: undefined! }));
-                }}
-                aria-invalid={!!errors.confirmPassword}
-              />
-              {errors.confirmPassword && (
-                <p className="text-sm text-destructive">
-                  {errors.confirmPassword}
+            {/* Role — apenas em edição */}
+            {isEditing && (
+              <div className="space-y-2">
+                <Label htmlFor="user-role">Papel (role)</Label>
+                <Input
+                  id="user-role"
+                  placeholder="sysadmin (deixe vazio para usuario comum)"
+                  value={role}
+                  onChange={(e) => setRole(e.target.value)}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Use "sysadmin" para conceder acesso de administrador.
                 </p>
-              )}
-            </div>
+              </div>
+            )}
+
+            {/* Senha — apenas na criação */}
+            {!isEditing && (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="user-password">Senha</Label>
+                  <Input
+                    id="user-password"
+                    type="password"
+                    placeholder="Minimo 6 caracteres"
+                    value={password}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      setErrors((prev) => ({
+                        ...prev,
+                        password: undefined!,
+                        confirmPassword: undefined!,
+                      }));
+                    }}
+                    aria-invalid={!!errors.password}
+                  />
+                  {errors.password && (
+                    <p className="text-sm text-destructive">{errors.password}</p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="user-confirm-password">Confirmar Senha</Label>
+                  <Input
+                    id="user-confirm-password"
+                    type="password"
+                    placeholder="Repita a senha"
+                    value={confirmPassword}
+                    onChange={(e) => {
+                      setConfirmPassword(e.target.value);
+                      setErrors((prev) => ({ ...prev, confirmPassword: undefined! }));
+                    }}
+                    aria-invalid={!!errors.confirmPassword}
+                  />
+                  {errors.confirmPassword && (
+                    <p className="text-sm text-destructive">
+                      {errors.confirmPassword}
+                    </p>
+                  )}
+                </div>
+              </>
+            )}
 
             {/* Permissoes */}
             <fieldset className="space-y-4">
@@ -394,7 +403,7 @@ export function UserForm({
               <p className="text-sm text-destructive">{backendError}</p>
             )}
 
-            {isEditing && !isSystemUser && agentCount > 0 && (
+            {isEditing && agentCount > 0 && (
               <p className="text-sm text-muted-foreground">
                 Este usuario possui {agentCount} agente{agentCount !== 1 ? "s" : ""}.
               </p>

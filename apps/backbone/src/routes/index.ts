@@ -41,6 +41,7 @@ import { complianceRoutes } from "./compliance.js";
 import { fleetRoutes } from "./fleet.js";
 import { otelRoutes } from "./otel.js";
 import { billingRoutes } from "./billing.js";
+import { transcriptionRoutes } from "./transcriptions.js";
 import { initMcpServerRoutes } from "../mcp-server/index.js";
 import { getHeartbeatStatus } from "../heartbeat/index.js";
 import { listAgents } from "../agents/registry.js";
@@ -171,6 +172,7 @@ routes.route("/", complianceRoutes);
 routes.route("/", fleetRoutes);
 routes.route("/", otelRoutes);
 routes.route("/", billingRoutes);
+routes.route("/", transcriptionRoutes);
 
 // MCP Server — registers GET /mcp/sse + POST /mcp/message directly on routes
 initMcpServerRoutes(routes);

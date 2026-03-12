@@ -11,6 +11,7 @@ export interface User {
   slug: string;
   displayName: string;
   email: string;
+  role?: string;
   permissions: UserPermissions;
 }
 
@@ -32,8 +33,16 @@ export interface CreateUserPayload {
 export interface UpdateUserPayload {
   displayName?: string;
   email?: string;
-  password?: string;
+  role?: string | null;
   permissions?: Partial<UserPermissions>;
+}
+
+export function userQueryOptions(slug: string) {
+  return queryOptions({
+    queryKey: ["users", slug],
+    queryFn: () => request<User>(`/users/${encodeURIComponent(slug)}`),
+    enabled: !!slug,
+  });
 }
 
 export function createUser(payload: CreateUserPayload) {
@@ -47,6 +56,13 @@ export function updateUser(slug: string, payload: UpdateUserPayload) {
   return request<User>(`/users/${encodeURIComponent(slug)}`, {
     method: "PATCH",
     body: JSON.stringify(payload),
+  });
+}
+
+export function changePassword(slug: string, password: string) {
+  return request<User>(`/users/${encodeURIComponent(slug)}`, {
+    method: "PATCH",
+    body: JSON.stringify({ password }),
   });
 }
 

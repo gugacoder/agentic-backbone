@@ -425,6 +425,9 @@ db.exec(`
 try { db.exec(`ALTER TABLE sessions ADD COLUMN orchestration_path TEXT`); } catch {}
 try { db.exec(`ALTER TABLE sessions ADD COLUMN current_agent_id TEXT`); } catch {}
 
+// Idempotent migration: add starred column
+try { db.exec(`ALTER TABLE sessions ADD COLUMN starred INTEGER NOT NULL DEFAULT 0`); } catch {}
+
 db.exec(`
   CREATE TABLE IF NOT EXISTS agent_quotas (
     id                   INTEGER PRIMARY KEY AUTOINCREMENT,

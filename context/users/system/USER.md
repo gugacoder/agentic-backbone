@@ -1,6 +1,10 @@
 ---
 slug: system
-displayName: System
+displayName: Super Admin
+role: sysadmin
+canCreateAgents: true
+canCreateChannels: true
+#maxAgents: 5
 ---
 
 # System User

@@ -29,6 +29,7 @@ export interface Session {
   channel_id: string | null;
   sdk_session_id: string | null;
   title: string | null;
+  starred: number;
   takeover_by: string | null;
   takeover_at: string | null;
   orchestration_path: string | null;
@@ -58,7 +59,7 @@ const insertSession = db.prepare(
 );
 
 const selectSession = db.prepare(
-  `SELECT session_id, user_id, agent_id, channel_id, sdk_session_id, title, takeover_by, takeover_at, orchestration_path, current_agent_id, created_at, updated_at
+  `SELECT session_id, user_id, agent_id, channel_id, sdk_session_id, title, starred, takeover_by, takeover_at, orchestration_path, current_agent_id, created_at, updated_at
    FROM sessions WHERE session_id = ?`
 );
 
@@ -68,27 +69,27 @@ const setSdkSessionId = db.prepare(
 );
 
 const selectAllSessions = db.prepare(
-  `SELECT session_id, user_id, agent_id, channel_id, sdk_session_id, title, takeover_by, takeover_at, orchestration_path, current_agent_id, created_at, updated_at
+  `SELECT session_id, user_id, agent_id, channel_id, sdk_session_id, title, starred, takeover_by, takeover_at, orchestration_path, current_agent_id, created_at, updated_at
    FROM sessions ORDER BY updated_at DESC`
 );
 
 const selectSessionsByUser = db.prepare(
-  `SELECT session_id, user_id, agent_id, channel_id, sdk_session_id, title, takeover_by, takeover_at, orchestration_path, current_agent_id, created_at, updated_at
+  `SELECT session_id, user_id, agent_id, channel_id, sdk_session_id, title, starred, takeover_by, takeover_at, orchestration_path, current_agent_id, created_at, updated_at
    FROM sessions WHERE user_id = ? ORDER BY updated_at DESC`
 );
 
 const selectSessionsByUserAndAgent = db.prepare(
-  `SELECT session_id, user_id, agent_id, channel_id, sdk_session_id, title, takeover_by, takeover_at, orchestration_path, current_agent_id, created_at, updated_at
+  `SELECT session_id, user_id, agent_id, channel_id, sdk_session_id, title, starred, takeover_by, takeover_at, orchestration_path, current_agent_id, created_at, updated_at
    FROM sessions WHERE user_id = ? AND agent_id = ? ORDER BY updated_at DESC`
 );
 
 const selectSessionsByAgent = db.prepare(
-  `SELECT session_id, user_id, agent_id, channel_id, sdk_session_id, title, takeover_by, takeover_at, orchestration_path, current_agent_id, created_at, updated_at
+  `SELECT session_id, user_id, agent_id, channel_id, sdk_session_id, title, starred, takeover_by, takeover_at, orchestration_path, current_agent_id, created_at, updated_at
    FROM sessions WHERE agent_id = ? ORDER BY updated_at DESC`
 );
 
 const findSessionByChannelKey = db.prepare(
-  `SELECT session_id, user_id, agent_id, channel_id, sdk_session_id, title, takeover_by, takeover_at, orchestration_path, current_agent_id, created_at, updated_at
+  `SELECT session_id, user_id, agent_id, channel_id, sdk_session_id, title, starred, takeover_by, takeover_at, orchestration_path, current_agent_id, created_at, updated_at
    FROM sessions WHERE agent_id = ? AND user_id = ? AND channel_id = ?
    ORDER BY updated_at DESC LIMIT 1`
 );
@@ -101,6 +102,11 @@ const lastActiveChannel = db.prepare(
 
 const updateSessionTitle = db.prepare(
   `UPDATE sessions SET title = ?, updated_at = datetime('now')
+   WHERE session_id = ?`
+);
+
+const updateSessionStarred = db.prepare(
+  `UPDATE sessions SET starred = ?, updated_at = datetime('now')
    WHERE session_id = ?`
 );
 
@@ -141,6 +147,7 @@ export function createSession(userId: string, agentId = "system.main", channelId
     channel_id: channelId ?? null,
     sdk_session_id: null,
     title: null,
+    starred: 0,
     takeover_by: null,
     takeover_at: null,
     orchestration_path: null,
@@ -169,13 +176,17 @@ export function listSessions(userId?: string, agentId?: string): Session[] {
 
 export function updateSession(
   sessionId: string,
-  updates: { title?: string }
+  updates: { title?: string; starred?: boolean }
 ): Session | null {
   const session = getSession(sessionId);
   if (!session) return null;
 
   if (updates.title !== undefined) {
     updateSessionTitle.run(updates.title, sessionId);
+  }
+
+  if (updates.starred !== undefined) {
+    updateSessionStarred.run(updates.starred ? 1 : 0, sessionId);
   }
 
   return getSession(sessionId);

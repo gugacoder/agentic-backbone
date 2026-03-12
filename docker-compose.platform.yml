@@ -102,23 +102,6 @@ services:
     restart: unless-stopped
 
   # ===========================================================================
-  # ngrok (Tunel publico para webhooks Twilio)
-  # ===========================================================================
-  ngrok:
-    image: ngrok/ngrok:latest
-    restart: unless-stopped
-    environment:
-      NGROK_AUTHTOKEN: ${NGROK_AUTHTOKEN}
-    command: http backbone.internal:${BACKBONE_PORT} --url ${NGROK_DOMAIN}
-    networks:
-      - internal
-    healthcheck:
-      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://localhost:4040/api/tunnels"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
-
-  # ===========================================================================
   # Adminer (Database GUI)
   # ===========================================================================
   adminer:

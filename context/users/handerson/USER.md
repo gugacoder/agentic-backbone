@@ -1,9 +1,9 @@
 ---
 slug: handerson
-displayName: Handerson
+displayName: Handerson Silva
+email: ""
 canCreateAgents: true
 canCreateChannels: true
 maxAgents: 200
 ---
-
-# Handerson
+# Handerson Silva

@@ -106,7 +106,7 @@ conversationRoutes.patch("/conversations/:sessionId", async (c) => {
   if (!session) return c.json({ error: "not found" }, 404);
   const denied = assertSessionOwnership(c, session);
   if (denied) return denied;
-  const body = await c.req.json<{ title?: string }>();
+  const body = await c.req.json<{ title?: string; starred?: boolean }>();
   const updated = updateSession(sessionId, body);
   if (!updated) return c.json({ error: "not found" }, 404);
   return c.json(updated);
@@ -236,5 +236,10 @@ conversationRoutes.get("/conversations/:sessionId/export", (c) => {
     });
   }
 
-  return c.json({ session, messages });
+  return new Response(JSON.stringify({ session, messages }), {
+    headers: {
+      "Content-Type": "application/json",
+      "Content-Disposition": `attachment; filename="conversation-${sessionId}.json"`,
+    },
+  });
 });

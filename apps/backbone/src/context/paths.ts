@@ -102,6 +102,10 @@ export function agentConfigPath(agentId: string): string {
   return join(agentDir(agentId), "AGENT.yml");
 }
 
+export function agentWorkspaceDir(agentId: string): string {
+  return join(agentDir(agentId), "workspace");
+}
+
 export function ownerUserPath(ownerSlug: string): string {
   return join(userDir(ownerSlug), "USER.md");
 }

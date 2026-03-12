@@ -124,6 +124,7 @@ function FileEditor({ agentId, filename }: { agentId: string; filename: string }
   const [content, setContent] = useState<string | null>(null);
   const [changeNote, setChangeNote] = useState("");
   const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
+  const [isPreview, setIsPreview] = useState(true);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const savedRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const changeNoteRef = useRef(changeNote);
@@ -188,19 +189,22 @@ function FileEditor({ agentId, filename }: { agentId: string; filename: string }
         onChange={handleChange}
         saveStatus={saveStatus}
         placeholder={`Escreva o conteudo de ${filename}...`}
+        onPreviewChange={setIsPreview}
       />
-      <div className="flex flex-col gap-1">
-        <label className="text-xs text-muted-foreground">
-          Nota sobre esta mudanca (opcional)
-        </label>
-        <input
-          type="text"
-          value={changeNote}
-          onChange={(e) => setChangeNote(e.target.value)}
-          placeholder="Ex: Ajuste no tom de comunicacao"
-          className="h-8 rounded-md border border-input bg-background px-3 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        />
-      </div>
+      {!isPreview && (
+        <div className="flex flex-col gap-1">
+          <label className="text-xs text-muted-foreground">
+            Nota sobre esta mudanca (opcional)
+          </label>
+          <input
+            type="text"
+            value={changeNote}
+            onChange={(e) => setChangeNote(e.target.value)}
+            placeholder="Ex: Ajuste no tom de comunicacao"
+            className="h-8 rounded-md border border-input bg-background px-3 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          />
+        </div>
+      )}
     </div>
   );
 }

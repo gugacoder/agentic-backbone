@@ -1,0 +1,7 @@
+connector: http
+name: Open-Meteo Weather
+policy: readwrite
+credential:
+  baseUrl: https://wttr.in
+options: {}
+enabled: true

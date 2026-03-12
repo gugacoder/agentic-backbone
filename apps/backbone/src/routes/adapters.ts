@@ -69,9 +69,8 @@ connectorAdapterRoutes.post("/adapters/:slug/test", async (c) => {
   const slug = c.req.param("slug");
   try {
     const result = await connectorRegistry.testAdapter(slug);
-    const status = result.ok ? 200 : 502;
-    return c.json(result, status);
+    return c.json(result);
   } catch (err) {
-    return c.json({ ok: false, error: formatError(err) }, 500);
+    return c.json({ ok: false, error: formatError(err) });
   }
 });

@@ -226,6 +226,11 @@ async function pollAdapter(adapterId: string): Promise<void> {
 
   const cred = credResult.data;
   const opts = optsResult.data;
+  // agent_id is not in optionsSchema (email runs as tool, not channel by default)
+  // but still supports channel mode if manually configured in ADAPTER.yml
+  const agentId = typeof (adapter.options as Record<string, unknown>)?.agent_id === "string"
+    ? (adapter.options as Record<string, unknown>).agent_id as string
+    : undefined;
   const state = loadState(adapterId);
 
   const statusEntry = pollingStatus.get(adapterId) ?? {
@@ -301,11 +306,17 @@ async function pollAdapter(adapterId: string): Promise<void> {
       }
     }
 
+    if (!agentId) {
+      state.processedMessageIds.push(email.messageId);
+      if (opts.mark_seen) toMarkSeen.push(email.uid);
+      continue;
+    }
+
     try {
       await processEmail(
         email,
         adapterId,
-        opts.agent_id,
+        agentId,
         state,
         client,
         opts.auto_reply,

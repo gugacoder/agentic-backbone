@@ -258,6 +258,14 @@ export class EmailClient {
   }
 
   /**
+   * Generic ping used by testAdapter in registry — delegates to testImap.
+   */
+  async ping(): Promise<{ ok: boolean; error?: string }> {
+    const result = await this.testImap();
+    return result.ok ? { ok: true } : { ok: false, error: result.error };
+  }
+
+  /**
    * Test IMAP connectivity. Returns { ok, latencyMs, mailbox, unreadCount }.
    */
   async testImap(): Promise<{ ok: boolean; latencyMs: number; mailbox: string; unreadCount: number; error?: string }> {

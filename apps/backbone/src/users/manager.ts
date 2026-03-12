@@ -46,6 +46,7 @@ function parseUserConfig(slug: string): UserConfig | null {
     slug: md.slug ?? slug,
     displayName: md.displayName ?? slug,
     email,
+    role: md.role,
     permissions: {
       canCreateAgents: md.canCreateAgents,
       canCreateChannels: md.canCreateChannels,
@@ -166,6 +167,7 @@ export function updateUser(
     displayName?: string;
     email?: string;
     password?: string;
+    role?: string | null;
     permissions?: Partial<UserPermissions>;
   }
 ): UserConfig | null {
@@ -177,12 +179,14 @@ export function updateUser(
 
   const displayName = updates.displayName ?? current.displayName;
   const email = updates.email ?? current.email;
+  const role = updates.role !== undefined ? (updates.role || undefined) : current.role;
   const perms = { ...current.permissions, ...updates.permissions };
 
   // Update USER.md (profile only)
   writeMarkdownAs(mdPath, {
     slug,
     displayName,
+    role,
     canCreateAgents: perms.canCreateAgents,
     canCreateChannels: perms.canCreateChannels,
     maxAgents: perms.maxAgents,
@@ -197,7 +201,7 @@ export function updateUser(
 
   writeYamlAs(credPath, cred, CredentialYmlSchema);
 
-  return { slug, displayName, email, permissions: perms };
+  return { slug, displayName, email, role, permissions: perms };
 }
 
 export function deleteUser(slug: string): boolean {
