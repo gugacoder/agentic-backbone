@@ -1,0 +1,9 @@
+connector: gitlab
+name: Implantacao
+policy: readwrite
+credential:
+  base_url: http://gitlab.processa.info/
+  token: ENC(JQmzyif6TG8v/Vc8iHjkMA+n+R5hL/kb51w/B4i+Sfbxsc9zrZjTfuEOBIBbKtrKQ8v4uVj2HYrierETwz7iZpNPOkWBjGITV7Uopw6+QjUP)
+options:
+  default_project: nic/automacao/implantacao
+enabled: true

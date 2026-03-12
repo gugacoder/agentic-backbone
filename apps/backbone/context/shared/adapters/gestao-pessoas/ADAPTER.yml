@@ -1,0 +1,4 @@
+connector: gitlab
+options:
+  default_project: nic/automacao/gestao-pessoas
+policy: readwrite
