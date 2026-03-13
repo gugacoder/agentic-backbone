@@ -25,7 +25,7 @@ export async function routeInboundMessage(
     return;
   }
 
-  const rawAllowed = channel.metadata["allowed-senders"];
+  const rawAllowed = channel.options["allowed-senders"];
   if (rawAllowed) {
     const allowedSenders = Array.isArray(rawAllowed)
       ? rawAllowed.map(String)
@@ -36,7 +36,7 @@ export async function routeInboundMessage(
     }
   }
 
-  const agentId = channel.metadata.agent as string | undefined;
+  const agentId = channel.agent;
   if (!agentId) {
     console.warn(
       `[inbound-router] channel "${channelId}" has no agent configured`
@@ -52,7 +52,7 @@ export async function routeInboundMessage(
 
   const session = findOrCreateSession(agentId, message.senderId, channelId);
   const sessionId = session.session_id;
-  const adapterSlug = (channel.metadata["channel-adapter"] as string) ?? channelId;
+  const adapterSlug = channel["channel-adapter"] ?? channelId;
 
   const prefixedContent = `[canal: ${adapterSlug}] ${content}`;
 

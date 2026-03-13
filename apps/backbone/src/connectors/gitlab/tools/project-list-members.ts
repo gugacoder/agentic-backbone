@@ -1,6 +1,7 @@
 import { tool } from "ai";
 import { z } from "zod";
 import { formatError } from "../../../utils/errors.js";
+import { createProjectsResource } from "@agentic-backbone/gitlab-v4";
 
 export function createGitLabProjectListMembersTool(adapters: { slug: string; policy: string }[]): Record<string, any> {
   const slugs = adapters.map((a) => a.slug) as [string, ...string[]];
@@ -17,21 +18,11 @@ export function createGitLabProjectListMembersTool(adapters: { slug: string; pol
       execute: async (args) => {
         try {
           const { connectorRegistry } = await import("../../index.js");
-          const adapterSlug = args.adapter ?? defaultSlug;
-          const client = connectorRegistry.createClient(adapterSlug) as any;
+          const client = connectorRegistry.createClient(args.adapter ?? defaultSlug) as any;
           const project = args.project ?? client.defaultProject;
           if (!project) return { error: "Projeto não especificado e sem default configurado" };
-          const id = await client.resolveProjectId(project);
-          const data = await client.request<any[]>(`/projects/${id}/members?per_page=${args.per_page ?? 20}`);
-          return {
-            members: data.map((m) => ({
-              id: m.id,
-              username: m.username,
-              name: m.name,
-              access_level: m.access_level,
-              state: m.state,
-            })),
-          };
+          const members = await createProjectsResource(client).listMembers(project, { per_page: args.per_page });
+          return { members };
         } catch (err) {
           return { error: formatError(err) };
         }

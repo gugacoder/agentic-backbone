@@ -1,6 +1,7 @@
 import { tool } from "ai";
 import { z } from "zod";
 import { formatError } from "../../../utils/errors.js";
+import { createMrsResource } from "@agentic-backbone/gitlab-v4";
 
 export function createGitLabMrCreateTool(adapters: { slug: string; policy: string }[]): Record<string, any> {
   const slugs = adapters.map((a) => a.slug) as [string, ...string[]];
@@ -22,20 +23,17 @@ export function createGitLabMrCreateTool(adapters: { slug: string; policy: strin
         try {
           const { connectorRegistry } = await import("../../index.js");
           const adapterSlug = args.adapter ?? defaultSlug;
+          const adapter = adapters.find((a) => a.slug === adapterSlug);
+          if (adapter?.policy === "readonly") return { error: "Adapter é readonly" };
           const client = connectorRegistry.createClient(adapterSlug) as any;
           const project = args.project ?? client.defaultProject;
           if (!project) return { error: "Projeto não especificado e sem default configurado" };
-          const id = await client.resolveProjectId(project);
-          const body: Record<string, unknown> = {
+          const merge_request = await createMrsResource(client).create(project, {
             source_branch: args.source_branch,
             target_branch: args.target_branch,
             title: args.title,
-          };
-          if (args.description !== undefined) body.description = args.description;
-          if (args.remove_source_branch !== undefined) body.remove_source_branch = args.remove_source_branch;
-          const merge_request = await client.request(`/projects/${id}/merge_requests`, {
-            method: "POST",
-            body: JSON.stringify(body),
+            description: args.description,
+            remove_source_branch: args.remove_source_branch,
           });
           return { merge_request };
         } catch (err) {

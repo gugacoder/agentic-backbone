@@ -2,7 +2,7 @@ import type { TwilioConfig } from "./types.js";
 import type { ChannelConfig } from "../../channels/types.js";
 
 export function loadTwilioConfigFromChannel(channel: ChannelConfig): TwilioConfig {
-  const m = channel.metadata;
+  const m = channel.options;
 
   const accountSid = m["twilio-account-sid"] as string | undefined;
   const authToken = m["twilio-auth-token"] as string | undefined;

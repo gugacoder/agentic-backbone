@@ -1,6 +1,7 @@
 import { tool } from "ai";
 import { z } from "zod";
 import { formatError } from "../../../utils/errors.js";
+import { createRepoBranchesResource } from "@agentic-backbone/gitlab-v4";
 
 export function createGitLabRepoCreateBranchTool(adapters: { slug: string; policy: string }[]): Record<string, any> {
   const slugs = adapters.map((a) => a.slug) as [string, ...string[]];
@@ -19,15 +20,16 @@ export function createGitLabRepoCreateBranchTool(adapters: { slug: string; polic
         try {
           const { connectorRegistry } = await import("../../index.js");
           const adapterSlug = args.adapter ?? defaultSlug;
+          const adapter = adapters.find((a) => a.slug === adapterSlug);
+          if (adapter?.policy === "readonly") return { error: "Adapter é readonly" };
           const client = connectorRegistry.createClient(adapterSlug) as any;
           const project = args.project ?? client.defaultProject;
           if (!project) return { error: "Projeto não especificado e sem default configurado" };
-          const id = await client.resolveProjectId(project);
-          const result = await client.request(`/projects/${id}/repository/branches`, {
-            method: "POST",
-            body: JSON.stringify({ branch: args.branch, ref: args.ref }),
+          const branch = await createRepoBranchesResource(client).create(project, {
+            branch: args.branch,
+            ref: args.ref,
           });
-          return { name: result.name, commit: result.commit?.id };
+          return { branch };
         } catch (err) {
           return { error: formatError(err) };
         }

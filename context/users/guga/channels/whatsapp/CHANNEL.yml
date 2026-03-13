@@ -4,6 +4,6 @@ type: generic
 description: ""
 channel-adapter: whatsapp
 agent: guga.multicanal
-instance: "5532998055022"
-allowed-senders: "553284110531"
-assignedAgent: guga.multicanal
+options:
+  instance: "5532998055022"
+  allowed-senders: "553284110531"

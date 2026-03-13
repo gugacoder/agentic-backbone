@@ -13,7 +13,7 @@ export async function deliverToChannel(
   }
 ): Promise<void> {
   const channel = getChannel(channelId);
-  const adapterSlug = (channel?.metadata?.["channel-adapter"] as string) ?? "sse";
+  const adapterSlug = channel?.["channel-adapter"] ?? "sse";
   const config = channel?.metadata ?? {};
   const adapter = await channelAdapterRegistry.resolve(adapterSlug, config);
   await adapter.send({

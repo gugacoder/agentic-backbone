@@ -1,6 +1,7 @@
 import { tool } from "ai";
 import { z } from "zod";
 import { formatError } from "../../../utils/errors.js";
+import { createCiJobsResource } from "@agentic-backbone/gitlab-v4";
 
 export function createGitLabCiListJobsTool(adapters: { slug: string; policy: string }[]): Record<string, any> {
   const slugs = adapters.map((a) => a.slug) as [string, ...string[]];
@@ -12,30 +13,17 @@ export function createGitLabCiListJobsTool(adapters: { slug: string; policy: str
       parameters: z.object({
         project: z.string().optional().describe("Projeto (path completo como owner/repo ou ID numérico). Usa default do adapter se omitido."),
         adapter: z.enum(slugs).optional().describe("Slug do adapter GitLab a usar"),
-        pipeline_id: z.number().describe("ID do pipeline"),
+        pipeline_id: z.coerce.number().int().positive().describe("ID do pipeline"),
+        per_page: z.number().optional().default(20).describe("Número de resultados"),
       }),
       execute: async (args) => {
         try {
           const { connectorRegistry } = await import("../../index.js");
-          const adapterSlug = args.adapter ?? defaultSlug;
-          const client = connectorRegistry.createClient(adapterSlug) as any;
+          const client = connectorRegistry.createClient(args.adapter ?? defaultSlug) as any;
           const project = args.project ?? client.defaultProject;
           if (!project) return { error: "Projeto não especificado e sem default configurado" };
-          const id = await client.resolveProjectId(project);
-          const data = await client.request<any[]>(`/projects/${id}/pipelines/${args.pipeline_id}/jobs`);
-          return {
-            jobs: data.map((j) => ({
-              id: j.id,
-              name: j.name,
-              stage: j.stage,
-              status: j.status,
-              created_at: j.created_at,
-              started_at: j.started_at,
-              finished_at: j.finished_at,
-              duration: j.duration,
-              web_url: j.web_url,
-            })),
-          };
+          const jobs = await createCiJobsResource(client).list(project, args.pipeline_id, { per_page: args.per_page });
+          return { jobs };
         } catch (err) {
           return { error: formatError(err) };
         }

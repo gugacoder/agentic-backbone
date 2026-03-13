@@ -2,18 +2,20 @@ import { z } from "zod";
 
 // ── AGENT.yml ────────────────────────────────────────────
 
-export const AgentYmlSchema = z
-  .object({
-    id: z.string().optional(),
-    owner: z.string().optional(),
-    slug: z.string().optional(),
-    delivery: z.string().default(""),
-    enabled: z.boolean().default(false),
-    "heartbeat-enabled": z.boolean().default(false),
-    "heartbeat-interval": z.number().int().positive().default(30_000),
-    description: z.string().default(""),
-  })
-  .passthrough();
+export const AgentYmlSchema = z.object({
+  id: z.string().optional(),
+  owner: z.string().optional(),
+  slug: z.string().optional(),
+  name: z.string().optional(),
+  delivery: z.string().default(""),
+  enabled: z.boolean().default(false),
+  "heartbeat-enabled": z.boolean().default(false),
+  "heartbeat-interval": z.number().int().positive().default(30_000),
+  description: z.string().default(""),
+  role: z.string().optional(),
+  members: z.array(z.string()).optional(),
+  quotas: z.record(z.string(), z.unknown()).optional(),
+});
 
 export type AgentYml = z.infer<typeof AgentYmlSchema>;
 
@@ -35,14 +37,15 @@ export type UserYml = z.infer<typeof UserYmlSchema>;
 
 // ── CHANNEL.yml ──────────────────────────────────────────
 
-export const ChannelYmlSchema = z
-  .object({
-    slug: z.string().optional(),
-    owner: z.string().optional(),
-    type: z.string().default("generic"),
-    description: z.string().default(""),
-  })
-  .passthrough();
+export const ChannelYmlSchema = z.object({
+  slug: z.string().optional(),
+  owner: z.string().optional(),
+  type: z.string().default("generic"),
+  description: z.string().default(""),
+  agent: z.string().optional(),
+  "channel-adapter": z.string().optional(),
+  options: z.record(z.string(), z.unknown()).optional(),
+});
 
 export type ChannelYml = z.infer<typeof ChannelYmlSchema>;
 

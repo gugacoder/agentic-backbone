@@ -30,12 +30,12 @@ export function createMakeCallTool(): Record<string, any> {
           return { error: "no_twilio_voice_channel" };
         }
 
-        const agentId = channel.metadata.agent as string | undefined;
+        const agentId = channel.agent;
         if (!agentId) {
           return { error: "channel_has_no_agent" };
         }
 
-        const toNumber = channel.metadata["to-number"] as string | undefined;
+        const toNumber = channel.options["to-number"] as string | undefined;
         if (!toNumber) {
           return { error: "channel_has_no_to_number" };
         }

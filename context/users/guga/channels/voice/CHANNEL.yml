@@ -4,10 +4,10 @@ type: generic
 description: ""
 channel-adapter: twilio-voice
 agent: guga.multicanal
-twilio-account-sid: null
-twilio-auth-token: null
-twilio-phone-number: null
-to-number: "+5532998055022"
-twilio-language: pt-BR
-twilio-voice: Polly.Camila
-assignedAgent: guga.multicanal
+options:
+  twilio-account-sid: null
+  twilio-auth-token: null
+  twilio-phone-number: null
+  to-number: "+5532998055022"
+  twilio-language: pt-BR
+  twilio-voice: Polly.Camila

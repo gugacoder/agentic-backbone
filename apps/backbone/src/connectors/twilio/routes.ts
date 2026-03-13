@@ -53,7 +53,7 @@ export function createTwilioRoutes(): Hono {
       return c.json({ ok: false, error: "no_twilio_voice_channel" }, 400);
     }
 
-    const agentId = channel.metadata.agent as string | undefined;
+    const agentId = channel.agent;
     if (!agentId) {
       return c.json({ ok: false, error: "channel_has_no_agent" }, 400);
     }
@@ -161,7 +161,7 @@ export function createTwilioRoutes(): Hono {
       return twimlResponse(c, buildHangupTwiml(fallbackConfig, "Servico indisponivel."));
     }
 
-    const agentId = channel.metadata.agent as string | undefined;
+    const agentId = channel.agent;
     if (!agentId) {
       const fallbackConfig = { voice: "Polly.Camila", language: "pt-BR" } as TwilioConfig;
       return twimlResponse(c, buildHangupTwiml(fallbackConfig, "Servico indisponivel."));

@@ -12,6 +12,6 @@ export function findChannelsByAdapter(
   adapterSlug: string
 ): ChannelConfig[] {
   return listChannels().filter(
-    (ch) => ch.metadata["channel-adapter"] === adapterSlug
+    (ch) => ch["channel-adapter"] === adapterSlug
   );
 }

@@ -151,7 +151,7 @@ export const evolutionConnector: ConnectorDef = {
 
     // Register "whatsapp" channel-adapter
     ctx.registerChannelAdapter("whatsapp", (channelConfig) => {
-      const instance = channelConfig.instance as string;
+      const instance = (channelConfig["options"] as Record<string, unknown> | undefined)?.["instance"] as string;
       const baseUrl = ctx.env.EVOLUTION_URL!;
       const apiKey = ctx.env.EVOLUTION_API_KEY ?? "";
 

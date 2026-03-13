@@ -1,6 +1,7 @@
 import { tool } from "ai";
 import { z } from "zod";
 import { formatError } from "../../../utils/errors.js";
+import { createRepoFilesResource } from "@agentic-backbone/gitlab-v4";
 
 export function createGitLabRepoUpdateFileTool(adapters: { slug: string; policy: string }[]): Record<string, any> {
   const slugs = adapters.map((a) => a.slug) as [string, ...string[]];
@@ -22,22 +23,18 @@ export function createGitLabRepoUpdateFileTool(adapters: { slug: string; policy:
         try {
           const { connectorRegistry } = await import("../../index.js");
           const adapterSlug = args.adapter ?? defaultSlug;
+          const adapter = adapters.find((a) => a.slug === adapterSlug);
+          if (adapter?.policy === "readonly") return { error: "Adapter é readonly" };
           const client = connectorRegistry.createClient(adapterSlug) as any;
           const project = args.project ?? client.defaultProject;
           if (!project) return { error: "Projeto não especificado e sem default configurado" };
-          const id = await client.resolveProjectId(project);
-          const body: Record<string, unknown> = {
+          const result = await createRepoFilesResource(client).update(project, args.file_path, {
             branch: args.branch,
-            content: Buffer.from(args.content).toString("base64"),
+            content: args.content,
             commit_message: args.commit_message,
-            encoding: "base64",
-          };
-          if (args.last_commit_id) body.last_commit_id = args.last_commit_id;
-          const result = await client.request(`/projects/${id}/repository/files/${encodeURIComponent(args.file_path)}`, {
-            method: "PUT",
-            body: JSON.stringify(body),
+            last_commit_id: args.last_commit_id,
           });
-          return { file_path: result.file_path, branch: result.branch };
+          return { result };
         } catch (err) {
           return { error: formatError(err) };
         }

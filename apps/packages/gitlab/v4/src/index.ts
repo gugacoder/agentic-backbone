@@ -1,0 +1,32 @@
+export { createGitLabClient, CredentialSchema, OptionsSchema } from "./client.js";
+export type { GitLabClient } from "./client.js";
+
+export { createIssuesResource } from "./resources/issues.js";
+export { createIssueNotesResource } from "./resources/issue-notes.js";
+export { createMrsResource } from "./resources/mrs.js";
+export { createMrNotesResource } from "./resources/mr-notes.js";
+export { createRepoFilesResource } from "./resources/repo-files.js";
+export { createRepoBranchesResource } from "./resources/repo-branches.js";
+export { createRepoTagsResource } from "./resources/repo-tags.js";
+export { createRepoCommitsResource } from "./resources/repo-commits.js";
+export { createRepoCompareResource } from "./resources/repo-compare.js";
+export { createCiPipelinesResource } from "./resources/ci-pipelines.js";
+export { createCiJobsResource } from "./resources/ci-jobs.js";
+export { createLabelsResource } from "./resources/labels.js";
+export { createMilestonesResource } from "./resources/milestones.js";
+export { createReleasesResource } from "./resources/releases.js";
+export { createWikiResource } from "./resources/wiki.js";
+export { createProjectsResource } from "./resources/projects.js";
+export { createUsersResource } from "./resources/users.js";
+
+export * from "./schemas/common.js";
+export * from "./schemas/issue.js";
+export * from "./schemas/mr.js";
+export * from "./schemas/repo.js";
+export * from "./schemas/ci.js";
+export * from "./schemas/label.js";
+export * from "./schemas/milestone.js";
+export * from "./schemas/release.js";
+export * from "./schemas/wiki.js";
+export * from "./schemas/project.js";
+export * from "./schemas/user.js";

@@ -1,6 +1,7 @@
 import { tool } from "ai";
 import { z } from "zod";
 import { formatError } from "../../../utils/errors.js";
+import { createRepoCommitsResource } from "@agentic-backbone/gitlab-v4";
 
 export function createGitLabRepoListFilesTool(adapters: { slug: string; policy: string }[]): Record<string, any> {
   const slugs = adapters.map((a) => a.slug) as [string, ...string[]];
@@ -15,23 +16,21 @@ export function createGitLabRepoListFilesTool(adapters: { slug: string; policy: 
         path: z.string().optional().default("").describe("Diretório a listar"),
         ref: z.string().optional().default("HEAD").describe("Branch, tag ou commit SHA"),
         recursive: z.boolean().optional().default(false).describe("Listar recursivamente"),
+        per_page: z.number().optional().default(100).describe("Número de resultados"),
       }),
       execute: async (args) => {
         try {
           const { connectorRegistry } = await import("../../index.js");
-          const adapterSlug = args.adapter ?? defaultSlug;
-          const client = connectorRegistry.createClient(adapterSlug) as any;
+          const client = connectorRegistry.createClient(args.adapter ?? defaultSlug) as any;
           const project = args.project ?? client.defaultProject;
           if (!project) return { error: "Projeto não especificado e sem default configurado" };
-          const id = await client.resolveProjectId(project);
-          const params = new URLSearchParams({
-            path: args.path ?? "",
-            ref: args.ref ?? "HEAD",
-            recursive: String(args.recursive ?? false),
-            per_page: "100",
+          const files = await createRepoCommitsResource(client).listFiles(project, {
+            path: args.path || undefined,
+            ref: args.ref,
+            recursive: args.recursive,
+            per_page: args.per_page,
           });
-          const data = await client.request(`/projects/${id}/repository/tree?${params}`);
-          return { files: data };
+          return { files };
         } catch (err) {
           return { error: formatError(err) };
         }

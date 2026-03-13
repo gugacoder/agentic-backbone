@@ -1,6 +1,7 @@
 import { tool } from "ai";
 import { z } from "zod";
 import { formatError } from "../../../utils/errors.js";
+import { createRepoBranchesResource } from "@agentic-backbone/gitlab-v4";
 
 export function createGitLabRepoListBranchesTool(adapters: { slug: string; policy: string }[]): Record<string, any> {
   const slugs = adapters.map((a) => a.slug) as [string, ...string[]];
@@ -18,23 +19,14 @@ export function createGitLabRepoListBranchesTool(adapters: { slug: string; polic
       execute: async (args) => {
         try {
           const { connectorRegistry } = await import("../../index.js");
-          const adapterSlug = args.adapter ?? defaultSlug;
-          const client = connectorRegistry.createClient(adapterSlug) as any;
+          const client = connectorRegistry.createClient(args.adapter ?? defaultSlug) as any;
           const project = args.project ?? client.defaultProject;
           if (!project) return { error: "Projeto não especificado e sem default configurado" };
-          const id = await client.resolveProjectId(project);
-          const params = new URLSearchParams({ per_page: String(args.per_page ?? 20) });
-          if (args.search) params.set("search", args.search);
-          const data = await client.request<any[]>(`/projects/${id}/repository/branches?${params}`);
-          return {
-            branches: data.map((b) => ({
-              name: b.name,
-              default: b.default,
-              merged: b.merged,
-              protected: b.protected,
-              commit: b.commit?.id,
-            })),
-          };
+          const branches = await createRepoBranchesResource(client).list(project, {
+            search: args.search,
+            per_page: args.per_page,
+          });
+          return { branches };
         } catch (err) {
           return { error: formatError(err) };
         }

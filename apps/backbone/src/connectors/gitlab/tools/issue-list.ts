@@ -1,6 +1,7 @@
 import { tool } from "ai";
 import { z } from "zod";
 import { formatError } from "../../../utils/errors.js";
+import { createIssuesResource } from "@agentic-backbone/gitlab-v4";
 
 export function createGitLabIssueListTool(adapters: { slug: string; policy: string }[]): Record<string, any> {
   const slugs = adapters.map((a) => a.slug) as [string, ...string[]];
@@ -21,20 +22,19 @@ export function createGitLabIssueListTool(adapters: { slug: string; policy: stri
       execute: async (args) => {
         try {
           const { connectorRegistry } = await import("../../index.js");
-          const adapterSlug = args.adapter ?? defaultSlug;
-          const client = connectorRegistry.createClient(adapterSlug) as any;
+          const client = connectorRegistry.createClient(args.adapter ?? defaultSlug) as any;
           const project = args.project ?? client.defaultProject;
           if (!project) return { error: "Projeto não especificado e sem default configurado" };
-          const id = await client.resolveProjectId(project);
-          const params = new URLSearchParams({
-            state: args.state ?? "opened",
-            per_page: String(args.per_page ?? 20),
+          const issues = await createIssuesResource(client).list(project, {
+            state: args.state,
+            labels: args.labels,
+            assignee_username: args.assignee_username,
+            milestone: args.milestone,
+            per_page: args.per_page,
           });
-          if (args.labels) params.set("labels", args.labels);
-          if (args.assignee_username) params.set("assignee_username", args.assignee_username);
-          if (args.milestone) params.set("milestone", args.milestone);
-          const issues = await client.request(`/projects/${id}/issues?${params}`);
-          return { issues };
+          // Retorna apenas campos relevantes; omite `id` global para evitar confusão com `iid`
+          const simplified = issues.map(({ id: _id, ...rest }) => rest);
+          return { issues: simplified };
         } catch (err) {
           return { error: formatError(err) };
         }

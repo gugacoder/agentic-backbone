@@ -94,6 +94,9 @@ apps/hub/dev-dist/
 **/context/**/workspace/**
 **/context/**/*.sqlite*
 
+context/credentials/*/**
+!context/credentials/users/system.yml
+
 # =============================================================================
 # Arquivos mantidos
 # =============================================================================

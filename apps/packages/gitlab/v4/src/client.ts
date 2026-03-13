@@ -1,22 +1,27 @@
-export interface GitLabCredential {
-  base_url: string;
-  token: string;
-}
+import { z } from "zod";
 
-export interface GitLabOptions {
-  default_project?: string;
-}
+export const CredentialSchema = z.object({
+  base_url: z.string().default("https://gitlab.com"),
+  token: z.string().min(1),
+});
+
+export const OptionsSchema = z.object({
+  default_project: z.string().optional(),
+});
+
+export type Credential = z.infer<typeof CredentialSchema>;
+export type Options = z.infer<typeof OptionsSchema>;
 
 export interface GitLabClient {
   request<T>(path: string, init?: RequestInit): Promise<T>;
-  defaultProject: string | undefined;
+  requestText(path: string, init?: RequestInit): Promise<string>;
   resolveProjectId(nameOrId: string): Promise<number>;
   invalidateProjectCache(nameOrId?: string): void;
+  defaultProject: string | undefined;
   ping(): Promise<{ ok: boolean; latencyMs: number; error?: string }>;
-  close(): Promise<void>;
 }
 
-export function createGitLabClient(credential: GitLabCredential, options: GitLabOptions): GitLabClient {
+export function createGitLabClient(credential: Credential, options: Options): GitLabClient {
   const { token } = credential;
   const baseUrl = credential.base_url.replace(/\/$/, "");
   const headers = { "PRIVATE-TOKEN": token, "Content-Type": "application/json" };
@@ -34,6 +39,19 @@ export function createGitLabClient(credential: GitLabCredential, options: GitLab
       throw new Error(`GitLab ${resp.status}: ${body}`);
     }
     return resp.json() as Promise<T>;
+  }
+
+  async function requestText(path: string, init: RequestInit = {}): Promise<string> {
+    const resp = await fetch(`${baseUrl}/api/v4${path}`, {
+      ...init,
+      headers: { ...headers, ...((init.headers as Record<string, string>) ?? {}) },
+      signal: AbortSignal.timeout(30000),
+    });
+    if (!resp.ok) {
+      const body = await resp.text();
+      throw new Error(`GitLab ${resp.status}: ${body}`);
+    }
+    return resp.text();
   }
 
   async function resolveProjectId(nameOrId: string): Promise<number> {
@@ -73,7 +91,12 @@ export function createGitLabClient(credential: GitLabCredential, options: GitLab
     }
   }
 
-  async function close(): Promise<void> {}
-
-  return { request, defaultProject: options.default_project, resolveProjectId, invalidateProjectCache, ping, close };
+  return {
+    request,
+    requestText,
+    resolveProjectId,
+    invalidateProjectCache,
+    defaultProject: options.default_project,
+    ping,
+  };
 }

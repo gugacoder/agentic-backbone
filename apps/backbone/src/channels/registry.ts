@@ -32,8 +32,11 @@ function scanChannels(): Map<string, ChannelConfig> {
         slug: data.slug ?? channelSlug,
         owner: data.owner ?? userSlug,
         type: data.type,
-        metadata: data,
         description: data.description,
+        agent: data.agent,
+        "channel-adapter": data["channel-adapter"],
+        options: data.options ?? {},
+        metadata: data as Record<string, unknown>,
       });
     }
   }

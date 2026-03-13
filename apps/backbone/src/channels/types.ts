@@ -2,8 +2,11 @@ export interface ChannelConfig {
   slug: string;
   owner: string;
   type: string;
-  metadata: Record<string, unknown>;
   description: string;
+  agent?: string;
+  "channel-adapter"?: string;
+  options: Record<string, unknown>;
+  metadata: Record<string, unknown>;
 }
 
 export interface ChannelMessage {

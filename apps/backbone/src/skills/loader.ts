@@ -24,8 +24,12 @@ export function loadAllSkills(agentId: string): Skill[] {
   for (const [, entry] of resolved) {
     const skillMeta = parseSkillMetadata(entry.metadata);
     skills.push({
+      slug: entry.slug,
       name: (entry.metadata.name as string) ?? entry.slug,
       description: (entry.metadata.description as string) ?? "",
+      enabled: (entry.metadata.enabled as boolean) ?? true,
+      userInvocable: (entry.metadata["user-invocable"] as boolean) ?? undefined,
+      trigger: (entry.metadata.trigger as string) ?? undefined,
       body: entry.content,
       source: entry.source,
       dir: entry.path.replace(/\/SKILL\.md$/, "").replace(/\\SKILL\.md$/, ""),

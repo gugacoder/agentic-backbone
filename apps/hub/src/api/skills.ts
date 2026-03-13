@@ -8,6 +8,34 @@ export interface Resource {
   source: string;
 }
 
+export interface Skill {
+  slug: string;
+  name: string;
+  description: string;
+  enabled: boolean;
+  userInvocable?: boolean;
+  trigger?: string;
+  body: string;
+  source: string;
+  dir: string;
+}
+
+export interface CreateSkillInput {
+  slug: string;
+  scope: string;
+  name: string;
+  description?: string;
+  body?: string;
+  metadata?: Record<string, unknown>;
+}
+
+export interface UpdateSkillInput {
+  name?: string;
+  description?: string;
+  body?: string;
+  metadata?: Record<string, unknown>;
+}
+
 export function allSkillsQueryOptions() {
   return queryOptions({
     queryKey: ["skills"],
@@ -18,7 +46,7 @@ export function allSkillsQueryOptions() {
 export function agentSkillsQueryOptions(agentId: string) {
   return queryOptions({
     queryKey: ["agents", agentId, "skills"],
-    queryFn: () => request<Resource[]>(`/agents/${agentId}/skills`),
+    queryFn: () => request<Skill[]>(`/agents/${agentId}/skills`),
   });
 }
 
@@ -38,6 +66,28 @@ export async function unassignSkill(
   slug: string,
 ): Promise<void> {
   await request(`/skills/${agentId}/${slug}`, { method: "DELETE" });
+}
+
+export async function createSkill(input: CreateSkillInput): Promise<Skill> {
+  return request<Skill>("/skills", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+}
+
+export async function updateSkill(
+  scope: string,
+  slug: string,
+  updates: UpdateSkillInput,
+): Promise<Skill> {
+  return request<Skill>(`/skills/${scope}/${slug}`, {
+    method: "PATCH",
+    body: JSON.stringify(updates),
+  });
+}
+
+export async function deleteSkill(scope: string, slug: string): Promise<void> {
+  await request(`/skills/${scope}/${slug}`, { method: "DELETE" });
 }
 
 export function allServicesQueryOptions() {

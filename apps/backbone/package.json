@@ -9,6 +9,7 @@
     "start": "node dist/index.js"
   },
   "dependencies": {
+    "@agentic-backbone/gitlab-v4": "*",
     "@agentic-backbone/ai-sdk": "*",
     "@hono/node-server": "^1",
     "@modelcontextprotocol/sdk": "^1.0.0",

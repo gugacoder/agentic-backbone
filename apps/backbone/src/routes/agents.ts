@@ -145,21 +145,26 @@ agentRoutes.get("/agents/:id/files", (c) => {
   return c.json(files);
 });
 
-agentRoutes.get("/agents/:id/files/*", (c) => {
-  const agentId = c.req.param("id");
-  const denied = assertAgentOwnership(c, agentId);
-  if (denied) return denied;
-  const filename = c.req.param("*");
-  const content = readAgentFile(agentId, filename);
-  if (content === null) return c.json({ error: "not found" }, 404);
-  return c.json({ filename, content });
+agentRoutes.get("/agents/:id/files/:filename{.+}", (c) => {
+  try {
+    const agentId = c.req.param("id");
+    const denied = assertAgentOwnership(c, agentId);
+    if (denied) return denied;
+    const filename = c.req.param("filename");
+    const content = readAgentFile(agentId, filename);
+    if (content === null) return c.json({ error: "not found" }, 404);
+    return c.json({ filename, content });
+  } catch (err) {
+    console.error("[agents/files] GET error:", err);
+    return c.json({ error: formatError(err) }, 500);
+  }
 });
 
-agentRoutes.put("/agents/:id/files/*", async (c) => {
+agentRoutes.put("/agents/:id/files/:filename{.+}", async (c) => {
   const agentId = c.req.param("id");
   const denied = assertAgentOwnership(c, agentId);
   if (denied) return denied;
-  const filename = c.req.param("*");
+  const filename = c.req.param("filename");
   const { content, changeNote, createdBy } = await c.req.json<{ content: string; changeNote?: string; createdBy?: string }>();
   try {
     // Save current content as a version before overwriting

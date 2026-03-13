@@ -22,7 +22,6 @@ function parseAgentConfig(agentId: string): AgentConfig | null {
   }
 
   const data = result.data;
-  const metadata = data as Record<string, unknown>;
   const { owner, slug } = parseAgentId(agentId);
 
   const heartbeat: HeartbeatConfig = {
@@ -30,14 +29,9 @@ function parseAgentConfig(agentId: string): AgentConfig | null {
     intervalMs: data["heartbeat-interval"],
   };
 
-  const role = typeof metadata.role === "string" ? metadata.role : undefined;
-  const members = Array.isArray(metadata.members)
-    ? (metadata.members as string[]).filter((m) => typeof m === "string")
-    : undefined;
-
   let quotas: QuotaConfig | undefined;
-  if (metadata.quotas && typeof metadata.quotas === "object") {
-    const q = metadata.quotas as Record<string, unknown>;
+  if (data.quotas) {
+    const q = data.quotas;
     quotas = {
       maxTokensPerHour: typeof q["max_tokens_per_hour"] === "number" ? q["max_tokens_per_hour"] : undefined,
       maxHeartbeatsDay: typeof q["max_heartbeats_day"] === "number" ? q["max_heartbeats_day"] : undefined,
@@ -54,10 +48,10 @@ function parseAgentConfig(agentId: string): AgentConfig | null {
     delivery: data.delivery,
     enabled: data.enabled,
     heartbeat,
-    metadata: data,
+    metadata: data as Record<string, unknown>,
     description: data.description,
-    role,
-    members,
+    role: data.role,
+    members: data.members,
     quotas,
   };
 }

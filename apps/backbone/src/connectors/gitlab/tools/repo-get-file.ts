@@ -1,6 +1,7 @@
 import { tool } from "ai";
 import { z } from "zod";
 import { formatError } from "../../../utils/errors.js";
+import { createRepoFilesResource } from "@agentic-backbone/gitlab-v4";
 
 export function createGitLabRepoGetFileTool(adapters: { slug: string; policy: string }[]): Record<string, any> {
   const slugs = adapters.map((a) => a.slug) as [string, ...string[]];
@@ -18,14 +19,11 @@ export function createGitLabRepoGetFileTool(adapters: { slug: string; policy: st
       execute: async (args) => {
         try {
           const { connectorRegistry } = await import("../../index.js");
-          const adapterSlug = args.adapter ?? defaultSlug;
-          const client = connectorRegistry.createClient(adapterSlug) as any;
+          const client = connectorRegistry.createClient(args.adapter ?? defaultSlug) as any;
           const project = args.project ?? client.defaultProject;
           if (!project) return { error: "Projeto não especificado e sem default configurado" };
-          const id = await client.resolveProjectId(project);
-          const data = await client.request(`/projects/${id}/repository/files/${encodeURIComponent(args.file_path)}?ref=${args.ref ?? "HEAD"}`);
-          const content = Buffer.from(data.content, "base64").toString("utf-8");
-          return { file_path: args.file_path, ref: data.ref, encoding: data.encoding, content };
+          const file = await createRepoFilesResource(client).get(project, args.file_path, args.ref ?? "HEAD");
+          return { file };
         } catch (err) {
           return { error: formatError(err) };
         }

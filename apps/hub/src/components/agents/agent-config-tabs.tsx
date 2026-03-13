@@ -1,19 +1,20 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { FileText, MessageSquare, Heart, Sparkles, Wrench, Shield, GitBranch } from "lucide-react";
+import { FileText, MessageSquare, Heart, Sparkles, Wrench, Shield, GitBranch, Plus, Pencil, Trash2, ChevronLeft, Check, Loader2, AlertCircle } from "lucide-react";
 import { agentFileQueryOptions, saveAgentFile } from "@/api/agents";
 import type { Agent } from "@/api/agents";
 import {
-  allSkillsQueryOptions,
   agentSkillsQueryOptions,
-  assignSkill,
-  unassignSkill,
+  createSkill,
+  updateSkill,
+  deleteSkill,
   allServicesQueryOptions,
   agentServicesQueryOptions,
   assignService,
   unassignService,
 } from "@/api/skills";
+import type { Skill } from "@/api/skills";
 import { MarkdownEditor } from "@/components/shared/markdown-editor";
 import { HeartbeatConfig } from "@/components/agents/heartbeat-config";
 import { AgentAdvancedPanel } from "@/components/agents/agent-advanced-panel";
@@ -21,6 +22,11 @@ import { AgentRoutingSettings } from "@/components/routing/agent-routing-setting
 import { ResourceAssigner } from "@/components/shared/resource-assigner";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
 type SaveStatus = "idle" | "saving" | "saved" | "error";
@@ -209,34 +215,314 @@ function FileEditor({ agentId, filename }: { agentId: string; filename: string }
   );
 }
 
+/** source from the API can be "agent:agentId", "user:owner", "shared" — strip prefix for CRUD scope */
+function sourceToScope(source: string): string {
+  const colonIdx = source.indexOf(":");
+  return colonIdx >= 0 ? source.slice(colonIdx + 1) : source;
+}
+
+type SkillView = { mode: "list" } | { mode: "edit"; skill: Skill } | { mode: "create" };
+
 function SkillsPanel({ agentId }: { agentId: string }) {
   const queryClient = useQueryClient();
-  const { data: allSkills, isLoading: loadingAll } = useQuery(allSkillsQueryOptions());
-  const { data: agentSkills, isLoading: loadingAgent } = useQuery(agentSkillsQueryOptions(agentId));
+  const [view, setView] = useState<SkillView>({ mode: "list" });
+  const { data: skills, isLoading } = useQuery(agentSkillsQueryOptions(agentId));
 
-  const assignMutation = useMutation({
-    mutationFn: ({ slug, sourceScope }: { slug: string; sourceScope: string }) =>
-      assignSkill(agentId, slug, sourceScope),
+  const deleteMutation = useMutation({
+    mutationFn: (skill: Skill) => deleteSkill(sourceToScope(skill.source), skill.slug),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["agents", agentId, "skills"] });
     },
   });
 
-  const unassignMutation = useMutation({
-    mutationFn: (slug: string) => unassignSkill(agentId, slug),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["agents", agentId, "skills"] });
-    },
-  });
+  if (isLoading) {
+    return (
+      <div className="space-y-2">
+        <Skeleton className="h-10 w-full" />
+        <Skeleton className="h-10 w-full" />
+        <Skeleton className="h-10 w-full" />
+      </div>
+    );
+  }
+
+  if (view.mode === "create") {
+    return (
+      <SkillEditor
+        agentId={agentId}
+        onBack={() => setView({ mode: "list" })}
+        onSaved={() => {
+          queryClient.invalidateQueries({ queryKey: ["agents", agentId, "skills"] });
+          setView({ mode: "list" });
+        }}
+      />
+    );
+  }
+
+  if (view.mode === "edit") {
+    return (
+      <SkillEditor
+        agentId={agentId}
+        skill={view.skill}
+        onBack={() => setView({ mode: "list" })}
+        onSaved={() => {
+          queryClient.invalidateQueries({ queryKey: ["agents", agentId, "skills"] });
+          setView({ mode: "list" });
+        }}
+      />
+    );
+  }
 
   return (
-    <ResourceAssigner
-      available={allSkills ?? []}
-      assigned={agentSkills ?? []}
-      onAssign={(slug, sourceScope) => assignMutation.mutate({ slug, sourceScope })}
-      onUnassign={(slug) => unassignMutation.mutate(slug)}
-      loading={loadingAll || loadingAgent}
-    />
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <p className="text-sm text-muted-foreground">
+          {skills?.length ?? 0} skill{(skills?.length ?? 0) !== 1 ? "s" : ""} configurada{(skills?.length ?? 0) !== 1 ? "s" : ""}
+        </p>
+        <Button size="sm" onClick={() => setView({ mode: "create" })}>
+          <Plus className="size-3.5 mr-1" />
+          Nova skill
+        </Button>
+      </div>
+
+      {!skills?.length ? (
+        <div className="rounded-md border border-dashed p-8 text-center text-sm text-muted-foreground">
+          Nenhuma skill configurada. Crie uma nova skill para começar.
+        </div>
+      ) : (
+        <div className="divide-y rounded-md border">
+          {skills.map((skill) => (
+            <div key={skill.slug} className="flex items-center gap-3 px-4 py-3">
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium truncate">{skill.name}</span>
+                  {!skill.enabled && (
+                    <Badge variant="outline" className="text-xs shrink-0">desativada</Badge>
+                  )}
+                  {skill.userInvocable && (
+                    <Badge variant="secondary" className="text-xs shrink-0">/{skill.trigger ?? skill.slug}</Badge>
+                  )}
+                  <span className="text-xs text-muted-foreground shrink-0">— {skill.source}</span>
+                </div>
+                {skill.description && (
+                  <p className="text-xs text-muted-foreground truncate mt-0.5">{skill.description}</p>
+                )}
+              </div>
+              <div className="flex items-center gap-1 shrink-0">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="size-7"
+                  onClick={() => setView({ mode: "edit", skill })}
+                >
+                  <Pencil className="size-3.5" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="size-7 text-destructive hover:text-destructive"
+                  onClick={() => deleteMutation.mutate(skill)}
+                  disabled={deleteMutation.isPending}
+                >
+                  <Trash2 className="size-3.5" />
+                </Button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+interface SkillEditorProps {
+  agentId: string;
+  skill?: Skill;
+  onBack: () => void;
+  onSaved: () => void;
+}
+
+function SkillEditor({ agentId, skill, onBack, onSaved }: SkillEditorProps) {
+  const isCreate = !skill;
+
+  const [slug, setSlug] = useState(skill?.slug ?? "");
+  const [name, setName] = useState(skill?.name ?? "");
+  const [description, setDescription] = useState(skill?.description ?? "");
+  const [enabled, setEnabled] = useState(skill?.enabled ?? true);
+  const [userInvocable, setUserInvocable] = useState(skill?.userInvocable ?? false);
+  const [trigger, setTrigger] = useState(skill?.trigger ?? "");
+  const [body, setBody] = useState(skill?.body ?? "");
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const savedRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+      if (savedRef.current) clearTimeout(savedRef.current);
+    };
+  }, []);
+
+  const doSave = useCallback(
+    async (bodyValue: string) => {
+      setSaveStatus("saving");
+      try {
+        const metadata: Record<string, unknown> = {
+          enabled,
+          "user-invocable": userInvocable || undefined,
+          trigger: userInvocable && trigger ? trigger : undefined,
+        };
+        if (isCreate) {
+          await createSkill({
+            slug,
+            scope: agentId,
+            name,
+            description,
+            body: bodyValue,
+            metadata,
+          });
+          setSaveStatus("saved");
+          savedRef.current = setTimeout(() => {
+            setSaveStatus("idle");
+            onSaved();
+          }, 800);
+        } else {
+          await updateSkill(sourceToScope(skill.source), skill.slug, {
+            name,
+            description,
+            body: bodyValue,
+            metadata,
+          });
+          setSaveStatus("saved");
+          savedRef.current = setTimeout(() => setSaveStatus("idle"), 3000);
+        }
+      } catch {
+        setSaveStatus("error");
+      }
+    },
+    [isCreate, slug, name, description, enabled, userInvocable, trigger, agentId, skill, onSaved],
+  );
+
+  const handleBodyChange = useCallback(
+    (value: string) => {
+      setBody(value);
+      setSaveStatus("idle");
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+      if (savedRef.current) clearTimeout(savedRef.current);
+      if (!isCreate) {
+        debounceRef.current = setTimeout(() => doSave(value), 2000);
+      }
+    },
+    [isCreate, doSave],
+  );
+
+  return (
+    <div className="space-y-5">
+      <div className="flex items-center gap-2">
+        <Button variant="ghost" size="sm" onClick={onBack}>
+          <ChevronLeft className="size-4" />
+          Voltar
+        </Button>
+        <span className="text-sm text-muted-foreground">
+          {isCreate ? "Nova skill" : `Editando: ${skill.name}`}
+        </span>
+        {!isCreate && (
+          <div className="ml-auto">
+            <SaveStatusBadge status={saveStatus} />
+          </div>
+        )}
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        {isCreate && (
+          <div className="space-y-1">
+            <Label htmlFor="skill-slug">Slug</Label>
+            <Input
+              id="skill-slug"
+              value={slug}
+              onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/\s+/g, "-"))}
+              placeholder="minha-skill"
+            />
+            <p className="text-xs text-muted-foreground">Identificador único, sem espaços</p>
+          </div>
+        )}
+        <div className="space-y-1">
+          <Label htmlFor="skill-name">Nome</Label>
+          <Input
+            id="skill-name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Nome da skill"
+          />
+        </div>
+        <div className="space-y-1">
+          <Label htmlFor="skill-description">Descrição</Label>
+          <Input
+            id="skill-description"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="Breve descrição"
+          />
+        </div>
+      </div>
+
+      <div className="flex flex-wrap gap-6">
+        <div className="flex items-center gap-2">
+          <Switch id="skill-enabled" checked={enabled} onCheckedChange={setEnabled} />
+          <Label htmlFor="skill-enabled">Habilitada</Label>
+        </div>
+        <div className="flex items-center gap-2">
+          <Switch id="skill-user-invocable" checked={userInvocable} onCheckedChange={setUserInvocable} />
+          <Label htmlFor="skill-user-invocable">Invocável pelo usuário</Label>
+        </div>
+        {userInvocable && (
+          <div className="flex items-center gap-2">
+            <Label htmlFor="skill-trigger" className="shrink-0">Trigger</Label>
+            <Input
+              id="skill-trigger"
+              value={trigger}
+              onChange={(e) => setTrigger(e.target.value)}
+              placeholder="nome-do-comando"
+              className="h-8 w-40"
+            />
+          </div>
+        )}
+      </div>
+
+      <div className="space-y-1">
+        <Label>Conteúdo</Label>
+        <MarkdownEditor
+          value={body}
+          onChange={handleBodyChange}
+          saveStatus={isCreate ? "idle" : saveStatus}
+          placeholder="Escreva o conteúdo da skill em markdown..."
+          minHeight={300}
+        />
+      </div>
+
+      {isCreate && (
+        <div className="flex justify-end gap-2">
+          <Button variant="outline" onClick={onBack}>Cancelar</Button>
+          <Button
+            onClick={() => doSave(body)}
+            disabled={!slug || !name || saveStatus === "saving"}
+          >
+            {saveStatus === "saving" && <Loader2 className="size-3.5 mr-1.5 animate-spin" />}
+            Criar skill
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function SaveStatusBadge({ status }: { status: SaveStatus }) {
+  if (status === "idle") return null;
+  return (
+    <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+      {status === "saving" && <><Loader2 className="size-3 animate-spin" />Salvando...</>}
+      {status === "saved" && <><Check className="size-3 text-green-600" />Salvo</>}
+      {status === "error" && <><AlertCircle className="size-3 text-destructive" />Erro ao salvar</>}
+    </span>
   );
 }
 

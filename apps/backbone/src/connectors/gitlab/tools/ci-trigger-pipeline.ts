@@ -1,6 +1,7 @@
 import { tool } from "ai";
 import { z } from "zod";
 import { formatError } from "../../../utils/errors.js";
+import { createCiPipelinesResource } from "@agentic-backbone/gitlab-v4";
 
 export function createGitLabCiTriggerPipelineTool(adapters: { slug: string; policy: string }[]): Record<string, any> {
   const slugs = adapters.map((a) => a.slug) as [string, ...string[]];
@@ -19,19 +20,16 @@ export function createGitLabCiTriggerPipelineTool(adapters: { slug: string; poli
         try {
           const { connectorRegistry } = await import("../../index.js");
           const adapterSlug = args.adapter ?? defaultSlug;
+          const adapter = adapters.find((a) => a.slug === adapterSlug);
+          if (adapter?.policy === "readonly") return { error: "Adapter é readonly" };
           const client = connectorRegistry.createClient(adapterSlug) as any;
           const project = args.project ?? client.defaultProject;
           if (!project) return { error: "Projeto não especificado e sem default configurado" };
-          const id = await client.resolveProjectId(project);
-          const body: Record<string, unknown> = { ref: args.ref };
-          if (args.variables) {
-            body.variables = Object.entries(args.variables).map(([key, value]) => ({ key, value, variable_type: "env_var" }));
-          }
-          const result = await client.request(`/projects/${id}/pipeline`, {
-            method: "POST",
-            body: JSON.stringify(body),
-          });
-          return { pipeline: { id: result.id, status: result.status, ref: result.ref, sha: result.sha, web_url: result.web_url } };
+          const sdkVariables = args.variables
+            ? Object.entries(args.variables).map(([key, value]) => ({ key, value }))
+            : undefined;
+          const pipeline = await createCiPipelinesResource(client).create(project, args.ref, sdkVariables);
+          return { pipeline };
         } catch (err) {
           return { error: formatError(err) };
         }
