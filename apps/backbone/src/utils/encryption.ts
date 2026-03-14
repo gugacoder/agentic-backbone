@@ -18,8 +18,8 @@ function deriveKey(secret: string): Buffer {
 }
 
 function getKey(): Buffer {
-  const secret = process.env.JWT_SECRET;
-  if (!secret) throw new Error("JWT_SECRET is required for encryption");
+  const secret = process.env.ENCRYPTION_KEY;
+  if (!secret) throw new Error("ENCRYPTION_KEY is required for encryption");
   return deriveKey(secret);
 }
 
