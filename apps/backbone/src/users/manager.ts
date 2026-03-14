@@ -6,16 +6,22 @@ import {
   writeFileSync,
 } from "node:fs";
 import { join } from "node:path";
-import { usersDir, userDir, userYmlPath, userAboutPath } from "../context/paths.js";
+import {
+  usersDir,
+  userDir,
+  userYmlPath,
+  userAboutPath,
+  credentialsUsersDir,
+  userCredentialPath,
+} from "../context/paths.js";
 import { readYamlAs, writeYamlAs, patchYamlAs } from "../context/readers.js";
-import { UserYmlSchema } from "../context/schemas.js";
+import { UserYmlSchema, UserCredentialYmlSchema } from "../context/schemas.js";
 import {
   type UserConfig,
   type UserPermissions,
   DEFAULT_PERMISSIONS,
   SYSTEM_USER,
 } from "./types.js";
-import { hashPassword } from "./password.js";
 
 function parseUserConfig(slug: string): UserConfig | null {
   const ymlPath = userYmlPath(slug);
@@ -71,30 +77,30 @@ export function userExists(slug: string): boolean {
   return existsSync(userYmlPath(slug));
 }
 
-export function getUserWithPasswordHash(
+export function getUserCredential(
   slug: string
-): { config: UserConfig; passwordHash: string } | null {
-  const ymlPath = userYmlPath(slug);
-  if (!existsSync(ymlPath)) return null;
+): { config: UserConfig; password: string } | null {
+  const credPath = userCredentialPath(slug);
+  if (!existsSync(credPath)) return null;
 
-  let data: ReturnType<typeof UserYmlSchema.parse>;
+  let cred: ReturnType<typeof UserCredentialYmlSchema.parse>;
   try {
-    data = readYamlAs(ymlPath, UserYmlSchema);
+    cred = readYamlAs(credPath, UserCredentialYmlSchema);
   } catch {
     return null;
   }
 
-  if (!data.password) return null;
+  if (!cred.password) return null;
 
   const config = parseUserConfig(slug);
   if (!config) return null;
 
-  return { config, passwordHash: data.password };
+  return { config, password: cred.password };
 }
 
 export function getUserByEmail(
   email: string
-): { slug: string; config: UserConfig; passwordHash: string } | null {
+): { slug: string; config: UserConfig; password: string } | null {
   const dir = usersDir();
   if (!existsSync(dir)) return null;
 
@@ -110,12 +116,11 @@ export function getUserByEmail(
     }
 
     if (data.email !== email) continue;
-    if (!data.password) continue;
 
-    const config = parseUserConfig(slug);
-    if (!config) continue;
+    const record = getUserCredential(slug);
+    if (!record) continue;
 
-    return { slug, config, passwordHash: data.password };
+    return { slug, config: record.config, password: record.password };
   }
 
   return null;
@@ -131,9 +136,9 @@ export function createUser(
   const dir = userDir(slug);
   mkdirSync(dir, { recursive: true });
   mkdirSync(join(dir, "channels"), { recursive: true });
+  mkdirSync(credentialsUsersDir(), { recursive: true });
 
   const perms = { ...DEFAULT_PERMISSIONS, ...permissions };
-  const passwordHash = hashPassword(password);
   const userEmail = email ?? "";
 
   writeYamlAs(userYmlPath(slug), {
@@ -143,9 +148,12 @@ export function createUser(
     canCreateAgents: perms.canCreateAgents,
     canCreateChannels: perms.canCreateChannels,
     maxAgents: perms.maxAgents,
-    type: "user-password",
-    password: passwordHash,
   }, UserYmlSchema);
+
+  writeYamlAs(userCredentialPath(slug), {
+    type: "user-password",
+    password,
+  }, UserCredentialYmlSchema);
 
   writeFileSync(userAboutPath(slug), `# ${displayName}\n`, "utf-8");
 
@@ -164,22 +172,30 @@ export function updateUser(
 ): UserConfig | null {
   if (!userExists(slug)) return null;
 
-  const patch: Record<string, unknown> = {};
+  const profilePatch: Record<string, unknown> = {};
 
-  if (updates.displayName !== undefined) patch.displayName = updates.displayName;
-  if (updates.email !== undefined) patch.email = updates.email;
-  if (updates.role !== undefined) patch.role = updates.role ?? undefined;
-  if (updates.password) patch.password = hashPassword(updates.password);
+  if (updates.displayName !== undefined) profilePatch.displayName = updates.displayName;
+  if (updates.email !== undefined) profilePatch.email = updates.email;
+  if (updates.role !== undefined) profilePatch.role = updates.role ?? undefined;
   if (updates.permissions) {
     if (updates.permissions.canCreateAgents !== undefined)
-      patch.canCreateAgents = updates.permissions.canCreateAgents;
+      profilePatch.canCreateAgents = updates.permissions.canCreateAgents;
     if (updates.permissions.canCreateChannels !== undefined)
-      patch.canCreateChannels = updates.permissions.canCreateChannels;
+      profilePatch.canCreateChannels = updates.permissions.canCreateChannels;
     if (updates.permissions.maxAgents !== undefined)
-      patch.maxAgents = updates.permissions.maxAgents;
+      profilePatch.maxAgents = updates.permissions.maxAgents;
   }
 
-  const updated = patchYamlAs(userYmlPath(slug), patch, UserYmlSchema);
+  const updated = patchYamlAs(userYmlPath(slug), profilePatch, UserYmlSchema);
+
+  if (updates.password) {
+    const credPath = userCredentialPath(slug);
+    if (existsSync(credPath)) {
+      patchYamlAs(credPath, { password: updates.password }, UserCredentialYmlSchema);
+    } else {
+      writeYamlAs(credPath, { type: "user-password", password: updates.password }, UserCredentialYmlSchema);
+    }
+  }
 
   return {
     slug: updated.slug ?? slug,
@@ -200,5 +216,11 @@ export function deleteUser(slug: string): boolean {
   if (!existsSync(dir)) return false;
 
   rmSync(dir, { recursive: true, force: true });
+
+  const credPath = userCredentialPath(slug);
+  if (existsSync(credPath)) {
+    rmSync(credPath);
+  }
+
   return true;
 }

@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { sign } from "hono/jwt";
-import { getUser, getUserByEmail } from "../users/manager.js";
+import { getUser, getUserByEmail, getUserCredential } from "../users/manager.js";
 import { verifyPassword } from "../users/password.js";
 
 export const authPublicRoutes = new Hono();
@@ -17,11 +17,15 @@ authPublicRoutes.post("/auth/login", async (c) => {
     return c.json({ error: "username and password are required" }, 400);
   }
 
-  const record = getUserByEmail(username);
+  let record = getUserByEmail(username);
+  if (!record) {
+    const bySlug = getUserCredential(username);
+    if (bySlug) record = { slug: username, ...bySlug };
+  }
   if (!record) {
     return c.json({ error: "invalid credentials" }, 401);
   }
-  if (!verifyPassword(password, record.passwordHash)) {
+  if (!verifyPassword(password, record.password)) {
     return c.json({ error: "invalid credentials" }, 401);
   }
 
