@@ -5,5 +5,5 @@ role: sysadmin
 canCreateAgents: true
 canCreateChannels: true
 maxAgents: 200
-type: user-password
-password: ENC(/Ln/8ZYG/synj04bvfKqD/AX7oUoMBO/bNjI/+Sq1ce/tcQ/+sCkM/3bGcA4XKS0y7VEMDHpquPAqSKR4FDGC07WPjxkBISkB2fnc0q+RUJ1G8IM9hB6VB2uZDvKDkmkyzSsxC1CaZjSlyc4day5AFb1RyPrTRQX1NRwjJ3XKP9Ilg0H6Gmttdxqe+uM+yveWfQleB3BeMZQ8Subahf/SUiai0L/13kbk0qhmd/IaJkvitQoQeTa8sBZUjKf)
+
+

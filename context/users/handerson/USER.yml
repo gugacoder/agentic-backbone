@@ -4,5 +4,4 @@ email: ""
 canCreateAgents: true
 canCreateChannels: true
 maxAgents: 200
-type: user-password
-password: ENC(jihq9QgqvPoyHUkRUvR/icHHHN0gxO+2fKq4P6Ccbvu1DGU16uX15BTwG+cZUBLdprYRZpQ3t+qNqkDg0K+U1N57xPt3R4u4XHknt/C51RypsRtBerjBzLUyr2Agm0bQfK9dYBISN1DdB9ywo98c4ayvH0b39JvYjsUhIWnfRvuTXZfNmBdqXnHW3PkWAd/kk/BPR0mEsf+Nn68D285nWJXB1LjTJO5L+QZpV7R7tH5OMfHcllmWB+mpaF1O)
+
