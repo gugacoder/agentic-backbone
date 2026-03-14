@@ -176,6 +176,20 @@ Available connectors: `mysql`, `postgres`, `evolution` (WhatsApp), `twilio` (voi
 
 JWT-based. Hybrid: accepts both Laravel JWT (`role_id` + `unidades`) and Backbone JWT (`role`). Clients use `Authorization: Bearer <token>` or `?token=` query param (for EventSource/SSE). Paths containing `/webhook` bypass auth.
 
+**Emitir JWT para testes (via API):**
+```bash
+# Login — POST /api/v1/ai/auth/login
+curl -s -X POST http://localhost:6002/api/v1/ai/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"username":"system","password":"12345678"}'
+# → {"token":"eyJ..."}
+
+# Usar o token
+curl -s http://localhost:6002/api/v1/ai/agents \
+  -H "Authorization: Bearer <token>"
+```
+Usuário de teste: `system` (user em `context/users/system/`), senha `12345678`.
+
 ---
 
 ## TypeScript Configuration
