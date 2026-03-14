@@ -29,11 +29,18 @@ export const UserYmlSchema = z.object({
   canCreateAgents: z.boolean().default(true),
   canCreateChannels: z.boolean().default(true),
   maxAgents: z.number().int().positive().default(5),
+});
+
+export type UserYml = z.infer<typeof UserYmlSchema>;
+
+// ── credentials/users/{slug}.yml ─────────────────────────
+
+export const UserCredentialYmlSchema = z.object({
   type: z.literal("user-password").default("user-password"),
   password: z.string().optional(),
 });
 
-export type UserYml = z.infer<typeof UserYmlSchema>;
+export type UserCredentialYml = z.infer<typeof UserCredentialYmlSchema>;
 
 // ── CHANNEL.yml ──────────────────────────────────────────
 
