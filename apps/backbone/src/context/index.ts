@@ -11,6 +11,7 @@ import { formatServicesPrompt } from "../services/prompt.js";
 import { getAgentMemoryManager } from "../memory/manager.js";
 import { agentDir, agentWorkspaceDir } from "./paths.js";
 import { getUser } from "../users/manager.js";
+import { getChannel } from "../channels/registry.js";
 
 export { CONTEXT_DIR } from "./paths.js";
 export type { InteractionMode } from "./resolver.js";
@@ -48,7 +49,7 @@ const CHANNEL_DESCRIPTIONS: Record<string, string> = {
 
 export interface AssemblePromptOpts {
   userMessage?: string;
-  channelType?: string;
+  channelId?: string;
 }
 
 export interface AssembledPrompt {
@@ -139,9 +140,14 @@ export async function assemblePrompt(
   }
 
   // 9. Channel context
-  if (opts.channelType) {
-    const channelDesc = CHANNEL_DESCRIPTIONS[opts.channelType] ?? opts.channelType;
-    system += `<channel>\n${channelDesc}\n</channel>\n\n`;
+  if (opts.channelId) {
+    const ch = getChannel(opts.channelId);
+    const adapter = ch?.["channel-adapter"];
+    const channelInstructions = ch?.instructions
+      ?? (adapter ? CHANNEL_DESCRIPTIONS[adapter] : undefined);
+    if (channelInstructions) {
+      system += `<channel>\n${channelInstructions}\n</channel>\n\n`;
+    }
   }
 
   // 10. Mode instructions (generic tag)

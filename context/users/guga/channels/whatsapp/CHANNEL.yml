@@ -2,8 +2,9 @@ slug: whatsapp
 owner: guga
 type: generic
 description: ""
+agent: guga.kai
 channel-adapter: whatsapp
-agent: guga.multicanal
+instructions: "Você está conversando via WhatsApp."
 options:
   instance: "5532998055022"
   allowed-senders: "553284110531"

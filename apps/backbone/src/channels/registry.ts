@@ -35,6 +35,7 @@ function scanChannels(): Map<string, ChannelConfig> {
         description: data.description,
         agent: data.agent,
         "channel-adapter": data["channel-adapter"],
+        instructions: data.instructions,
         options: data.options ?? {},
         metadata: data as Record<string, unknown>,
       });

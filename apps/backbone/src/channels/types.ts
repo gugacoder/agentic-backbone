@@ -5,6 +5,7 @@ export interface ChannelConfig {
   description: string;
   agent?: string;
   "channel-adapter"?: string;
+  instructions?: string;
   options: Record<string, unknown>;
   metadata: Record<string, unknown>;
 }

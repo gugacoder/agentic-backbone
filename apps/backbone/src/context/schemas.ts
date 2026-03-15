@@ -66,6 +66,7 @@ export const ChannelYmlSchema = z.object({
   description: z.string().default(""),
   agent: z.string().optional(),
   "channel-adapter": z.string().optional(),
+  instructions: z.string().optional(),
   options: z.record(z.string(), z.unknown()).optional(),
 });
 

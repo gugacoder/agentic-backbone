@@ -19,7 +19,6 @@ import type { UsageData } from "../agent/index.js";
 import { checkMessageSecurity } from "../security/filter.js";
 import { eventBus } from "../events/index.js";
 import { checkExceeded, getQuotas, recordUsage, pauseAgent } from "../quotas/quota-manager.js";
-import { getChannel } from "../channels/registry.js";
 
 export { readMessages };
 
@@ -415,9 +414,7 @@ export async function* sendMessage(
   }
   // --- End orchestration ---
 
-  const channel = session.channel_id ? getChannel(session.channel_id) : undefined;
-  const channelType = channel?.["channel-adapter"] ?? channel?.type;
-  const assembled = await assemblePrompt(effectiveAgentId, "conversation", { userMessage: message, channelType });
+  const assembled = await assemblePrompt(effectiveAgentId, "conversation", { userMessage: message, channelId: session.channel_id ?? undefined });
   if (!assembled) {
     throw new Error(`Agent ${effectiveAgentId} has no conversation instructions`);
   }

@@ -2,12 +2,13 @@ slug: voice
 owner: guga
 type: generic
 description: ""
+agent: guga.kai
 channel-adapter: twilio-voice
-agent: guga.multicanal
+instructions: |
+  Você está numa chamada telefônica. Suas respostas serão convertidas em fala (TTS).
+  Seja conciso e natural como numa conversa por voz.
+  Não use formatação, links ou emojis.
 options:
-  twilio-account-sid: null
-  twilio-auth-token: null
-  twilio-phone-number: null
   to-number: "+5532998055022"
   twilio-language: pt-BR
   twilio-voice: Polly.Camila
