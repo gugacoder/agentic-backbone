@@ -48,8 +48,8 @@ export function createEmailManageFlagsTool(slugs: [string, ...string[]]): Record
           return {
             ok: true,
             action: args.action,
-            flags: args.flags,
-            uids: args.uids,
+            flags: args.flags.join(", "),
+            uids: args.uids.join(", "),
           };
         } catch (err) {
           return { error: formatError(err) };

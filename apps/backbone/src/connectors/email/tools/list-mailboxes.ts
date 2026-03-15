@@ -24,7 +24,11 @@ export function createEmailListMailboxesTool(slugs: [string, ...string[]]): Reco
           const client = createEmailClient(cred, opts);
 
           const mailboxes = await client.listMailboxes();
-          return { mailboxes };
+          return {
+            mailboxes: mailboxes.map((mb) =>
+              `${mb.path}${mb.specialUse ? ` (${mb.specialUse})` : ""}`
+            ).join(", "),
+          };
         } catch (err) {
           return { error: formatError(err) };
         }
