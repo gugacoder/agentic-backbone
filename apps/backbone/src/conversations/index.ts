@@ -1,4 +1,4 @@
-import { randomUUID } from "node:crypto";
+import { randomUUID, createHash } from "node:crypto";
 import { db } from "../db/index.js";
 import { assemblePrompt } from "../context/index.js";
 import { runAgent, type AgentEvent } from "../agent/index.js";
@@ -121,6 +121,15 @@ const setTakeoverStmt = db.prepare(
 
 const clearTakeoverStmt = db.prepare(
   `UPDATE sessions SET takeover_by = NULL, takeover_at = NULL, updated_at = datetime('now')
+   WHERE session_id = ?`
+);
+
+const selectSystemHash = db.prepare(
+  `SELECT system_hash FROM sessions WHERE session_id = ?`
+);
+
+const updateSystemHash = db.prepare(
+  `UPDATE sessions SET system_hash = ?, sdk_session_id = NULL, updated_at = datetime('now')
    WHERE session_id = ?`
 );
 
@@ -415,6 +424,14 @@ export async function* sendMessage(
   let usageData: UsageData | undefined;
   const agentStartMs = Date.now();
 
+  // Invalidate SDK session if system prompt changed (adapters, config, skills, etc.)
+  const systemHash = createHash("sha256").update(assembled.system).digest("hex").slice(0, 16);
+  const storedHash = (selectSystemHash.get(sessionId) as { system_hash: string | null } | undefined)?.system_hash;
+  if (storedHash !== systemHash) {
+    sdkSessionId = undefined;
+    updateSystemHash.run(systemHash, sessionId);
+  }
+
   await triggerHook({
     ts: Date.now(),
     hookEvent: "agent:before",
@@ -509,6 +526,7 @@ export async function* sendMessage(
   if (count % FLUSH_EVERY === 0) {
     flushMemory({
       agentId,
+      sessionId,
       sdkSessionId,
     }).catch((err) => {
       console.warn("[memory-flush] background flush failed:", err);
