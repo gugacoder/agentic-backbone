@@ -1,4 +1,11 @@
 /**
+ * Rating feature is temporarily disabled.
+ * Current behavior (asking after every single message) was not well designed.
+ * Set to false to re-enable when the feature is revisited and properly designed.
+ */
+export const RATING_DISABLED_PENDING_REDESIGN = true;
+
+/**
  * WhatsApp Rating State Tracker
  *
  * After each agent response on WhatsApp, the system sends a rating prompt

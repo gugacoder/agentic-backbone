@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import type { ConnectorDef, ConnectorContext } from "../types.js";
 import { credentialSchema, optionsSchema } from "./schemas.js";
 import { createEvolutionClient } from "./client.js";
@@ -8,6 +9,7 @@ import { EvolutionStateTracker } from "./state.js";
 import { EvolutionPatternDetector } from "./patterns.js";
 import { EvolutionActions } from "./actions.js";
 import { createEvolutionRoutes } from "./routes.js";
+import type { ElevenLabsClient } from "../elevenlabs/client.js";
 
 let probe: EvolutionProbe | null = null;
 let stateTracker: EvolutionStateTracker | null = null;
@@ -15,8 +17,9 @@ let patternDetector: EvolutionPatternDetector | null = null;
 let actions: EvolutionActions | null = null;
 
 function calculateHumanDelay(text: string): number {
+  const msPerChar = Number(process.env.EVOLUTION_TYPING_MS_PER_CHAR ?? 30);
   const length = text.length;
-  const baseMs = length * 50;
+  const baseMs = length * msPerChar;
   const jitter = 0.85 + Math.random() * 0.3;
   return Math.round(Math.max(400, Math.min(10_000, baseMs * jitter)));
 }
@@ -151,19 +154,49 @@ export const evolutionConnector: ConnectorDef = {
 
     // Register "whatsapp" channel-adapter
     ctx.registerChannelAdapter("whatsapp", (channelConfig) => {
-      const instance = (channelConfig["options"] as Record<string, unknown> | undefined)?.["instance"] as string;
+      const instance = (channelConfig["instance"] ?? (channelConfig["options"] as Record<string, unknown> | undefined)?.["instance"]) as string;
       const baseUrl = ctx.env.EVOLUTION_URL!;
       const apiKey = ctx.env.EVOLUTION_API_KEY ?? "";
 
       return {
         slug: "whatsapp",
 
-        async send({ content, metadata }) {
+        async send({ content, metadata, agentId }) {
           const recipientId = metadata?.recipientId as string | undefined;
           if (!recipientId) {
             console.warn("[whatsapp-adapter] send sem recipientId — ignorando");
             return;
           }
+
+          // If original message was audio, try to respond with audio via ElevenLabs
+          if (metadata?.isAudio && agentId) {
+            try {
+              const { connectorRegistry } = await import("../index.js");
+              const adapters = connectorRegistry.resolveAdapters(agentId);
+              const elAdapter = [...adapters.values()].find(a => a.connector === "elevenlabs" && a.enabled !== false);
+              if (elAdapter) {
+                const elDef = connectorRegistry.get("elevenlabs");
+                if (elDef) {
+                  const credential = elDef.credentialSchema.parse(elAdapter.credential);
+                  const options = elDef.optionsSchema.parse(elAdapter.options);
+                  const elClient = elDef.createClient(credential, options) as ElevenLabsClient;
+                  const { file_path } = await elClient.speak(content);
+                  const audioBase64 = readFileSync(file_path).toString("base64");
+                  const audioRes = await fetch(`${baseUrl}/message/sendWhatsAppAudio/${instance}`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json", apikey: apiKey },
+                    body: JSON.stringify({ number: recipientId, audio: audioBase64, encoding: true }),
+                  });
+                  if (audioRes.ok) return;
+                  console.error(`[whatsapp-adapter] sendAudio falhou HTTP ${audioRes.status}, fallback para texto`);
+                }
+              }
+            } catch (err) {
+              console.error("[whatsapp-adapter] ElevenLabs falhou, fallback para texto:", err);
+            }
+          }
+
+          // Default path: send as text
           const res = await fetch(`${baseUrl}/message/sendText/${instance}`, {
             method: "POST",
             headers: { "Content-Type": "application/json", apikey: apiKey },
@@ -181,9 +214,38 @@ export const evolutionConnector: ConnectorDef = {
 
         health() {
           const apiState = probe!.getState();
+          if (apiState !== "online") {
+            return { status: "unhealthy" as const, details: { reason: "api_offline" } };
+          }
+          if (!instance) {
+            return { status: "unhealthy" as const, details: { reason: "no_instance" } };
+          }
+          const inst = stateTracker?.getInstance(instance);
+          if (!inst) {
+            return { status: "unhealthy" as const, details: { reason: "instance_not_found" } };
+          }
+          if (inst.state === "open") {
+            return { status: "healthy" as const, details: { instanceState: inst.state } };
+          }
           return {
-            status: apiState === "online" ? "healthy" as const : "unhealthy" as const,
+            status: inst.state === "connecting" ? "degraded" as const : "unhealthy" as const,
+            details: { instanceState: inst.state },
           };
+        },
+
+        async reconnect() {
+          if (!instance) return;
+          await actions?.reconnect(instance);
+        },
+
+        async disconnect() {
+          if (!instance) return;
+          const url = ctx.env.EVOLUTION_URL!;
+          const key = ctx.env.EVOLUTION_API_KEY ?? "";
+          await fetch(`${url}/instance/logout/${instance}`, {
+            method: "DELETE",
+            headers: { apikey: key },
+          });
         },
       };
     });

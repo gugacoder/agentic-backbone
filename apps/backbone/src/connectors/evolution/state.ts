@@ -1,8 +1,20 @@
 import type { BackboneEventBus } from "../../events/index.js";
 import type { InstanceState } from "./types.js";
 
-/** Shape of each element returned by Evolution API's fetchInstances. */
-interface RawInstance {
+/**
+ * Shape of each element returned by Evolution API's fetchInstances.
+ * v2 returns flat objects: { id, name, connectionStatus, ownerJid, profileName, ... }
+ * v1 used nested: { instance: { instanceName, instanceId, status, ... } }
+ */
+interface RawInstanceV2 {
+  id: string;
+  name: string;
+  connectionStatus: string;
+  ownerJid?: string | null;
+  profileName?: string | null;
+}
+
+interface RawInstanceV1 {
   instance: {
     instanceName: string;
     instanceId: string;
@@ -10,6 +22,33 @@ interface RawInstance {
     profileName?: string | null;
     status: string;
   };
+}
+
+type RawInstance = RawInstanceV2 | RawInstanceV1;
+
+function extractInstance(raw: RawInstance): { name: string; id: string; status: string; owner: string | null; profileName: string | null } | null {
+  // v2 format (flat)
+  if ("name" in raw && typeof raw.name === "string") {
+    return {
+      name: raw.name,
+      id: (raw as RawInstanceV2).id,
+      status: (raw as RawInstanceV2).connectionStatus,
+      owner: (raw as RawInstanceV2).ownerJid ?? null,
+      profileName: (raw as RawInstanceV2).profileName ?? null,
+    };
+  }
+  // v1 format (nested)
+  const v1 = raw as RawInstanceV1;
+  if (v1?.instance?.instanceName) {
+    return {
+      name: v1.instance.instanceName,
+      id: v1.instance.instanceId,
+      status: v1.instance.status,
+      owner: v1.instance.owner ?? null,
+      profileName: v1.instance.profileName ?? null,
+    };
+  }
+  return null;
 }
 
 export interface InstanceWithDuration extends InstanceState {
@@ -38,16 +77,17 @@ export class EvolutionStateTracker {
     const now = Date.now();
     const incoming = new Map<string, RawInstance>();
 
+    const parsed = new Map<string, ReturnType<typeof extractInstance> & {}>();
     for (const raw of rawInstances) {
-      const r = raw as RawInstance;
-      if (r?.instance?.instanceName) {
-        incoming.set(r.instance.instanceName, r);
+      const inst = extractInstance(raw as RawInstance);
+      if (inst) {
+        parsed.set(inst.name, inst);
       }
     }
 
     // Detect removed instances (present in tracking but absent from API)
     for (const [name, tracked] of this.instances) {
-      if (!incoming.has(name)) {
+      if (!parsed.has(name)) {
         this.instances.delete(name);
         this.log(`instance removed: ${name}`);
         this.eventBus.emitModule("evolution", "instance-removed", {
@@ -62,20 +102,20 @@ export class EvolutionStateTracker {
     }
 
     // Process each incoming instance
-    for (const [name, raw] of incoming) {
-      const state = this.normalizeState(raw.instance.status);
+    for (const [name, inst] of parsed) {
+      const state = this.normalizeState(inst.status);
       const existing = this.instances.get(name);
 
       if (!existing) {
         // New instance discovered
         const entry: InstanceState = {
           instanceName: name,
-          instanceId: raw.instance.instanceId,
+          instanceId: inst.id,
           state,
           since: now,
           previousState: null,
-          owner: raw.instance.owner ?? null,
-          profileName: raw.instance.profileName ?? null,
+          owner: inst.owner,
+          profileName: inst.profileName,
         };
         this.instances.set(name, entry);
         this.log(`instance discovered: ${name} (${state})`);
@@ -91,8 +131,8 @@ export class EvolutionStateTracker {
       }
 
       // Update mutable fields if changed
-      existing.owner = raw.instance.owner ?? null;
-      existing.profileName = raw.instance.profileName ?? null;
+      existing.owner = inst.owner;
+      existing.profileName = inst.profileName;
 
       // Check for state transition
       if (existing.state !== state) {

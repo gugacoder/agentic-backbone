@@ -2,13 +2,14 @@ import { Hono, type Context } from "hono";
 import type { EvolutionProbe } from "./probe.js";
 import type { EvolutionStateTracker } from "./state.js";
 import type { EvolutionActions, ActionResult } from "./actions.js";
-import { findChannelByMetadata } from "../../channels/lookup.js";
+import { findChannelsByAdapter } from "../../channels/lookup.js";
 import { routeInboundMessage } from "../../channels/delivery/inbound-router.js";
 import {
   getPendingRating,
   handlePossibleRatingReply,
   lastAssistantMessageIndex,
   setPendingRating,
+  RATING_DISABLED_PENDING_REDESIGN,
 } from "./whatsapp-rating.js";
 
 interface RouteDeps {
@@ -285,28 +286,94 @@ export function createEvolutionRoutes(deps: RouteDeps): Hono {
     const instanceName = body.instance as string | undefined;
     const remoteJid = body.data?.key?.remoteJid as string | undefined;
     const fromMe = body.data?.key?.fromMe as boolean | undefined;
-    const messageText =
-      (body.data?.message?.conversation as string) ??
-      (body.data?.message?.extendedTextMessage?.text as string) ??
-      "";
-
-    if (!instanceName || !remoteJid || !messageText) {
-      return c.json({ status: "ignored" }, 200);
-    }
+    const rawMessage = body.data?.message as Record<string, unknown> | undefined;
 
     if (fromMe) {
       return c.json({ status: "ignored_self" }, 200);
     }
 
-    if (remoteJid.endsWith("@g.us")) {
+    if (remoteJid?.endsWith("@g.us")) {
       return c.json({ status: "ignored_group" }, 200);
+    }
+
+    // Detect audio messages (audioMessage = encoded audio, pttMessage = voice note)
+    const audioMsg = rawMessage?.audioMessage ?? rawMessage?.pttMessage;
+    let messageText =
+      (rawMessage?.conversation as string) ??
+      (rawMessage?.extendedTextMessage as Record<string, unknown> | undefined)?.text as string ??
+      "";
+    let isAudio = false;
+
+    if (!messageText && audioMsg && instanceName) {
+      // Check if Whisper is configured
+      const whisperHost = env.WHISPER_HOST;
+      const whisperPort = env.WHISPER_PORT;
+      if (!whisperHost || !whisperPort) {
+        return c.json({ status: "ignored_no_whisper" }, 200);
+      }
+
+      try {
+        // Download audio as base64 from Evolution API
+        const msgKey = body.data?.key as Record<string, unknown>;
+        const base64Res = await fetch(`${baseUrl}/chat/getBase64FromMediaMessage/${instanceName}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", apikey },
+          body: JSON.stringify({ key: msgKey, convertToMp4: false }),
+        });
+        if (!base64Res.ok) {
+          console.error(`[evolution/webhook] getBase64FromMediaMessage failed HTTP ${base64Res.status}`);
+          return c.json({ status: "ignored_audio_error" }, 200);
+        }
+        const base64Data = await base64Res.json() as { base64?: string; mimetype?: string };
+        if (!base64Data.base64) {
+          console.error("[evolution/webhook] getBase64FromMediaMessage returned no base64");
+          return c.json({ status: "ignored_audio_error" }, 200);
+        }
+
+        // Transcribe via Whisper
+        const audioBuffer = Buffer.from(base64Data.base64, "base64");
+        const mimeType = base64Data.mimetype ?? "audio/ogg";
+        const ext = mimeType.includes("mp4") ? "mp4" : mimeType.includes("mpeg") ? "mp3" : "ogg";
+        const formData = new FormData();
+        const blob = new Blob([audioBuffer], { type: mimeType });
+        formData.append("file", blob, `audio.${ext}`);
+        formData.append("language", "pt");
+
+        const whisperRes = await fetch(`http://${whisperHost}:${whisperPort}/v1/audio/transcriptions`, {
+          method: "POST",
+          body: formData,
+        });
+        if (!whisperRes.ok) {
+          console.error(`[evolution/webhook] Whisper transcription failed HTTP ${whisperRes.status}`);
+          return c.json({ status: "ignored_audio_error" }, 200);
+        }
+        const whisperData = await whisperRes.json() as { text?: string };
+        const transcript = whisperData.text?.trim();
+        if (!transcript) {
+          console.error("[evolution/webhook] Whisper returned empty transcript");
+          return c.json({ status: "ignored_audio_error" }, 200);
+        }
+
+        console.log(`[evolution/webhook] audio transcribed: "${transcript}"`);
+        messageText = `[🎙️ Áudio]: "${transcript}"`;
+        isAudio = true;
+      } catch (err) {
+        console.error("[evolution/webhook] audio transcription error:", err);
+        return c.json({ status: "ignored_audio_error" }, 200);
+      }
+    }
+
+    if (!instanceName || !remoteJid || !messageText) {
+      return c.json({ status: "ignored" }, 200);
     }
 
     // Extract sender number from JID (e.g. "5511999999999@s.whatsapp.net" → "5511999999999")
     const senderId = remoteJid.split("@")[0]!;
 
-    // Lookup channel by instance metadata
-    const channel = findChannelByMetadata("instance", instanceName);
+    // Lookup channel by instance name (stored in options.instance)
+    const channel = findChannelsByAdapter("whatsapp").find(
+      (ch) => ch.options["instance"] === instanceName
+    );
     if (!channel) {
       return c.json({ status: "no_channel" }, 200);
     }
@@ -340,9 +407,11 @@ export function createEvolutionRoutes(deps: RouteDeps): Hono {
         senderId,
         content: messageText,
         ts: Date.now(),
-        metadata: { instance: instanceName, remoteJid },
+        metadata: { instance: instanceName, remoteJid, ...(isAudio ? { isAudio: true } : {}) },
       },
       async (sessionId, agentId) => {
+        if (RATING_DISABLED_PENDING_REDESIGN) return;
+
         // After agent responds, find the last assistant message index
         const msgIndex = lastAssistantMessageIndex(agentId, sessionId);
         if (msgIndex < 0) return;
