@@ -9,6 +9,6 @@ export function createMemoryAiTools(agentId: string): Record<string, any> {
     createMemorySaveTool(agentId),
     createMemoryJournalTool(agentId),
     createMemorySearchTool(agentId),
-    createMemoryUserSaveTool(),
+    createMemoryUserSaveTool(agentId),
   );
 }

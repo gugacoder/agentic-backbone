@@ -1,13 +1,15 @@
 import { tool } from "ai";
 import { z } from "zod";
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
-import { userAboutPath } from "../../context/paths.js";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { dirname } from "node:path";
+import { agentUserMemoryPath } from "../../context/paths.js";
+import { getAgentMemoryManager } from "../manager.js";
 
-export function createMemoryUserSaveTool(): Record<string, any> {
+export function createMemoryUserSaveTool(agentId: string): Record<string, any> {
   return {
     memory_user_save: tool({
       description:
-        "Save learned facts about a user to their ABOUT.md profile. " +
+        "Save learned facts about a user to your private memory about them. " +
         "Use when you discover user preferences, context, or relevant information during interactions. " +
         "Duplicates are skipped automatically.",
       parameters: z.object({
@@ -20,13 +22,14 @@ export function createMemoryUserSaveTool(): Record<string, any> {
           .describe("Facts to record about the user. Each should be concise and objective."),
       }),
       execute: async (args) => {
-        const path = userAboutPath(args.userSlug);
+        const path = agentUserMemoryPath(agentId, args.userSlug);
 
-        if (!existsSync(path)) {
-          return { saved: false, error: `User '${args.userSlug}' not found` };
+        const dir = dirname(path);
+        if (!existsSync(dir)) {
+          mkdirSync(dir, { recursive: true });
         }
 
-        const existing = readFileSync(path, "utf-8");
+        const existing = existsSync(path) ? readFileSync(path, "utf-8") : "";
         const existingLower = existing.toLowerCase();
 
         const newFacts = args.facts.filter(
@@ -38,8 +41,10 @@ export function createMemoryUserSaveTool(): Record<string, any> {
         }
 
         const section = `\n${newFacts.map((f) => `- ${f}`).join("\n")}\n`;
-        const updated = existing.trimEnd() + "\n" + section;
+        const updated = existing ? existing.trimEnd() + "\n" + section : `# ${args.userSlug}\n` + section;
         writeFileSync(path, updated, "utf-8");
+
+        try { getAgentMemoryManager(agentId).markDirty(); } catch {}
 
         return { saved: true, path, factsCount: newFacts.length };
       },
