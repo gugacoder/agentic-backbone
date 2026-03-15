@@ -35,17 +35,18 @@ export function createEmailReadTool(slugs: [string, ...string[]]): Record<string
             uid: email.uid,
             messageId: email.messageId,
             inReplyTo: email.inReplyTo,
-            references: email.references,
-            from: email.from,
-            fromName: email.fromName,
-            to: email.to,
-            cc: email.cc,
+            references: email.references.join(" "),
+            from: email.fromName ? `${email.fromName} <${email.from}>` : email.from,
+            to: email.to.join(", "),
+            cc: email.cc.length > 0 ? email.cc.join(", ") : undefined,
             subject: email.subject,
             date: email.date?.toISOString() ?? null,
             body,
             bodyFormat: args.prefer_html && email.bodyHtml ? "html" : "text",
             hasHtml: email.bodyHtml !== null,
-            attachments: email.attachments,
+            attachments: email.attachments.map((a) =>
+              `${a.filename} (${a.contentType}, ${a.size} bytes, part_id=${a.partId})`
+            ).join("; ") || "nenhum",
           };
         } catch (err) {
           return { error: formatError(err) };

@@ -54,10 +54,9 @@ export function createEmailSearchTool(slugs: [string, ...string[]]): Record<stri
             messages: messages.map((m) => ({
               uid: m.uid,
               messageId: m.messageId,
-              from: m.from,
-              fromName: m.fromName,
-              to: m.to,
-              cc: m.cc,
+              from: m.fromName ? `${m.fromName} <${m.from}>` : m.from,
+              to: m.to.join(", "),
+              cc: m.cc.length > 0 ? m.cc.join(", ") : undefined,
               subject: m.subject,
               date: m.date?.toISOString() ?? null,
               bodyPreview: m.bodyText,
