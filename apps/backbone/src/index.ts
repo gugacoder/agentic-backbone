@@ -1,6 +1,7 @@
 // Allow running inside a Claude Code session (nested session guard bypass)
 delete process.env.CLAUDECODE;
 
+
 // ── Validate required env vars ─────────────────────────────
 const REQUIRED_ENV = ["JWT_SECRET", "BACKBONE_PORT"] as const;
 const missing = REQUIRED_ENV.filter((k) => !process.env[k]);
