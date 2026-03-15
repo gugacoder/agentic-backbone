@@ -7,12 +7,24 @@ export interface UserPermissions {
   maxAgents: number;
 }
 
+export interface UserAddress {
+  street?: string;
+  neighborhood?: string;
+  city?: string;
+  state?: string;
+  country?: string;
+  postalCode?: string;
+  timezone?: string;
+}
+
 export interface User {
   slug: string;
   displayName: string;
   email: string;
+  phoneNumber?: string;
   role?: string;
   permissions: UserPermissions;
+  address?: UserAddress;
 }
 
 export function usersQueryOptions() {
@@ -27,14 +39,18 @@ export interface CreateUserPayload {
   displayName: string;
   password: string;
   email?: string;
+  phoneNumber?: string;
   permissions?: Partial<UserPermissions>;
+  address?: UserAddress;
 }
 
 export interface UpdateUserPayload {
   displayName?: string;
   email?: string;
+  phoneNumber?: string;
   role?: string | null;
   permissions?: Partial<UserPermissions>;
+  address?: UserAddress;
 }
 
 export function userQueryOptions(slug: string) {

@@ -4,12 +4,24 @@ export interface UserPermissions {
   maxAgents: number;
 }
 
+export interface UserAddress {
+  street?: string;
+  neighborhood?: string;
+  city?: string;
+  state?: string;
+  country?: string;
+  postalCode?: string;
+  timezone?: string;
+}
+
 export interface UserConfig {
   slug: string;
   displayName: string;
   email: string;
+  phoneNumber?: string;
   role?: string;
   permissions: UserPermissions;
+  address?: UserAddress;
 }
 
 export const DEFAULT_PERMISSIONS: UserPermissions = {

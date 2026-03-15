@@ -39,15 +39,25 @@ userRoutes.post("/users", async (c) => {
   const denied = requireSysuser(c);
   if (denied) return denied;
 
-  const { slug, displayName, password, email, permissions } = await c.req.json<{
+  const { slug, displayName, password, email, phoneNumber, permissions, address } = await c.req.json<{
     slug: string;
     displayName: string;
     password: string;
     email?: string;
+    phoneNumber?: string;
     permissions?: {
       canCreateAgents?: boolean;
       canCreateChannels?: boolean;
       maxAgents?: number;
+    };
+    address?: {
+      street?: string;
+      neighborhood?: string;
+      city?: string;
+      state?: string;
+      country?: string;
+      postalCode?: string;
+      timezone?: string;
     };
   }>();
 
@@ -58,7 +68,7 @@ userRoutes.post("/users", async (c) => {
     return c.json({ error: "user already exists" }, 409);
   }
 
-  const user = createUser(slug, displayName, password, permissions, email);
+  const user = createUser(slug, displayName, password, permissions, email, phoneNumber, address);
   return c.json(user, 201);
 });
 
@@ -75,8 +85,18 @@ userRoutes.patch("/users/:slug", async (c) => {
   const body = await c.req.json<{
     displayName?: string;
     email?: string;
+    phoneNumber?: string;
     password?: string;
     role?: string | null;
+    address?: {
+      street?: string;
+      neighborhood?: string;
+      city?: string;
+      state?: string;
+      country?: string;
+      postalCode?: string;
+      timezone?: string;
+    };
     permissions?: {
       canCreateAgents?: boolean;
       canCreateChannels?: boolean;
@@ -84,12 +104,14 @@ userRoutes.patch("/users/:slug", async (c) => {
     };
   }>();
 
-  // Regular users can update their own displayName, email, and password
+  // Regular users can update their own displayName, email, password, and address
   if (auth.role !== "sysuser") {
-    const updates: { displayName?: string; email?: string; password?: string } = {};
+    const updates: { displayName?: string; email?: string; phoneNumber?: string; password?: string; address?: typeof body.address } = {};
     if (body.displayName) updates.displayName = body.displayName;
     if (body.email !== undefined) updates.email = body.email;
+    if (body.phoneNumber !== undefined) updates.phoneNumber = body.phoneNumber;
     if (body.password) updates.password = body.password;
+    if (body.address !== undefined) updates.address = body.address;
     const updated = updateUser(slug, updates);
     if (!updated) return c.json({ error: "not found" }, 404);
     return c.json(updated);

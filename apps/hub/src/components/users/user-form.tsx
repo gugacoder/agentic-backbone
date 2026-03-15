@@ -45,6 +45,7 @@ export function UserForm({
   const [slug, setSlug] = useState(user?.slug ?? "");
   const [displayName, setDisplayName] = useState(user?.displayName ?? "");
   const [email, setEmail] = useState(user?.email ?? "");
+  const [phoneNumber, setPhoneNumber] = useState(user?.phoneNumber ?? "");
   const [role, setRole] = useState(user?.role ?? "");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -58,6 +59,14 @@ export function UserForm({
     String(user?.permissions?.maxAgents ?? 0),
   );
 
+  const [street, setStreet] = useState(user?.address?.street ?? "");
+  const [neighborhood, setNeighborhood] = useState(user?.address?.neighborhood ?? "");
+  const [city, setCity] = useState(user?.address?.city ?? "");
+  const [state, setState] = useState(user?.address?.state ?? "");
+  const [country, setCountry] = useState(user?.address?.country ?? "");
+  const [postalCode, setPostalCode] = useState(user?.address?.postalCode ?? "");
+  const [timezone, setTimezone] = useState(user?.address?.timezone ?? "");
+
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [backendError, setBackendError] = useState<string | null>(null);
 
@@ -66,12 +75,20 @@ export function UserForm({
       setSlug("");
       setDisplayName("");
       setEmail("");
+      setPhoneNumber("");
       setRole("");
       setPassword("");
       setConfirmPassword("");
       setCanCreateAgents(true);
       setCanCreateChannels(false);
       setMaxAgents("0");
+      setStreet("");
+      setNeighborhood("");
+      setCity("");
+      setState("");
+      setCountry("");
+      setPostalCode("");
+      setTimezone("");
     }
     setErrors({});
     setBackendError(null);
@@ -196,12 +213,25 @@ export function UserForm({
       maxAgents: Number(maxAgents) || 0,
     };
 
+    const address = {
+      street: street.trim() || undefined,
+      neighborhood: neighborhood.trim() || undefined,
+      city: city.trim() || undefined,
+      state: state.trim() || undefined,
+      country: country.trim() || undefined,
+      postalCode: postalCode.trim() || undefined,
+      timezone: timezone.trim() || undefined,
+    };
+    const hasAddress = Object.values(address).some(Boolean);
+
     if (isEditing) {
       updateMutation.mutate({
         displayName: displayName.trim(),
         email: email.trim() || undefined,
+        phoneNumber: phoneNumber.trim() || undefined,
         role: role.trim() || null,
         permissions,
+        address: hasAddress ? address : undefined,
       });
     } else {
       createMutation.mutate({
@@ -209,7 +239,9 @@ export function UserForm({
         displayName: displayName.trim(),
         password,
         email: email.trim() || undefined,
+        phoneNumber: phoneNumber.trim() || undefined,
         permissions,
+        address: hasAddress ? address : undefined,
       });
     }
   }
@@ -292,6 +324,18 @@ export function UserForm({
               )}
             </div>
 
+            {/* Telefone */}
+            <div className="space-y-2">
+              <Label htmlFor="user-phone">Telefone</Label>
+              <Input
+                id="user-phone"
+                type="tel"
+                placeholder="5532984110531 (opcional)"
+                value={phoneNumber}
+                onChange={(e) => setPhoneNumber(e.target.value)}
+              />
+            </div>
+
             {/* Role — apenas em edição */}
             {isEditing && (
               <div className="space-y-2">
@@ -354,6 +398,83 @@ export function UserForm({
                 </div>
               </>
             )}
+
+            {/* Endereco */}
+            <fieldset className="space-y-4">
+              <legend className="text-sm font-medium">Endereco</legend>
+
+              <div className="space-y-2">
+                <Label htmlFor="user-street">Rua</Label>
+                <Input
+                  id="user-street"
+                  placeholder="Rua Exemplo, 123"
+                  value={street}
+                  onChange={(e) => setStreet(e.target.value)}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="user-neighborhood">Bairro</Label>
+                <Input
+                  id="user-neighborhood"
+                  placeholder="Centro"
+                  value={neighborhood}
+                  onChange={(e) => setNeighborhood(e.target.value)}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label htmlFor="user-city">Cidade</Label>
+                  <Input
+                    id="user-city"
+                    placeholder="Juiz de Fora"
+                    value={city}
+                    onChange={(e) => setCity(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="user-state">Estado</Label>
+                  <Input
+                    id="user-state"
+                    placeholder="MG"
+                    value={state}
+                    onChange={(e) => setState(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label htmlFor="user-country">Pais</Label>
+                  <Input
+                    id="user-country"
+                    placeholder="Brasil"
+                    value={country}
+                    onChange={(e) => setCountry(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="user-postalcode">CEP</Label>
+                  <Input
+                    id="user-postalcode"
+                    placeholder="36010-000"
+                    value={postalCode}
+                    onChange={(e) => setPostalCode(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="user-timezone">Timezone</Label>
+                <Input
+                  id="user-timezone"
+                  placeholder="America/Sao_Paulo"
+                  value={timezone}
+                  onChange={(e) => setTimezone(e.target.value)}
+                />
+              </div>
+            </fieldset>
 
             {/* Permissoes */}
             <fieldset className="space-y-4">
