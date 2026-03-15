@@ -1,6 +1,11 @@
 connector: http
 name: Open-Meteo Weather
-policy: readwrite
+description: >-
+  API de previsão do tempo via wttr.in.
+  Uso: GET /{cidade}?format=j1 para JSON estruturado.
+  Exemplos: GET /Curitiba?format=j1, GET /São+Paulo?format=j1, GET /London?format=j1.
+  Sempre use ?format=j1 para obter resposta em JSON.
+policy: readonly
 credential:
   baseUrl: https://wttr.in
 options: {}

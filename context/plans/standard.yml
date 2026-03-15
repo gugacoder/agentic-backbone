@@ -102,5 +102,5 @@ slugs:
 roles:
   conversation: medium.mid
   heartbeat: small.low
-  memory: small.low
+  memory: medium.low
   cron: medium.low

@@ -1,8 +1,0 @@
-id: guga.multicanal
-owner: guga
-slug: multicanal
-delivery: whatsapp
-enabled: true
-heartbeat-enabled: false
-heartbeat-interval: 300000
-description: ""
