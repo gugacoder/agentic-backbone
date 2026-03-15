@@ -122,6 +122,20 @@ export async function assemblePrompt(
   // 7. Services
   system += formatServicesPrompt(agentId);
 
+  // 7b. Scheduling (cron tools guidance)
+  system += `<scheduling>
+Você pode criar, listar, atualizar e remover agendamentos usando as ferramentas cron_*.
+Quando o usuário pedir para ser lembrado, agendar, programar algo recorrente ou pontual, use:
+- cron_add: criar agendamento (kind='cron' para recorrente, kind='at' para pontual)
+- cron_list: listar agendamentos existentes
+- cron_update: alterar um agendamento
+- cron_remove: remover um agendamento
+- cron_status / cron_runs: verificar status e histórico
+
+Para cron_add, use payload kind='conversation' com a mensagem que você quer enviar.
+Exemplo: agendar mensagem diária às 7h → schedule: {kind:'cron', expr:'0 7 * * *', tz:'America/Sao_Paulo'}, payload: {kind:'conversation', message:'Bom dia!'}
+</scheduling>\n\n`;
+
   // 8. Semantic memory (data-driven: requires userMessage + OPENAI_API_KEY)
   if (opts.userMessage && process.env.OPENAI_API_KEY) {
     try {

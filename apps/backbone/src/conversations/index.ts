@@ -432,6 +432,9 @@ export async function* sendMessage(
     updateSystemHash.run(systemHash, sessionId);
   }
 
+  // Expose agent identity to tools (used by cron, job tools)
+  process.env.AGENT_ID = effectiveAgentId;
+
   await triggerHook({
     ts: Date.now(),
     hookEvent: "agent:before",

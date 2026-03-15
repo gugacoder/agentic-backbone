@@ -1,6 +1,6 @@
 import { readdirSync, existsSync } from "node:fs";
 import { join } from "node:path";
-import { parseFrontmatter, readContextFile, readMarkdown } from "./readers.js";
+import { parseFrontmatter, readContextFile } from "./readers.js";
 import {
   type ResourceKind,
   sharedResourceDir,
@@ -122,24 +122,7 @@ export function resolveUserProfile(agentId: string): string {
   const mdPath = userMdPath(owner);
   if (!existsSync(mdPath)) return "";
 
-  const { metadata, content } = readMarkdown(mdPath);
-  const parts: string[] = [];
-
-  const fields = ["displayName", "email", "phoneNumber", "role"];
-  for (const f of fields) {
-    if (metadata[f]) parts.push(`- ${f}: ${metadata[f]}`);
-  }
-  const addr = metadata.address as Record<string, unknown> | undefined;
-  if (addr) {
-    const addrParts = [addr.city, addr.state, addr.country].filter(Boolean);
-    if (addrParts.length) parts.push(`- location: ${addrParts.join(", ")}`);
-    if (addr.timezone) parts.push(`- timezone: ${addr.timezone}`);
-  }
-
-  if (parts.length) parts.push("");
-  if (content.trim()) parts.push(content.trim());
-
-  return parts.join("\n");
+  return readContextFile(mdPath);
 }
 
 // --- Services ---
