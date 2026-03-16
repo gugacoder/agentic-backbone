@@ -3,7 +3,7 @@
 Inventário de todas as capabilities que o backbone disponibiliza para agentes.
 Cada item é testado pelo probe agent via Conversation API ou Probe Channel SSE.
 
-**Cobertura: 53/53 (100%)**
+**Cobertura: 50/50 (100%)**
 
 ---
 
@@ -30,9 +30,6 @@ Cada item é testado pelo probe agent via Conversation API ou Probe Channel SSE.
 
 | # | Capability | Canal | Prova |
 |---|-----------|-------|-------|
-| 3.1 | Descoberta por precedência | Conv | 3 tools listadas (2 shared + 1 agent). Conv-2. |
-| 3.2 | Listagem no prompt | Conv | Nomes e descrições corretos. Conv-2. |
-| 3.3 | Leitura sob demanda | Conv+Probe | Agente lê TOOL.md antes de usar. Conv-3 (emit), HB-1 (digest). |
 | 3.4 | Built-in SDK tools | Conv | Read, Write, Bash usados em Conv-4, Conv-5, Conv-6. |
 
 ## 4. Adapters + Connectors
@@ -128,7 +125,7 @@ Cada item é testado pelo probe agent via Conversation API ou Probe Channel SSE.
 |-----------|-------|---------|--------|
 | Identidade e Contexto | 5 | 5 | Conv-1, Conv-2, HB-1 |
 | Skills | 4 | 4 | Conv-2, HB-1 |
-| Tools | 4 | 4 | Conv-2, Conv-3, Conv-4, Conv-5, Conv-6, HB-1 |
+| Tools | 1 | 1 | Conv-4, Conv-5, Conv-6 |
 | Adapters | 4 | 4 | Conv-2, Conv-4 |
 | Memória | 5 | 5 | Conv-5, Conv-6, Conv-7, Conv-8 |
 | Jobs | 4 | 4 | Conv-9, HB-1 |
@@ -138,7 +135,7 @@ Cada item é testado pelo probe agent via Conversation API ou Probe Channel SSE.
 | Cron | 5 | 5 | Conv-11 |
 | Hooks | 3 | 3 | Conv-12 |
 | Auth | 5 | 5 | Conv-13 |
-| **Total** | **53** | **53** | |
+| **Total** | **50** | **50** | |
 
 ---
 
@@ -156,13 +153,9 @@ Cada item é testado pelo probe agent via Conversation API ou Probe Channel SSE.
 | system-digest | System Digest | agent | Gerar digest criptográfico verificável do estado do agente |
 | test-suite | Test Suite | agent | Suite completa de testes de integração via curl |
 
-### Tools (3 total)
+### Built-in Tools
 
-| Slug | Nome | Source | Descrição |
-|------|------|--------|-----------|
-| emit | Emit | shared | Emitir eventos em canais SSE do backbone |
-| jobs | Jobs | shared | Submeter processos longos ao backbone |
-| introspect | Introspect | agent | Verificar integridade do próprio agente |
+Emit, Jobs e demais tools são built-in no código (não via contexto).
 
 ### Adapters (1 total)
 

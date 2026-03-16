@@ -28,29 +28,6 @@ test.describe("Skills page", () => {
   });
 });
 
-test.describe("Tools page", () => {
-  test("shows page header", async ({ page }) => {
-    await page.goto("/tools");
-    await expect(
-      page.getByRole("heading", { name: "Tools", level: 1 })
-    ).toBeVisible();
-    await expect(page.getByText(/\d+ tool\(s\) available/)).toBeVisible({ timeout: 15_000 });
-  });
-
-  test("renders tool cards or empty state", async ({ page }) => {
-    await page.goto("/tools");
-    const description = await page.getByText(/\d+ tool\(s\) available/).textContent({ timeout: 10_000 });
-    const count = parseInt(description?.match(/(\d+)/)?.[1] ?? "0", 10);
-
-    if (count === 0) {
-      await expect(page.getByRole("heading", { name: "No tools" })).toBeVisible();
-    } else {
-      const cards = page.locator("[data-slot='card']");
-      await expect(cards.first()).toBeVisible();
-    }
-  });
-});
-
 test.describe("Adapters page", () => {
   test("shows page header", async ({ page }) => {
     await page.goto("/adapters");

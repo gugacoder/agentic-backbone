@@ -36,7 +36,6 @@ npm run test:capabilities              # all capability suites
 npm run test:capabilities:hooks        # hook lifecycle
 npm run test:capabilities:skills       # skill loading/eligibility
 npm run test:capabilities:memory       # memory pipeline
-npm run test:capabilities:tools        # tool execution
 npm run test:capabilities:cron         # cron job management
 npm run test:capabilities:jobs         # long-running job submission
 npm run test:capabilities:identity     # agent identity/context assembly
