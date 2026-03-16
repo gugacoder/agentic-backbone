@@ -1,0 +1,11 @@
+id: system.main
+owner: system
+slug: main
+name: Main
+delivery: ""
+enabled: true
+heartbeat-enabled: true
+heartbeat-interval: 30000
+description: "Agente primário do sistema — orquestração, monitoramento e operações autônomas"
+role: admin
+adapters: []
