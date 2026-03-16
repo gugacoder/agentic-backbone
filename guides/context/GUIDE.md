@@ -209,21 +209,6 @@ skip-agent: false            # true = executa direto, sem LLM
 Instruções do serviço.
 ```
 
-### `TOOL.md`
-**Caminho:** `context/{shared,users/{u},agents/{id}}/tools/{slug}/TOOL.md`
-**Schema do frontmatter:** parseado via `parseFrontmatter()` sem schema fixo.
-**Precedência:** shared → user → agent (último vence)
-
-```md
----
-name: Nome da Tool
-description: O que esta tool faz
-enabled: true
----
-
-Definição da tool.
-```
-
 ---
 
 ## Arquivos Markdown puros (só prompt)
@@ -274,10 +259,27 @@ Algoritmo: AES-256-GCM. Chave derivada de `JWT_SECRET` via scrypt. Valores encri
 
 ---
 
-## Precedência de recursos (skills, services, tools, adapters)
+## Precedência de recursos (skills, services, adapters)
 
 ```
 shared/ → users/{owner}/ → agents/{owner.slug}/
 ```
 
 O último que define um slug vence. Isso permite que recursos globais sejam sobrescritos por configurações de usuário ou de agente específico.
+
+## Aprovação de tools
+
+A configuração de aprovação de tools fica no `AGENT.yml` do agente, no campo `tool-approvals`:
+
+```yaml
+tool-approvals:
+  whatsapp_send_text:
+    label: "Enviar mensagem WhatsApp"
+    timeout: 300
+  make_call:
+    label: "Fazer ligação"
+    timeout: 120
+```
+
+- `label` — texto exibido ao operador no pedido de aprovação (default: nome da tool)
+- `timeout` — segundos até expirar automaticamente (default: 300)

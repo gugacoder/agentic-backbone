@@ -16,7 +16,7 @@ if (!process.env.CONTEXT_FOLDER) {
 
 export const CONTEXT_DIR = resolve(REPO_ROOT, process.env.CONTEXT_FOLDER);
 
-export type ResourceKind = "skills" | "adapters" | "services" | "tools";
+export type ResourceKind = "skills" | "adapters" | "services";
 
 // --- Top-level directories ---
 

@@ -16,6 +16,15 @@ export const AgentYmlSchema = z.object({
   members: z.array(z.string()).optional(),
   quotas: z.record(z.string(), z.unknown()).optional(),
   adapters: z.array(z.string()).optional(),
+  "tool-approvals": z
+    .record(
+      z.string(),
+      z.object({
+        label: z.string().optional(),
+        timeout: z.number().int().positive().default(300),
+      })
+    )
+    .optional(),
 });
 
 export type AgentYml = z.infer<typeof AgentYmlSchema>;

@@ -80,12 +80,6 @@ export function resolveSkills(
   return resolveResources(agentId, "skills", "SKILL.md");
 }
 
-export function resolveTools(
-  agentId: string
-): Map<string, ResolvedResource> {
-  return resolveResources(agentId, "tools", "TOOL.md");
-}
-
 // --- Soul resolution (agent-specific only, no fallback) ---
 
 export function resolveAgentSoul(agentId: string): string {

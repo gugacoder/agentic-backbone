@@ -3,6 +3,7 @@ import { eventBus } from "../events/index.js";
 import { registerPendingApproval } from "./approval-manager.js";
 import type { ToolApprovalConfig } from "./loader.js";
 
+
 export class ApprovalRejectedError extends Error {
   constructor() {
     super("Ação cancelada: pedido de aprovação rejeitado pelo operador.");

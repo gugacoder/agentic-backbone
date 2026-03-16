@@ -41,7 +41,7 @@ export function composeAgentTools(
   Object.assign(tools, createEmitTool(agentId));
   Object.assign(tools, createSysinfoTool());
 
-  // Wrap tools that have requires_approval: true in their TOOL.md
+  // Wrap tools that have approval config in AGENT.yml → tool-approvals
   const approvalConfigs = loadToolApprovalConfigs(agentId);
   if (approvalConfigs.size > 0) {
     for (const [toolName, config] of approvalConfigs) {
