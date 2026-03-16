@@ -306,8 +306,8 @@ export function createEvolutionRoutes(deps: RouteDeps): Hono {
 
     if (!messageText && audioMsg && instanceName) {
       // Check if Whisper is configured
-      const whisperHost = env.WHISPER_HOST;
-      const whisperPort = env.WHISPER_PORT;
+      const whisperHost = deps.env.WHISPER_HOST;
+      const whisperPort = deps.env.WHISPER_PORT;
       if (!whisperHost || !whisperPort) {
         return c.json({ status: "ignored_no_whisper" }, 200);
       }
