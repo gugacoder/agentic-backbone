@@ -24,7 +24,7 @@ menu:
       benchmarks: false
 infrastructure:
   ngrok:
-    authtoken: ENC(5SfdBkjDT1VYmR0krU8Sn+PF1QmoTeeDCC6HzU3BF5pa+7K5YuNcJ52YCuzzB8yUnaTIYITr2B7hybhKqvmG2BuDAz3av+QoTwe9A+4=)
+    authtoken: ENC(UVKPnUVOQKWugm14YgJmAG72wysjuPeS6gMNvo3UHIZHVQlxRj6RX0/PMyPZdN6UQgwA5mBXdT2QoJ/JwI51Rcis1odbAB2lFQyLdQA=)
     domain: nonporphyritic-microcrystalline-kenya.ngrok-free.dev
     enabled: true
   whisper:
@@ -32,8 +32,8 @@ infrastructure:
     compute-type: int8
 providers:
   openrouter:
-    api_key: ENC(XU/XkDeS4dtEgXrH0TRrrRxsZ/bjhdjeYSTYd21Kcf782QEPdKluJ6YC2G27fCjRxQVGT9Bik8XFkXiAw8WP/K8/zuSoc/QyyRUxx7p6rtzKqb2z8hvqb5YbhDbOSMprAqPqPB8=)
+    api_key: ENC(zQ4Pgmoq0OANjHSxPd8/2nzUkgNb4Ez8N5ZjczDAbybBXULC7RMI7pkVEqc3C3yUfjPLGAO8DCZINJ71ZoMCI8bi/X9AeYs10EP3JQx1A3IIJIbSKDAf+B0BdYQi/TMK3AUAhq4=)
   openai:
-    api_key: ENC(X6O5L5i3jDOlGeMSVkadMsFO2SNx+yVifJ66fICEJjEhWf+ZCtc+NFamkD1BEozvb5k7M+izHRSergrmWCtX3xY1ugIcEOPlp0QScwwqUgvA4pjoi1I+4qOUf0MAjIMcUGODJtJg2NvpW7MNqPHWhrAhNHYeAo1jRB73crC32d9u7L2r6GKrbKlX6NCnDMLtcG6SbI6GA8MwnscekRFb1qz4X2clgOM3ftyUVcq2OZukd49Hb1uzrCPPQ6B+fM9q)
+    api_key: ENC(EGtnl+P4qHxrPG/nfjYqpKiU95tHDgT+DhpCh6Yj4I4CcO67txw9eReq3LUyPtiOWkRoixBCrguEYCdJMmnGtwOxWIL09fM6WylgC6JEw14kc7SRuiJQbeS4shz6XmIwVDtwiSK9amTr99MVVM6/SBTJwigOhXzCwniFWFcp1MRA/BiRL5GKsFkvt2pSqaXrTBvGfIGULqs+4Af1DsCp0EP+sJ1wXOizF/rD8eSZiDiBBmhfkZehYwdowFoKeX2B)
   brave:
-    api_key: ENC(GT4hb3N2JK/4s+c3GFF5ZaNO9aFzenWCR1VXrXQa/tEZrV1RpABf9mneik+/R1Q2q8ucjqnsEPLepR4=)
+    api_key: ENC(yaEzpkB5L6mm1+KJ6Sw/cCZKFDcXZqzqlt+DXJ1M/xOYNIDbf4dBiHkq/ajX2sVmgz+Efb53GfuI1ng=)
