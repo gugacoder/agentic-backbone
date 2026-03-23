@@ -1,5 +1,8 @@
 import { createHash } from "node:crypto";
+import { existsSync } from "node:fs";
 import { db } from "../db/index.js";
+import { settingsPath } from "../context/paths.js";
+import { readYaml } from "../context/readers.js";
 
 // --- Types ---
 
@@ -41,6 +44,15 @@ export async function checkMessageSecurity(
   agentId: string,
   sessionId: string
 ): Promise<SecurityCheckResult> {
+  // Check if security filter is disabled via settings.yml
+  if (existsSync(settingsPath())) {
+    const settings = readYaml(settingsPath()) as Record<string, unknown>;
+    const security = settings.security as Record<string, unknown> | undefined;
+    if (security?.["message-filter"] === false) {
+      return { action: "allow" };
+    }
+  }
+
   const normalized = input.toLowerCase().trim();
 
   const rules = selectRules.all() as SecurityRule[];

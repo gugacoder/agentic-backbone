@@ -1,4 +1,6 @@
-active-plan: economic
+active-plan: standard
+security:
+  message-filter: false
 web-search:
   provider: brave
 menu:
