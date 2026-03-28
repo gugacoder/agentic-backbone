@@ -1,7 +1,0 @@
-connector: twilio
-credential:
-  account_sid: ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-  auth_token: your_auth_token
-options:
-  from: +15017250604
-policy: readwrite
