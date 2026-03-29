@@ -305,7 +305,7 @@
     "id": "F-213",
     "name": "MetricCardRenderer.tsx com Card shadcn",
     "description": "Reescrever MetricCardRenderer.tsx: usar Card do shadcn com p-4. Label text-sm text-muted-foreground. Value text-2xl font-bold text-foreground. Unit text-sm text-muted-foreground. TrendIndicator: text-primary (positivo), text-destructive (negativo), text-muted-foreground (neutro). Zero classe ai-chat-display-metric.",
-    "status": "pending",
+    "status": "passing",
     "priority": 15,
     "agent": "coder",
     "task": "vibe-code",
@@ -320,7 +320,8 @@
       "Trend negativo usa text-destructive",
       "Zero hsl(), oklch(), #hex, rgb() no arquivo"
     ],
-    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-7/worktree/sprints/sprint-14/3-prps/PRP-16D-display-simples-medios-shadcn.md"
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-7/worktree/sprints/sprint-14/3-prps/PRP-16D-display-simples-medios-shadcn.md",
+    "completed_at": "2026-03-29T23:45:00Z"
   },
   {
     "id": "F-214",
