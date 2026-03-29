@@ -1,5 +1,9 @@
 // @agentic-backbone/ai-chat
-// Barrel exports — populated as features are implemented
+// Barrel exports
+
+// Componente principal
+export { Chat } from "./components/Chat.js";
+export type { ChatProps } from "./components/Chat.js";
 
 export { useBackboneChat } from "./hooks/useBackboneChat.js";
 export type { UseBackboneChatOptions, Message } from "./hooks/useBackboneChat.js";

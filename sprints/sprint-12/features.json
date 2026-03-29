@@ -309,7 +309,7 @@
     "id": "F-193",
     "name": "Chat.tsx + Exports Finais",
     "description": "Criar src/components/Chat.tsx: componente auto-suficiente com props endpoint/token/sessionId/displayRenderers?/placeholder?/header?/footer?/className?. Usa ChatProvider internamente, classe .ai-chat no wrapper root, ChatContent separado (consome useChatContext). Atualizar src/index.ts com TODOS os exports organizados por categoria: componentes principais, composicao, parts, display renderers, registry, hooks.",
-    "status": "pending",
+    "status": "passing",
     "priority": 14,
     "agent": "coder",
     "task": "vibe-code",
@@ -327,13 +327,14 @@
       "import '@agentic-backbone/ai-chat/styles.css' funciona",
       "Typecheck passa sem erros"
     ],
-    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-5/worktree/sprints/sprint-12/3-prps/PRP-15D-composicao-chat.md"
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-5/worktree/sprints/sprint-12/3-prps/PRP-15D-composicao-chat.md",
+    "completed_at": "2026-03-29T07:09:21Z"
   },
   {
     "id": "F-194",
     "name": "Registrar Workspace + Install Deps",
     "description": "Verificar que glob apps/packages/* no package.json raiz cobre ai-chat. Executar npm install para resolver deps. Verificar symlink node_modules/@agentic-backbone/ai-chat. Adicionar dependencia '@agentic-backbone/ai-chat': '*' no apps/hub/package.json e apps/chat/package.json. Verificar import cross-workspace funciona.",
-    "status": "blocked",
+    "status": "pending",
     "priority": 15,
     "agent": "coder",
     "task": "vibe-code",
