@@ -1,6 +1,10 @@
 import { useState } from "react";
 import type { DisplayTable } from "@agentic-backbone/ai-sdk";
 import { ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "../ui/table.js";
+import { ScrollArea, ScrollBar } from "../ui/scroll-area.js";
+import { Button } from "../ui/button.js";
+import { Badge } from "../ui/badge.js";
 
 type SortDir = "asc" | "desc";
 
@@ -19,16 +23,16 @@ function renderCellValue(value: unknown, type: string): React.ReactNode {
         : String(value);
     case "image":
       return typeof value === "string" ? (
-        <img src={value} alt="" className="ai-chat-display-table-cell-image" />
+        <img src={value} alt="" className="rounded-sm max-h-12 object-cover" />
       ) : null;
     case "link":
       return typeof value === "string" ? (
-        <a href={value} target="_blank" rel="noopener noreferrer" className="ai-chat-display-table-cell-link">
+        <a href={value} target="_blank" rel="noopener noreferrer" className="text-primary underline underline-offset-2 hover:opacity-80">
           {value}
         </a>
       ) : null;
     case "badge":
-      return <span className="ai-chat-display-table-cell-badge">{String(value)}</span>;
+      return <Badge variant="secondary">{String(value)}</Badge>;
     default:
       return String(value);
   }
@@ -73,63 +77,68 @@ export function DataTableRenderer({ title, columns, rows, sortable }: DisplayTab
     : rows;
 
   return (
-    <div className="ai-chat-display ai-chat-display-table">
-      {title && <h3 className="ai-chat-display-table-title">{title}</h3>}
+    <div className="space-y-2">
+      {title && <h3 className="text-sm font-semibold text-foreground">{title}</h3>}
 
-      <div className="ai-chat-display-table-scroll">
-        <table className="ai-chat-display-table-el">
-          <thead>
-            <tr>
+      <ScrollArea className="w-full">
+        <Table>
+          <TableHeader>
+            <TableRow>
               {columns.map((col) => (
-                <th
+                <TableHead
                   key={col.key}
-                  className={`ai-chat-display-table-th ai-chat-display-table-th--${col.align}${sortable ? " ai-chat-display-table-th--sortable" : ""}`}
-                  onClick={() => handleSort(col.key)}
-                  aria-sort={
-                    sortKey === col.key
-                      ? sortDir === "asc"
-                        ? "ascending"
-                        : "descending"
-                      : undefined
-                  }
+                  className={col.align === "right" ? "text-right" : col.align === "center" ? "text-center" : "text-left"}
                 >
-                  <span className="ai-chat-display-table-th-inner">
-                    {col.label}
-                    {sortable && (
-                      <span className="ai-chat-display-table-sort-icon">
-                        {sortKey === col.key ? (
-                          sortDir === "asc" ? (
-                            <ArrowUp size={12} />
-                          ) : (
-                            <ArrowDown size={12} />
-                          )
+                  {sortable ? (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="-ml-3 h-8 font-semibold"
+                      onClick={() => handleSort(col.key)}
+                      aria-sort={
+                        sortKey === col.key
+                          ? sortDir === "asc"
+                            ? "ascending"
+                            : "descending"
+                          : undefined
+                      }
+                    >
+                      {col.label}
+                      {sortKey === col.key ? (
+                        sortDir === "asc" ? (
+                          <ArrowUp className="ml-1 h-3 w-3" />
                         ) : (
-                          <ArrowUpDown size={12} />
-                        )}
-                      </span>
-                    )}
-                  </span>
-                </th>
+                          <ArrowDown className="ml-1 h-3 w-3" />
+                        )
+                      ) : (
+                        <ArrowUpDown className="ml-1 h-3 w-3" />
+                      )}
+                    </Button>
+                  ) : (
+                    col.label
+                  )}
+                </TableHead>
               ))}
-            </tr>
-          </thead>
+            </TableRow>
+          </TableHeader>
 
-          <tbody>
+          <TableBody>
             {sortedRows.map((row, ri) => (
-              <tr key={ri} className="ai-chat-display-table-row">
+              <TableRow key={ri}>
                 {columns.map((col) => (
-                  <td
+                  <TableCell
                     key={col.key}
-                    className={`ai-chat-display-table-td ai-chat-display-table-td--${col.align}`}
+                    className={col.align === "right" ? "text-right" : col.align === "center" ? "text-center" : "text-left"}
                   >
                     {renderCellValue(row[col.key], col.type)}
-                  </td>
+                  </TableCell>
                 ))}
-              </tr>
+              </TableRow>
             ))}
-          </tbody>
-        </table>
-      </div>
+          </TableBody>
+        </Table>
+        <ScrollBar orientation="horizontal" />
+      </ScrollArea>
     </div>
   );
 }
