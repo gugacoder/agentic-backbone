@@ -12,3 +12,6 @@ export { StreamingIndicator } from "./components/StreamingIndicator.js";
 
 export { ReasoningBlock } from "./parts/ReasoningBlock.js";
 export type { ReasoningBlockProps } from "./parts/ReasoningBlock.js";
+
+export { ToolActivity, defaultToolIconMap } from "./parts/ToolActivity.js";
+export type { ToolActivityProps, ToolActivityState } from "./parts/ToolActivity.js";

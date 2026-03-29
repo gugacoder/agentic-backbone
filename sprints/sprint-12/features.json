@@ -110,8 +110,9 @@
     "id": "F-185",
     "name": "ToolActivity",
     "description": "Criar src/parts/ToolActivity.tsx: layout [icone da tool] [nome da tool] [spinner ou check]. Spinner (Loader2 rotate) durante state call/partial-call, check verde em state result. Nome formatado snake_case para Title Case. Mapa de icones defaultToolIconMap exportado (WebSearch->Globe, Bash->Terminal, Read->FileText, Edit->Pencil, Write->FilePlus, Grep->Search, Glob->FolderSearch, WebFetch->Download, default->Wrench).",
-    "status": "pending",
+    "status": "passing",
     "priority": 6,
+    "completed_at": "2026-03-29T11:30:00Z",
     "agent": "coder",
     "task": "vibe-code",
     "dependencies": [

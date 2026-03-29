@@ -347,6 +347,14 @@
   color: var(--ai-chat-muted-fg);
 }
 
+.ai-chat-tool-activity-spinner {
+  animation: ai-chat-spin 1s linear infinite;
+}
+
+.ai-chat-tool-activity-check {
+  color: var(--ai-chat-success);
+}
+
 /* ------------------------------------------------------------
    .ai-chat-bubble — Message bubble (user / assistant)
    ------------------------------------------------------------ */
