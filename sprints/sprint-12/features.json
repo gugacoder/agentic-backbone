@@ -133,8 +133,9 @@
     "id": "F-186",
     "name": "ToolResult",
     "description": "Criar src/parts/ToolResult.tsx: header clicavel [CheckCircle/AlertCircle] [toolName] [chevron toggle], colapsado por padrao. Body com <pre> JSON.stringify(result, null, 2) e classe .ai-chat-code-block. Erro: header com cor --ai-chat-destructive e AlertCircle. Sucesso: --ai-chat-success e CheckCircle. Max-height no body com scroll. JSON.stringify com try/catch, fallback para String(result).",
-    "status": "pending",
+    "status": "passing",
     "priority": 7,
+    "completed_at": "2026-03-29T12:30:00Z",
     "agent": "coder",
     "task": "vibe-code",
     "dependencies": [
