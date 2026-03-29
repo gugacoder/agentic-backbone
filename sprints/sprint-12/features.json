@@ -206,10 +206,11 @@
     "id": "F-189",
     "name": "9 Display Renderers Compostos",
     "description": "Criar 9 renderers em src/display/: ProductCardRenderer (imagem+preco BRL+rating estrelas+badges+botao), ComparisonTableRenderer (lado a lado+destaque melhor valor), DataTableRenderer (colunas tipadas+sortavel por header click), SpreadsheetRenderer (grid readonly+formatacao monetaria/percentual), GalleryRenderer (grid/masonry+click amplia), ImageViewerRenderer (imagem+caption+dialog zoom nativo), LinkPreviewRenderer (OG image+titulo+dominio), MapViewRenderer (iframe OSM+pins+lista), ChoiceButtonsRenderer (3 variantes: buttons/cards/list+onChoiceSelect callback). Props = tipos Zod do ai-sdk.",
-    "status": "pending",
+    "status": "passing",
     "priority": 10,
     "agent": "coder",
     "task": "vibe-code",
+    "completed_at": "2026-03-29T10:30:00Z",
     "dependencies": [
       "F-180",
       "F-183"
@@ -232,7 +233,7 @@
     "id": "F-190",
     "name": "Display Registry",
     "description": "Criar src/display/index.ts (barrel export de todos os 19 renderers) e src/display/registry.ts com defaultDisplayRenderers (Record<DisplayToolName, ComponentType> mapeando todas as 19 display tools) e resolveDisplayRenderer(toolName, overrides?) que prioriza overrides sobre defaults. DisplayRendererMap eh Partial<Record<DisplayToolName, ComponentType>>.",
-    "status": "blocked",
+    "status": "pending",
     "priority": 11,
     "agent": "coder",
     "task": "vibe-code",
