@@ -176,7 +176,7 @@
     "id": "F-207",
     "name": "Markdown.tsx com tokens Tailwind",
     "description": "Reescrever Markdown.tsx: substituir classes ai-chat-markdown/ai-chat-code-block/ai-chat-inline-code por tokens Tailwind nos components override do react-markdown. Pre: bg-muted border rounded-md. Code inline: bg-muted border rounded-sm font-mono. Links: text-primary underline. Blockquotes: border-l-[3px] border-border text-muted-foreground. Tables: border border-border. Container com selectores [&_p]:mb-3 etc. Manter remark-gfm e rehype-highlight. NAO usar @tailwindcss/typography.",
-    "status": "pending",
+    "status": "passing",
     "priority": 9,
     "agent": "coder",
     "task": "vibe-code",
@@ -193,7 +193,8 @@
       "remark-gfm e rehype-highlight mantidos",
       "Zero hsl(), oklch(), #hex, rgb() no arquivo"
     ],
-    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-7/worktree/sprints/sprint-14/3-prps/PRP-16B-core-chat-shadcn.md"
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-7/worktree/sprints/sprint-14/3-prps/PRP-16B-core-chat-shadcn.md",
+    "completed_at": "2026-03-29T22:40:00Z"
   },
   {
     "id": "F-208",
