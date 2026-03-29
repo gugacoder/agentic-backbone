@@ -3,10 +3,11 @@
     "id": "F-174",
     "name": "Display Schemas Zod",
     "description": "Criar apps/packages/ai-sdk/src/display-schemas.ts com 4 primitivos reutilizaveis (MoneySchema, SourceRefSchema, ImageItemSchema, BadgeSchema) e 19 schemas Zod (6 categorias: metricas, produtos, midia, referencias, documentos, interativo). Incluir DisplayToolRegistry mapeando 19 nomes com prefixo display_ para schemas, type DisplayToolName como union das chaves, e 19 tipos inferidos exportados. Schemas completos estao no PRP-14 milestone (sprints/milestones/14-rich-content/PRP.md, secao 1.1).",
-    "status": "pending",
+    "status": "passing",
     "priority": 1,
     "agent": "coder",
     "task": "vibe-code",
+    "completed_at": "2026-03-29T00:00:00.000Z",
     "dependencies": [],
     "tests": [
       "Arquivo apps/packages/ai-sdk/src/display-schemas.ts existe",
@@ -23,10 +24,11 @@
     "id": "F-177",
     "name": "DataStream Encoder",
     "description": "Criar apps/backbone/src/routes/datastream.ts com funcao pura encodeDataStreamEvent() que traduz AgentEvent para protocolo Vercel DataStream. Mapeamento: text->0:, reasoning->g:, tool-call->9:, tool-result->a:, step_finish->e:, usage->d:. Eventos init e result retornam null. Verificar nomes exatos dos campos de AgentEvent em apps/backbone/src/agent/types.ts antes de implementar.",
-    "status": "pending",
+    "status": "passing",
     "priority": 2,
     "agent": "coder",
     "task": "vibe-code",
+    "completed_at": "2026-03-29T05:30:00.000Z",
     "dependencies": [],
     "tests": [
       "Arquivo apps/backbone/src/routes/datastream.ts existe com encodeDataStreamEvent() exportada",
@@ -50,7 +52,9 @@
     "priority": 3,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-174"],
+    "dependencies": [
+      "F-174"
+    ],
     "tests": [
       "Arquivo apps/packages/ai-sdk/src/tools/display.ts existe com createDisplayTools() exportada",
       "createDisplayTools() retorna objeto com 19 tools (prefixo display_)",
@@ -67,11 +71,14 @@
     "id": "F-176",
     "name": "Display Exports no index.ts",
     "description": "Adicionar re-exports em apps/packages/ai-sdk/src/index.ts: DisplayToolRegistry, DisplayToolName (type), 19 schemas Zod, 19 tipos inferidos (com keyword type), e createDisplayTools de tools/display.js. Nao alterar exports existentes — apenas adicionar. Usar type keyword para re-export de tipos (isolatedModules).",
-    "status": "pending",
+    "status": "blocked",
     "priority": 4,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-174", "F-175"],
+    "dependencies": [
+      "F-174",
+      "F-175"
+    ],
     "tests": [
       "index.ts re-exporta DisplayToolRegistry e type DisplayToolName de display-schemas.js",
       "index.ts re-exporta 19 schemas Zod (DisplayMetricSchema, DisplayChartSchema, etc.)",
@@ -87,11 +94,13 @@
     "id": "F-178",
     "name": "DataStream Route — ?format=datastream",
     "description": "Adicionar suporte a ?format=datastream na rota POST /conversations/:sessionId/messages em apps/backbone/src/routes/conversations.ts. Quando format=datastream, emitir SSE usando encodeDataStreamEvent() de datastream.ts, ignorando eventos null. Branch padrao (sem format) continua identico ao codigo atual. Nao criar rota separada — mesmo endpoint, formato de saida diferente. Backward compatible.",
-    "status": "pending",
+    "status": "blocked",
     "priority": 5,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-177"],
+    "dependencies": [
+      "F-177"
+    ],
     "tests": [
       "conversations.ts importa encodeDataStreamEvent de datastream.js",
       "Check format === 'datastream' existe antes do stream existente",
@@ -107,11 +116,15 @@
     "id": "F-179",
     "name": "Guia Rich Content (docs)",
     "description": "Produzir 4 artefatos em guides/rich-content/: (a) GUIDE.md — guia completo com secoes: o que sao display tools, como consumir via useChat com ?format=datastream, como identificar no stream (prefixo display_ + _display:true), catalogo das 19 tools, fallback para tools sem renderer, canais pobres (WhatsApp). (b) schemas.json — JSON Schema das 19 tools via zodToJsonSchema (gerar via script .tmp/gen-schemas.mjs). (c) examples.json — 1 payload canonico por tool com description, example e use_when. (d) component-map.md — mapa toolName -> componente React + libs recomendadas.",
-    "status": "pending",
+    "status": "blocked",
     "priority": 6,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-174", "F-175", "F-176"],
+    "dependencies": [
+      "F-174",
+      "F-175",
+      "F-176"
+    ],
     "tests": [
       "guides/rich-content/GUIDE.md existe com secoes: o que sao display tools, como consumir via useChat, como identificar no stream, catalogo 19 tools, fallback, canais pobres",
       "guides/rich-content/schemas.json existe com JSON Schema para 19 display tools",
