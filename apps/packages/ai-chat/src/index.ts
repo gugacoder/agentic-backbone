@@ -39,3 +39,7 @@ export { ImageViewerRenderer } from "./display/ImageViewerRenderer.js";
 export { LinkPreviewRenderer } from "./display/LinkPreviewRenderer.js";
 export { MapViewRenderer } from "./display/MapViewRenderer.js";
 export { ChoiceButtonsRenderer } from "./display/ChoiceButtonsRenderer.js";
+
+// Display Registry
+export { defaultDisplayRenderers, resolveDisplayRenderer } from "./display/registry.js";
+export type { DisplayRendererMap } from "./display/registry.js";
