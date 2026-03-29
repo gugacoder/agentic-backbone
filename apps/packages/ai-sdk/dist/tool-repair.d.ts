@@ -1,24 +1,21 @@
 import type { LanguageModel } from "ai";
+import type { LanguageModelV3ToolCall } from "@ai-sdk/provider";
 export interface RepairContext {
     model: LanguageModel;
     maxAttempts: number;
 }
-interface RepairToolCall {
-    toolCallType: "function";
-    toolCallId: string;
-    toolName: string;
-    args: string;
-}
 /**
  * Cria um handler de reparo que pede ao modelo para corrigir a tool call.
+ * Primeiro tenta corrigir o nome da tool (case mismatch), depois os args.
  * Tenta N vezes. Se todas falharem, retorna null (deixa o erro original propagar).
  */
-export declare function createToolCallRepairHandler(ctx: RepairContext): ({ toolCall, tools, parameterSchema, error, }: {
-    toolCall: RepairToolCall;
+export declare function createToolCallRepairHandler(ctx: RepairContext): (options: {
+    toolCall: LanguageModelV3ToolCall;
     tools: Record<string, unknown>;
-    parameterSchema: (options: {
+    inputSchema: (opts: {
         toolName: string;
     }) => unknown;
     error: Error;
-}) => Promise<RepairToolCall | null>;
-export {};
+    system?: unknown;
+    messages?: unknown;
+}) => Promise<LanguageModelV3ToolCall | null>;

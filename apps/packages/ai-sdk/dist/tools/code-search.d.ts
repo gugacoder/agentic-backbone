@@ -15,4 +15,6 @@ export type CodeSearchProvider = (query: string) => Promise<CodeSearchResult[]>;
  * Factory that creates the CodeSearch tool with an injected search provider.
  * If no provider is given, returns a tool that explains no provider is configured.
  */
-export declare function createCodeSearchTool(searchProvider?: CodeSearchProvider): any;
+export declare function createCodeSearchTool(searchProvider?: CodeSearchProvider): import("ai").Tool<{
+    query: string;
+}, string>;

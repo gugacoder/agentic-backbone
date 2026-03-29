@@ -1,14 +1,17 @@
 export function createLoggingMiddleware(logger = console.log) {
     return {
-        transformParams: async ({ params }) => {
-            const tools = params.mode.type === "regular" ? params.mode.tools?.length ?? 0 : 0;
+        specificationVersion: "v3",
+        transformParams: async (options) => {
+            const { params } = options;
+            const tools = params.mode?.type === "regular" ? params.mode.tools?.length ?? 0 : 0;
             logger("[ai:llm] request", {
                 tools,
-                messages: params.prompt.length,
+                messages: params.prompt?.length ?? 0,
             });
             return params;
         },
-        wrapGenerate: async ({ doGenerate }) => {
+        wrapGenerate: async (options) => {
+            const { doGenerate } = options;
             const startMs = Date.now();
             const result = await doGenerate();
             logger("[ai:llm] generate", {
@@ -18,7 +21,8 @@ export function createLoggingMiddleware(logger = console.log) {
             });
             return result;
         },
-        wrapStream: async ({ doStream }) => {
+        wrapStream: async (options) => {
+            const { doStream } = options;
             const startMs = Date.now();
             const result = await doStream();
             logger("[ai:llm] stream started", { durationMs: Date.now() - startMs });

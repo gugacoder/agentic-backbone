@@ -1,16 +1,10 @@
 import { generateText } from "ai";
 import type { LanguageModel } from "ai";
+import type { LanguageModelV3ToolCall } from "@ai-sdk/provider";
 
 export interface RepairContext {
   model: LanguageModel;
   maxAttempts: number;
-}
-
-interface RepairToolCall {
-  toolCallType: "function";
-  toolCallId: string;
-  toolName: string;
-  args: string;
 }
 
 /**
@@ -34,29 +28,28 @@ function fixToolName(toolName: string, tools: Record<string, unknown>): string |
 export function createToolCallRepairHandler(ctx: RepairContext) {
   const attempts = new Map<string, number>();
 
-  return async ({
-    toolCall,
-    tools,
-    parameterSchema,
-    error,
-  }: {
-    toolCall: RepairToolCall;
+  return async (options: {
+    toolCall: LanguageModelV3ToolCall;
     tools: Record<string, unknown>;
-    parameterSchema: (options: { toolName: string }) => unknown;
+    inputSchema: (opts: { toolName: string }) => unknown;
     error: Error;
-  }): Promise<RepairToolCall | null> => {
+    system?: unknown;
+    messages?: unknown;
+  }): Promise<LanguageModelV3ToolCall | null> => {
+    const { toolCall, tools, inputSchema, error } = options;
+
     // Fix tool name case mismatch (e.g. "Email_send" → "email_send")
     const correctedName = fixToolName(toolCall.toolName, tools);
     if (correctedName && correctedName !== toolCall.toolName) {
       return {
-        toolCallType: toolCall.toolCallType,
+        type: "tool-call" as const,
         toolCallId: toolCall.toolCallId,
         toolName: correctedName,
-        args: toolCall.args,
+        input: toolCall.input,
       };
     }
 
-    const key = `${toolCall.toolName}:${toolCall.args}`;
+    const key = `${toolCall.toolName}:${toolCall.input}`;
     const current = attempts.get(key) ?? 0;
 
     if (current >= ctx.maxAttempts) {
@@ -68,7 +61,7 @@ export function createToolCallRepairHandler(ctx: RepairContext) {
     if (!correctedName) return null;
 
     try {
-      const schema = parameterSchema({ toolName: toolCall.toolName });
+      const schema = await Promise.resolve(inputSchema({ toolName: toolCall.toolName }));
 
       const result = await generateText({
         model: ctx.model,
@@ -79,18 +72,18 @@ export function createToolCallRepairHandler(ctx: RepairContext) {
         prompt: [
           `Tool: ${toolCall.toolName}`,
           `Schema: ${JSON.stringify(schema)}`,
-          `Invalid args: ${toolCall.args}`,
+          `Invalid args: ${toolCall.input}`,
           `Error: ${error.message}`,
         ].join("\n"),
         maxOutputTokens: 1000,
       });
 
-      const repaired = (result.text ?? toolCall.args).trim();
+      const repaired = (result.text ?? toolCall.input).trim();
       return {
-        toolCallType: toolCall.toolCallType,
+        type: "tool-call" as const,
         toolCallId: toolCall.toolCallId,
         toolName: toolCall.toolName,
-        args: repaired,
+        input: repaired,
       };
     } catch {
       return null; // reparo falhou — erro original propaga

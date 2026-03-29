@@ -348,7 +348,7 @@ export async function* runAiAgent(
         messages,
         system: systemPrompt,
         ...(telemetryConfig ? { experimental_telemetry: telemetryConfig } : {}),
-        ...(stepActiveTools ? { activeTools: stepActiveTools } : {}),
+        ...(stepActiveTools ? { activeTools: stepActiveTools as any } : {}),
         ...(stepToolChoice ? { toolChoice: stepToolChoice as any } : {}),
         ...(abortController ? { abortSignal: abortController.signal } : {}),
         ...(experimentalRepairToolCall ? { experimental_repairToolCall: experimentalRepairToolCall } : {}),
@@ -371,8 +371,8 @@ export async function* runAiAgent(
             collectedSteps.push({
               stepNumber: stepCounter,
               toolCalls: toolNames,
-              inputTokens: stepResult.usage?.promptTokens ?? 0,
-              outputTokens: stepResult.usage?.completionTokens ?? 0,
+              inputTokens: (stepResult.usage as any)?.inputTokens ?? (stepResult.usage as any)?.promptTokens ?? 0,
+              outputTokens: (stepResult.usage as any)?.outputTokens ?? (stepResult.usage as any)?.completionTokens ?? 0,
               durationMs: now - stepStartMs,
             });
             stepStartMs = now;
@@ -404,10 +404,10 @@ export async function* runAiAgent(
           while (pendingStepEvents.length > 0) {
             yield pendingStepEvents.shift()!;
           }
-        } else if (part.type === "reasoning") {
+        } else if ((part as any).type === "reasoning" || part.type === "reasoning-delta") {
           yield {
             type: "reasoning",
-            content: (part as any).textDelta ?? (part as any).text ?? "",
+            content: (part as any).delta ?? (part as any).textDelta ?? (part as any).text ?? "",
           };
         } else if (part.type === "tool-call") {
           yield {
@@ -448,7 +448,7 @@ export async function* runAiAgent(
     }
 
     // Persist session and collect usage — may fail if stream was aborted by stopWhen
-    let usage = { promptTokens: 0, completionTokens: 0 };
+    let usage: { inputTokens?: number; outputTokens?: number; promptTokens?: number; completionTokens?: number } = {};
     let steps: unknown[] = [];
     let finishReason: string = stoppedByStopWhen ? "stop_when" : "unknown";
     let totalCostUsd = 0;
@@ -485,8 +485,8 @@ export async function* runAiAgent(
     yield {
       type: "usage",
       usage: {
-        inputTokens: usage.promptTokens ?? 0,
-        outputTokens: usage.completionTokens ?? 0,
+        inputTokens: usage.inputTokens ?? usage.promptTokens ?? 0,
+        outputTokens: usage.outputTokens ?? usage.completionTokens ?? 0,
         cacheReadInputTokens: 0,
         cacheCreationInputTokens: 0,
         totalCostUsd,

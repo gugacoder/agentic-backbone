@@ -85,8 +85,9 @@
     "id": "F-173",
     "name": "Build ai-sdk + validacao end-to-end",
     "description": "Apos aplicar todas as mudancas (F-169 a F-172): (1) Executar npm run build:packages — deve compilar sem erros. (2) Verificar typecheck limpo no ai-sdk. (3) Validacao SSE: iniciar backbone via npm run dev:all, obter JWT via POST /api/v1/ai/auth/login, enviar mensagem que provoque tool calls via POST /api/v1/ai/conversations/:sessionId/messages, confirmar presenca de tool-call e tool-result no stream SSE. Clientes existentes devem continuar funcionando.",
-    "status": "pending",
+    "status": "passing",
     "priority": 5,
+    "completed_at": "2026-03-28T00:00:00.000Z",
     "agent": "coder",
     "task": "vibe-code",
     "dependencies": [

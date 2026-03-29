@@ -6,7 +6,7 @@ export interface AiProviderConfig {
 }
 export declare function createAiProviderRegistry(config: AiProviderConfig): {
     /** Resolve modelo por ID ou alias */
-    model(nameOrAlias: string): any;
+    model(nameOrAlias: string): import("@ai-sdk/provider").LanguageModelV3;
     /** Aliases registrados */
     aliases: {
         [x: string]: string;

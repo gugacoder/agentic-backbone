@@ -1,4 +1,4 @@
-import { tool, type CoreTool } from "ai";
+import { tool, type Tool } from "ai";
 import { z } from "zod";
 
 const MAX_OUTPUT = 50_000;
@@ -9,7 +9,7 @@ const MAX_OUTPUT = 50_000;
  * Receives the resolved tool registry so it can look up tools by name.
  * The Batch tool itself is excluded from the registry to prevent recursion.
  */
-export function createBatchTool(toolRegistry: Record<string, CoreTool>) {
+export function createBatchTool(toolRegistry: Record<string, Tool>) {
   // Build the list of available tool names (excluding Batch itself)
   const availableTools = Object.keys(toolRegistry).filter(
     (name) => name !== "Batch"
@@ -55,7 +55,7 @@ export function createBatchTool(toolRegistry: Record<string, CoreTool>) {
 
       // Execute all calls in parallel
       const promises = tool_calls.map(async (tc, index) => {
-        const targetTool = toolRegistry[tc.tool] as CoreTool & {
+        const targetTool = toolRegistry[tc.tool] as Tool & {
           execute?: (params: Record<string, unknown>) => Promise<string>;
         };
 

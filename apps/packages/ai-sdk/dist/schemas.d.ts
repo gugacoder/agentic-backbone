@@ -122,6 +122,45 @@ export declare const AgentEventSchema: z.ZodDiscriminatedUnion<"type", [z.ZodObj
         durationApiMs?: number | undefined;
         stopReason?: string | undefined;
     };
+}>, z.ZodObject<{
+    type: z.ZodLiteral<"reasoning">;
+    content: z.ZodString;
+}, "strip", z.ZodTypeAny, {
+    type: "reasoning";
+    content: string;
+}, {
+    type: "reasoning";
+    content: string;
+}>, z.ZodObject<{
+    type: z.ZodLiteral<"tool-call">;
+    toolCallId: z.ZodString;
+    toolName: z.ZodString;
+    args: z.ZodRecord<z.ZodString, z.ZodUnknown>;
+}, "strip", z.ZodTypeAny, {
+    type: "tool-call";
+    args: Record<string, unknown>;
+    toolCallId: string;
+    toolName: string;
+}, {
+    type: "tool-call";
+    args: Record<string, unknown>;
+    toolCallId: string;
+    toolName: string;
+}>, z.ZodObject<{
+    type: z.ZodLiteral<"tool-result">;
+    toolCallId: z.ZodString;
+    toolName: z.ZodString;
+    result: z.ZodUnknown;
+}, "strip", z.ZodTypeAny, {
+    type: "tool-result";
+    toolCallId: string;
+    toolName: string;
+    result?: unknown;
+}, {
+    type: "tool-result";
+    toolCallId: string;
+    toolName: string;
+    result?: unknown;
 }>]>;
 export declare const AgentRunOptionsSchema: z.ZodObject<{
     model: z.ZodString;
@@ -138,24 +177,24 @@ export declare const AgentRunOptionsSchema: z.ZodObject<{
     prompt: string;
     model: string;
     apiKey: string;
+    system?: string | undefined;
     tools?: Record<string, any> | undefined;
     sessionId?: string | undefined;
     sessionDir?: string | undefined;
     role?: string | undefined;
     maxTurns?: number | undefined;
     providerConfig?: Record<string, any> | undefined;
-    system?: string | undefined;
 }, {
     prompt: string;
     model: string;
     apiKey: string;
+    system?: string | undefined;
     tools?: Record<string, any> | undefined;
     sessionId?: string | undefined;
     sessionDir?: string | undefined;
     role?: string | undefined;
     maxTurns?: number | undefined;
     providerConfig?: Record<string, any> | undefined;
-    system?: string | undefined;
 }>;
 export type AgentEvent = z.infer<typeof AgentEventSchema>;
 export type UsageData = z.infer<typeof UsageDataSchema>;
