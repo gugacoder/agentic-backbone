@@ -33,3 +33,6 @@ export { createLoggingMiddleware } from "./middleware/logging.js";
 export type { LanguageModelMiddleware } from "ai";
 export { createToolCallRepairHandler } from "./tool-repair.js";
 export type { RepairContext } from "./tool-repair.js";
+export { DisplayToolRegistry, DisplayMetricSchema, DisplayChartSchema, DisplayTableSchema, DisplayProgressSchema, DisplayProductSchema, DisplayComparisonSchema, DisplayPriceSchema, DisplayImageSchema, DisplayGallerySchema, DisplayCarouselSchema, DisplaySourcesSchema, DisplayLinkSchema, DisplayMapSchema, DisplayFileSchema, DisplayCodeSchema, DisplaySpreadsheetSchema, DisplayStepsSchema, DisplayAlertSchema, DisplayChoicesSchema } from "./display-schemas.js";
+export type { DisplayToolName, DisplayMetric, DisplayChart, DisplayTable, DisplayProgress, DisplayProduct, DisplayComparison, DisplayPrice, DisplayImage, DisplayGallery, DisplayCarousel, DisplaySources, DisplayLink, DisplayMap, DisplayFile, DisplayCode, DisplaySpreadsheet, DisplaySteps, DisplayAlert, DisplayChoices } from "./display-schemas.js";
+export { createDisplayTools } from "./tools/display.js";

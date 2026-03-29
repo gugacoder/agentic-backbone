@@ -72,10 +72,11 @@
     "id": "F-176",
     "name": "Display Exports no index.ts",
     "description": "Adicionar re-exports em apps/packages/ai-sdk/src/index.ts: DisplayToolRegistry, DisplayToolName (type), 19 schemas Zod, 19 tipos inferidos (com keyword type), e createDisplayTools de tools/display.js. Nao alterar exports existentes — apenas adicionar. Usar type keyword para re-export de tipos (isolatedModules).",
-    "status": "pending",
+    "status": "passing",
     "priority": 4,
     "agent": "coder",
     "task": "vibe-code",
+    "completed_at": "2026-03-29T07:00:00.000Z",
     "dependencies": [
       "F-174",
       "F-175"
@@ -117,7 +118,7 @@
     "id": "F-179",
     "name": "Guia Rich Content (docs)",
     "description": "Produzir 4 artefatos em guides/rich-content/: (a) GUIDE.md — guia completo com secoes: o que sao display tools, como consumir via useChat com ?format=datastream, como identificar no stream (prefixo display_ + _display:true), catalogo das 19 tools, fallback para tools sem renderer, canais pobres (WhatsApp). (b) schemas.json — JSON Schema das 19 tools via zodToJsonSchema (gerar via script .tmp/gen-schemas.mjs). (c) examples.json — 1 payload canonico por tool com description, example e use_when. (d) component-map.md — mapa toolName -> componente React + libs recomendadas.",
-    "status": "blocked",
+    "status": "pending",
     "priority": 6,
     "agent": "coder",
     "task": "vibe-code",
