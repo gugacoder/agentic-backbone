@@ -1,14 +1,10 @@
 import { useState } from "react";
 import type { DisplayProduct } from "@agentic-backbone/ai-sdk";
-import { Star, ShoppingCart, ExternalLink } from "lucide-react";
-
-const BADGE_VARIANT_CLASS: Record<string, string> = {
-  default: "ai-chat-display-product-badge--default",
-  success: "ai-chat-display-product-badge--success",
-  warning: "ai-chat-display-product-badge--warning",
-  error: "ai-chat-display-product-badge--error",
-  info: "ai-chat-display-product-badge--info",
-};
+import { Star } from "lucide-react";
+import { Card, CardContent, CardTitle } from "../ui/card.js";
+import { Badge } from "../ui/badge.js";
+import { Button } from "../ui/button.js";
+import { cn } from "../lib/utils.js";
 
 function StarRating({ score, count }: { score: number; count: number }) {
   const fullStars = Math.floor(score);
@@ -16,19 +12,18 @@ function StarRating({ score, count }: { score: number; count: number }) {
   const emptyStars = 5 - fullStars - (hasHalf ? 1 : 0);
 
   return (
-    <div className="ai-chat-display-product-rating" aria-label={`${score} de 5 estrelas (${count} avaliações)`}>
+    <div
+      className="flex items-center gap-0.5 text-primary"
+      aria-label={`${score} de 5 estrelas (${count} avaliações)`}
+    >
       {Array.from({ length: fullStars }).map((_, i) => (
-        <Star key={`f${i}`} size={14} className="ai-chat-display-product-star--full" fill="currentColor" />
+        <Star key={`f${i}`} size={14} fill="currentColor" />
       ))}
-      {hasHalf && (
-        <span className="ai-chat-display-product-star--half">
-          <Star size={14} fill="none" />
-        </span>
-      )}
+      {hasHalf && <Star size={14} fill="none" />}
       {Array.from({ length: emptyStars }).map((_, i) => (
-        <Star key={`e${i}`} size={14} className="ai-chat-display-product-star--empty" fill="none" />
+        <Star key={`e${i}`} size={14} fill="none" className="text-muted-foreground" />
       ))}
-      <span className="ai-chat-display-product-rating-count">({count})</span>
+      <span className="text-xs text-muted-foreground ml-1">({count})</span>
     </div>
   );
 }
@@ -55,50 +50,47 @@ export function ProductCardRenderer({
       : null;
 
   return (
-    <div className="ai-chat-display ai-chat-display-product">
+    <Card className="overflow-hidden">
       {image && !imgError && (
-        <div className="ai-chat-display-product-image-wrap">
+        <div className="relative">
           <img
             src={image}
             alt={title}
-            className="ai-chat-display-product-image"
+            className={cn("w-full aspect-video object-cover")}
             onError={() => setImgError(true)}
           />
           {discount !== null && (
-            <span className="ai-chat-display-product-discount">-{discount}%</span>
+            <Badge variant="destructive" className="absolute top-2 right-2">
+              -{discount}%
+            </Badge>
           )}
         </div>
       )}
 
-      <div className="ai-chat-display-product-body">
+      <CardContent className="p-4 space-y-2">
         {badges && badges.length > 0 && (
-          <div className="ai-chat-display-product-badges">
+          <div className="flex flex-wrap gap-1">
             {badges.map((b, i) => (
-              <span
-                key={i}
-                className={`ai-chat-display-product-badge ${BADGE_VARIANT_CLASS[b.variant] ?? BADGE_VARIANT_CLASS["default"]}`}
-              >
+              <Badge key={i} variant="secondary">
                 {b.label}
-              </span>
+              </Badge>
             ))}
           </div>
         )}
 
-        <h3 className="ai-chat-display-product-title">{title}</h3>
+        <CardTitle className="text-sm">{title}</CardTitle>
 
         {description && (
-          <p className="ai-chat-display-product-description">{description}</p>
+          <p className="text-xs text-muted-foreground line-clamp-2">{description}</p>
         )}
 
         {rating && <StarRating score={rating.score} count={rating.count} />}
 
         {price && (
-          <div className="ai-chat-display-product-price-row">
-            <span className="ai-chat-display-product-price">
-              {formatMoney(price.value, price.currency)}
-            </span>
+          <div className="flex items-baseline gap-2">
+            <span className="text-lg font-bold">{formatMoney(price.value, price.currency)}</span>
             {originalPrice && (
-              <span className="ai-chat-display-product-original-price">
+              <span className="text-sm text-muted-foreground line-through">
                 {formatMoney(originalPrice.value, originalPrice.currency)}
               </span>
             )}
@@ -106,18 +98,13 @@ export function ProductCardRenderer({
         )}
 
         {url && (
-          <a
-            href={url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="ai-chat-display-product-btn"
-          >
-            <ShoppingCart size={14} />
-            Ver produto
-            <ExternalLink size={12} />
-          </a>
+          <Button className="w-full" size="sm" asChild>
+            <a href={url} target="_blank" rel="noopener noreferrer">
+              Ver produto
+            </a>
+          </Button>
         )}
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }
