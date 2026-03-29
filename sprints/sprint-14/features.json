@@ -131,7 +131,7 @@
     "id": "F-205",
     "name": "MessageBubble.tsx com tokens shadcn",
     "description": "Reescrever MessageBubble.tsx: user bubble com bg-primary text-primary-foreground, rounded-br-sm. Assistant bubble com bg-muted text-foreground, rounded-bl-sm. Ambos max-w-[80%]. Manter iteracao de message.parts via PartRenderer e fallback para message.content via Markdown. Zero classe ai-chat-bubble.",
-    "status": "pending",
+    "status": "passing",
     "priority": 7,
     "agent": "coder",
     "task": "vibe-code",
@@ -145,7 +145,8 @@
       "PartRenderer iteracao mantida",
       "Fallback para Markdown mantido"
     ],
-    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-7/worktree/sprints/sprint-14/3-prps/PRP-16B-core-chat-shadcn.md"
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-7/worktree/sprints/sprint-14/3-prps/PRP-16B-core-chat-shadcn.md",
+    "completed_at": "2026-03-29T22:20:00Z"
   },
   {
     "id": "F-206",
