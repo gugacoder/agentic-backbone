@@ -201,7 +201,10 @@ conversationRoutes.post("/conversations/:sessionId/messages", async (c) => {
   if (denied) return denied;
 
   const auth = getAuthUser(c);
-  const { message } = await c.req.json<{ message: string }>();
+  const body = await c.req.json<{ message?: string; messages?: Array<{ role: string; content: string }> }>();
+
+  // Support both legacy { message } and @ai-sdk/react { messages } formats
+  const message = body.message ?? body.messages?.filter((m) => m.role === "user").pop()?.content;
 
   if (!message) {
     return c.json({ error: "message is required" }, 400);
@@ -210,13 +213,35 @@ conversationRoutes.post("/conversations/:sessionId/messages", async (c) => {
   const format = c.req.query("format");
 
   if (format === "datastream") {
-    return streamSSE(c, async (stream) => {
-      for await (const event of sendMessage(auth.user, sessionId, message)) {
-        const encoded = encodeDataStreamEvent(event);
-        if (encoded !== null) {
-          await stream.writeSSE({ data: encoded });
+    // @ai-sdk/react useChat reads the raw body stream (no SSE framing).
+    // Each line must be a bare data-stream-protocol line: "0:\"text\"\n"
+    const encoder = new TextEncoder();
+    const readable = new ReadableStream({
+      async start(controller) {
+        try {
+          for await (const event of sendMessage(auth.user, sessionId, message)) {
+            try {
+              const encoded = encodeDataStreamEvent(event);
+              if (encoded !== null) {
+                controller.enqueue(encoder.encode(encoded + "\n"));
+              }
+            } catch (encodeErr) {
+              console.error(`[datastream] error encoding event:`, encodeErr);
+            }
+          }
+        } catch (err) {
+          console.error(`[datastream] stream error:`, err);
+        } finally {
+          controller.close();
         }
-      }
+      },
+    });
+    return new Response(readable, {
+      headers: {
+        "Content-Type": "text/plain; charset=utf-8",
+        "Cache-Control": "no-cache",
+        "Connection": "keep-alive",
+      },
     });
   }
 

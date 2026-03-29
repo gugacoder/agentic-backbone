@@ -13,38 +13,43 @@ import type { AgentEvent } from "../agent/types.js";
  *   g: — reasoning
  */
 export function encodeDataStreamEvent(event: AgentEvent): string | null {
-  switch (event.type) {
-    case "text":
-      return `0:${JSON.stringify(event.content)}`;
-    case "reasoning":
-      return `g:${JSON.stringify(event.content)}`;
-    case "tool-call":
-      return `9:${JSON.stringify({
-        toolCallId: event.toolCallId,
-        toolName: event.toolName,
-        args: event.args,
-      })}`;
-    case "tool-result":
-      return `a:${JSON.stringify({
-        toolCallId: event.toolCallId,
-        toolName: event.toolName,
-        result: event.result,
-      })}`;
-    case "step_finish":
-      return `e:${JSON.stringify({ finishReason: "stop" })}`;
-    case "usage":
-      return `d:${JSON.stringify({
-        finishReason: "stop",
-        usage: {
-          promptTokens: event.usage.inputTokens,
-          completionTokens: event.usage.outputTokens,
-        },
-      })}`;
-    case "init":
-      return null;
-    case "result":
-      return null;
-    default:
-      return null;
+  try {
+    switch (event.type) {
+      case "text":
+        return `0:${JSON.stringify(event.content)}`;
+      case "reasoning":
+        return `g:${JSON.stringify(event.content)}`;
+      case "tool-call":
+        return `9:${JSON.stringify({
+          toolCallId: event.toolCallId,
+          toolName: event.toolName,
+          args: event.args ?? {},
+        })}`;
+      case "tool-result":
+        return `a:${JSON.stringify({
+          toolCallId: event.toolCallId,
+          toolName: event.toolName,
+          result: event.result ?? null,
+        })}`;
+      case "step_finish":
+        return `e:${JSON.stringify({ finishReason: "stop" })}`;
+      case "usage":
+        return `d:${JSON.stringify({
+          finishReason: "stop",
+          usage: {
+            promptTokens: event.usage.inputTokens,
+            completionTokens: event.usage.outputTokens,
+          },
+        })}`;
+      case "init":
+        return null;
+      case "result":
+        return null;
+      default:
+        return null;
+    }
+  } catch (err) {
+    console.error(`[datastream] failed to encode event type="${(event as any)?.type}":`, err);
+    return null;
   }
 }
