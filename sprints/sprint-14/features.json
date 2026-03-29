@@ -327,7 +327,7 @@
     "id": "F-214",
     "name": "FileCardRenderer.tsx com Card e Button shadcn",
     "description": "Reescrever FileCardRenderer.tsx: usar Card com flex items-center gap-3 p-3. File icon com text-primary h-8 w-8. Nome font-medium truncate. Tipo e tamanho text-xs text-muted-foreground. Download button com Button variant ghost size icon asChild. Zero classe ai-chat-display-file.",
-    "status": "pending",
+    "status": "passing",
     "priority": 16,
     "agent": "coder",
     "task": "vibe-code",
@@ -341,7 +341,8 @@
       "Download button usa Button variant='ghost' size='icon'",
       "Zero hsl(), oklch(), #hex, rgb() no arquivo"
     ],
-    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-7/worktree/sprints/sprint-14/3-prps/PRP-16D-display-simples-medios-shadcn.md"
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-7/worktree/sprints/sprint-14/3-prps/PRP-16D-display-simples-medios-shadcn.md",
+    "completed_at": "2026-03-29T23:55:00Z"
   },
   {
     "id": "F-215",
