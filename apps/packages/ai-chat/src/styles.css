@@ -504,6 +504,79 @@
   color: var(--ai-chat-input-placeholder);
 }
 
+.ai-chat-input-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 2rem;
+  height: 2rem;
+  border-radius: var(--ai-chat-radius);
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.15s ease, background-color 0.15s ease;
+}
+
+.ai-chat-input-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.ai-chat-input-btn-send {
+  background-color: var(--ai-chat-primary);
+  color: var(--ai-chat-primary-fg);
+}
+
+.ai-chat-input-btn-send:not(:disabled):hover {
+  opacity: 0.85;
+}
+
+.ai-chat-input-btn-abort {
+  background-color: var(--ai-chat-destructive);
+  color: var(--ai-chat-destructive-fg);
+}
+
+.ai-chat-input-btn-abort:hover {
+  opacity: 0.85;
+}
+
+/* ------------------------------------------------------------
+   .ai-chat-list-* — Message list container
+   ------------------------------------------------------------ */
+.ai-chat-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ai-chat-gap);
+  overflow-y: auto;
+  padding: var(--ai-chat-padding);
+  flex: 1;
+}
+
+.ai-chat-list-empty {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ai-chat-muted-fg);
+  font-size: var(--ai-chat-font-size);
+}
+
+/* ------------------------------------------------------------
+   .ai-chat-bubble-row — Row wrapper for directional alignment
+   ------------------------------------------------------------ */
+.ai-chat-bubble-row {
+  display: flex;
+  width: 100%;
+}
+
+.ai-chat-bubble-row-user {
+  justify-content: flex-end;
+}
+
+.ai-chat-bubble-row-assistant {
+  justify-content: flex-start;
+}
+
 /* ------------------------------------------------------------
    .ai-chat-display-* — Generic display renderer containers
    ------------------------------------------------------------ */
