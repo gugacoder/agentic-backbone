@@ -356,6 +356,82 @@
 }
 
 /* ------------------------------------------------------------
+   .ai-chat-tool-result — Collapsible tool result panel
+   ------------------------------------------------------------ */
+.ai-chat-tool-result {
+  background-color: var(--ai-chat-tool-bg);
+  border: 1px solid var(--ai-chat-tool-border);
+  border-radius: var(--ai-chat-radius);
+  font-size: 0.875em;
+  overflow: hidden;
+}
+
+.ai-chat-tool-result--success .ai-chat-tool-result-header {
+  color: var(--ai-chat-success);
+}
+
+.ai-chat-tool-result--error .ai-chat-tool-result-header {
+  color: var(--ai-chat-destructive);
+}
+
+.ai-chat-tool-result-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  width: 100%;
+  padding: 0.5em 0.75em;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  user-select: none;
+  font-weight: 500;
+  font-family: inherit;
+  font-size: inherit;
+  text-align: left;
+}
+
+.ai-chat-tool-result-header:hover {
+  background-color: var(--ai-chat-muted);
+}
+
+.ai-chat-tool-result-icon {
+  flex-shrink: 0;
+}
+
+.ai-chat-tool-result-name {
+  font-family: var(--ai-chat-code-font);
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ai-chat-tool-result-chevron {
+  flex-shrink: 0;
+  color: var(--ai-chat-muted-fg);
+}
+
+.ai-chat-tool-result-body {
+  border-top: 1px solid var(--ai-chat-tool-border);
+  max-height: 20rem;
+  overflow-y: auto;
+}
+
+.ai-chat-tool-result-pre {
+  margin: 0;
+  padding: 0.75em;
+  font-family: var(--ai-chat-code-font);
+  font-size: var(--ai-chat-code-size);
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-all;
+  background-color: var(--ai-chat-muted);
+  border: none;
+  border-radius: 0;
+}
+
+/* ------------------------------------------------------------
    .ai-chat-bubble — Message bubble (user / assistant)
    ------------------------------------------------------------ */
 .ai-chat-bubble {

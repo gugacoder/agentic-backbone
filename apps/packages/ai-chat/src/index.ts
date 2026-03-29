@@ -15,3 +15,6 @@ export type { ReasoningBlockProps } from "./parts/ReasoningBlock.js";
 
 export { ToolActivity, defaultToolIconMap } from "./parts/ToolActivity.js";
 export type { ToolActivityProps, ToolActivityState } from "./parts/ToolActivity.js";
+
+export { ToolResult } from "./parts/ToolResult.js";
+export type { ToolResultProps } from "./parts/ToolResult.js";
