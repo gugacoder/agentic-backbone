@@ -378,7 +378,7 @@
     "id": "F-196",
     "name": "Configuracao GitHub Packages",
     "description": "Adicionar publishConfig (registry npm.pkg.github.com) e repository nos package.json de ai-sdk e ai-chat. Criar .npmrc na raiz com @agentic-backbone:registry=https://npm.pkg.github.com (SEM tokens). Adicionar scripts version:packages e publish:packages na raiz. Criar CHANGELOG.md em cada pacote. NAO publicar — apenas configurar.",
-    "status": "pending",
+    "status": "passing",
     "priority": 17,
     "agent": "coder",
     "task": "vibe-code",
@@ -393,6 +393,7 @@
       "CHANGELOG.md existe nos dois pacotes",
       "Nenhum token ou secret commitado"
     ],
-    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-5/worktree/sprints/sprint-12/3-prps/PRP-15E-integracao-distribuicao.md"
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-5/worktree/sprints/sprint-12/3-prps/PRP-15E-integracao-distribuicao.md",
+    "completed_at": "2026-03-29T00:00:00Z"
   }
 ]

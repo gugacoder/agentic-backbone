@@ -39,7 +39,9 @@
     "test:e2e:hub": "npx playwright test --project=hub",
     "secrets:decrypt": "node scripts/secrets.mjs decrypt",
     "secrets:encrypt": "node scripts/secrets.mjs encrypt",
-    "ngrok:up": "dotenv -o -e .env -- npx ngrok http 6002"
+    "ngrok:up": "dotenv -o -e .env -- npx ngrok http 6002",
+    "version:packages": "npm version patch --workspace=apps/packages/ai-sdk && npm version patch --workspace=apps/packages/ai-chat",
+    "publish:packages": "npm publish --workspace=apps/packages/ai-sdk && npm publish --workspace=apps/packages/ai-chat"
   },
   "devDependencies": {
     "@playwright/test": "^1.58.2",

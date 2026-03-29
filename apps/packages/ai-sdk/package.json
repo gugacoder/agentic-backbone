@@ -27,5 +27,13 @@
   "devDependencies": {
     "@types/node": "^22",
     "typescript": "^5"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/gugacoder/agentic-backbone.git",
+    "directory": "apps/packages/ai-sdk"
   }
 }
