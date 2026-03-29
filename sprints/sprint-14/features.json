@@ -88,7 +88,7 @@
     "id": "F-203",
     "name": "Chat.tsx com tokens shadcn",
     "description": "Reescrever Chat.tsx: substituir classe 'ai-chat' por cn('flex flex-col h-full bg-background text-foreground', className). Remover qualquer import de styles.css. Substituir clsx por cn. Manter ChatProvider wrapper e toda a logica intacta. API publica identica.",
-    "status": "pending",
+    "status": "passing",
     "priority": 5,
     "agent": "coder",
     "task": "vibe-code",
@@ -102,7 +102,8 @@
       "ChatProvider wrapper mantido",
       "API publica (ChatProps, exports) inalterada"
     ],
-    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-7/worktree/sprints/sprint-14/3-prps/PRP-16B-core-chat-shadcn.md"
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-7/worktree/sprints/sprint-14/3-prps/PRP-16B-core-chat-shadcn.md",
+    "completed_at": "2026-03-29T22:10:00Z"
   },
   {
     "id": "F-204",
