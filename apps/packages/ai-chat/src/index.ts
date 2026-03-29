@@ -6,3 +6,6 @@ export type { UseBackboneChatOptions, Message } from "./hooks/useBackboneChat.js
 
 export { ChatProvider, useChatContext } from "./hooks/ChatProvider.js";
 export type { ChatProviderProps } from "./hooks/ChatProvider.js";
+
+export { Markdown } from "./components/Markdown.js";
+export { StreamingIndicator } from "./components/StreamingIndicator.js";
