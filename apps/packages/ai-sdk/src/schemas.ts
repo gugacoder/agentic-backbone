@@ -20,6 +20,19 @@ export const AgentEventSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("step_finish") }),
   z.object({ type: z.literal("result"), content: z.string() }),
   z.object({ type: z.literal("usage"), usage: UsageDataSchema }),
+  z.object({ type: z.literal("reasoning"), content: z.string() }),
+  z.object({
+    type: z.literal("tool-call"),
+    toolCallId: z.string(),
+    toolName: z.string(),
+    args: z.record(z.unknown()),
+  }),
+  z.object({
+    type: z.literal("tool-result"),
+    toolCallId: z.string(),
+    toolName: z.string(),
+    result: z.unknown(),
+  }),
 ]);
 
 // --- Options (o que o backbone passa) ---

@@ -15,4 +15,7 @@ export interface TaskConfig {
  * When configured, uses runAiAgent() internally to spawn an isolated sub-agent
  * that inherits the parent's model and apiKey but has no access to conversation history.
  */
-export declare function createTaskTool(config?: TaskConfig): any;
+export declare function createTaskTool(config?: TaskConfig): import("ai").Tool<{
+    description: string;
+    prompt: string;
+}, string>;

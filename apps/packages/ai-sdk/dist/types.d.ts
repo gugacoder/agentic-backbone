@@ -21,6 +21,19 @@ export type AiAgentEvent = {
     type: "text";
     content: string;
 } | {
+    type: "reasoning";
+    content: string;
+} | {
+    type: "tool-call";
+    toolCallId: string;
+    toolName: string;
+    args: Record<string, unknown>;
+} | {
+    type: "tool-result";
+    toolCallId: string;
+    toolName: string;
+    result: unknown;
+} | {
     type: "result";
     content: string;
 } | {
@@ -168,4 +181,8 @@ export interface AiAgentOptions {
     repairToolCalls?: boolean;
     /** Maximo de tentativas de reparo por tool call. Default: 1 */
     maxRepairAttempts?: number;
+    /** Habilita reasoning (extended thinking) do modelo. true usa budget de 5000 tokens; objeto permite especificar budgetTokens. */
+    reasoning?: boolean | {
+        budgetTokens: number;
+    };
 }

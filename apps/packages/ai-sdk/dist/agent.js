@@ -275,6 +275,19 @@ export async function* runAiAgent(prompt, options) {
         // stopWhen integration — AbortController to cancel the stream when condition is met
         const abortController = options.stopWhen ? new AbortController() : undefined;
         let stoppedByStopWhen = false;
+        // providerOptions for extended thinking/reasoning (F-171)
+        const reasoningConfig = options.reasoning
+            ? {
+                anthropic: {
+                    thinking: {
+                        type: "enabled",
+                        budgetTokens: typeof options.reasoning === "object"
+                            ? options.reasoning.budgetTokens
+                            : 5000,
+                    },
+                },
+            }
+            : undefined;
         const callStreamText = () => streamText({
             model: effectiveModel,
             tools,
@@ -287,6 +300,7 @@ export async function* runAiAgent(prompt, options) {
             ...(stepToolChoice ? { toolChoice: stepToolChoice } : {}),
             ...(abortController ? { abortSignal: abortController.signal } : {}),
             ...(experimentalRepairToolCall ? { experimental_repairToolCall: experimentalRepairToolCall } : {}),
+            ...(reasoningConfig ? { providerOptions: reasoningConfig } : {}),
             onStepFinish: (stepResult) => {
                 const toolNames = (stepResult.toolCalls ?? []).map((tc) => tc.toolName);
                 const stepEvent = {
@@ -302,8 +316,8 @@ export async function* runAiAgent(prompt, options) {
                     collectedSteps.push({
                         stepNumber: stepCounter,
                         toolCalls: toolNames,
-                        inputTokens: stepResult.usage?.promptTokens ?? 0,
-                        outputTokens: stepResult.usage?.completionTokens ?? 0,
+                        inputTokens: stepResult.usage?.inputTokens ?? stepResult.usage?.promptTokens ?? 0,
+                        outputTokens: stepResult.usage?.outputTokens ?? stepResult.usage?.completionTokens ?? 0,
                         durationMs: now - stepStartMs,
                     });
                     stepStartMs = now;
@@ -333,6 +347,28 @@ export async function* runAiAgent(prompt, options) {
                         yield pendingStepEvents.shift();
                     }
                 }
+                else if (part.type === "reasoning" || part.type === "reasoning-delta") {
+                    yield {
+                        type: "reasoning",
+                        content: part.delta ?? part.textDelta ?? part.text ?? "",
+                    };
+                }
+                else if (part.type === "tool-call") {
+                    yield {
+                        type: "tool-call",
+                        toolCallId: part.toolCallId,
+                        toolName: part.toolName,
+                        args: part.args,
+                    };
+                }
+                else if (part.type === "tool-result") {
+                    yield {
+                        type: "tool-result",
+                        toolCallId: part.toolCallId,
+                        toolName: part.toolName,
+                        result: part.result,
+                    };
+                }
                 else if (part.type === "error") {
                     const errMsg = part.error?.message ?? JSON.stringify(part.error ?? part);
                     throw new Error(`OpenRouter API error: ${errMsg}`);
@@ -358,7 +394,7 @@ export async function* runAiAgent(prompt, options) {
             yield pendingStepEvents.shift();
         }
         // Persist session and collect usage — may fail if stream was aborted by stopWhen
-        let usage = { promptTokens: 0, completionTokens: 0 };
+        let usage = {};
         let steps = [];
         let finishReason = stoppedByStopWhen ? "stop_when" : "unknown";
         let totalCostUsd = 0;
@@ -392,8 +428,8 @@ export async function* runAiAgent(prompt, options) {
         yield {
             type: "usage",
             usage: {
-                inputTokens: usage.promptTokens ?? 0,
-                outputTokens: usage.completionTokens ?? 0,
+                inputTokens: usage.inputTokens ?? usage.promptTokens ?? 0,
+                outputTokens: usage.outputTokens ?? usage.completionTokens ?? 0,
                 cacheReadInputTokens: 0,
                 cacheCreationInputTokens: 0,
                 totalCostUsd,

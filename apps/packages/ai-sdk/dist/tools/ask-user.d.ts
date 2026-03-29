@@ -8,4 +8,7 @@ export type AskUserCallback = (question: string, options?: string[]) => Promise<
  * Factory that creates the AskUser tool with an injected callback.
  * If no callback is provided, returns a tool that explains no handler is configured.
  */
-export declare function createAskUserTool(onAskUser?: AskUserCallback): any;
+export declare function createAskUserTool(onAskUser?: AskUserCallback): import("ai").Tool<{
+    question: string;
+    options?: string[] | undefined;
+}, string>;

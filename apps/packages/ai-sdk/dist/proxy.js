@@ -85,6 +85,15 @@ export async function* runAgent(raw) {
         else if (event.type === "step_finish") {
             yield { type: "step_finish" };
         }
-        // Other event types (mcp_connected, etc.) are silently dropped
+        else if (event.type === "reasoning") {
+            yield { type: "reasoning", content: event.content };
+        }
+        else if (event.type === "tool-call") {
+            yield { type: "tool-call", toolCallId: event.toolCallId, toolName: event.toolName, args: event.args };
+        }
+        else if (event.type === "tool-result") {
+            yield { type: "tool-result", toolCallId: event.toolCallId, toolName: event.toolName, result: event.result };
+        }
+        // Unknown event types are silently dropped (safe denylist: only known AgentEvent members are forwarded)
     }
 }
