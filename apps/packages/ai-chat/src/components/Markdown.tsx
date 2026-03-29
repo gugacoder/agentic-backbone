@@ -2,63 +2,62 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
 import type { Components } from "react-markdown";
-import type { ReactNode } from "react";
 import { cn } from "../lib/utils.js";
 
 const components: Components = {
-  pre({ children }: { children?: ReactNode }) {
+  pre({ children }) {
     return (
       <pre className="bg-muted border border-border rounded-md my-3 overflow-hidden">
         {children}
       </pre>
     );
   },
-  code({ className, children, ...props }: { className?: string; children?: ReactNode; [key: string]: unknown }) {
+  code({ className, children }) {
     const isBlock = className?.startsWith("language-");
     if (isBlock) {
       return (
-        <code className={cn("block p-4 overflow-x-auto font-mono text-sm", className)} {...props}>
+        <code className={cn("block p-4 overflow-x-auto font-mono text-sm", className)}>
           {children}
         </code>
       );
     }
     return (
-      <code className="bg-muted border border-border rounded-sm px-1.5 py-0.5 font-mono text-sm" {...props}>
+      <code className="bg-muted border border-border rounded-sm px-1.5 py-0.5 font-mono text-sm">
         {children}
       </code>
     );
   },
-  a({ href, children, ...props }: { href?: string; children?: ReactNode; [key: string]: unknown }) {
+  a({ href, children }) {
     return (
-      <a href={href} target="_blank" rel="noopener noreferrer" className="text-primary underline underline-offset-2 hover:opacity-80" {...props}>
+      <a href={href} target="_blank" rel="noopener noreferrer" className="text-primary underline underline-offset-2 hover:opacity-80">
         {children}
       </a>
     );
   },
-  blockquote({ children }: { children?: ReactNode }) {
+  blockquote({ children }) {
     return (
       <blockquote className="border-l-[3px] border-border my-3 py-1 px-3 text-muted-foreground">
         {children}
       </blockquote>
     );
   },
-  table({ children }: { children?: ReactNode }) {
+  table({ children }) {
     return (
       <div className="overflow-x-auto">
         <table className="w-full border-collapse text-sm">{children}</table>
       </div>
     );
   },
-  th({ children, ...props }: { children?: ReactNode; [key: string]: unknown }) {
+  th({ children }) {
     return (
-      <th className="border border-border px-3 py-1.5 text-left font-semibold bg-muted" {...props}>
+      <th className="border border-border px-3 py-1.5 text-left font-semibold bg-muted">
         {children}
       </th>
     );
   },
-  td({ children, ...props }: { children?: ReactNode; [key: string]: unknown }) {
+  td({ children }) {
     return (
-      <td className="border border-border px-3 py-1.5 text-left" {...props}>
+      <td className="border border-border px-3 py-1.5 text-left">
         {children}
       </td>
     );

@@ -63,8 +63,12 @@ function formatValue(value: number, format?: DisplayChart["format"]): string {
   return `${prefix}${formatted}${suffix}`;
 }
 
-function makeTooltipFormatter(format?: DisplayChart["format"]) {
-  return (value: number): [string, string] => [formatValue(value, format), ""];
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function makeTooltipFormatter(format?: DisplayChart["format"]): any {
+  return (value: number | string | undefined): [string, string] => [
+    typeof value === "number" ? formatValue(value, format) : String(value ?? ""),
+    "",
+  ];
 }
 
 export function ChartRenderer({ type, title, data, format }: DisplayChart) {
@@ -92,7 +96,7 @@ function renderChart(
   type: DisplayChart["type"],
   data: Array<{ name: string; value: number; color?: string }>,
   sharedProps: { data: typeof data; margin: { top: number; right: number; left: number; bottom: number } },
-  tooltipFormatter: (v: number) => [string, string]
+  tooltipFormatter: (v: number | string | undefined) => [string, string]
 ) {
   switch (type) {
     case "bar":

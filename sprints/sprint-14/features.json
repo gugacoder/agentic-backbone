@@ -779,7 +779,7 @@
     "id": "F-235",
     "name": "CHANGELOG e build final",
     "description": "Criar ou atualizar apps/packages/ai-chat/CHANGELOG.md com entrada 0.2.0 documentando: reescrita visual shadcn/ui, eliminacao styles.css, zero cor hardcoded, remocao export ./styles.css, novas deps Radix, API publica inalterada. Executar npm run build e validar que compila sem erro.",
-    "status": "blocked",
+    "status": "passing",
     "priority": 36,
     "agent": "coder",
     "task": "vibe-code",
@@ -793,6 +793,7 @@
       "Entrada documenta reescrita shadcn, remocao styles.css, zero cor hardcoded",
       "npm run build compila sem erro"
     ],
-    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-7/worktree/sprints/sprint-14/3-prps/PRP-16F-limpeza-integracao-shadcn.md"
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-7/worktree/sprints/sprint-14/3-prps/PRP-16F-limpeza-integracao-shadcn.md",
+    "completed_at": "2026-03-29T19:30:00Z"
   }
 ]
