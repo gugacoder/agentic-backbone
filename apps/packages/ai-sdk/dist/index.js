@@ -23,3 +23,6 @@ export { aiGenerateObject, aiStreamObject } from "./structured.js";
 export { createAiProviderRegistry } from "./providers.js";
 export { createLoggingMiddleware } from "./middleware/logging.js";
 export { createToolCallRepairHandler } from "./tool-repair.js";
+// Display tools
+export { DisplayToolRegistry, DisplayMetricSchema, DisplayChartSchema, DisplayTableSchema, DisplayProgressSchema, DisplayProductSchema, DisplayComparisonSchema, DisplayPriceSchema, DisplayImageSchema, DisplayGallerySchema, DisplayCarouselSchema, DisplaySourcesSchema, DisplayLinkSchema, DisplayMapSchema, DisplayFileSchema, DisplayCodeSchema, DisplaySpreadsheetSchema, DisplayStepsSchema, DisplayAlertSchema, DisplayChoicesSchema } from "./display-schemas.js";
+export { createDisplayTools } from "./tools/display.js";

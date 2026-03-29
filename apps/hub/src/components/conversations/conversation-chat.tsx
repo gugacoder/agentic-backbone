@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate, useSearch } from "@tanstack/react-router";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import {
@@ -30,19 +30,14 @@ import {
 } from "@/components/ui/dropdown-menu";
 import {
   conversationQueryOptions,
-  conversationMessagesQueryOptions,
   sessionQueryOptions,
   renameConversation,
   deleteConversation,
   takeoverConversation,
   releaseConversation,
-  type ConversationMessage,
 } from "@/api/conversations";
 import { agentsQueryOptions } from "@/api/agents";
-import { MessageList } from "@/components/chat/message-list";
-import { MessageInput } from "@/components/chat/message-input";
-import type { ChatMessage } from "@/components/chat/message-bubble";
-import { streamMessage, type ChatStreamEvent } from "@/lib/chat-stream";
+import { Chat } from "@agentic-backbone/ai-chat";
 import { useAuthStore } from "@/lib/auth";
 import { TakeoverButton } from "@/components/conversations/takeover-button";
 import { TakeoverBanner } from "@/components/conversations/takeover-banner";
@@ -76,40 +71,10 @@ export function ConversationChatPage({ id, basePath }: ConversationChatPageProps
   const { data: conversation, isLoading: convLoading } = useQuery(
     conversationQueryOptions(id),
   );
-  const { data: rawMessages, isLoading: msgsLoading } = useQuery(
-    conversationMessagesQueryOptions(id),
-  );
   const { data: agents } = useQuery(agentsQueryOptions());
   const { data: session } = useQuery(sessionQueryOptions(id));
 
-  const [localMessages, setLocalMessages] = useState<ChatMessage[]>([]);
-  const [streamingContent, setStreamingContent] = useState<string | undefined>(
-    undefined,
-  );
-  const [isStreaming, setIsStreaming] = useState(false);
-  const abortRef = useRef<AbortController | null>(null);
-  const [inputValue, setInputValue] = useState("");
   const [renameValue, setRenameValue] = useState("");
-  const pendingClearRef = useRef(false);
-
-  // Reset local messages when switching conversations
-  useEffect(() => {
-    setLocalMessages([]);
-    setStreamingContent(undefined);
-    setIsStreaming(false);
-    setInputValue("");
-    pendingClearRef.current = false;
-    abortRef.current?.abort();
-    abortRef.current = null;
-  }, [id]);
-
-  // Clear local messages once rawMessages is refreshed after send
-  useEffect(() => {
-    if (pendingClearRef.current && rawMessages != null) {
-      pendingClearRef.current = false;
-      setLocalMessages([]);
-    }
-  }, [rawMessages]);
 
   useEffect(() => {
     if (action === "rename") {
@@ -150,8 +115,6 @@ export function ConversationChatPage({ id, basePath }: ConversationChatPageProps
 
   const currentUserSlug = getCurrentUserSlug();
   const isUnderTakeover = session?.takeover_by != null;
-  const isCurrentOperator =
-    isUnderTakeover && session?.takeover_by === currentUserSlug;
 
   function handleExport() {
     const token = useAuthStore.getState().token;
@@ -167,124 +130,9 @@ export function ConversationChatPage({ id, basePath }: ConversationChatPageProps
     conversation?.agentId ??
     "";
 
-  const historyMessages: ChatMessage[] = (rawMessages ?? []).map(
-    (m: ConversationMessage) => ({
-      id: m.id,
-      role: m.role,
-      content: m.content,
-      timestamp: m.timestamp,
-      metadata: m.metadata,
-      feedback: m.feedback,
-    }),
-  );
+  const token = useAuthStore.getState().token ?? "";
 
-  const allMessages = [...historyMessages, ...localMessages];
-
-  const handleSend = useCallback(
-    async (content: string) => {
-      if (!content.trim() || isStreaming) return;
-
-      if (isCurrentOperator) {
-        const operatorMsg: ChatMessage = {
-          role: "assistant",
-          content: content.trim(),
-          metadata: { operator: true, operatorSlug: currentUserSlug ?? "Operador" },
-        };
-        setLocalMessages((prev) => [...prev, operatorMsg]);
-        setInputValue("");
-        setIsStreaming(true);
-
-        const controller = new AbortController();
-        abortRef.current = controller;
-
-        try {
-          await streamMessage(
-            id,
-            content.trim(),
-            () => {},
-            controller.signal,
-          );
-        } catch (err) {
-          if ((err as Error).name === "AbortError") {
-            // aborted
-          }
-        } finally {
-          setIsStreaming(false);
-          abortRef.current = null;
-          pendingClearRef.current = true;
-          queryClient.invalidateQueries({
-            queryKey: ["conversations", id, "messages"],
-          });
-        }
-        return;
-      }
-
-      const userMsg: ChatMessage = { role: "user", content: content.trim() };
-      setLocalMessages((prev) => [...prev, userMsg]);
-      setInputValue("");
-      setStreamingContent("");
-      setIsStreaming(true);
-
-      const controller = new AbortController();
-      abortRef.current = controller;
-
-      try {
-        let accumulated = "";
-        let gotResult = false;
-        await streamMessage(
-          id,
-          content.trim(),
-          (event: ChatStreamEvent) => {
-            if (event.type === "text" && event.content) {
-              accumulated += event.content;
-              setStreamingContent(accumulated);
-            } else if (event.type === "result" && event.content) {
-              gotResult = true;
-              setStreamingContent(undefined);
-              setLocalMessages((prev) => [
-                ...prev,
-                { role: "assistant", content: event.content! },
-              ]);
-            }
-          },
-          controller.signal,
-        );
-
-        if (!gotResult && accumulated) {
-          setStreamingContent(undefined);
-          setLocalMessages((prev) => [
-            ...prev,
-            { role: "assistant", content: accumulated },
-          ]);
-        }
-      } catch (err) {
-        if ((err as Error).name !== "AbortError") {
-          setStreamingContent(undefined);
-          setLocalMessages((prev) => [
-            ...prev,
-            { role: "assistant", content: "Erro ao processar resposta." },
-          ]);
-        } else {
-          setStreamingContent(undefined);
-        }
-      } finally {
-        setIsStreaming(false);
-        abortRef.current = null;
-        pendingClearRef.current = true;
-        queryClient.invalidateQueries({
-          queryKey: ["conversations", id, "messages"],
-        });
-        queryClient.invalidateQueries({ queryKey: ["conversations"] });
-      }
-    },
-    [id, isStreaming, isCurrentOperator, currentUserSlug, queryClient],
-  );
-
-  function handleAbort() {
-    abortRef.current?.abort();
-  }
-
-  if (convLoading || msgsLoading) {
+  if (convLoading) {
     return (
       <div className="flex h-full flex-col gap-4 p-4">
         <Skeleton className="h-10 w-64" />
@@ -447,20 +295,12 @@ export function ConversationChatPage({ id, basePath }: ConversationChatPageProps
         {/* Inline approval requests for this session */}
         <ApprovalInlineActions sessionId={id} />
 
-        {/* Message area */}
-        <MessageList
-          messages={allMessages}
-          streamingContent={streamingContent}
+        {/* Chat area — delegates message list + input to ai-chat */}
+        <Chat
+          endpoint=""
+          token={token}
           sessionId={id}
-        />
-
-        {/* Input area */}
-        <MessageInput
-          value={inputValue}
-          onChange={setInputValue}
-          onSend={handleSend}
-          onAbort={handleAbort}
-          isStreaming={isStreaming}
+          className="flex-1 flex flex-col overflow-hidden"
         />
       </div>
 

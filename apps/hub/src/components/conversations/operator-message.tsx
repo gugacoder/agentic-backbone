@@ -2,7 +2,13 @@ import { useState } from "react";
 import { User, Copy, Check } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import type { ChatMessage } from "@/components/chat/message-bubble";
+interface ChatMessage {
+  id?: string;
+  role: "user" | "assistant";
+  content: string;
+  timestamp?: string;
+  metadata?: Record<string, unknown>;
+}
 
 interface OperatorMessageProps {
   message: ChatMessage;

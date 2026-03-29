@@ -3,6 +3,7 @@ import { createAiProviderRegistry } from "./providers.js";
 import { createMCPClient, type MCPClient } from "@ai-sdk/mcp";
 import { Experimental_StdioMCPTransport as StdioMCPTransport } from "@ai-sdk/mcp/mcp-stdio";
 import { codingTools } from "./tools/index.js";
+import { createDisplayTools } from "./tools/display.js";
 import { createBashTool } from "./tools/bash.js";
 import { createWriteTool } from "./tools/write.js";
 import { createEditTool } from "./tools/edit.js";
@@ -136,7 +137,8 @@ export async function* runAiAgent(
       MultiEdit: createMultiEditTool(),
       ApplyPatch: createApplyPatchTool(),
     };
-    let tools = { ...mcpTools, ...codingTools, ...dangerousTools };
+    const displayTools = createDisplayTools();
+    let tools = { ...mcpTools, ...codingTools, ...displayTools, ...dangerousTools };
     if (options.tools) {
       tools = { ...tools, ...options.tools };
     }

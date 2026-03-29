@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import { streamSSE } from "hono/streaming";
+import { encodeDataStreamEvent } from "./datastream.js";
 import {
   sendMessage,
   createSession,
@@ -204,6 +205,19 @@ conversationRoutes.post("/conversations/:sessionId/messages", async (c) => {
 
   if (!message) {
     return c.json({ error: "message is required" }, 400);
+  }
+
+  const format = c.req.query("format");
+
+  if (format === "datastream") {
+    return streamSSE(c, async (stream) => {
+      for await (const event of sendMessage(auth.user, sessionId, message)) {
+        const encoded = encodeDataStreamEvent(event);
+        if (encoded !== null) {
+          await stream.writeSSE({ data: encoded });
+        }
+      }
+    });
   }
 
   return streamSSE(c, async (stream) => {

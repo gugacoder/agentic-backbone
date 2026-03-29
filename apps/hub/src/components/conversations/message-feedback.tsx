@@ -8,7 +8,10 @@ import {
   FeedbackReasonPopover,
   type FeedbackReason,
 } from "./feedback-reason-popover";
-import type { MessageFeedback as FeedbackState } from "@/components/chat/message-bubble";
+interface FeedbackState {
+  rating: "up" | "down";
+  reason: string | null;
+}
 
 interface MessageFeedbackProps {
   sessionId: string;

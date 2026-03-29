@@ -1,0 +1,143 @@
+[
+  {
+    "id": "F-174",
+    "name": "Display Schemas Zod",
+    "description": "Criar apps/packages/ai-sdk/src/display-schemas.ts com 4 primitivos reutilizaveis (MoneySchema, SourceRefSchema, ImageItemSchema, BadgeSchema) e 19 schemas Zod (6 categorias: metricas, produtos, midia, referencias, documentos, interativo). Incluir DisplayToolRegistry mapeando 19 nomes com prefixo display_ para schemas, type DisplayToolName como union das chaves, e 19 tipos inferidos exportados. Schemas completos estao no PRP-14 milestone (sprints/milestones/14-rich-content/PRP.md, secao 1.1).",
+    "status": "passing",
+    "priority": 1,
+    "agent": "coder",
+    "task": "vibe-code",
+    "completed_at": "2026-03-29T00:00:00.000Z",
+    "dependencies": [],
+    "tests": [
+      "Arquivo apps/packages/ai-sdk/src/display-schemas.ts existe",
+      "4 primitivos (MoneySchema, SourceRefSchema, ImageItemSchema, BadgeSchema) definidos como const nao exportados",
+      "19 schemas Zod exportados: DisplayMetricSchema, DisplayChartSchema, DisplayTableSchema, DisplayProgressSchema, DisplayProductSchema, DisplayComparisonSchema, DisplayPriceSchema, DisplayImageSchema, DisplayGallerySchema, DisplayCarouselSchema, DisplaySourcesSchema, DisplayLinkSchema, DisplayMapSchema, DisplayFileSchema, DisplayCodeSchema, DisplaySpreadsheetSchema, DisplayStepsSchema, DisplayAlertSchema, DisplayChoicesSchema",
+      "DisplayToolRegistry exportado com 19 entries usando prefixo display_",
+      "DisplayToolName eh type union das 19 chaves do registry",
+      "19 tipos inferidos exportados (DisplayMetric, DisplayChart, etc.)",
+      "npm run build:packages compila sem erros TypeScript"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-4/worktree/sprints/sprint-11/3-prps/PRP-14A-display-tools-ai-sdk.md"
+  },
+  {
+    "id": "F-177",
+    "name": "DataStream Encoder",
+    "description": "Criar apps/backbone/src/routes/datastream.ts com funcao pura encodeDataStreamEvent() que traduz AgentEvent para protocolo Vercel DataStream. Mapeamento: text->0:, reasoning->g:, tool-call->9:, tool-result->a:, step_finish->e:, usage->d:. Eventos init e result retornam null. Verificar nomes exatos dos campos de AgentEvent em apps/backbone/src/agent/types.ts antes de implementar.",
+    "status": "passing",
+    "priority": 2,
+    "agent": "coder",
+    "task": "vibe-code",
+    "completed_at": "2026-03-29T05:30:00.000Z",
+    "dependencies": [],
+    "tests": [
+      "Arquivo apps/backbone/src/routes/datastream.ts existe com encodeDataStreamEvent() exportada",
+      "Evento text retorna string com prefixo 0:",
+      "Evento reasoning retorna string com prefixo g:",
+      "Evento tool-call retorna string com prefixo 9: contendo toolCallId, toolName, args",
+      "Evento tool-result retorna string com prefixo a: contendo toolCallId, toolName, result",
+      "Evento step_finish retorna string com prefixo e: com finishReason stop",
+      "Evento usage retorna string com prefixo d: com campos mapeados (inputTokens->promptTokens, outputTokens->completionTokens)",
+      "Eventos init e result retornam null",
+      "Funcao eh pura — sem side effects",
+      "Typecheck do backbone passa sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-4/worktree/sprints/sprint-11/3-prps/PRP-14B-datastream-protocol-guide.md"
+  },
+  {
+    "id": "F-175",
+    "name": "Display Tools como AI SDK tool()",
+    "description": "Criar apps/packages/ai-sdk/src/tools/display.ts com createDisplayTools() retornando 19 tools Vercel AI SDK. Cada tool tem: description em pt-BR, parameters importado de display-schemas.ts, execute retornando { ...args, _display: true }. Descriptions das 19 tools estao no PRP-14 milestone (secao 2.1). Registrar em agent.ts mergeando display tools em allTools apos codingTools e antes de mcpTools. Nenhum guard condicional por modo.",
+    "status": "passing",
+    "priority": 3,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-174"
+    ],
+    "tests": [
+      "Arquivo apps/packages/ai-sdk/src/tools/display.ts existe com createDisplayTools() exportada",
+      "createDisplayTools() retorna objeto com 19 tools (prefixo display_)",
+      "Cada tool tem description em pt-BR, parameters eh schema Zod de display-schemas.ts, execute retorna { ...args, _display: true }",
+      "agent.ts importa createDisplayTools() e mergeia em allTools",
+      "Display tools vem depois de codingTools e antes de mcpTools no spread",
+      "Nenhum guard condicional por modo — display tools disponiveis em conversation, heartbeat e cron",
+      "Assinatura de runAiAgent() nao foi alterada",
+      "npm run build:packages compila sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-4/worktree/sprints/sprint-11/3-prps/PRP-14A-display-tools-ai-sdk.md",
+    "completed_at": "2026-03-29T06:30:00.000Z"
+  },
+  {
+    "id": "F-176",
+    "name": "Display Exports no index.ts",
+    "description": "Adicionar re-exports em apps/packages/ai-sdk/src/index.ts: DisplayToolRegistry, DisplayToolName (type), 19 schemas Zod, 19 tipos inferidos (com keyword type), e createDisplayTools de tools/display.js. Nao alterar exports existentes — apenas adicionar. Usar type keyword para re-export de tipos (isolatedModules).",
+    "status": "passing",
+    "priority": 4,
+    "agent": "coder",
+    "task": "vibe-code",
+    "completed_at": "2026-03-29T07:00:00.000Z",
+    "dependencies": [
+      "F-174",
+      "F-175"
+    ],
+    "tests": [
+      "index.ts re-exporta DisplayToolRegistry e type DisplayToolName de display-schemas.js",
+      "index.ts re-exporta 19 schemas Zod (DisplayMetricSchema, DisplayChartSchema, etc.)",
+      "index.ts re-exporta 19 tipos inferidos com keyword type (type DisplayMetric, type DisplayChart, etc.)",
+      "index.ts re-exporta createDisplayTools de tools/display.js",
+      "Exports existentes nao foram alterados",
+      "import { DisplayProductSchema, type DisplayProduct } from '@agentic-backbone/ai-sdk' resolve sem erro",
+      "npm run build:packages compila sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-4/worktree/sprints/sprint-11/3-prps/PRP-14A-display-tools-ai-sdk.md"
+  },
+  {
+    "id": "F-178",
+    "name": "DataStream Route — ?format=datastream",
+    "description": "Adicionar suporte a ?format=datastream na rota POST /conversations/:sessionId/messages em apps/backbone/src/routes/conversations.ts. Quando format=datastream, emitir SSE usando encodeDataStreamEvent() de datastream.ts, ignorando eventos null. Branch padrao (sem format) continua identico ao codigo atual. Nao criar rota separada — mesmo endpoint, formato de saida diferente. Backward compatible.",
+    "status": "passing",
+    "priority": 5,
+    "agent": "coder",
+    "task": "vibe-code",
+    "completed_at": "2026-03-29T08:00:00.000Z",
+    "dependencies": [
+      "F-177"
+    ],
+    "tests": [
+      "conversations.ts importa encodeDataStreamEvent de datastream.js",
+      "Check format === 'datastream' existe antes do stream existente",
+      "Quando format=datastream, SSE emite eventos encodados com prefixos DataStream",
+      "Eventos com encodeDataStreamEvent() retornando null sao ignorados silenciosamente",
+      "Branch padrao (sem format ou format desconhecido) identico ao codigo atual — sem refatoracao",
+      "Rota sem ?format continua emitindo AgentEvent JSON — zero regressao",
+      "Typecheck do backbone passa sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-4/worktree/sprints/sprint-11/3-prps/PRP-14B-datastream-protocol-guide.md"
+  },
+  {
+    "id": "F-179",
+    "name": "Guia Rich Content (docs)",
+    "description": "Produzir 4 artefatos em guides/rich-content/: (a) GUIDE.md — guia completo com secoes: o que sao display tools, como consumir via useChat com ?format=datastream, como identificar no stream (prefixo display_ + _display:true), catalogo das 19 tools, fallback para tools sem renderer, canais pobres (WhatsApp). (b) schemas.json — JSON Schema das 19 tools via zodToJsonSchema (gerar via script .tmp/gen-schemas.mjs). (c) examples.json — 1 payload canonico por tool com description, example e use_when. (d) component-map.md — mapa toolName -> componente React + libs recomendadas.",
+    "status": "passing",
+    "priority": 6,
+    "completed_at": "2026-03-29T09:00:00.000Z",
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-174",
+      "F-175",
+      "F-176"
+    ],
+    "tests": [
+      "guides/rich-content/GUIDE.md existe com secoes: o que sao display tools, como consumir via useChat, como identificar no stream, catalogo 19 tools, fallback, canais pobres",
+      "guides/rich-content/schemas.json existe com JSON Schema para 19 display tools",
+      "guides/rich-content/examples.json existe com 19 exemplos canonicos (description, example, use_when)",
+      "guides/rich-content/component-map.md existe com mapa 19 tools -> componentes + libs",
+      "GUIDE.md explica integracao useChat() com ?format=datastream",
+      "GUIDE.md documenta fallback para display tools sem renderer",
+      "Linguagem em pt-BR em todos os artefatos"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-4/worktree/sprints/sprint-11/3-prps/PRP-14B-datastream-protocol-guide.md"
+  }
+]
