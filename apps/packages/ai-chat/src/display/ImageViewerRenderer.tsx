@@ -1,103 +1,112 @@
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
 import type { DisplayImage } from "@agentic-backbone/ai-sdk";
-import { ZoomIn, ZoomOut, X } from "lucide-react";
+import { ZoomIn, ZoomOut, RotateCcw, X } from "lucide-react";
+import { Dialog, DialogContent, DialogTitle } from "../ui/dialog.js";
+import { Button } from "../ui/button.js";
+import { cn } from "../lib/utils.js";
 
 export function ImageViewerRenderer({ url, alt, caption, width, height }: DisplayImage) {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [zoom, setZoom] = useState(1);
-  const dialogRef = useRef<HTMLDialogElement>(null);
 
-  useEffect(() => {
-    const dialog = dialogRef.current;
-    if (!dialog) return;
-    if (dialogOpen) {
-      setZoom(1);
-      dialog.showModal();
-    } else {
-      dialog.close();
-    }
-  }, [dialogOpen]);
-
-  function handleDialogClick(e: React.MouseEvent<HTMLDialogElement>) {
-    if (e.target === dialogRef.current) {
-      setDialogOpen(false);
-    }
+  function handleOpen() {
+    setZoom(1);
+    setDialogOpen(true);
   }
 
   return (
-    <div className="ai-chat-display ai-chat-display-image">
+    <div className="flex flex-col gap-1.5">
       <button
-        className="ai-chat-display-image-trigger"
-        onClick={() => setDialogOpen(true)}
+        className="relative group cursor-pointer rounded-md overflow-hidden inline-block"
+        onClick={handleOpen}
         aria-label={`Ampliar imagem${alt ? `: ${alt}` : ""}`}
       >
         <img
           src={url}
           alt={alt ?? ""}
-          className="ai-chat-display-image-thumb"
+          className="block max-w-full rounded-md"
           width={width}
           height={height}
         />
-        <span className="ai-chat-display-image-zoom-hint" aria-hidden="true">
-          <ZoomIn size={16} />
-        </span>
+        <div className="absolute inset-0 bg-background/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+          <ZoomIn className="h-5 w-5 text-foreground" />
+        </div>
       </button>
 
-      {caption && <p className="ai-chat-display-image-caption">{caption}</p>}
+      {caption && (
+        <p className="text-xs text-muted-foreground">{caption}</p>
+      )}
 
-      <dialog
-        ref={dialogRef}
-        className="ai-chat-display-image-dialog"
-        onClick={handleDialogClick}
-        onClose={() => setDialogOpen(false)}
-        aria-label={alt ?? "Visualizador de imagem"}
-      >
-        <div className="ai-chat-display-image-dialog-inner">
-          <div className="ai-chat-display-image-dialog-toolbar">
-            <button
-              className="ai-chat-display-image-dialog-btn"
-              onClick={() => setZoom((z) => Math.max(0.25, z - 0.25))}
-              aria-label="Reduzir zoom"
-              disabled={zoom <= 0.25}
-            >
-              <ZoomOut size={18} />
-            </button>
-            <span className="ai-chat-display-image-dialog-zoom-label">
-              {Math.round(zoom * 100)}%
-            </span>
-            <button
-              className="ai-chat-display-image-dialog-btn"
-              onClick={() => setZoom((z) => Math.min(4, z + 0.25))}
-              aria-label="Aumentar zoom"
-              disabled={zoom >= 4}
-            >
-              <ZoomIn size={18} />
-            </button>
-            <button
-              className="ai-chat-display-image-dialog-btn ai-chat-display-image-dialog-btn--close"
-              onClick={() => setDialogOpen(false)}
-              aria-label="Fechar"
-            >
-              <X size={18} />
-            </button>
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent className="max-w-4xl p-0 bg-background/95 overflow-hidden">
+          <DialogTitle className="sr-only">{alt ?? "Visualizador de imagem"}</DialogTitle>
+
+          <div className="flex flex-col">
+            <div className="flex items-center gap-1 p-2 border-b border-border">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setZoom((z) => Math.max(0.25, z - 0.25))}
+                aria-label="Reduzir zoom"
+                disabled={zoom <= 0.25}
+              >
+                <ZoomOut className="h-4 w-4" />
+              </Button>
+
+              <span className={cn("text-xs text-muted-foreground w-12 text-center tabular-nums")}>
+                {Math.round(zoom * 100)}%
+              </span>
+
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setZoom((z) => Math.min(4, z + 0.25))}
+                aria-label="Aumentar zoom"
+                disabled={zoom >= 4}
+              >
+                <ZoomIn className="h-4 w-4" />
+              </Button>
+
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setZoom(1)}
+                aria-label="Resetar zoom"
+              >
+                <RotateCcw className="h-4 w-4" />
+              </Button>
+
+              <div className="flex-1" />
+
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setDialogOpen(false)}
+                aria-label="Fechar"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+
+            <div className="overflow-auto max-h-[80vh] flex items-center justify-center p-4">
+              <img
+                src={url}
+                alt={alt ?? ""}
+                style={{ transform: `scale(${zoom})`, transformOrigin: "center" }}
+                className="max-w-full transition-transform"
+                width={width}
+                height={height}
+              />
+            </div>
+
+            {caption && (
+              <p className="text-xs text-muted-foreground text-center p-2 border-t border-border">
+                {caption}
+              </p>
+            )}
           </div>
-
-          <div className="ai-chat-display-image-dialog-scroll">
-            <img
-              src={url}
-              alt={alt ?? ""}
-              className="ai-chat-display-image-dialog-img"
-              style={{ transform: `scale(${zoom})` }}
-              width={width}
-              height={height}
-            />
-          </div>
-
-          {caption && (
-            <p className="ai-chat-display-image-dialog-caption">{caption}</p>
-          )}
-        </div>
-      </dialog>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
