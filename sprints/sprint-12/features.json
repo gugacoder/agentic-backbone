@@ -156,8 +156,9 @@
     "id": "F-187",
     "name": "8 Display Renderers Simples",
     "description": "Criar 8 renderers em src/display/: AlertRenderer (banner com 4 variantes), MetricCardRenderer (label+value+trend+seta), PriceHighlightRenderer (Intl.NumberFormat pt-BR currency), FileCardRenderer (icone por tipo+nome+tamanho), CodeBlockRenderer (header language+copiar), SourcesListRenderer (favicon+titulo clicavel+snippet), StepTimelineRenderer (etapas+icones status), ProgressStepsRenderer (barra+steps+percentual). Props = tipos Zod inferidos do @agentic-backbone/ai-sdk.",
-    "status": "pending",
+    "status": "passing",
     "priority": 8,
+    "completed_at": "2026-03-29T14:00:00Z",
     "agent": "coder",
     "task": "vibe-code",
     "dependencies": [
