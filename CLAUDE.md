@@ -213,7 +213,7 @@ Usuário de teste: `system` (user em `context/users/system/`), senha `12345678`.
 ## Specification Workflow
 
 - User stories → requirements → PRPs (Product Requirement Prompts) → implementation milestones
-- PRP reference: `apps/backbone/milestones/`
+- PRP reference: `sprints/milestones/`
 
 ## UI Design Rules
 
