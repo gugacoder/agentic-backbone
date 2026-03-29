@@ -1,4 +1,5 @@
 import type { Message } from "@ai-sdk/react";
+import { cn } from "../lib/utils.js";
 import { Markdown } from "./Markdown.js";
 import { StreamingIndicator } from "./StreamingIndicator.js";
 import { PartRenderer } from "../parts/PartRenderer.js";
@@ -13,14 +14,19 @@ export interface MessageBubbleProps {
 
 export function MessageBubble({ message, isStreaming, displayRenderers, className }: MessageBubbleProps) {
   const isUser = message.role === "user";
-  const roleClass = isUser ? "ai-chat-bubble-user" : "ai-chat-bubble-assistant";
-  const rowClass = isUser ? "ai-chat-bubble-row ai-chat-bubble-row-user" : "ai-chat-bubble-row ai-chat-bubble-row-assistant";
-
   const hasParts = Array.isArray(message.parts) && message.parts.length > 0;
 
   return (
-    <div className={rowClass}>
-      <div className={["ai-chat-bubble", roleClass, className].filter(Boolean).join(" ")}>
+    <div className={isUser ? "flex w-full justify-end" : "flex w-full justify-start"}>
+      <div
+        className={cn(
+          "inline-block max-w-[80%] rounded-lg px-4 py-2.5",
+          isUser
+            ? "rounded-br-sm bg-primary text-primary-foreground"
+            : "rounded-bl-sm bg-muted text-foreground",
+          className
+        )}
+      >
         {hasParts
           ? (message.parts as { type: string }[]).map((part, i) => (
               <PartRenderer

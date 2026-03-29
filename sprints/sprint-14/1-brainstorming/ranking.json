@@ -1,0 +1,119 @@
+[
+  {
+    "id": "D-001",
+    "type": "feature",
+    "description": "Criar infraestrutura base: src/ui/ com componentes shadcn internos, src/lib/utils.ts com cn(), e adicionar deps Radix ao package.json",
+    "score": 10,
+    "justification": "Pré-requisito absoluto de todas as demais fases — sem src/ui/ e cn() nada compila",
+    "sprint": 14,
+    "implemented": false
+  },
+  {
+    "id": "D-002",
+    "type": "feature",
+    "description": "Reescrever 6 componentes core (Chat, MessageList, MessageBubble, MessageInput, Markdown, StreamingIndicator) com shadcn + tokens Tailwind semânticos",
+    "score": 9,
+    "justification": "Base visual do chat — maior impacto perceptível no host; elimina classes ai-chat-* dos componentes mais usados",
+    "sprint": 14,
+    "implemented": false
+  },
+  {
+    "id": "D-003",
+    "type": "feature",
+    "description": "Remover styles.css (2345 linhas), remover export ./styles.css do package.json, e remover import no Hub main.tsx",
+    "score": 9,
+    "justification": "Completa o objetivo principal da PRP — sem essa limpeza o tema do host ainda não é herdado corretamente",
+    "sprint": 14,
+    "implemented": false
+  },
+  {
+    "id": "D-004",
+    "type": "feature",
+    "description": "Criar alert.tsx e collapsible.tsx no src/ui/ usando Radix primitives — Hub não os tem disponíveis para cópia",
+    "score": 8,
+    "justification": "Gap crítico: Hub só tem alert-dialog.tsx e não tem collapsible.tsx; esses componentes são necessários para Parts e AlertRenderer",
+    "sprint": 14,
+    "implemented": false
+  },
+  {
+    "id": "D-005",
+    "type": "feature",
+    "description": "Reescrever 3 parts (ReasoningBlock, ToolActivity, ToolResult) usando Collapsible do shadcn",
+    "score": 8,
+    "justification": "Alta visibilidade durante execução de tools; ReasoningBlock e ToolResult usam Collapsible que precisa ser criado do zero",
+    "sprint": 14,
+    "implemented": false
+  },
+  {
+    "id": "D-006",
+    "type": "feature",
+    "description": "Reescrever 6 display renderers simples: AlertRenderer, MetricCardRenderer, FileCardRenderer, PriceHighlightRenderer, SourcesListRenderer, CodeBlockRenderer",
+    "score": 7,
+    "justification": "Cobertura ampla com esforço médio — todos usam Card, Alert, Badge, Button que são simples de mapear",
+    "sprint": 14,
+    "implemented": false
+  },
+  {
+    "id": "D-007",
+    "type": "gap",
+    "description": "ChartRenderer: recharts não lê CSS vars nativamente — usar var(--chart-1..5) requer que o host defina esses tokens shadcn",
+    "score": 7,
+    "justification": "Risco técnico real: se host não define --chart-1..5, charts ficam sem cor. Solução documentada na spec mas exige atenção na implementação",
+    "sprint": 14,
+    "implemented": false
+  },
+  {
+    "id": "D-008",
+    "type": "feature",
+    "description": "Reescrever 7 display renderers médios: LinkPreview, ChoiceButtons, ComparisonTable, Spreadsheet, StepTimeline, ProgressSteps, MapView",
+    "score": 6,
+    "justification": "Cobertura importante do catálogo de display tools; esforço proporcional ao número de componentes",
+    "sprint": 14,
+    "implemented": false
+  },
+  {
+    "id": "D-009",
+    "type": "feature",
+    "description": "Reescrever 5 display renderers complexos: DataTable, Carousel, ProductCard, ChartRenderer, GalleryRenderer e ImageViewerRenderer",
+    "score": 6,
+    "justification": "Maior complexidade técnica — Carousel mantém embla-carousel-react, Chart mantém recharts, Gallery/ImageViewer usam Dialog para lightbox",
+    "sprint": 14,
+    "implemented": false
+  },
+  {
+    "id": "D-010",
+    "type": "gap",
+    "description": "ToolActivity usa text-green-500 para check de ferramenta concluída — única exceção de cor hardcoded documentada na spec",
+    "score": 5,
+    "justification": "Decisão de design pendente: manter text-green-500 (semântica visual universal de sucesso) ou usar text-primary (perde semântica). TASK.md deixa explicitamente para o implementador",
+    "sprint": 14,
+    "implemented": false
+  },
+  {
+    "id": "D-011",
+    "type": "gap",
+    "description": "AlertRenderer success variant: shadcn Alert só tem default e destructive — variant success usa border-green-500/50 (cor hardcoded menor)",
+    "score": 5,
+    "justification": "Gap semântico no shadcn padrão — border-green-500/50 é a solução proposta na spec; alternativa seria usar default sem distinção visual de sucesso",
+    "sprint": 14,
+    "implemented": false
+  },
+  {
+    "id": "D-012",
+    "type": "feature",
+    "description": "Validação pós-implementação: grep por hsl(, oklch(, #hex, rgb( nos arquivos .tsx do pacote para garantir zero cor hardcoded",
+    "score": 7,
+    "justification": "Requisito de qualidade explícito na spec; automatizável com um único comando grep — deve ser executado antes de considerar a implementação concluída",
+    "sprint": 14,
+    "implemented": false
+  },
+  {
+    "id": "D-013",
+    "type": "feature",
+    "description": "Criar progress.tsx no src/ui/ (não existe no Hub) para uso no ProgressStepsRenderer",
+    "score": 4,
+    "justification": "Componente simples sem dep Radix adicional (div com bg-primary); porém necessário para completar a fase de display renderers médios",
+    "sprint": 14,
+    "implemented": false
+  }
+]

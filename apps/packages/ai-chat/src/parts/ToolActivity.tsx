@@ -1,4 +1,5 @@
 import { Check, Download, FileText, FilePlus, FolderSearch, Globe, Loader2, Pencil, Search, Terminal, Wrench, type LucideIcon } from "lucide-react";
+import { cn } from "../lib/utils.js";
 
 export type ToolActivityState = "call" | "partial-call" | "result";
 
@@ -39,16 +40,16 @@ export function ToolActivity({ toolName, state, className, iconMap }: ToolActivi
   const displayName = formatToolName(toolName);
 
   return (
-    <div className={`ai-chat-tool-activity${className ? ` ${className}` : ""}`}>
-      <span className="ai-chat-tool-activity-icon" aria-hidden="true">
+    <div className={cn("flex items-center gap-2 rounded-md border border-border bg-muted/50 px-3 py-2 text-sm", className)}>
+      <span className="text-primary shrink-0" aria-hidden="true">
         <Icon size={14} />
       </span>
-      <span className="ai-chat-tool-activity-name">{displayName}</span>
-      <span className="ai-chat-tool-activity-status">
+      <span className="font-medium font-mono">{displayName}</span>
+      <span className="ml-auto text-muted-foreground">
         {isActive ? (
-          <Loader2 size={14} className="ai-chat-tool-activity-spinner" aria-label="Executando..." />
+          <Loader2 size={14} className="animate-spin" aria-label="Executando..." />
         ) : (
-          <Check size={14} className="ai-chat-tool-activity-check" aria-label="Concluido" />
+          <Check size={14} className="text-primary" aria-label="Concluido" />
         )}
       </span>
     </div>

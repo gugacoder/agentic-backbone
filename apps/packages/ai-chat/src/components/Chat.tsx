@@ -1,4 +1,5 @@
 import React from "react";
+import { cn } from "../lib/utils.js";
 import { ChatProvider } from "../hooks/ChatProvider.js";
 import { useChatContext } from "../hooks/ChatProvider.js";
 import { MessageList } from "./MessageList.js";
@@ -48,10 +49,9 @@ export function Chat({
   footer,
   className,
 }: ChatProps) {
-  const rootClass = ["ai-chat", className].filter(Boolean).join(" ");
   return (
     <ChatProvider endpoint={endpoint} token={token} sessionId={sessionId}>
-      <div className={rootClass}>
+      <div className={cn("flex flex-col h-full bg-background text-foreground", className)}>
         {header}
         <ChatContent displayRenderers={displayRenderers} placeholder={placeholder} />
         {footer}

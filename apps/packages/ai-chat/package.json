@@ -8,8 +8,7 @@
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./src/index.ts"
-    },
-    "./styles.css": "./src/styles.css"
+    }
   },
   "peerDependencies": {
     "react": "^18 || ^19",
@@ -18,13 +17,19 @@
   "dependencies": {
     "@ai-sdk/react": "^1",
     "@agentic-backbone/ai-sdk": "*",
+    "@radix-ui/react-collapsible": "^1",
+    "@radix-ui/react-dialog": "^1",
+    "@radix-ui/react-scroll-area": "^1",
+    "@radix-ui/react-separator": "^1",
+    "class-variance-authority": "^0.7",
     "clsx": "^2",
     "embla-carousel-react": "^8",
     "lucide-react": "^0.400.0",
     "react-markdown": "^9",
     "recharts": "^2",
     "rehype-highlight": "^7",
-    "remark-gfm": "^4"
+    "remark-gfm": "^4",
+    "tailwind-merge": "^3"
   },
   "devDependencies": {
     "@types/react": "^18",

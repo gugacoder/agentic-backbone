@@ -2,7 +2,6 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { App } from "./App";
 import "./index.css";
-import "@agentic-backbone/ai-chat/styles.css";
 
 // Apply persisted theme before first render to prevent flash
 try {

@@ -1,5 +1,7 @@
 import { useRef, useEffect } from "react";
 import { Send, Square } from "lucide-react";
+import { Button } from "../ui/button";
+import { cn } from "../lib/utils";
 
 export interface MessageInputProps {
   input: string;
@@ -52,7 +54,7 @@ export function MessageInput({
   }
 
   return (
-    <div className={["ai-chat-input", className].filter(Boolean).join(" ")}>
+    <div className={cn("flex items-end gap-3 rounded-xl border border-input bg-background p-2", className)}>
       <textarea
         ref={textareaRef}
         value={input}
@@ -63,26 +65,28 @@ export function MessageInput({
         style={{ minHeight: `${MIN_ROWS * LINE_HEIGHT_PX}px`, maxHeight: `${MAX_ROWS * LINE_HEIGHT_PX}px` }}
         disabled={isLoading}
         aria-label="Mensagem"
+        className="flex-1 bg-transparent border-none text-foreground text-sm resize-none outline-none placeholder:text-muted-foreground"
       />
       {isLoading && stop ? (
-        <button
+        <Button
           type="button"
-          className="ai-chat-input-btn ai-chat-input-btn-abort"
+          size="icon"
+          variant="destructive"
           onClick={stop}
           aria-label="Parar geração"
         >
-          <Square size={18} />
-        </button>
+          <Square className="h-4 w-4" />
+        </Button>
       ) : (
-        <button
+        <Button
           type="submit"
-          className="ai-chat-input-btn ai-chat-input-btn-send"
+          size="icon"
           onClick={(e) => handleSubmit(e)}
           disabled={!input.trim() || !!isLoading}
           aria-label="Enviar mensagem"
         >
-          <Send size={18} />
-        </button>
+          <Send className="h-4 w-4" />
+        </Button>
       )}
     </div>
   );
