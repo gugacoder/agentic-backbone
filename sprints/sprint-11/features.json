@@ -48,7 +48,7 @@
     "id": "F-175",
     "name": "Display Tools como AI SDK tool()",
     "description": "Criar apps/packages/ai-sdk/src/tools/display.ts com createDisplayTools() retornando 19 tools Vercel AI SDK. Cada tool tem: description em pt-BR, parameters importado de display-schemas.ts, execute retornando { ...args, _display: true }. Descriptions das 19 tools estao no PRP-14 milestone (secao 2.1). Registrar em agent.ts mergeando display tools em allTools apos codingTools e antes de mcpTools. Nenhum guard condicional por modo.",
-    "status": "pending",
+    "status": "passing",
     "priority": 3,
     "agent": "coder",
     "task": "vibe-code",
@@ -65,13 +65,14 @@
       "Assinatura de runAiAgent() nao foi alterada",
       "npm run build:packages compila sem erros"
     ],
-    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-4/worktree/sprints/sprint-11/3-prps/PRP-14A-display-tools-ai-sdk.md"
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-4/worktree/sprints/sprint-11/3-prps/PRP-14A-display-tools-ai-sdk.md",
+    "completed_at": "2026-03-29T06:30:00.000Z"
   },
   {
     "id": "F-176",
     "name": "Display Exports no index.ts",
     "description": "Adicionar re-exports em apps/packages/ai-sdk/src/index.ts: DisplayToolRegistry, DisplayToolName (type), 19 schemas Zod, 19 tipos inferidos (com keyword type), e createDisplayTools de tools/display.js. Nao alterar exports existentes — apenas adicionar. Usar type keyword para re-export de tipos (isolatedModules).",
-    "status": "blocked",
+    "status": "pending",
     "priority": 4,
     "agent": "coder",
     "task": "vibe-code",
@@ -94,7 +95,7 @@
     "id": "F-178",
     "name": "DataStream Route — ?format=datastream",
     "description": "Adicionar suporte a ?format=datastream na rota POST /conversations/:sessionId/messages em apps/backbone/src/routes/conversations.ts. Quando format=datastream, emitir SSE usando encodeDataStreamEvent() de datastream.ts, ignorando eventos null. Branch padrao (sem format) continua identico ao codigo atual. Nao criar rota separada — mesmo endpoint, formato de saida diferente. Backward compatible.",
-    "status": "blocked",
+    "status": "pending",
     "priority": 5,
     "agent": "coder",
     "task": "vibe-code",
