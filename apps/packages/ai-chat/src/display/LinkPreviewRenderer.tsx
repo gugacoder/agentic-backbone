@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { DisplayLink } from "@agentic-backbone/ai-sdk";
-import { Globe, ExternalLink } from "lucide-react";
+import { Globe } from "lucide-react";
+import { Card } from "../ui/card";
 
 function getDomain(url: string, domainProp?: string): string {
   if (domainProp) return domainProp;
@@ -29,47 +30,43 @@ export function LinkPreviewRenderer({
       href={url}
       target="_blank"
       rel="noopener noreferrer"
-      className="ai-chat-display ai-chat-display-link"
       aria-label={`Link: ${title}`}
     >
-      {image && !imgError && (
-        <div className="ai-chat-display-link-image-wrap">
-          <img
-            src={image}
-            alt={title}
-            className="ai-chat-display-link-image"
-            onError={() => setImgError(true)}
-          />
-        </div>
-      )}
-
-      <div className="ai-chat-display-link-body">
-        <div className="ai-chat-display-link-domain">
-          {favicon && !faviconError ? (
+      <Card className="overflow-hidden hover:bg-muted/50 transition-colors">
+        {image && !imgError && (
+          <div className="aspect-video overflow-hidden">
             <img
-              src={favicon}
-              alt=""
-              className="ai-chat-display-link-favicon"
-              onError={() => setFaviconError(true)}
-              aria-hidden="true"
+              src={image}
+              alt={title}
+              className="w-full h-full object-cover"
+              onError={() => setImgError(true)}
             />
-          ) : (
-            <Globe size={12} className="ai-chat-display-link-favicon-fallback" aria-hidden="true" />
-          )}
-          <span>{displayDomain}</span>
-        </div>
-
-        <h3 className="ai-chat-display-link-title">{title}</h3>
-
-        {description && (
-          <p className="ai-chat-display-link-description">{description}</p>
+          </div>
         )}
 
-        <span className="ai-chat-display-link-cta" aria-hidden="true">
-          <ExternalLink size={12} />
-          Abrir link
-        </span>
-      </div>
+        <div className="p-3 space-y-1">
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            {favicon && !faviconError ? (
+              <img
+                src={favicon}
+                alt=""
+                className="w-3 h-3 rounded-sm"
+                onError={() => setFaviconError(true)}
+                aria-hidden="true"
+              />
+            ) : (
+              <Globe size={12} aria-hidden="true" className="shrink-0" />
+            )}
+            <span>{displayDomain}</span>
+          </div>
+
+          <p className="font-medium text-foreground text-sm">{title}</p>
+
+          {description && (
+            <p className="text-xs text-muted-foreground line-clamp-2">{description}</p>
+          )}
+        </div>
+      </Card>
     </a>
   );
 }
