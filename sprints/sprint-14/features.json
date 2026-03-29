@@ -217,7 +217,7 @@
     "id": "F-209",
     "name": "ReasoningBlock.tsx com Collapsible shadcn",
     "description": "Reescrever ReasoningBlock.tsx: usar Collapsible/CollapsibleTrigger/CollapsibleContent do shadcn. Container bg-muted/50 border border-border rounded-md. Trigger com Brain icon, texto 'Raciocinio', chevron. Conteudo com max-h-96 overflow-y-auto text-muted-foreground. Manter logica de expanded state e auto-colapso apos streaming.",
-    "status": "pending",
+    "status": "passing",
     "priority": 11,
     "agent": "coder",
     "task": "vibe-code",
@@ -232,7 +232,8 @@
       "Icones Brain, ChevronDown, ChevronRight de lucide-react",
       "Logica de expanded state e auto-colapso mantida"
     ],
-    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-7/worktree/sprints/sprint-14/3-prps/PRP-16C-parts-shadcn.md"
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-7/worktree/sprints/sprint-14/3-prps/PRP-16C-parts-shadcn.md",
+    "completed_at": "2026-03-29T22:50:00Z"
   },
   {
     "id": "F-210",
