@@ -3,10 +3,11 @@
     "id": "F-180",
     "name": "Scaffold do Pacote ai-chat",
     "description": "Criar apps/packages/ai-chat/ com package.json (@agentic-backbone/ai-chat), tsconfig.json, estrutura src/ com subpastas hooks/, parts/, display/, components/ e src/index.ts barrel export vazio. Registrar no workspace raiz se glob nao cobrir. NAO instalar deps, NAO criar componentes — scaffold apenas.",
-    "status": "pending",
+    "status": "passing",
     "priority": 1,
     "agent": "coder",
     "task": "vibe-code",
+    "completed_at": "2026-03-29T06:20:00Z",
     "dependencies": [],
     "tests": [
       "Diretorio apps/packages/ai-chat/ existe com package.json e tsconfig.json",
@@ -21,11 +22,13 @@
     "id": "F-181",
     "name": "ChatProvider + useBackboneChat",
     "description": "Criar src/hooks/useBackboneChat.ts (chama useChat do @ai-sdk/react com URL DataStream incluindo ?format=datastream, header Authorization Bearer) e src/hooks/ChatProvider.tsx (React context provider que expoe estado do chat via useChatContext). Reexportar tipos Message do @ai-sdk/react.",
-    "status": "pending",
+    "status": "blocked",
     "priority": 3,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-180"],
+    "dependencies": [
+      "F-180"
+    ],
     "tests": [
       "useBackboneChat chama useChat com URL correta incluindo ?format=datastream",
       "Header Authorization injetado automaticamente via options.token",
@@ -39,11 +42,14 @@
     "id": "F-182",
     "name": "Markdown + StreamingIndicator",
     "description": "Criar src/components/Markdown.tsx (react-markdown + remark-gfm + rehype-highlight, links target=_blank, tabelas com overflow-x, classes .ai-chat-markdown/.ai-chat-code-block/.ai-chat-inline-code) e src/components/StreamingIndicator.tsx (cursor piscante com animacao CSS ai-chat-blink, classe .ai-chat-cursor, aria-label).",
-    "status": "pending",
+    "status": "blocked",
     "priority": 4,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-180", "F-183"],
+    "dependencies": [
+      "F-180",
+      "F-183"
+    ],
     "tests": [
       "Markdown renderiza GFM e syntax highlighting com classes .ai-chat-*",
       "Links abrem em nova aba com target=_blank rel=noopener noreferrer",
@@ -57,11 +63,13 @@
     "id": "F-183",
     "name": "styles.css com CSS Variables",
     "description": "Criar src/styles.css com CSS variables no namespace .ai-chat (cores, tipografia, espacamento, reasoning, bubbles). Dark mode via .ai-chat.dark e .dark .ai-chat. Animacao ai-chat-blink. Estilos base para .ai-chat-markdown, .ai-chat-code-block, .ai-chat-reasoning, .ai-chat-tool-activity, .ai-chat-bubble, .ai-chat-input, .ai-chat-display-*. Formato hsl compativel com shadcn.",
-    "status": "pending",
+    "status": "blocked",
     "priority": 2,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-180"],
+    "dependencies": [
+      "F-180"
+    ],
     "tests": [
       "src/styles.css existe com CSS variables documentadas",
       "Todas as cores via CSS variables — nenhuma cor hardcoded",
@@ -76,11 +84,14 @@
     "id": "F-184",
     "name": "ReasoningBlock",
     "description": "Criar src/parts/ReasoningBlock.tsx: bloco colapsavel com header clicavel (icone Brain + 'Raciocinio' + chevron), auto-expand durante isStreaming=true, auto-colapso quando streaming para. Body com texto simples (NAO markdown), scroll vertical se ultrapassar --ai-chat-reasoning-max-height (200px). Classe .ai-chat-reasoning com borda lateral esquerda sutil.",
-    "status": "pending",
+    "status": "blocked",
     "priority": 5,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-180", "F-183"],
+    "dependencies": [
+      "F-180",
+      "F-183"
+    ],
     "tests": [
       "ReasoningBlock renderiza texto de reasoning com icone Brain",
       "Bloco expandido durante streaming (isStreaming=true)",
@@ -95,11 +106,14 @@
     "id": "F-185",
     "name": "ToolActivity",
     "description": "Criar src/parts/ToolActivity.tsx: layout [icone da tool] [nome da tool] [spinner ou check]. Spinner (Loader2 rotate) durante state call/partial-call, check verde em state result. Nome formatado snake_case para Title Case. Mapa de icones defaultToolIconMap exportado (WebSearch->Globe, Bash->Terminal, Read->FileText, Edit->Pencil, Write->FilePlus, Grep->Search, Glob->FolderSearch, WebFetch->Download, default->Wrench).",
-    "status": "pending",
+    "status": "blocked",
     "priority": 6,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-180", "F-183"],
+    "dependencies": [
+      "F-180",
+      "F-183"
+    ],
     "tests": [
       "ToolActivity renderiza nome da tool com icone contextual do mapa",
       "Spinner durante state === 'call' ou 'partial-call'",
@@ -114,11 +128,14 @@
     "id": "F-186",
     "name": "ToolResult",
     "description": "Criar src/parts/ToolResult.tsx: header clicavel [CheckCircle/AlertCircle] [toolName] [chevron toggle], colapsado por padrao. Body com <pre> JSON.stringify(result, null, 2) e classe .ai-chat-code-block. Erro: header com cor --ai-chat-destructive e AlertCircle. Sucesso: --ai-chat-success e CheckCircle. Max-height no body com scroll. JSON.stringify com try/catch, fallback para String(result).",
-    "status": "pending",
+    "status": "blocked",
     "priority": 7,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-180", "F-183"],
+    "dependencies": [
+      "F-180",
+      "F-183"
+    ],
     "tests": [
       "ToolResult renderiza resultado formatado como JSON",
       "Colapsado por padrao, expansivel via click no header",
@@ -133,11 +150,14 @@
     "id": "F-187",
     "name": "8 Display Renderers Simples",
     "description": "Criar 8 renderers em src/display/: AlertRenderer (banner com 4 variantes), MetricCardRenderer (label+value+trend+seta), PriceHighlightRenderer (Intl.NumberFormat pt-BR currency), FileCardRenderer (icone por tipo+nome+tamanho), CodeBlockRenderer (header language+copiar), SourcesListRenderer (favicon+titulo clicavel+snippet), StepTimelineRenderer (etapas+icones status), ProgressStepsRenderer (barra+steps+percentual). Props = tipos Zod inferidos do @agentic-backbone/ai-sdk.",
-    "status": "pending",
+    "status": "blocked",
     "priority": 8,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-180", "F-183"],
+    "dependencies": [
+      "F-180",
+      "F-183"
+    ],
     "tests": [
       "8 arquivos de renderer existem em src/display/",
       "AlertRenderer diferencia 4 variantes visuais (info, warning, error, success)",
@@ -155,11 +175,14 @@
     "id": "F-188",
     "name": "Display Renderers Chart + Carousel",
     "description": "Criar ChartRenderer.tsx (recharts: bar, line, pie, area, donut via PieChart innerRadius, ResponsiveContainer obrigatorio, height via CSS var --ai-chat-chart-height 300px, Tooltip com formatacao, 8 cores padrao) e CarouselRenderer.tsx (embla-carousel-react com drag/touch, setas prev/next desktop, cards com imagem+titulo+subtitulo+preco BRL, dots indicadores, responsivo 1/2/3 cards).",
-    "status": "pending",
+    "status": "blocked",
     "priority": 9,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-180", "F-183"],
+    "dependencies": [
+      "F-180",
+      "F-183"
+    ],
     "tests": [
       "ChartRenderer renderiza 5 tipos de grafico (bar, line, pie, area, donut)",
       "Charts responsivos via ResponsiveContainer — nunca hardcodar width",
@@ -175,11 +198,14 @@
     "id": "F-189",
     "name": "9 Display Renderers Compostos",
     "description": "Criar 9 renderers em src/display/: ProductCardRenderer (imagem+preco BRL+rating estrelas+badges+botao), ComparisonTableRenderer (lado a lado+destaque melhor valor), DataTableRenderer (colunas tipadas+sortavel por header click), SpreadsheetRenderer (grid readonly+formatacao monetaria/percentual), GalleryRenderer (grid/masonry+click amplia), ImageViewerRenderer (imagem+caption+dialog zoom nativo), LinkPreviewRenderer (OG image+titulo+dominio), MapViewRenderer (iframe OSM+pins+lista), ChoiceButtonsRenderer (3 variantes: buttons/cards/list+onChoiceSelect callback). Props = tipos Zod do ai-sdk.",
-    "status": "pending",
+    "status": "blocked",
     "priority": 10,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-180", "F-183"],
+    "dependencies": [
+      "F-180",
+      "F-183"
+    ],
     "tests": [
       "9 arquivos de renderer existem em src/display/",
       "ProductCardRenderer exibe preco BRL e rating estrelas",
@@ -198,11 +224,15 @@
     "id": "F-190",
     "name": "Display Registry",
     "description": "Criar src/display/index.ts (barrel export de todos os 19 renderers) e src/display/registry.ts com defaultDisplayRenderers (Record<DisplayToolName, ComponentType> mapeando todas as 19 display tools) e resolveDisplayRenderer(toolName, overrides?) que prioriza overrides sobre defaults. DisplayRendererMap eh Partial<Record<DisplayToolName, ComponentType>>.",
-    "status": "pending",
+    "status": "blocked",
     "priority": 11,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-187", "F-188", "F-189"],
+    "dependencies": [
+      "F-187",
+      "F-188",
+      "F-189"
+    ],
     "tests": [
       "defaultDisplayRenderers mapeia todas as 19 DisplayToolName",
       "resolveDisplayRenderer prioriza overrides sobre defaults",
@@ -217,11 +247,17 @@
     "id": "F-191",
     "name": "PartRenderer",
     "description": "Criar src/parts/PartRenderer.tsx: switch central que mapeia part.type ao componente correto. text->Markdown, reasoning->ReasoningBlock, tool-invocation com prefixo display_->resolveDisplayRenderer (com prop displayRenderers para overrides), tool-invocation funcional state=result->ToolResult, tool-invocation state=call/partial-call->ToolActivity. Default retorna null. Puramente funcional, sem estado interno.",
-    "status": "pending",
+    "status": "blocked",
     "priority": 12,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-182", "F-184", "F-185", "F-186", "F-190"],
+    "dependencies": [
+      "F-182",
+      "F-184",
+      "F-185",
+      "F-186",
+      "F-190"
+    ],
     "tests": [
       "PartRenderer renderiza corretamente parts text, reasoning, tool-invocation",
       "Display tools (prefixo display_) resolvem para o renderer correto via registry",
@@ -236,11 +272,14 @@
     "id": "F-192",
     "name": "MessageBubble + MessageList + MessageInput",
     "description": "Criar 3 componentes em src/components/: MessageBubble.tsx (itera message.parts via PartRenderer, user direita/assistant esquerda, fallback para message.content se parts vazio, StreamingIndicator quando streaming), MessageList.tsx (auto-scroll inteligente com threshold 100px, ultima msg assistant isStreaming=isLoading, empty state 'Envie uma mensagem para comecar'), MessageInput.tsx (textarea auto-expand min 1 max 6 rows, Enter envia, Shift+Enter nova linha, botao enviar/abort, focus automatico).",
-    "status": "pending",
+    "status": "blocked",
     "priority": 13,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-191", "F-182"],
+    "dependencies": [
+      "F-191",
+      "F-182"
+    ],
     "tests": [
       "MessageBubble itera message.parts via PartRenderer",
       "MessageBubble diferencia visualmente user (direita) vs assistant (esquerda)",
@@ -258,11 +297,14 @@
     "id": "F-193",
     "name": "Chat.tsx + Exports Finais",
     "description": "Criar src/components/Chat.tsx: componente auto-suficiente com props endpoint/token/sessionId/displayRenderers?/placeholder?/header?/footer?/className?. Usa ChatProvider internamente, classe .ai-chat no wrapper root, ChatContent separado (consome useChatContext). Atualizar src/index.ts com TODOS os exports organizados por categoria: componentes principais, composicao, parts, display renderers, registry, hooks.",
-    "status": "pending",
+    "status": "blocked",
     "priority": 14,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-181", "F-192"],
+    "dependencies": [
+      "F-181",
+      "F-192"
+    ],
     "tests": [
       "<Chat endpoint token sessionId /> renderiza chat completo e funcional",
       "Props opcionais displayRenderers, placeholder, header, footer funcionam",
@@ -279,11 +321,13 @@
     "id": "F-194",
     "name": "Registrar Workspace + Install Deps",
     "description": "Verificar que glob apps/packages/* no package.json raiz cobre ai-chat. Executar npm install para resolver deps. Verificar symlink node_modules/@agentic-backbone/ai-chat. Adicionar dependencia '@agentic-backbone/ai-chat': '*' no apps/hub/package.json e apps/chat/package.json. Verificar import cross-workspace funciona.",
-    "status": "pending",
+    "status": "blocked",
     "priority": 15,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-193"],
+    "dependencies": [
+      "F-193"
+    ],
     "tests": [
       "npm ls @agentic-backbone/ai-chat mostra pacote resolvido",
       "node_modules/@agentic-backbone/ai-chat eh symlink correto",
@@ -297,11 +341,13 @@
     "id": "F-195",
     "name": "Refatorar Hub para ai-chat",
     "description": "Modificar apps/hub/src/components/conversations/conversation-chat.tsx para usar <Chat /> do @agentic-backbone/ai-chat. Manter header, takeover, feedback do Hub. Importar styles.css em apps/hub/src/main.tsx. Remover 5 arquivos redundantes: chat/message-bubble.tsx, chat/message-list.tsx, chat/message-input.tsx, chat/streaming-indicator.tsx, lib/chat-stream.ts.",
-    "status": "pending",
+    "status": "blocked",
     "priority": 16,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-194"],
+    "dependencies": [
+      "F-194"
+    ],
     "tests": [
       "conversation-chat.tsx usa <Chat /> do pacote @agentic-backbone/ai-chat",
       "Header, takeover e feedback do Hub permanecem funcionais",
@@ -317,11 +363,13 @@
     "id": "F-196",
     "name": "Configuracao GitHub Packages",
     "description": "Adicionar publishConfig (registry npm.pkg.github.com) e repository nos package.json de ai-sdk e ai-chat. Criar .npmrc na raiz com @agentic-backbone:registry=https://npm.pkg.github.com (SEM tokens). Adicionar scripts version:packages e publish:packages na raiz. Criar CHANGELOG.md em cada pacote. NAO publicar — apenas configurar.",
-    "status": "pending",
+    "status": "blocked",
     "priority": 17,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-194"],
+    "dependencies": [
+      "F-194"
+    ],
     "tests": [
       "publishConfig.registry aponta para GitHub Packages nos dois pacotes",
       "repository com URL e directory corretos nos dois pacotes",
