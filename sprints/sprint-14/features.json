@@ -630,7 +630,7 @@
     "id": "F-229",
     "name": "GalleryRenderer.tsx com Dialog lightbox",
     "description": "Reescrever GalleryRenderer.tsx: grid grid-cols-2 md:grid-cols-3 gap-2 para thumbnails. Dialog do shadcn para lightbox. Hover overlay bg-background/50 com ZoomIn icon. DialogContent max-w-4xl p-0 bg-background/95. Captions text-sm text-muted-foreground. Zero classe ai-chat-display-gallery.",
-    "status": "pending",
+    "status": "passing",
     "priority": 30,
     "agent": "coder",
     "task": "vibe-code",
@@ -646,7 +646,8 @@
       "Zero classe ai-chat-display-gallery* no arquivo",
       "Zero hsl(), oklch(), #hex, rgb() no arquivo"
     ],
-    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-7/worktree/sprints/sprint-14/3-prps/PRP-16E-display-complexos-shadcn.md"
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-7/worktree/sprints/sprint-14/3-prps/PRP-16E-display-complexos-shadcn.md",
+    "completed_at": "2026-03-29T23:59:00Z"
   },
   {
     "id": "F-230",
