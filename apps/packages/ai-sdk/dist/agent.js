@@ -360,7 +360,7 @@ export async function* runAiAgent(prompt, options) {
                         type: "tool-call",
                         toolCallId: part.toolCallId,
                         toolName: part.toolName,
-                        args: part.args,
+                        args: part.input ?? part.args ?? {},
                     };
                 }
                 else if (part.type === "tool-result") {
@@ -368,7 +368,7 @@ export async function* runAiAgent(prompt, options) {
                         type: "tool-result",
                         toolCallId: part.toolCallId,
                         toolName: part.toolName,
-                        result: part.result,
+                        result: part.output ?? part.result,
                     };
                 }
                 else if (part.type === "error") {

@@ -416,14 +416,14 @@ export async function* runAiAgent(
             type: "tool-call",
             toolCallId: (part as any).toolCallId,
             toolName: (part as any).toolName,
-            args: (part as any).args,
+            args: (part as any).input ?? (part as any).args ?? {},
           };
         } else if (part.type === "tool-result") {
           yield {
             type: "tool-result",
             toolCallId: (part as any).toolCallId,
             toolName: (part as any).toolName,
-            result: (part as any).result,
+            result: (part as any).output ?? (part as any).result,
           };
         } else if (part.type === "error") {
           const errMsg = (part as any).error?.message ?? JSON.stringify((part as any).error ?? part);
