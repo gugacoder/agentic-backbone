@@ -1,5 +1,7 @@
 import type { DisplayPrice } from "@agentic-backbone/ai-sdk";
 import { ExternalLink } from "lucide-react";
+import { Badge } from "../ui/badge";
+import { Card } from "../ui/card";
 
 function formatPrice(value: number, currency: string): string {
   return new Intl.NumberFormat("pt-BR", {
@@ -10,23 +12,25 @@ function formatPrice(value: number, currency: string): string {
 
 export function PriceHighlightRenderer({ value, label, context, source, badge }: DisplayPrice) {
   return (
-    <div className="ai-chat-display ai-chat-display-price">
-      <p className="ai-chat-display-price-label">{label}</p>
-      <p className="ai-chat-display-price-value">
-        {formatPrice(value.value, value.currency)}
-      </p>
-      {badge && (
-        <span className={`ai-chat-display-price-badge ai-chat-display-price-badge--${badge.variant}`}>
-          {badge.label}
+    <Card className="p-4 space-y-1">
+      <p className="text-sm text-muted-foreground">{label}</p>
+      <div className="flex items-baseline gap-2">
+        <span className="text-2xl font-bold text-foreground">
+          {formatPrice(value.value, value.currency)}
         </span>
-      )}
-      {context && <p className="ai-chat-display-price-context">{context}</p>}
+        {badge && (
+          <Badge variant="destructive">
+            {badge.label}
+          </Badge>
+        )}
+      </div>
+      {context && <p className="text-sm text-muted-foreground">{context}</p>}
       {source && (
         <a
           href={source.url}
           target="_blank"
           rel="noopener noreferrer"
-          className="ai-chat-display-price-source"
+          className="flex items-center gap-1.5 text-xs text-primary hover:underline"
         >
           {source.favicon && (
             <img src={source.favicon} alt="" width={14} height={14} aria-hidden="true" />
@@ -35,6 +39,6 @@ export function PriceHighlightRenderer({ value, label, context, source, badge }:
           <ExternalLink size={12} aria-hidden="true" />
         </a>
       )}
-    </div>
+    </Card>
   );
 }

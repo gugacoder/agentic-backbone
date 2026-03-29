@@ -1,6 +1,16 @@
 import { useState } from "react";
 import type { DisplayComparison } from "@agentic-backbone/ai-sdk";
 import { CheckCircle } from "lucide-react";
+import { ScrollArea, ScrollBar } from "../ui/scroll-area.js";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "../ui/table.js";
+import { cn } from "../lib/utils.js";
 
 function formatMoney(value: number, currency = "BRL") {
   return new Intl.NumberFormat("pt-BR", { style: "currency", currency }).format(value);
@@ -20,98 +30,103 @@ export function ComparisonTableRenderer({ title, items, attributes }: DisplayCom
   const highlightIdx = bestIdx ?? lowestPriceIdx;
 
   return (
-    <div className="ai-chat-display ai-chat-display-comparison">
-      {title && <h3 className="ai-chat-display-comparison-title">{title}</h3>}
+    <div className="space-y-2">
+      {title && <h3 className="text-sm font-semibold text-foreground">{title}</h3>}
 
-      <div className="ai-chat-display-comparison-scroll">
-        <table className="ai-chat-display-comparison-table">
-          <thead>
-            <tr>
-              <th className="ai-chat-display-comparison-th ai-chat-display-comparison-th--attr">
-                Atributo
-              </th>
+      <ScrollArea className="w-full">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="font-semibold text-center">Atributo</TableHead>
               {items.map((item, i) => (
-                <th
+                <TableHead
                   key={i}
-                  className={`ai-chat-display-comparison-th ai-chat-display-comparison-th--product${i === highlightIdx ? " ai-chat-display-comparison-th--best" : ""}`}
+                  className={cn(
+                    "font-semibold text-center",
+                    i === highlightIdx && "bg-muted"
+                  )}
                 >
                   <button
-                    className="ai-chat-display-comparison-product-header"
+                    className="flex flex-col items-center gap-0.5 w-full cursor-pointer hover:opacity-80"
                     onClick={() => setBestIdx(i === bestIdx ? null : i)}
                     title="Marcar como melhor"
                   >
                     {i === highlightIdx && (
-                      <CheckCircle size={14} className="ai-chat-display-comparison-best-icon" />
+                      <CheckCircle className="h-3.5 w-3.5 text-primary" />
                     )}
-                    {item.title}
+                    <span className="font-semibold">{item.title}</span>
                     {item.price && (
-                      <span className="ai-chat-display-comparison-price">
+                      <span className="text-xs text-muted-foreground font-normal">
                         {formatMoney(item.price.value, item.price.currency)}
                       </span>
                     )}
                   </button>
-                </th>
+                </TableHead>
               ))}
-            </tr>
-          </thead>
+            </TableRow>
+          </TableHeader>
 
-          <tbody>
+          <TableBody>
             {attributes && attributes.length > 0 ? (
               attributes.map((attr, ri) => (
-                <tr key={ri} className="ai-chat-display-comparison-row">
-                  <td className="ai-chat-display-comparison-td ai-chat-display-comparison-td--attr">
-                    {attr.label}
-                  </td>
+                <TableRow key={ri}>
+                  <TableCell className="font-medium">{attr.label}</TableCell>
                   {items.map((item, ci) => {
                     const val = (item as Record<string, unknown>)[attr.key];
                     return (
-                      <td
+                      <TableCell
                         key={ci}
-                        className={`ai-chat-display-comparison-td${ci === highlightIdx ? " ai-chat-display-comparison-td--best" : ""}`}
+                        className={cn(
+                          "text-center",
+                          ci === highlightIdx && "bg-muted/50"
+                        )}
                       >
                         {val === true ? "✓" : val === false ? "✗" : val != null ? String(val) : "—"}
-                      </td>
+                      </TableCell>
                     );
                   })}
-                </tr>
+                </TableRow>
               ))
             ) : (
               <>
                 {items.some((i) => i.rating) && (
-                  <tr className="ai-chat-display-comparison-row">
-                    <td className="ai-chat-display-comparison-td ai-chat-display-comparison-td--attr">
-                      Avaliação
-                    </td>
+                  <TableRow>
+                    <TableCell className="font-medium">Avaliação</TableCell>
                     {items.map((item, ci) => (
-                      <td
+                      <TableCell
                         key={ci}
-                        className={`ai-chat-display-comparison-td${ci === highlightIdx ? " ai-chat-display-comparison-td--best" : ""}`}
+                        className={cn(
+                          "text-center",
+                          ci === highlightIdx && "bg-muted/50"
+                        )}
                       >
                         {item.rating ? `${item.rating.score}/5 (${item.rating.count})` : "—"}
-                      </td>
+                      </TableCell>
                     ))}
-                  </tr>
+                  </TableRow>
                 )}
                 {items.some((i) => i.description) && (
-                  <tr className="ai-chat-display-comparison-row">
-                    <td className="ai-chat-display-comparison-td ai-chat-display-comparison-td--attr">
-                      Descrição
-                    </td>
+                  <TableRow>
+                    <TableCell className="font-medium">Descrição</TableCell>
                     {items.map((item, ci) => (
-                      <td
+                      <TableCell
                         key={ci}
-                        className={`ai-chat-display-comparison-td${ci === highlightIdx ? " ai-chat-display-comparison-td--best" : ""}`}
+                        className={cn(
+                          "text-center",
+                          ci === highlightIdx && "bg-muted/50"
+                        )}
                       >
                         {item.description ?? "—"}
-                      </td>
+                      </TableCell>
                     ))}
-                  </tr>
+                  </TableRow>
                 )}
               </>
             )}
-          </tbody>
-        </table>
-      </div>
+          </TableBody>
+        </Table>
+        <ScrollBar orientation="horizontal" />
+      </ScrollArea>
     </div>
   );
 }

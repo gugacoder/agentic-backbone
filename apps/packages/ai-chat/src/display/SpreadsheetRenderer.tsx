@@ -1,4 +1,14 @@
 import type { DisplaySpreadsheet } from "@agentic-backbone/ai-sdk";
+import { ScrollArea, ScrollBar } from "../ui/scroll-area.js";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "../ui/table.js";
+import { cn } from "../lib/utils.js";
 
 function formatCell(
   value: string | number | null,
@@ -28,46 +38,49 @@ export function SpreadsheetRenderer({ title, headers, rows, format }: DisplaySpr
   const percentColumns = format?.percentColumns ?? [];
 
   return (
-    <div className="ai-chat-display ai-chat-display-spreadsheet">
-      {title && <h3 className="ai-chat-display-spreadsheet-title">{title}</h3>}
+    <div className="space-y-2">
+      {title && <h3 className="text-sm font-semibold text-foreground">{title}</h3>}
 
-      <div className="ai-chat-display-spreadsheet-scroll">
-        <table className="ai-chat-display-spreadsheet-table" aria-readonly="true">
-          <thead>
-            <tr>
-              <th className="ai-chat-display-spreadsheet-th ai-chat-display-spreadsheet-th--rownum" aria-label="Linha" />
+      <ScrollArea className="w-full">
+        <Table aria-readonly="true">
+          <TableHeader>
+            <TableRow>
+              <TableHead className="text-muted-foreground font-normal text-center w-10" aria-label="Linha" />
               {headers.map((h, i) => (
-                <th key={i} className="ai-chat-display-spreadsheet-th">
+                <TableHead key={i} className="font-semibold">
                   {h}
-                </th>
+                </TableHead>
               ))}
-            </tr>
-          </thead>
+            </TableRow>
+          </TableHeader>
 
-          <tbody>
+          <TableBody>
             {rows.map((row, ri) => (
-              <tr key={ri} className="ai-chat-display-spreadsheet-row">
-                <td className="ai-chat-display-spreadsheet-td ai-chat-display-spreadsheet-td--rownum">
+              <TableRow key={ri}>
+                <TableCell className="text-center text-xs text-muted-foreground select-none">
                   {ri + 1}
-                </td>
+                </TableCell>
                 {row.map((cell, ci) => {
                   const isMoney = moneyColumns.includes(ci);
                   const isPercent = percentColumns.includes(ci);
                   const isNumber = typeof cell === "number";
                   return (
-                    <td
+                    <TableCell
                       key={ci}
-                      className={`ai-chat-display-spreadsheet-td${isMoney ? " ai-chat-display-spreadsheet-td--money" : ""}${isPercent ? " ai-chat-display-spreadsheet-td--percent" : ""}${isNumber && !isMoney && !isPercent ? " ai-chat-display-spreadsheet-td--number" : ""}`}
+                      className={cn(
+                        (isMoney || isPercent || isNumber) && "text-right font-mono text-sm"
+                      )}
                     >
                       {formatCell(cell, ci, moneyColumns, percentColumns)}
-                    </td>
+                    </TableCell>
                   );
                 })}
-              </tr>
+              </TableRow>
             ))}
-          </tbody>
-        </table>
-      </div>
+          </TableBody>
+        </Table>
+        <ScrollBar orientation="horizontal" />
+      </ScrollArea>
     </div>
   );
 }

@@ -9,27 +9,40 @@ import {
   PieChart,
   Pie,
   Cell,
+  CartesianGrid,
   Tooltip,
   ResponsiveContainer,
   XAxis,
   YAxis,
 } from "recharts";
+import { Card } from "../ui/card";
 
-const DEFAULT_COLORS = [
-  "var(--ai-chat-chart-color-1, #6366f1)",
-  "var(--ai-chat-chart-color-2, #22d3ee)",
-  "var(--ai-chat-chart-color-3, #f59e0b)",
-  "var(--ai-chat-chart-color-4, #10b981)",
-  "var(--ai-chat-chart-color-5, #f43f5e)",
-  "var(--ai-chat-chart-color-6, #8b5cf6)",
-  "var(--ai-chat-chart-color-7, #0ea5e9)",
-  "var(--ai-chat-chart-color-8, #84cc16)",
+const CHART_COLORS = [
+  "var(--chart-1)",
+  "var(--chart-2)",
+  "var(--chart-3)",
+  "var(--chart-4)",
+  "var(--chart-5)",
 ];
+
+const AXIS_PROPS = {
+  stroke: "var(--border)",
+  tick: { fill: "var(--muted-foreground)", fontSize: 12 },
+};
+
+const TOOLTIP_STYLE = {
+  contentStyle: {
+    background: "var(--card)",
+    border: "1px solid var(--border)",
+    color: "var(--card-foreground)",
+    borderRadius: "0.375rem",
+    fontSize: "0.75rem",
+  },
+};
 
 function formatValue(value: number, format?: DisplayChart["format"]): string {
   if (!format) return String(value);
   const locale = format.locale ?? "pt-BR";
-  // Detect monetary by prefix containing currency symbols
   const prefix = format.prefix ?? "";
   const suffix = format.suffix ?? "";
   if (prefix.includes("R$") || prefix.includes("$") || prefix.includes("€")) {
@@ -50,8 +63,12 @@ function formatValue(value: number, format?: DisplayChart["format"]): string {
   return `${prefix}${formatted}${suffix}`;
 }
 
-function makeTooltipFormatter(format?: DisplayChart["format"]) {
-  return (value: number): [string, string] => [formatValue(value, format), ""];
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function makeTooltipFormatter(format?: DisplayChart["format"]): any {
+  return (value: number | string | undefined): [string, string] => [
+    typeof value === "number" ? formatValue(value, format) : String(value ?? ""),
+    "",
+  ];
 }
 
 export function ChartRenderer({ type, title, data, format }: DisplayChart) {
@@ -64,14 +81,14 @@ export function ChartRenderer({ type, title, data, format }: DisplayChart) {
   };
 
   return (
-    <div className="ai-chat-display ai-chat-display-chart">
-      {title && <p className="ai-chat-display-chart-title">{title}</p>}
-      <div className="ai-chat-display-chart-wrapper">
-        <ResponsiveContainer width="100%" height="100%">
+    <Card className="p-4">
+      {title && <p className="text-sm font-medium text-foreground mb-4">{title}</p>}
+      <div className="min-h-[200px]">
+        <ResponsiveContainer width="100%" height={200}>
           {renderChart(type, chartData, sharedProps, tooltipFormatter)}
         </ResponsiveContainer>
       </div>
-    </div>
+    </Card>
   );
 }
 
@@ -79,18 +96,19 @@ function renderChart(
   type: DisplayChart["type"],
   data: Array<{ name: string; value: number; color?: string }>,
   sharedProps: { data: typeof data; margin: { top: number; right: number; left: number; bottom: number } },
-  tooltipFormatter: (v: number) => [string, string]
+  tooltipFormatter: (v: number | string | undefined) => [string, string]
 ) {
   switch (type) {
     case "bar":
       return (
         <BarChart {...sharedProps}>
-          <XAxis dataKey="name" tick={{ fontSize: 12 }} />
-          <YAxis tick={{ fontSize: 12 }} width={48} />
-          <Tooltip formatter={tooltipFormatter} />
+          <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+          <XAxis dataKey="name" {...AXIS_PROPS} />
+          <YAxis width={48} {...AXIS_PROPS} />
+          <Tooltip formatter={tooltipFormatter} {...TOOLTIP_STYLE} />
           <Bar dataKey="value" radius={[4, 4, 0, 0]}>
             {data.map((entry, index) => (
-              <Cell key={index} fill={entry.color ?? DEFAULT_COLORS[index % DEFAULT_COLORS.length]} />
+              <Cell key={index} fill={entry.color ?? CHART_COLORS[index % CHART_COLORS.length]} />
             ))}
           </Bar>
         </BarChart>
@@ -99,15 +117,16 @@ function renderChart(
     case "line":
       return (
         <LineChart {...sharedProps}>
-          <XAxis dataKey="name" tick={{ fontSize: 12 }} />
-          <YAxis tick={{ fontSize: 12 }} width={48} />
-          <Tooltip formatter={tooltipFormatter} />
+          <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+          <XAxis dataKey="name" {...AXIS_PROPS} />
+          <YAxis width={48} {...AXIS_PROPS} />
+          <Tooltip formatter={tooltipFormatter} {...TOOLTIP_STYLE} />
           <Line
             type="monotone"
             dataKey="value"
-            stroke={DEFAULT_COLORS[0]}
+            stroke={CHART_COLORS[0]}
             strokeWidth={2}
-            dot={{ r: 4, fill: DEFAULT_COLORS[0] }}
+            dot={{ r: 4, fill: CHART_COLORS[0] }}
           />
         </LineChart>
       );
@@ -115,14 +134,15 @@ function renderChart(
     case "area":
       return (
         <AreaChart {...sharedProps}>
-          <XAxis dataKey="name" tick={{ fontSize: 12 }} />
-          <YAxis tick={{ fontSize: 12 }} width={48} />
-          <Tooltip formatter={tooltipFormatter} />
+          <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+          <XAxis dataKey="name" {...AXIS_PROPS} />
+          <YAxis width={48} {...AXIS_PROPS} />
+          <Tooltip formatter={tooltipFormatter} {...TOOLTIP_STYLE} />
           <Area
             type="monotone"
             dataKey="value"
-            stroke={DEFAULT_COLORS[0]}
-            fill={DEFAULT_COLORS[0]}
+            stroke={CHART_COLORS[0]}
+            fill={CHART_COLORS[0]}
             fillOpacity={0.2}
             strokeWidth={2}
           />
@@ -132,7 +152,7 @@ function renderChart(
     case "pie":
       return (
         <PieChart>
-          <Tooltip formatter={tooltipFormatter} />
+          <Tooltip formatter={tooltipFormatter} {...TOOLTIP_STYLE} />
           <Pie
             data={data}
             dataKey="value"
@@ -141,9 +161,10 @@ function renderChart(
             cy="50%"
             outerRadius="70%"
             label={({ name }) => name}
+            labelLine={{ stroke: "var(--muted-foreground)" }}
           >
             {data.map((entry, index) => (
-              <Cell key={index} fill={entry.color ?? DEFAULT_COLORS[index % DEFAULT_COLORS.length]} />
+              <Cell key={index} fill={entry.color ?? CHART_COLORS[index % CHART_COLORS.length]} />
             ))}
           </Pie>
         </PieChart>
@@ -152,7 +173,7 @@ function renderChart(
     case "donut":
       return (
         <PieChart>
-          <Tooltip formatter={tooltipFormatter} />
+          <Tooltip formatter={tooltipFormatter} {...TOOLTIP_STYLE} />
           <Pie
             data={data}
             dataKey="value"
@@ -162,9 +183,10 @@ function renderChart(
             innerRadius="40%"
             outerRadius="70%"
             label={({ name }) => name}
+            labelLine={{ stroke: "var(--muted-foreground)" }}
           >
             {data.map((entry, index) => (
-              <Cell key={index} fill={entry.color ?? DEFAULT_COLORS[index % DEFAULT_COLORS.length]} />
+              <Cell key={index} fill={entry.color ?? CHART_COLORS[index % CHART_COLORS.length]} />
             ))}
           </Pie>
         </PieChart>

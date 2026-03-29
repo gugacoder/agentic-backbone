@@ -9,6 +9,8 @@ import {
   FileVideo,
   Music,
 } from "lucide-react";
+import { Button } from "../ui/button.js";
+import { Card } from "../ui/card.js";
 
 function getFileIcon(type: string) {
   const mime = type.toLowerCase();
@@ -31,27 +33,23 @@ export function FileCardRenderer({ name, type, size, url }: DisplayFile) {
   const Icon = getFileIcon(type);
 
   return (
-    <div className="ai-chat-display ai-chat-display-file">
-      <span className="ai-chat-display-file-icon" aria-hidden="true">
-        <Icon size={24} />
-      </span>
-      <div className="ai-chat-display-file-info">
-        <p className="ai-chat-display-file-name">{name}</p>
-        <p className="ai-chat-display-file-meta">
-          <span>{type}</span>
-          {size !== undefined && <span>{formatSize(size)}</span>}
+    <Card className="flex items-center gap-3 p-3">
+      <div className="shrink-0 text-primary">
+        <Icon className="h-8 w-8" />
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="font-medium text-sm truncate">{name}</p>
+        <p className="text-xs text-muted-foreground">
+          {type}{size !== undefined && ` · ${formatSize(size)}`}
         </p>
       </div>
       {url && (
-        <a
-          href={url}
-          download={name}
-          className="ai-chat-display-file-download"
-          aria-label={`Baixar ${name}`}
-        >
-          <Download size={16} />
-        </a>
+        <Button variant="ghost" size="icon" asChild>
+          <a href={url} download={name} aria-label={`Baixar ${name}`}>
+            <Download className="h-4 w-4" />
+          </a>
+        </Button>
       )}
-    </div>
+    </Card>
   );
 }

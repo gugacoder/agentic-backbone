@@ -2,6 +2,10 @@ import type { DisplayCarousel } from "@agentic-backbone/ai-sdk";
 import useEmblaCarousel from "embla-carousel-react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
+import { Badge } from "../ui/badge";
+import { Button } from "../ui/button";
+import { Card, CardContent } from "../ui/card";
+import { cn } from "../lib/utils";
 
 function formatPrice(value: number, currency: string): string {
   return new Intl.NumberFormat("pt-BR", { style: "currency", currency }).format(value);
@@ -35,55 +39,60 @@ export function CarouselRenderer({ title, items }: DisplayCarousel) {
   const scrollNext = useCallback(() => emblaApi?.scrollNext(), [emblaApi]);
 
   return (
-    <div className="ai-chat-display ai-chat-display-carousel">
-      {title && <p className="ai-chat-display-carousel-title">{title}</p>}
+    <div className="flex flex-col gap-3">
+      {title && <p className="text-sm font-medium text-foreground">{title}</p>}
 
-      <div className="ai-chat-display-carousel-stage">
-        <button
-          className="ai-chat-display-carousel-arrow ai-chat-display-carousel-arrow--prev"
+      <div className="flex items-center gap-2">
+        <Button
+          variant="outline"
+          size="icon"
+          className="rounded-full shrink-0"
           onClick={scrollPrev}
           disabled={!canScrollPrev}
           aria-label="Anterior"
           type="button"
         >
-          <ChevronLeft size={20} />
-        </button>
+          <ChevronLeft className="h-4 w-4" />
+        </Button>
 
-        <div className="ai-chat-display-carousel-viewport" ref={emblaRef}>
-          <div className="ai-chat-display-carousel-track">
+        <div className="overflow-hidden flex-1" ref={emblaRef}>
+          <div className="flex">
             {items.map((item, index) => (
-              <div key={index} className="ai-chat-display-carousel-slide">
+              <div key={index} className="flex-[0_0_80%] min-w-0 pl-3 first:pl-0">
                 {item.url ? (
-                  <a href={item.url} target="_blank" rel="noopener noreferrer" className="ai-chat-display-carousel-card">
+                  <a href={item.url} target="_blank" rel="noopener noreferrer" className="block">
                     <CarouselCard item={item} />
                   </a>
                 ) : (
-                  <div className="ai-chat-display-carousel-card">
-                    <CarouselCard item={item} />
-                  </div>
+                  <CarouselCard item={item} />
                 )}
               </div>
             ))}
           </div>
         </div>
 
-        <button
-          className="ai-chat-display-carousel-arrow ai-chat-display-carousel-arrow--next"
+        <Button
+          variant="outline"
+          size="icon"
+          className="rounded-full shrink-0"
           onClick={scrollNext}
           disabled={!canScrollNext}
           aria-label="Próximo"
           type="button"
         >
-          <ChevronRight size={20} />
-        </button>
+          <ChevronRight className="h-4 w-4" />
+        </Button>
       </div>
 
       {items.length > 1 && (
-        <div className="ai-chat-display-carousel-dots" role="tablist" aria-label="Slides">
+        <div className="flex items-center justify-center gap-1.5" role="tablist" aria-label="Slides">
           {items.map((_, index) => (
             <button
               key={index}
-              className={`ai-chat-display-carousel-dot${index === selectedIndex ? " ai-chat-display-carousel-dot--active" : ""}`}
+              className={cn(
+                "w-2 h-2 rounded-full transition-colors",
+                index === selectedIndex ? "bg-primary" : "bg-muted"
+              )}
               onClick={() => emblaApi?.scrollTo(index)}
               role="tab"
               aria-selected={index === selectedIndex}
@@ -101,32 +110,32 @@ type CarouselItem = DisplayCarousel["items"][number];
 
 function CarouselCard({ item }: { item: CarouselItem }) {
   return (
-    <>
+    <Card className="overflow-hidden">
       {item.image && (
-        <div className="ai-chat-display-carousel-card-image">
-          <img src={item.image} alt={item.title} loading="lazy" />
+        <div className="aspect-video overflow-hidden">
+          <img src={item.image} alt={item.title} loading="lazy" className="w-full h-full object-cover" />
         </div>
       )}
-      <div className="ai-chat-display-carousel-card-body">
-        <p className="ai-chat-display-carousel-card-title">{item.title}</p>
+      <CardContent className="p-3 space-y-1">
+        <p className="font-medium text-sm text-foreground">{item.title}</p>
         {item.subtitle && (
-          <p className="ai-chat-display-carousel-card-subtitle">{item.subtitle}</p>
+          <p className="text-xs text-muted-foreground">{item.subtitle}</p>
         )}
         {item.price && (
-          <p className="ai-chat-display-carousel-card-price">
+          <p className="text-sm font-bold text-foreground">
             {formatPrice(item.price.value, item.price.currency)}
           </p>
         )}
         {item.badges && item.badges.length > 0 && (
-          <div className="ai-chat-display-carousel-card-badges">
+          <div className="flex flex-wrap gap-1 pt-1">
             {item.badges.map((badge, i) => (
-              <span key={i} className={`ai-chat-display-carousel-badge ai-chat-display-carousel-badge--${badge.variant}`}>
+              <Badge key={i} variant={badge.variant === "destructive" ? "destructive" : badge.variant === "secondary" ? "secondary" : "default"}>
                 {badge.label}
-              </span>
+              </Badge>
             ))}
           </div>
         )}
-      </div>
-    </>
+      </CardContent>
+    </Card>
   );
 }
