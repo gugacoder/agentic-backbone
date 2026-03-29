@@ -152,7 +152,7 @@
     "id": "F-206",
     "name": "MessageInput.tsx com Button shadcn",
     "description": "Reescrever MessageInput.tsx: usar Button do shadcn para send (size icon) e abort (variant destructive). Textarea com bg-transparent, text-foreground, placeholder:text-muted-foreground. Container com border border-input bg-background rounded-xl. Manter auto-expand (1-6 rows), Enter para enviar, Shift+Enter nova linha, focus automatico.",
-    "status": "pending",
+    "status": "passing",
     "priority": 8,
     "agent": "coder",
     "task": "vibe-code",
@@ -169,7 +169,8 @@
       "Enter envia, Shift+Enter nova linha",
       "Focus automatico ao montar"
     ],
-    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-7/worktree/sprints/sprint-14/3-prps/PRP-16B-core-chat-shadcn.md"
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-7/worktree/sprints/sprint-14/3-prps/PRP-16B-core-chat-shadcn.md",
+    "completed_at": "2026-03-29T22:30:00Z"
   },
   {
     "id": "F-207",
