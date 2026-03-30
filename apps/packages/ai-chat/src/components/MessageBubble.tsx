@@ -18,13 +18,13 @@ export const MessageBubble = memo(function MessageBubble({ message, isStreaming,
   const hasParts = Array.isArray(message.parts) && message.parts.length > 0;
 
   return (
-    <div className={isUser ? "flex w-full justify-end" : "flex w-full justify-start"}>
+    <div className={isUser ? "flex w-full justify-end" : "w-full"}>
       <div
         className={cn(
-          "max-w-[80%] min-w-0 rounded-lg px-4 py-2.5 overflow-hidden",
+          "min-w-0 overflow-hidden",
           isUser
-            ? "rounded-br-sm bg-primary text-primary-foreground"
-            : "rounded-bl-sm bg-muted/40 text-foreground",
+            ? "max-w-[80%] rounded-lg rounded-br-sm bg-muted/30 text-foreground px-4 py-2.5"
+            : "text-foreground py-1",
           className
         )}
       >

@@ -31,6 +31,7 @@ export function MessageList({ messages, isLoading, displayRenderers, className }
     getScrollElement: () => viewportRef.current,
     estimateSize: () => 80,
     overscan: 5,
+    paddingStart: 16,
   });
 
   // Track scroll position to detect if user is following
@@ -79,7 +80,7 @@ export function MessageList({ messages, isLoading, displayRenderers, className }
           className="relative w-full"
           style={{ height: virtualizer.getTotalSize() + 16 }}
         >
-          <div className="p-4 pb-0">
+          <div>
             {virtualItems.map((virtualRow) => {
               const message = messages[virtualRow.index];
               return (
@@ -87,7 +88,7 @@ export function MessageList({ messages, isLoading, displayRenderers, className }
                   key={message.id ?? virtualRow.index}
                   data-index={virtualRow.index}
                   ref={virtualizer.measureElement}
-                  className="pb-3"
+                  className="pb-3 px-4"
                   style={{
                     position: "absolute",
                     top: 0,

@@ -9,9 +9,36 @@ const REMARK_PLUGINS = [remarkGfm];
 const REHYPE_PLUGINS = [rehypeHighlight];
 
 const components: Components = {
+  h1({ children }) {
+    return <h1 className="text-xl font-semibold" style={{ marginTop: "20px", marginBottom: "8px" }}>{children}</h1>;
+  },
+  h2({ children }) {
+    return <h2 className="text-lg font-semibold" style={{ marginTop: "20px", marginBottom: "8px" }}>{children}</h2>;
+  },
+  h3({ children }) {
+    return <h3 className="text-base font-semibold" style={{ marginTop: "20px", marginBottom: "8px" }}>{children}</h3>;
+  },
+  h4({ children }) {
+    return <h4 className="font-semibold" style={{ marginTop: "20px", marginBottom: "8px" }}>{children}</h4>;
+  },
+  p({ children }) {
+    return <p style={{ marginBottom: "16px" }}>{children}</p>;
+  },
+  ul({ children }) {
+    return <ul style={{ paddingLeft: "24px", marginTop: "8px", marginBottom: "8px", listStyleType: "disc" }}>{children}</ul>;
+  },
+  ol({ children }) {
+    return <ol style={{ paddingLeft: "24px", marginTop: "8px", marginBottom: "8px", listStyleType: "decimal" }}>{children}</ol>;
+  },
+  li({ children }) {
+    return <li style={{ marginTop: "4px", marginBottom: "4px" }}>{children}</li>;
+  },
+  hr() {
+    return <hr className="border-border" style={{ marginTop: "16px", marginBottom: "16px" }} />;
+  },
   pre({ children }) {
     return (
-      <pre className="bg-muted border border-border rounded-md my-3 overflow-hidden">
+      <pre className="bg-muted border border-border rounded-md overflow-hidden" style={{ marginTop: "12px", marginBottom: "12px" }}>
         {children}
       </pre>
     );
@@ -40,7 +67,7 @@ const components: Components = {
   },
   blockquote({ children }) {
     return (
-      <blockquote className="border-l-[3px] border-border my-3 py-1 px-3 text-muted-foreground">
+      <blockquote className="border-l-[3px] border-border py-1 px-3 text-muted-foreground" style={{ marginTop: "12px", marginBottom: "12px" }}>
         {children}
       </blockquote>
     );
@@ -74,7 +101,7 @@ interface MarkdownProps {
 
 export const Markdown = memo(function Markdown({ children }: MarkdownProps) {
   return (
-    <div className="text-foreground text-sm leading-relaxed [&_p]:mb-3 [&_p:last-child]:mb-0 [&_h1]:text-xl [&_h2]:text-lg [&_h3]:text-base [&_h1,&_h2,&_h3,&_h4]:font-semibold [&_h1,&_h2,&_h3,&_h4]:mt-5 [&_h1,&_h2,&_h3,&_h4]:mb-2 [&_ul,&_ol]:pl-6 [&_ul,&_ol]:my-2 [&_li]:my-1 [&_hr]:border-border [&_hr]:my-4">
+    <div className="text-foreground text-sm" style={{ lineHeight: "1.625em" }}>
       <ReactMarkdown
         remarkPlugins={REMARK_PLUGINS}
         rehypePlugins={REHYPE_PLUGINS}
