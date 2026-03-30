@@ -8,8 +8,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ```bash
 # Development (hot-reload via tsx watch)
-npm run dev:all               # backbone + hub concurrently (from root)
+npm run dev:all               # backbone + hub + chat concurrently (from root)
 npm run dev:backbone          # backbone only (from root)
+npm run dev:hub               # hub only (from root)
+npm run dev:chat              # chat only (from root)
 
 # Build (sequential: ai-sdk → backbone → hub)
 npm run build                 # all packages
@@ -40,6 +42,16 @@ npm run test:capabilities:cron         # cron job management
 npm run test:capabilities:jobs         # long-running job submission
 npm run test:capabilities:identity     # agent identity/context assembly
 npm run test:e2e                       # Playwright end-to-end
+npm run test:e2e:hub                   # Playwright hub project only
+```
+
+### Utility Scripts
+
+```bash
+npm run secrets:decrypt                # decrypt YAML secrets
+npm run secrets:encrypt                # encrypt YAML secrets
+npm run killports                      # kill processes on dev ports
+npm run ngrok:up                       # expose backbone via ngrok
 ```
 
 Test credentials come from `.env`: `TEST_USER` / `TEST_PASS`.
@@ -73,9 +85,11 @@ All env vars are in the root `.env` file — single source of truth. **Never use
 | Package | Path | Purpose |
 |---|---|---|
 | `@agentic-backbone/backbone` | `apps/backbone` | Autonomous multi-agent runtime (Node.js, Hono, Vercel AI SDK) |
+| `@agentic-backbone/hub` | `apps/hub` | React admin UI (Vite + TanStack Router) |
+| `@agentic-backbone/chat` | `apps/chat` | Standalone chat UI |
 | `@agentic-backbone/ai-sdk` | `apps/packages/ai-sdk` | Agent runtime via Vercel AI SDK + OpenRouter |
-
-> `apps/hub.old` is a deprecated React UI — not actively developed.
+| `@agentic-backbone/ai-chat` | `apps/packages/ai-chat` | Shared chat UI components |
+| `@agentic-backbone/ui` | `apps/packages/ui` | Shared UI component library (shadcn) |
 
 ### Core Flow
 
