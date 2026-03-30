@@ -10,7 +10,7 @@ export interface ChatProps {
   endpoint: string;
   token: string;
   sessionId: string;
-  initialMessages?: Array<{ id?: string; role: "user" | "assistant"; content: string }>;
+  initialMessages?: Array<{ id?: string; role: "user" | "assistant"; content: string; parts?: unknown[] }>;
   displayRenderers?: DisplayRendererMap;
   placeholder?: string;
   header?: React.ReactNode;

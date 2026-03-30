@@ -45,6 +45,107 @@ import { TakeoverBanner } from "@/components/conversations/takeover-banner";
 import { ApprovalInlineActions } from "@/components/approvals/approval-inline-actions";
 import { useIsMobile } from "@/hooks/use-mobile";
 
+type BackendMessage = import("@/api/conversations").ConversationMessage;
+
+function buildInitialMessages(messages?: BackendMessage[]) {
+  if (!messages) return undefined;
+
+  type Part = { type?: string; text?: string; toolCallId?: string; toolName?: string; input?: Record<string, unknown>; output?: unknown };
+
+  // Index tool results by toolCallId
+  const toolResults = new Map<string, { toolName: string; result: unknown }>();
+  for (const m of messages) {
+    if (m.role === "tool" && Array.isArray(m.content)) {
+      for (const part of m.content as Part[]) {
+        if (part.type === "tool-result" && part.toolCallId) {
+          // output can be {type:"json", value:{...}} or direct value
+          const raw = part.output as { type?: string; value?: unknown } | unknown;
+          const value = (typeof raw === "object" && raw !== null && "type" in (raw as Record<string, unknown>) && (raw as Record<string, unknown>).type === "json")
+            ? (raw as { value: unknown }).value
+            : raw;
+          toolResults.set(part.toolCallId, { toolName: part.toolName ?? "", result: value });
+        }
+      }
+    }
+  }
+
+  // Aggregate consecutive assistant+tool+assistant into single Messages
+  const result: { id: string; role: "user" | "assistant"; content: string; parts?: unknown[] }[] = [];
+  let i = 0;
+
+  while (i < messages.length) {
+    const m = messages[i]!;
+
+    // User message — emit as-is
+    if (m.role === "user") {
+      const content = typeof m.content === "string" ? m.content : "";
+      result.push({ id: m._meta?.id ?? m.id ?? `msg-${i}`, role: "user", content });
+      i++;
+      continue;
+    }
+
+    // Tool message — skip (consumed by assistant aggregation)
+    if (m.role === "tool") {
+      i++;
+      continue;
+    }
+
+    // Assistant message — aggregate with following tool+assistant messages
+    if (m.role === "assistant") {
+      const parts: unknown[] = [];
+      let textContent = "";
+      const id = m._meta?.id ?? m.id ?? `msg-${i}`;
+
+      // Consume consecutive assistant and tool messages
+      while (i < messages.length && (messages[i]!.role === "assistant" || messages[i]!.role === "tool")) {
+        const cur = messages[i]!;
+
+        if (cur.role === "tool") {
+          // tool messages are consumed via toolResults map, skip
+          i++;
+          continue;
+        }
+
+        // assistant message — extract parts from content
+        if (typeof cur.content === "string") {
+          if (cur.content) {
+            parts.push({ type: "text", text: cur.content });
+            textContent += cur.content;
+          }
+        } else if (Array.isArray(cur.content)) {
+          for (const p of cur.content as Part[]) {
+            if (p.type === "text" && p.text) {
+              parts.push({ type: "text", text: p.text });
+              textContent += p.text;
+            } else if (p.type === "tool-call" && p.toolCallId) {
+              const tr = toolResults.get(p.toolCallId);
+              parts.push({
+                type: "tool-invocation",
+                toolInvocation: {
+                  toolName: p.toolName ?? "",
+                  toolCallId: p.toolCallId,
+                  state: tr ? "result" : "call",
+                  args: p.input,
+                  result: tr?.result,
+                },
+              });
+            }
+          }
+        }
+        i++;
+      }
+
+      result.push({ id, role: "assistant", content: textContent, parts });
+      continue;
+    }
+
+    // Unknown role — skip
+    i++;
+  }
+
+  return result;
+}
+
 function getCurrentUserSlug(): string | null {
   const token = useAuthStore.getState().token;
   if (!token) return null;
@@ -304,18 +405,7 @@ export function ConversationChatPage({ id, basePath }: ConversationChatPageProps
           endpoint=""
           token={token}
           sessionId={id}
-          initialMessages={existingMessages
-            ?.filter((m) => m.role === "user" || m.role === "assistant")
-            .map((m, i) => ({
-              id: m._meta?.id ?? m.id ?? `msg-${i}`,
-              role: m.role as "user" | "assistant",
-              content: typeof m.content === "string"
-                ? m.content
-                : (m.content as { type?: string; text?: string }[])
-                    .filter((p) => p.type === "text")
-                    .map((p) => p.text ?? "")
-                    .join(""),
-            }))}
+          initialMessages={buildInitialMessages(existingMessages)}
           className="flex-1 flex flex-col overflow-hidden"
         />
       </div>
