@@ -10,15 +10,18 @@ import { agentDir } from "../context/paths.js";
 import { readYamlAs, writeYamlAs } from "../context/readers.js";
 import { SessionYmlSchema } from "../context/schemas.js";
 
-export interface PersistentMessage {
-  id?: string;
-  ts: string;
-  role: "user" | "assistant" | "system";
-  content: string;
-  metadata?: Record<string, unknown>;
+export interface ModelMessageWithMeta {
+  role: string;
+  content: string | unknown[];
+  _meta?: {
+    id?: string;
+    ts?: string;
+    userId?: string;
+    metadata?: Record<string, unknown>;
+  };
 }
 
-function generateMessageId(): string {
+export function generateMessageId(): string {
   return `msg_${Date.now()}_${randomBytes(4).toString("hex")}`;
 }
 
@@ -53,17 +56,16 @@ export function initSession(
 
 // --- Message persistence ---
 
-export function appendMessage(
+export function appendModelMessage(
   agentId: string,
   sessionId: string,
-  message: PersistentMessage
+  message: { role: string; content: string; _meta?: Record<string, unknown> }
 ): void {
   const dir = sessionDir(agentId, sessionId);
   mkdirSync(dir, { recursive: true });
 
   const jsonlPath = join(dir, "messages.jsonl");
-  const msgWithId: PersistentMessage = message.id ? message : { ...message, id: generateMessageId() };
-  const line = JSON.stringify(msgWithId) + "\n";
+  const line = JSON.stringify(message) + "\n";
   appendFileSync(jsonlPath, line);
 }
 
@@ -90,7 +92,7 @@ export function updateSessionMetadata(
 export function readMessages(
   agentId: string,
   sessionId: string
-): PersistentMessage[] {
+): ModelMessageWithMeta[] {
   const jsonlPath = join(sessionDir(agentId, sessionId), "messages.jsonl");
   if (!existsSync(jsonlPath)) return [];
 
@@ -98,9 +100,9 @@ export function readMessages(
     .split("\n")
     .filter((l) => l.trim());
 
-  return lines.reduce<PersistentMessage[]>((msgs, line, i) => {
+  return lines.reduce<ModelMessageWithMeta[]>((msgs, line, i) => {
     try {
-      msgs.push(JSON.parse(line) as PersistentMessage);
+      msgs.push(JSON.parse(line) as ModelMessageWithMeta);
     } catch {
       console.warn(`[persistence] skipping malformed line ${i + 1} in ${jsonlPath}`);
     }

@@ -35,12 +35,22 @@ const MemoryExtractionSchema = z.object({
     .describe("Resumo narrativo do dia em português. Inclua o contexto geral da conversa, tom, temas discutidos e decisões tomadas. Se não houver conteúdo relevante, retorne string vazia."),
 });
 
+function extractText(content: string | unknown[]): string {
+  if (typeof content === "string") return content;
+  return (content as any[])
+    .filter((p) => p.type === "text")
+    .map((p) => p.text)
+    .join("");
+}
+
 function buildConversationContext(agentId: string, sessionId: string): string {
   const msgs = readMessages(agentId, sessionId);
   if (msgs.length === 0) return "";
 
   const tail = msgs.slice(-CONTEXT_TAIL);
-  const lines = tail.map((m) => `[${m.role}] ${m.content}`);
+  const lines = tail
+    .filter((m) => m.role !== "tool")
+    .map((m) => `[${m.role}] ${extractText(m.content)}`);
   return lines.join("\n\n");
 }
 

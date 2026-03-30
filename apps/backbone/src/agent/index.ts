@@ -29,6 +29,8 @@ export async function* runAgent(
   prompt: string,
   options?: {
     sessionId?: string;
+    sessionDir?: string;
+    messageMeta?: Record<string, unknown>;
     role?: string;
     tools?: Record<string, any>;
     system?: string;
@@ -78,7 +80,8 @@ export async function* runAgent(
     apiKey,
     prompt,
     sessionId: options?.sessionId,
-    sessionDir: join(DATA_DIR, "ai-sessions"),
+    sessionDir: options?.sessionDir,
+    messageMeta: options?.messageMeta,
     role,
     tools: options?.tools,
     maxTurns: 100,

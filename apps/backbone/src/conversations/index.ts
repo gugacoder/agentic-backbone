@@ -1,11 +1,12 @@
-import { randomUUID, createHash } from "node:crypto";
+import { randomUUID } from "node:crypto";
 import { db } from "../db/index.js";
 import { assemblePrompt } from "../context/index.js";
 import { runAgent, type AgentEvent } from "../agent/index.js";
 import { instrumentedRunAgent } from "../telemetry/instrumentor.js";
 import {
   initSession as initPersistentSession,
-  appendMessage,
+  appendModelMessage,
+  generateMessageId,
   updateSessionMetadata,
   readMessages,
 } from "./persistence.js";
@@ -18,6 +19,8 @@ import { trackConversation } from "../db/analytics.js";
 import type { UsageData } from "../agent/index.js";
 import { checkMessageSecurity } from "../security/filter.js";
 import { eventBus } from "../events/index.js";
+import { join } from "node:path";
+import { agentDir } from "../context/paths.js";
 import { checkExceeded, getQuotas, recordUsage, pauseAgent } from "../quotas/quota-manager.js";
 
 export { readMessages };
@@ -63,10 +66,7 @@ const selectSession = db.prepare(
    FROM sessions WHERE session_id = ?`
 );
 
-const setSdkSessionId = db.prepare(
-  `UPDATE sessions SET sdk_session_id = ?, updated_at = datetime('now')
-   WHERE session_id = ?`
-);
+
 
 const selectAllSessions = db.prepare(
   `SELECT session_id, user_id, agent_id, channel_id, sdk_session_id, title, starred, takeover_by, takeover_at, orchestration_path, current_agent_id, created_at, updated_at
@@ -124,14 +124,7 @@ const clearTakeoverStmt = db.prepare(
    WHERE session_id = ?`
 );
 
-const selectSystemHash = db.prepare(
-  `SELECT system_hash FROM sessions WHERE session_id = ?`
-);
 
-const updateSystemHash = db.prepare(
-  `UPDATE sessions SET system_hash = ?, sdk_session_id = NULL, updated_at = datetime('now')
-   WHERE session_id = ?`
-);
 
 // --- Message counter for flush ---
 
@@ -292,11 +285,10 @@ export async function* sendMessage(
 
     if (isOperator) {
       // Operator message: saved as assistant with operator metadata, no agent
-      appendMessage(agentId, sessionId, {
-        ts: new Date().toISOString(),
+      appendModelMessage(agentId, sessionId, {
         role: "assistant",
         content: message,
-        metadata: { operator: true, operatorSlug: userId },
+        _meta: { id: generateMessageId(), ts: new Date().toISOString(), metadata: { operator: true, operatorSlug: userId } },
       });
 
       await triggerHook({
@@ -311,10 +303,10 @@ export async function* sendMessage(
       return;
     } else {
       // External user message during takeover: saved normally, no agent
-      appendMessage(agentId, sessionId, {
-        ts: new Date().toISOString(),
+      appendModelMessage(agentId, sessionId, {
         role: "user",
         content: message,
+        _meta: { id: generateMessageId(), ts: new Date().toISOString(), userId },
       });
 
       await triggerHook({
@@ -329,12 +321,7 @@ export async function* sendMessage(
     }
   }
 
-  // Persist user message
-  appendMessage(agentId, sessionId, {
-    ts: new Date().toISOString(),
-    role: "user",
-    content: message,
-  });
+  // User message is persisted by ai-sdk via saveSession (unified persistence)
 
   await triggerHook({
     ts: Date.now(),
@@ -348,10 +335,16 @@ export async function* sendMessage(
   const securityResult = await checkMessageSecurity(message, agentId, sessionId);
   if (securityResult.action === "blocked") {
     const errorMsg = "Mensagem nao permitida pelo sistema de seguranca.";
-    appendMessage(agentId, sessionId, {
-      ts: new Date().toISOString(),
+    const ts = new Date().toISOString();
+    appendModelMessage(agentId, sessionId, {
+      role: "user",
+      content: message,
+      _meta: { id: generateMessageId(), ts, userId },
+    });
+    appendModelMessage(agentId, sessionId, {
       role: "assistant",
       content: errorMsg,
+      _meta: { id: generateMessageId(), ts },
     });
     yield { type: "result", content: errorMsg };
     return;
@@ -371,10 +364,16 @@ export async function* sendMessage(
         value: 0,
       });
       const errorMsg = "Agente pausado: limite de quota atingido.";
-      appendMessage(agentId, sessionId, {
-        ts: new Date().toISOString(),
+      const ts = new Date().toISOString();
+      appendModelMessage(agentId, sessionId, {
+        role: "user",
+        content: message,
+        _meta: { id: generateMessageId(), ts, userId },
+      });
+      appendModelMessage(agentId, sessionId, {
         role: "assistant",
         content: errorMsg,
+        _meta: { id: generateMessageId(), ts },
       });
       yield { type: "result", content: errorMsg };
       return;
@@ -420,17 +419,8 @@ export async function* sendMessage(
   }
 
   let fullText = "";
-  let sdkSessionId = session.sdk_session_id ?? undefined;
   let usageData: UsageData | undefined;
   const agentStartMs = Date.now();
-
-  // Invalidate SDK session if system prompt changed (adapters, config, skills, etc.)
-  const systemHash = createHash("sha256").update(assembled.system).digest("hex").slice(0, 16);
-  const storedHash = (selectSystemHash.get(sessionId) as { system_hash: string | null } | undefined)?.system_hash;
-  if (storedHash !== systemHash) {
-    sdkSessionId = undefined;
-    updateSystemHash.run(systemHash, sessionId);
-  }
 
   // Expose agent identity to tools (used by cron, job tools)
   process.env.AGENT_ID = effectiveAgentId;
@@ -444,19 +434,15 @@ export async function* sendMessage(
     prompt: assembled.userMessage,
   });
 
+  const conversationDir = join(agentDir(agentId), "conversations", sessionId);
   const conversationTools = composeAgentTools(effectiveAgentId, "conversation", { sessionId, userId });
   for await (const event of instrumentedRunAgent(effectiveAgentId, "chat", assembled.userMessage, {
-    sessionId: effectiveAgentId === agentId ? sdkSessionId : undefined,
+    sessionDir: conversationDir,
+    messageMeta: { id: generateMessageId(), userId },
     role: "conversation",
     tools: conversationTools,
     system: assembled.system,
   })) {
-    // Capture SDK session on first init for future resume
-    if (event.type === "init" && event.sessionId) {
-      setSdkSessionId.run(event.sessionId, sessionId);
-      sdkSessionId = event.sessionId;
-    }
-
     if (event.type === "text" && event.content) {
       fullText += event.content;
     }
@@ -499,15 +485,8 @@ export async function* sendMessage(
     durationMs,
   });
 
-  // Persist assistant message
+  // Assistant message is persisted by ai-sdk via saveSession (unified persistence)
   if (fullText) {
-    appendMessage(agentId, sessionId, {
-      ts: new Date().toISOString(),
-      role: "assistant",
-      content: fullText,
-      metadata: effectiveAgentId !== agentId ? { agentId: effectiveAgentId } : undefined,
-    });
-
     await triggerHook({
       ts: Date.now(),
       hookEvent: "message:sent",
@@ -530,7 +509,6 @@ export async function* sendMessage(
     flushMemory({
       agentId,
       sessionId,
-      sdkSessionId,
     }).catch((err) => {
       console.warn("[memory-flush] background flush failed:", err);
     });
