@@ -47,6 +47,7 @@ export const AgentRunOptionsSchema = z.object({
   maxTurns: z.number().optional(),
   providerConfig: z.record(z.any()).optional(),
   system: z.string().optional(),
+  messageMeta: z.record(z.unknown()).optional(),
 });
 
 export type AgentEvent = z.infer<typeof AgentEventSchema>;

@@ -69,15 +69,19 @@ export async function* runAiAgent(prompt, options) {
     });
     const sessionDir = options.sessionDir ?? DEFAULT_SESSION_DIR;
     const sessionId = options.sessionId ?? randomUUID();
-    // Session resume: load history if sessionId was provided
+    // Session resume: load history if sessionDir was provided
     let previousMessages = [];
-    if (options.sessionId) {
-        previousMessages = await loadSession(sessionDir, options.sessionId);
+    if (options.sessionDir) {
+        previousMessages = await loadSession(sessionDir);
     }
     const startMs = Date.now();
+    const userMsg = { role: "user", content: prompt };
+    if (options.messageMeta) {
+        userMsg._meta = { ts: new Date().toISOString(), ...options.messageMeta };
+    }
     const messages = [
         ...previousMessages,
-        { role: "user", content: prompt },
+        userMsg,
     ];
     yield { type: "init", sessionId };
     // Session-level OTel span (F-006): wraps the entire agent run
@@ -402,10 +406,11 @@ export async function* runAiAgent(prompt, options) {
         let totalCostUsd = 0;
         try {
             const response = await result.response;
-            await saveSession(sessionDir, sessionId, [
-                ...messages,
-                ...response.messages,
-            ]);
+            const responseMsgs = response.messages.map((m) => ({
+                ...m,
+                _meta: { ts: new Date().toISOString() },
+            }));
+            await saveSession(sessionDir, [...messages, ...responseMsgs]);
             usage = await result.totalUsage;
             steps = await result.steps;
             finishReason = stoppedByStopWhen ? "stop_when" : (await result.finishReason ?? "unknown");

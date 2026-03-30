@@ -83,16 +83,20 @@ export async function* runAiAgent(
   const sessionDir = options.sessionDir ?? DEFAULT_SESSION_DIR;
   const sessionId = options.sessionId ?? randomUUID();
 
-  // Session resume: load history if sessionId was provided
+  // Session resume: load history if sessionDir was provided
   let previousMessages: ModelMessage[] = [];
-  if (options.sessionId) {
-    previousMessages = await loadSession(sessionDir, options.sessionId);
+  if (options.sessionDir) {
+    previousMessages = await loadSession(sessionDir);
   }
 
   const startMs = Date.now();
+  const userMsg: any = { role: "user", content: prompt };
+  if (options.messageMeta) {
+    userMsg._meta = { ts: new Date().toISOString(), ...options.messageMeta };
+  }
   const messages: ModelMessage[] = [
     ...previousMessages,
-    { role: "user", content: prompt },
+    userMsg,
   ];
 
   yield { type: "init", sessionId };
@@ -457,10 +461,11 @@ export async function* runAiAgent(
 
     try {
       const response = await result.response;
-      await saveSession(sessionDir, sessionId, [
-        ...messages,
-        ...response.messages as ModelMessage[],
-      ]);
+      const responseMsgs = (response.messages as any[]).map((m) => ({
+        ...m,
+        _meta: { ts: new Date().toISOString() },
+      }));
+      await saveSession(sessionDir, [...messages, ...responseMsgs]);
 
       usage = await result.totalUsage;
       steps = await result.steps;

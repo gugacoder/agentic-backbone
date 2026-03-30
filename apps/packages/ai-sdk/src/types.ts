@@ -132,4 +132,6 @@ export interface AiAgentOptions {
   maxRepairAttempts?: number;
   /** Habilita reasoning (extended thinking) do modelo. true usa budget de 5000 tokens; objeto permite especificar budgetTokens. */
   reasoning?: boolean | { budgetTokens: number };
+  /** Metadados do backbone anexados como _meta na user message */
+  messageMeta?: Record<string, unknown>;
 }

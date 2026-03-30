@@ -57,6 +57,7 @@ export async function* runAgent(raw: unknown): AsyncGenerator<AgentEvent> {
     apiKey: options.apiKey,
     sessionId: options.sessionId,
     sessionDir: options.sessionDir,
+    messageMeta: options.messageMeta,
     maxSteps: options.maxTurns ?? 100,
     ...(onWebSearch ? { onWebSearch } : {}),
     ...(options.tools ? { tools: options.tools } : {}),
