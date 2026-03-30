@@ -287,6 +287,11 @@ ratingRoutes.post("/agents/:agentId/ratings/export-golden-set", async (c) => {
 
   const cases: { input: string; output: string; tags: string[]; ratedAt: string }[] = [];
 
+  const extractText = (content: string | unknown[]): string => {
+    if (typeof content === "string") return content;
+    return (content as any[]).filter((p: any) => p.type === "text").map((p: any) => p.text).join("");
+  };
+
   for (const row of rows) {
     const messages = readMessages(agentId, row.session_id);
     const msg = messages[row.message_index];
@@ -295,7 +300,7 @@ ratingRoutes.post("/agents/:agentId/ratings/export-golden-set", async (c) => {
     let input = "";
     for (let i = row.message_index - 1; i >= 0; i--) {
       if (messages[i]!.role === "user") {
-        input = messages[i]!.content;
+        input = extractText(messages[i]!.content);
         break;
       }
     }
@@ -305,7 +310,7 @@ ratingRoutes.post("/agents/:agentId/ratings/export-golden-set", async (c) => {
 
     cases.push({
       input,
-      output: msg.content,
+      output: extractText(msg.content),
       tags,
       ratedAt: row.rated_at,
     });

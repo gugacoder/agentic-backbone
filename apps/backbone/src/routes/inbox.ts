@@ -26,13 +26,16 @@ function getChannelType(channelId: string | null): string {
 
 function computeStatus(
   session: SessionRow,
-  lastMessage: { role: string; ts: string } | null
+  lastMessage: { role: string; _meta?: { ts?: string } } | null
 ): "operator" | "waiting" | "agent" {
   if (session.takeover_by) return "operator";
   if (lastMessage && lastMessage.role === "user") {
-    const lastTs = new Date(lastMessage.ts).getTime();
-    const fiveMinMs = 5 * 60 * 1000;
-    if (Date.now() - lastTs > fiveMinMs) return "waiting";
+    const ts = lastMessage._meta?.ts;
+    if (ts) {
+      const lastTs = new Date(ts).getTime();
+      const fiveMinMs = 5 * 60 * 1000;
+      if (Date.now() - lastTs > fiveMinMs) return "waiting";
+    }
   }
   return "agent";
 }
@@ -82,11 +85,13 @@ inboxRoutes.get("/inbox", (c) => {
         lastMessage: lastMsg
           ? {
               role: lastMsg.role,
-              content: lastMsg.content,
-              timestamp: lastMsg.ts,
+              content: typeof lastMsg.content === "string"
+                ? lastMsg.content
+                : (lastMsg.content as any[]).filter((p: any) => p.type === "text").map((p: any) => p.text).join(""),
+              timestamp: lastMsg._meta?.ts ?? "",
             }
           : null,
-        waitingSince: computedStatus === "waiting" && lastMsg ? lastMsg.ts : null,
+        waitingSince: computedStatus === "waiting" && lastMsg ? lastMsg._meta?.ts ?? "" : null,
         operatorId: s.takeover_by ?? null,
         startedAt: s.created_at,
         messageCount: messages.length,

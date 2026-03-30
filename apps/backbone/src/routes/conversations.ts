@@ -92,11 +92,11 @@ conversationRoutes.get("/conversations/:sessionId/messages", (c) => {
   const feedbackByMessageId = new Map(feedbackRows.map((r) => [r.message_id, { rating: r.rating, reason: r.reason }]));
 
   const messagesWithFeedback = messages.map((m) => {
-    const msg = m as { id?: string; ts: string; role: string; content: string; metadata?: Record<string, unknown> };
-    if (msg.id && feedbackByMessageId.has(msg.id)) {
-      return { ...msg, feedback: feedbackByMessageId.get(msg.id) };
+    const id = m._meta?.id;
+    if (id && feedbackByMessageId.has(id)) {
+      return { ...m, feedback: feedbackByMessageId.get(id) };
     }
-    return msg;
+    return m;
   });
 
   return c.json(messagesWithFeedback);
@@ -268,7 +268,11 @@ conversationRoutes.get("/conversations/:sessionId/export", (c) => {
     let md = `# Conversation: ${session.title ?? sessionId}\n\n`;
     md += `Created: ${session.created_at}\n\n---\n\n`;
     for (const msg of messages) {
-      md += `**${msg.role}** (${msg.ts}):\n\n${msg.content}\n\n---\n\n`;
+      const ts = msg._meta?.ts ?? "";
+      const text = typeof msg.content === "string"
+        ? msg.content
+        : (msg.content as any[]).filter((p: any) => p.type === "text").map((p: any) => p.text).join("");
+      md += `**${msg.role}** (${ts}):\n\n${text}\n\n---\n\n`;
     }
     return new Response(md, {
       headers: {

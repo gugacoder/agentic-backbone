@@ -138,17 +138,22 @@ feedbackRoutes.get("/agents/:id/quality/low-rated", (c) => {
   const result = rows.map((row) => {
     // Reconstruct input/output from messages.jsonl
     const messages = readMessages(agentId, row.session_id);
-    const msgIndex = messages.findIndex((m) => (m as { id?: string }).id === row.message_id);
+    const msgIndex = messages.findIndex((m) => m._meta?.id === row.message_id);
+
+    const extractText = (content: string | unknown[]): string => {
+      if (typeof content === "string") return content;
+      return (content as any[]).filter((p: any) => p.type === "text").map((p: any) => p.text).join("");
+    };
 
     let input = "";
     let output = "";
 
     if (msgIndex !== -1) {
-      output = messages[msgIndex]!.content;
+      output = extractText(messages[msgIndex]!.content);
       // Find preceding user message
       for (let i = msgIndex - 1; i >= 0; i--) {
         if (messages[i]!.role === "user") {
-          input = messages[i]!.content;
+          input = extractText(messages[i]!.content);
           break;
         }
       }
