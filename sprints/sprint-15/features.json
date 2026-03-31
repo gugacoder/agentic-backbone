@@ -326,10 +326,11 @@
     "id": "F-316",
     "name": "Ativar domain tools em evolution/tools/index.ts",
     "description": "Alterar apps/backbone/src/connectors/evolution/tools/index.ts: substituir ~37 imports individuais por 4 imports de domain tools (createWhatsappMessagingTool, createWhatsappGroupsTool, createWhatsappContactsTool, createWhatsappAdminTool). Manter assinatura de createEvolutionTools(slugs) identica.",
-    "status": "pending",
+    "status": "passing",
     "priority": 18,
     "agent": "coder",
     "task": "vibe-code",
+    "completed_at": "2026-03-31T02:48:00Z",
     "dependencies": [
       "F-310",
       "F-311",
