@@ -44,7 +44,7 @@
     "id": "F-302",
     "name": "Domain tool gitlab_repo",
     "description": "Criar apps/backbone/src/connectors/gitlab/tools/repo.ts com domain tool gitlab_repo agrupando 17 actions (get_file, list_files, create_file, update_file, delete_file, list_branches, get_branch, create_branch, delete_branch, list_tags, get_tag, create_tag, delete_tag, list_commits, get_commit, commit_diff, compare) via z.discriminatedUnion. Factory function createGitLabRepoTool(adapters). Copiar schemas dos repo-*.ts existentes. Policy check readonly para create_file, update_file, delete_file, create_branch, delete_branch, create_tag, delete_tag.",
-    "status": "pending",
+    "status": "passing",
     "priority": 3,
     "agent": "coder",
     "task": "vibe-code",
@@ -57,7 +57,8 @@
       "Execute despacha todas 17 actions corretamente",
       "TypeScript compila sem erros"
     ],
-    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-10/worktree/sprints/sprint-15/3-prps/PRP-18A-gitlab-domain-tools.md"
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-10/worktree/sprints/sprint-15/3-prps/PRP-18A-gitlab-domain-tools.md",
+    "completed_at": "2026-03-31T02:30:00Z"
   },
   {
     "id": "F-303",
