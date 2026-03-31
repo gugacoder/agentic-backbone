@@ -458,7 +458,7 @@
     "id": "F-322",
     "name": "Remover tools individuais do WhatsApp",
     "description": "Remover 36 arquivos de apps/backbone/src/connectors/evolution/tools/: whatsapp-*.ts (35) + evolution-api.ts (1). Apos remocao o diretorio deve conter apenas: index.ts, messaging.ts, groups.ts, contacts.ts, admin.ts.",
-    "status": "pending",
+    "status": "passing",
     "priority": 23,
     "agent": "coder",
     "task": "vibe-code",
@@ -471,7 +471,8 @@
       "Nenhum import no codebase referencia os arquivos removidos",
       "TypeScript compila sem erros"
     ],
-    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-10/worktree/sprints/sprint-15/3-prps/PRP-18F-limpeza-validacao.md"
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-10/worktree/sprints/sprint-15/3-prps/PRP-18F-limpeza-validacao.md",
+    "completed_at": "2026-03-31T03:30:00Z"
   },
   {
     "id": "F-323",
