@@ -8,7 +8,16 @@ import { findChannelsByAdapter } from "../../channels/lookup.js";
 import { routeInboundMessage } from "../../channels/delivery/inbound-router.js";
 import { findOrCreateSession } from "../../conversations/index.js";
 import { agentDir } from "../../context/paths.js";
-import { generateAttachmentId, type ContentPart } from "../../conversations/attachments.js";
+import { generateAttachmentId, classifyAttachment, type ContentPart } from "../../conversations/attachments.js";
+
+const SUPPORTED_DOC_MIMES = new Set([
+  "application/pdf",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  "text/plain",
+  "text/csv",
+  "application/json",
+]);
 import {
   getPendingRating,
   handlePossibleRatingReply,
@@ -446,6 +455,95 @@ export function createEvolutionRoutes(deps: RouteDeps): Hono {
       } catch (err) {
         console.error("[evolution/webhook] image processing error:", err);
         return c.json({ status: "ignored_image_error" }, 200);
+      }
+    }
+
+    // Detect document messages
+    const docMsg = rawMessage?.documentMessage as Record<string, unknown> | undefined;
+    if (!messageText && docMsg && instanceName && remoteJid) {
+      const mimeType = (docMsg.mimetype as string | undefined) ?? "";
+
+      if (!SUPPORTED_DOC_MIMES.has(mimeType)) {
+        console.warn(`[evolution/webhook] unsupported documentMessage MIME type: "${mimeType}" — discarding`);
+        return c.json({ status: "ignored_unsupported_mime" }, 200);
+      }
+
+      const docSenderId = remoteJid.split("@")[0]!;
+      const docChannel = findChannelsByAdapter("whatsapp").find(
+        (ch) => ch.options["instance"] === instanceName
+      );
+      if (!docChannel || !docChannel.agent) {
+        return c.json({ status: "no_channel" }, 200);
+      }
+
+      try {
+        const msgKey = body.data?.key as Record<string, unknown>;
+        const base64Res = await fetch(`${baseUrl}/chat/getBase64FromMediaMessage/${instanceName}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", apikey: apiKey },
+          body: JSON.stringify({ key: msgKey, convertToMp4: false }),
+        });
+        if (!base64Res.ok) {
+          console.error(`[evolution/webhook] getBase64FromMediaMessage (document) failed HTTP ${base64Res.status}`);
+          return c.json({ status: "ignored_document_error" }, 200);
+        }
+        const base64Data = await base64Res.json() as { base64?: string; mimetype?: string };
+        if (!base64Data.base64) {
+          console.error("[evolution/webhook] getBase64FromMediaMessage returned no base64 for document");
+          return c.json({ status: "ignored_document_error" }, 200);
+        }
+
+        const originalFileName = (docMsg.fileName as string | undefined) ?? `document${mimeType.split("/")[1] ? "." + mimeType.split("/")[1] : ""}`;
+        const filename = generateAttachmentId(originalFileName);
+
+        const agentId = docChannel.agent;
+        const session = findOrCreateSession(agentId, docSenderId, docChannel.slug);
+        const sDir = join(agentDir(agentId), "conversations", session.session_id);
+        await mkdir(join(sDir, "attachments"), { recursive: true });
+        const fileBuffer = Buffer.from(base64Data.base64, "base64");
+        await writeFile(join(sDir, "attachments", filename), fileBuffer);
+
+        const classified = await classifyAttachment({ filePath: join(sDir, "attachments", filename), mimeType, filename });
+
+        const caption = docMsg.caption as string | undefined;
+        const contentParts: ContentPart[] = [];
+        if (caption) {
+          contentParts.push({ type: "text", text: caption });
+        }
+        contentParts.push(classified.part);
+
+        routeInboundMessage(
+          docChannel.slug,
+          {
+            senderId: docSenderId,
+            content: contentParts,
+            ts: Date.now(),
+            metadata: { instance: instanceName, remoteJid },
+          },
+          async (sessionId, cbAgentId) => {
+            if (RATING_DISABLED_PENDING_REDESIGN) return;
+            const msgIndex = lastAssistantMessageIndex(cbAgentId, sessionId);
+            if (msgIndex < 0) return;
+            setPendingRating(docSenderId, {
+              sessionId,
+              agentId: cbAgentId,
+              channelId: docChannel.slug,
+              instanceName,
+              messageIndex: msgIndex,
+              step: "awaiting_rating",
+            });
+            await sendWhatsAppText(baseUrl, apiKey, instanceName, remoteJid, "Essa resposta foi útil? Responda *SIM* ou *NAO*").catch(
+              (err) => console.error("[evolution/rating] rating question failed:", err)
+            );
+          }
+        ).catch((err) => {
+          console.error("[evolution/webhook] document routing failed:", err);
+        });
+
+        return c.json({ status: "accepted" }, 200);
+      } catch (err) {
+        console.error("[evolution/webhook] document processing error:", err);
+        return c.json({ status: "ignored_document_error" }, 200);
       }
     }
 

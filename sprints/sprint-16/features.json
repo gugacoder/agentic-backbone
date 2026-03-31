@@ -290,8 +290,9 @@
     "id": "F-337",
     "name": "Evolution processar documentMessage",
     "description": "Modificar apps/backbone/src/connectors/evolution/routes.ts para processar documentMessage no webhook. Pipeline: (1) baixar base64 via getBase64FromMediaMessage; (2) extrair MIME type de payload.documentMessage.mimetype; (3) extrair nome original de payload.documentMessage.fileName; (4) gerar ID, salvar em attachments/; (5) classificar via classifyAttachment() importado de conversations/attachments.ts — reusar mesma lógica (PDF→FilePart, DOCX→mammoth→TextPart, XLSX→SheetJS→TextPart, etc.); (6) montar content array com caption (se houver) + part classificado; (7) chamar routeInboundMessage() com content: ContentPart[]. Para MIME type não suportado: logar warning e descartar.",
-    "status": "pending",
+    "status": "passing",
     "priority": 13,
+    "completed_at": "2026-03-31T19:00:00.000Z",
     "agent": "coder",
     "task": "vibe-code",
     "dependencies": [
