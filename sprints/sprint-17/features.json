@@ -1,0 +1,150 @@
+[
+  {
+    "id": "F-342",
+    "name": "Reescrever display.ts com 4 domain tools",
+    "description": "Substituir as 19 display tools individuais em apps/packages/ai-sdk/src/tools/display.ts por 4 domain tools (display_highlight, display_collection, display_card, display_visual) usando discriminated union no parametro action. Cada domain tool compoe schemas via spread de .shape dos schemas existentes em display-schemas.ts. Execute retorna { ...args, _display: true }. Usar inputSchema (nao parameters) para compatibilidade com a versao do AI SDK em uso.",
+    "status": "pending",
+    "priority": 1,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [],
+    "tests": [
+      "createDisplayTools() retorna exatamente 4 tools: display_highlight, display_collection, display_card, display_visual",
+      "Cada tool usa z.discriminatedUnion('action', [...]) com inputSchema",
+      "display_highlight agrupa actions: metric, price, alert, choices",
+      "display_collection agrupa actions: table, spreadsheet, comparison, carousel, gallery, sources",
+      "display_card agrupa actions: product, link, file, image",
+      "display_visual agrupa actions: chart, map, code, progress, steps",
+      "execute retorna { ...args, _display: true } em todas as 4 tools",
+      "display-schemas.ts NAO foi alterado — todos os exports permanecem",
+      "Nenhuma das 19 tools individuais antigas existe no retorno de createDisplayTools()"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-15/worktree/sprints/sprint-17/3-prps/PRP-23A-display-domain-tools.md"
+  },
+  {
+    "id": "F-343",
+    "name": "Flag disableDisplayTools no ai-sdk",
+    "description": "Adicionar campo disableDisplayTools?: boolean a interface AiAgentOptions em apps/packages/ai-sdk/src/types.ts. Em apps/packages/ai-sdk/src/agent.ts, alterar para: const displayTools = options.disableDisplayTools ? {} : createDisplayTools(). Default false (display tools habilitadas) — retrocompativel.",
+    "status": "pending",
+    "priority": 2,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [],
+    "tests": [
+      "AiAgentOptions em types.ts tem campo disableDisplayTools?: boolean",
+      "agent.ts condiciona: options.disableDisplayTools ? {} : createDisplayTools()",
+      "Sem disableDisplayTools passado, display tools sao carregadas normalmente",
+      "Com disableDisplayTools: true, nenhuma display tool eh incluida no merge de tools",
+      "Import de createDisplayTools permanece em agent.ts",
+      "Assinatura de createDisplayTools() nao foi alterada (sem parametros)"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-15/worktree/sprints/sprint-17/3-prps/PRP-23A-display-domain-tools.md"
+  },
+  {
+    "id": "F-344",
+    "name": "Ler rich query param na rota de mensagens",
+    "description": "Em apps/backbone/src/routes/conversations.ts, na rota POST /conversations/:sessionId/messages, ler const rich = c.req.query('rich') === 'true' uma vez no inicio do handler. Nos dois call sites de sendMessage (~linhas 342 e 374), passar { rich } como quarto argumento.",
+    "status": "pending",
+    "priority": 3,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [],
+    "tests": [
+      "c.req.query('rich') eh lido uma vez no inicio do handler POST /conversations/:sessionId/messages",
+      "Ambos os call sites de sendMessage recebem { rich } como quarto argumento",
+      "Callers de sendMessage fora da rota HTTP (heartbeat, cron) NAO sao alterados",
+      "Build do backbone compila sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-15/worktree/sprints/sprint-17/3-prps/PRP-23B-rich-activation-backbone.md"
+  },
+  {
+    "id": "F-345",
+    "name": "Propagar rich ate assemblePrompt e injetar prompt",
+    "description": "Em apps/backbone/src/conversations/index.ts, adicionar opts?: { rich?: boolean } como quarto parametro de sendMessage() e propagar rich para assemblePrompt(). Em apps/backbone/src/context/index.ts, adicionar rich?: boolean a AssemblePromptOpts, definir constante RICH_CONTENT_PROMPT com bloco <rich_content> listando as 4 domain tools e regras de uso, e concatenar ao system prompt quando opts.rich === true.",
+    "status": "pending",
+    "priority": 4,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": ["F-344"],
+    "tests": [
+      "sendMessage() aceita opts?: { rich?: boolean } sem quebrar callers existentes",
+      "rich eh propagado na chamada a assemblePrompt() via opts",
+      "AssemblePromptOpts tem campo rich?: boolean",
+      "Constante RICH_CONTENT_PROMPT existe com bloco <rich_content> listando display_highlight, display_collection, display_card, display_visual",
+      "Quando rich=true, system prompt contem <rich_content>",
+      "Quando rich=false ou ausente, system prompt NAO contem <rich_content>",
+      "Prompt de rich content eh generico — NAO menciona dominios de negocio"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-15/worktree/sprints/sprint-17/3-prps/PRP-23B-rich-activation-backbone.md"
+  },
+  {
+    "id": "F-346",
+    "name": "Passar disableDisplayTools ao ai-sdk",
+    "description": "Em apps/backbone/src/conversations/index.ts, na chamada a instrumentedRunAgent(), passar disableDisplayTools: !(opts?.rich ?? false). Verificar se instrumentedRunAgent repassa options transparentemente para runAiAgent via spread — se filtra, ajustar o wrapper em apps/backbone/src/telemetry/instrumentor.ts para propagar disableDisplayTools.",
+    "status": "pending",
+    "priority": 5,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": ["F-343", "F-345"],
+    "tests": [
+      "Quando rich=true, disableDisplayTools eh false (display tools habilitadas)",
+      "Quando rich=false ou ausente, disableDisplayTools eh true (display tools desabilitadas)",
+      "instrumentedRunAgent repassa disableDisplayTools para runAiAgent",
+      "Build do backbone compila sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-15/worktree/sprints/sprint-17/3-prps/PRP-23B-rich-activation-backbone.md"
+  },
+  {
+    "id": "F-347",
+    "name": "Migrar registry para action-based",
+    "description": "Reescrever mapeamento em apps/packages/ai-chat/src/display/registry.ts. Criar tipo DisplayActionName com os 19 action names. Mudar defaultDisplayRenderers de Record<DisplayToolName, Component> para Record<DisplayActionName, Component> mapeando action names (metric, price, alert, etc.) para os mesmos renderers existentes. Atualizar resolveDisplayRenderer() para receber action: string em vez de toolName.",
+    "status": "pending",
+    "priority": 6,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": ["F-342"],
+    "tests": [
+      "Tipo DisplayActionName exportado com 19 action names",
+      "defaultDisplayRenderers mapeia 19 action names para os 19 componentes existentes",
+      "resolveDisplayRenderer(action, overrides) aceita action name (nao toolName)",
+      "Componentes de renderer importados NAO foram alterados",
+      "DisplayToolName de display-schemas.ts NAO foi removido"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-15/worktree/sprints/sprint-17/3-prps/PRP-23C-frontend-renderer-rich.md"
+  },
+  {
+    "id": "F-348",
+    "name": "Atualizar PartRenderer para resolver por action",
+    "description": "Em apps/packages/ai-chat/src/parts/PartRenderer.tsx, na logica de display tool rendering, quando toolName.startsWith('display_') e state === 'result', extrair action de part.result.action e chamar resolveDisplayRenderer(action, displayRenderers) em vez de resolveDisplayRenderer(toolName, displayRenderers). Manter behavior existente durante streaming (loading/spinner).",
+    "status": "pending",
+    "priority": 8,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": ["F-347"],
+    "tests": [
+      "PartRenderer extrai action de part.result.action para resolver o renderer",
+      "Prefixo display_ continua sendo usado para identificar display tools",
+      "Durante streaming (state !== 'result'), behavior existente mantido (loading/spinner)",
+      "Se action nao tem renderer mapeado, retorna null (fallback existente)"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-15/worktree/sprints/sprint-17/3-prps/PRP-23C-frontend-renderer-rich.md"
+  },
+  {
+    "id": "F-349",
+    "name": "enableRichContent no useBackboneChat",
+    "description": "Em apps/packages/ai-chat/src/hooks/useBackboneChat.ts, adicionar enableRichContent?: boolean (default true) a UseBackboneChatOptions. Na construcao da URL de useChat, concatenar &rich=true quando options.enableRichContent !== false. Logica !== false garante default true — se campo nao for passado (undefined), rich content eh habilitado.",
+    "status": "pending",
+    "priority": 7,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [],
+    "tests": [
+      "UseBackboneChatOptions tem campo enableRichContent?: boolean",
+      "URL inclui &rich=true quando enableRichContent eh true ou undefined",
+      "URL NAO inclui &rich=true quando enableRichContent eh false",
+      "Nenhum caller existente de useBackboneChat quebra",
+      "buildAttachmentUrl NAO foi alterado"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-15/worktree/sprints/sprint-17/3-prps/PRP-23C-frontend-renderer-rich.md"
+  }
+]
