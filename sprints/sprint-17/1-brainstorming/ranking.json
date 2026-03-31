@@ -1,0 +1,92 @@
+[
+  {
+    "id": "D-001",
+    "type": "feature",
+    "description": "Reescrever `apps/packages/ai-sdk/src/tools/display.ts`: substituir as 19 display tools individuais por 4 domain tools (`display_highlight`, `display_collection`, `display_card`, `display_visual`) com discriminated union no parâmetro `action`. Cada domain tool usa `z.discriminatedUnion('action', [...])` composto a partir dos schemas existentes em `display-schemas.ts` via spread de `.shape`. O `execute` retorna `{ ...args, _display: true }` em todas.",
+    "score": 10,
+    "justification": "Desbloqueador de D-007 e D-008. Maior mudança arquitetural do PRP 23. As fases de frontend (PartRenderer, registry) dependem da nova estrutura de toolName+action. Pode ser feito em paralelo com D-002, D-003, D-006 e D-009.",
+    "sprint": 17,
+    "implemented": false
+  },
+  {
+    "id": "D-002",
+    "type": "feature",
+    "description": "Adicionar flag `disableDisplayTools?: boolean` à interface `AiAgentOptions` em `apps/packages/ai-sdk/src/types.ts`. Em `apps/packages/ai-sdk/src/agent.ts` linha 145, alterar para: `const displayTools = options.disableDisplayTools ? {} : createDisplayTools()`. Isso permite que o backbone controle se display tools são carregadas, passando `disableDisplayTools: true` quando `rich=false`.",
+    "score": 9,
+    "justification": "Sem essa flag, display tools continuam consumindo tokens mesmo quando o cliente não solicitou rich content. É o mecanismo de ativação condicional no ai-sdk. Independente de D-001 — pode ser feito em paralelo.",
+    "sprint": 17,
+    "implemented": false
+  },
+  {
+    "id": "D-003",
+    "type": "feature",
+    "description": "Em `apps/backbone/src/routes/conversations.ts`, nas duas ocorrências de `sendMessage()` (linha 342 e 374), ler `const rich = c.req.query('rich') === 'true'` e passar como `opts: { rich }` para `sendMessage()`. Precede D-004.",
+    "score": 8,
+    "justification": "Entry point do mecanismo de ativação via HTTP. Sem isso, o flag `rich` jamais entra no pipeline. Fase independente — pode ser feito em paralelo com D-001, D-002 e D-009.",
+    "sprint": 17,
+    "implemented": false
+  },
+  {
+    "id": "D-004",
+    "type": "feature",
+    "description": "Em `apps/backbone/src/conversations/index.ts`, atualizar `sendMessage()` para aceitar `opts?: { rich?: boolean }` como quarto parâmetro. Propagar `rich: opts?.rich` na chamada a `assemblePrompt()` (linha 425). Depende de D-003.",
+    "score": 8,
+    "justification": "Elo crítico na cadeia de propagação. Sem esse parâmetro, o flag `rich` do query param não alcança o assembler de prompts. A assinatura atual é `(userId, sessionId, content)` — verificar se o caller em conversations.ts usa `userId` (string) ou `AuthUser` antes de modificar.",
+    "sprint": 17,
+    "implemented": false
+  },
+  {
+    "id": "D-005",
+    "type": "feature",
+    "description": "Em `apps/backbone/src/context/index.ts`: (a) adicionar `rich?: boolean` à interface `AssemblePromptOpts`; (b) definir a constante `RICH_CONTENT_PROMPT` com o bloco `<rich_content>` listando as 4 domain tools e suas regras de uso; (c) no corpo de `assemblePrompt()`, concatenar `RICH_CONTENT_PROMPT` ao system prompt quando `opts.rich === true`. Depende de D-004.",
+    "score": 8,
+    "justification": "Sem o prompt, o modelo ignora as display tools mesmo quando carregadas — o PRP 14 delegou essa injeção ao prompt assembly e ela nunca foi implementada. Esse item fecha essa lacuna.",
+    "sprint": 17,
+    "implemented": false
+  },
+  {
+    "id": "D-006",
+    "type": "feature",
+    "description": "No backbone, identificar onde `runAiAgent` (ou equivalente do ai-sdk) é chamado a partir de `sendMessage()` em `conversations/index.ts` e passar `disableDisplayTools: !(opts?.rich ?? false)`. Garantir que o flag chegue ao `AiAgentOptions` do ai-sdk para que `agent.ts` respeite a flag de D-002. Depende de D-002 e D-004.",
+    "score": 8,
+    "justification": "Fecha o loop de ativação condicional. Sem isso, `disableDisplayTools` existe no tipo mas nunca é passado, e as display tools continuam sempre carregadas. A spec menciona 'backbone passa disableDisplayTools: !rich' mas não indica o arquivo exato — o agente deve rastrear a cadeia de chamadas.",
+    "sprint": 17,
+    "implemented": false
+  },
+  {
+    "id": "D-007",
+    "type": "feature",
+    "description": "Atualizar `apps/packages/ai-chat/src/display/registry.ts`: mudar `DisplayRendererMap` e `defaultDisplayRenderers` de `Record<DisplayToolName, Component>` para `Record<string, Component>` mapeando os 19 action names (metric, price, alert, choices, table, spreadsheet, comparison, carousel, gallery, sources, product, link, file, image, chart, map, code, progress, steps) para os mesmos renderers existentes. Atualizar `resolveDisplayRenderer()` para receber `action: string`. Depende de D-001.",
+    "score": 7,
+    "justification": "Após D-001, os domain tools expõem `result.action` em vez de `toolName` para identificar o renderer. O registry atual mapeia pelo `toolName` antigo (display_metric, display_chart, etc.) — deve migrar para mapear pelo `action` (metric, chart, etc.).",
+    "sprint": 17,
+    "implemented": false
+  },
+  {
+    "id": "D-008",
+    "type": "feature",
+    "description": "Atualizar `apps/packages/ai-chat/src/parts/PartRenderer.tsx`: na lógica de resolução de display renderer (linha 141-144), quando `toolInvocation.toolName.startsWith('display_')` e `state === 'result'`, extrair `action = toolInvocation.result?.action` e chamar `resolveDisplayRenderer(action, displayRenderers)` em vez de `resolveDisplayRenderer(toolInvocation.toolName, displayRenderers)`. Depende de D-007.",
+    "score": 7,
+    "justification": "Atualiza o ponto de renderização para funcionar com domain tools. O prefixo `display_` ainda identifica que é um display tool, mas o renderer correto é determinado pelo `action` dentro do result. Sem isso, nenhum renderer é encontrado após D-001.",
+    "sprint": 17,
+    "implemented": false
+  },
+  {
+    "id": "D-009",
+    "type": "feature",
+    "description": "Em `apps/packages/ai-chat/src/hooks/useBackboneChat.ts`, adicionar `enableRichContent?: boolean` (default `true`) à interface `UseBackboneChatOptions`. Na construção da URL de `useChat`, concatenar `&rich=true` quando `options.enableRichContent !== false`. Fase independente.",
+    "score": 7,
+    "justification": "Garante que o ai-chat solicite rich content por padrão, ativando o prompt e as display tools no backbone sem configuração adicional. Consumidores que não querem rich content (ex: canais WhatsApp-only) passam `enableRichContent: false`.",
+    "sprint": 17,
+    "implemented": false
+  },
+  {
+    "id": "D-010",
+    "type": "feature",
+    "description": "Após implementar D-001 a D-009: executar build do ai-sdk (`tsc` ou `tsup`) e do ai-chat para validar que os tipos TypeScript compilam. Verificar que `DisplayToolRegistry` e `DisplayToolName` em `display-schemas.ts` continuam exportados sem alteração (os schemas individuais não mudam). Depende de D-001, D-002, D-007, D-008, D-009.",
+    "score": 6,
+    "justification": "O refactor de domain tools altera a API pública do ai-sdk (AiAgentOptions + createDisplayTools). O build valida que não há imports quebrados, tipos incompatíveis ou referências a tools antigas. Crítico antes de testar end-to-end.",
+    "sprint": 17,
+    "implemented": false
+  }
+]
