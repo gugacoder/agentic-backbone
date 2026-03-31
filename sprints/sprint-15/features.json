@@ -235,7 +235,7 @@
     "id": "F-312",
     "name": "Domain tool whatsapp_contacts",
     "description": "Criar apps/backbone/src/connectors/evolution/tools/contacts.ts com domain tool whatsapp_contacts agrupando 7 actions (check_numbers, find_contacts, find_messages, find_chats, fetch_profile, block, archive_chat) via z.discriminatedUnion. Factory function createWhatsappContactsTool(slugs). Campo instance.",
-    "status": "pending",
+    "status": "passing",
     "priority": 11,
     "agent": "coder",
     "task": "vibe-code",
@@ -247,7 +247,8 @@
       "Execute despacha todas 7 actions corretamente",
       "TypeScript compila sem erros"
     ],
-    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-10/worktree/sprints/sprint-15/3-prps/PRP-18B-whatsapp-domain-tools.md"
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-10/worktree/sprints/sprint-15/3-prps/PRP-18B-whatsapp-domain-tools.md",
+    "completed_at": "2026-03-31T03:00:00Z"
   },
   {
     "id": "F-313",
