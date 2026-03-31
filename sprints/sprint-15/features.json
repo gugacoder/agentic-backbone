@@ -498,7 +498,7 @@
     "id": "F-324",
     "name": "Build e validacao final",
     "description": "Executar npm run build — deve completar sem erros. Verificar que nenhum import em todo o codebase referencia arquivos removidos (grep por nomes antigos). Confirmar que total de tools do agente com todos connectors habilitados <= 128 (idealmente ~45). Smoke test: o servidor deve iniciar sem erros.",
-    "status": "blocked",
+    "status": "passing",
     "priority": 25,
     "agent": "coder",
     "task": "vibe-code",
@@ -513,6 +513,7 @@
       "Total de tools do agente com todos connectors <= 128",
       "Servidor inicia sem erros de import"
     ],
-    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-10/worktree/sprints/sprint-15/3-prps/PRP-18F-limpeza-validacao.md"
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-10/worktree/sprints/sprint-15/3-prps/PRP-18F-limpeza-validacao.md",
+    "completed_at": "2026-03-31T04:00:00Z"
   }
 ]
