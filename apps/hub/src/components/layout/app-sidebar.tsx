@@ -89,7 +89,7 @@ function UserMenu() {
 
 export function AppSidebar() {
   return (
-    <Sidebar>
+    <Sidebar className="text-sm">
       <SidebarHeader className="px-4 py-3">
         <span className="text-lg font-semibold tracking-tight">Agentic Backbone</span>
       </SidebarHeader>
