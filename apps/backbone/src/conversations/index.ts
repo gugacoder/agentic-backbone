@@ -453,6 +453,7 @@ export async function* sendMessage(
     role: "conversation",
     tools: conversationTools,
     system: assembled.system,
+    disableDisplayTools: !(opts?.rich ?? false),
     ...(contentPartsArg ? { contentParts: contentPartsArg } : {}),
   })) {
     if (event.type === "text" && event.content) {
