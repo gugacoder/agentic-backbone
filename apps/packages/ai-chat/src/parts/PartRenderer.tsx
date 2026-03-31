@@ -31,9 +31,10 @@ export interface PartRendererProps {
   part: MessagePart;
   isStreaming?: boolean;
   displayRenderers?: DisplayRendererMap;
+  keepReasoning?: boolean;
 }
 
-export const PartRenderer = memo(function PartRenderer({ part, isStreaming, displayRenderers }: PartRendererProps) {
+export const PartRenderer = memo(function PartRenderer({ part, isStreaming, displayRenderers, keepReasoning }: PartRendererProps) {
   switch (part.type) {
     case "text": {
       const p = part as TextPart;
@@ -42,6 +43,7 @@ export const PartRenderer = memo(function PartRenderer({ part, isStreaming, disp
 
     case "reasoning": {
       const p = part as ReasoningPart;
+      if (!keepReasoning && !isStreaming) return null;
       return <ReasoningBlock content={p.reasoning} isStreaming={isStreaming} />;
     }
 

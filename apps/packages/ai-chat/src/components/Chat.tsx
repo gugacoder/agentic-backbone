@@ -21,6 +21,9 @@ export interface ChatProps {
   defaultAgent?: string;
   enableAttachments?: boolean;
   enableVoice?: boolean;
+  keepReasoning?: boolean;
+  showAgentSelector?: boolean;
+  compactAgentSelector?: boolean;
 }
 
 interface ChatContentProps {
@@ -30,15 +33,18 @@ interface ChatContentProps {
   defaultAgent?: string;
   enableAttachments?: boolean;
   enableVoice?: boolean;
+  keepReasoning?: boolean;
+  showAgentSelector?: boolean;
+  compactAgentSelector?: boolean;
 }
 
-function ChatContent({ displayRenderers, placeholder, endpoints, defaultAgent, enableAttachments = false, enableVoice = false }: ChatContentProps) {
+function ChatContent({ displayRenderers, placeholder, endpoints, defaultAgent, enableAttachments = false, enableVoice = false, keepReasoning = false, showAgentSelector = true, compactAgentSelector = false }: ChatContentProps) {
   const { messages, input, setInput, handleSubmit, isLoading, stop, error, reload } = useChatContext();
   const [activeAgent, setActiveAgent] = React.useState(defaultAgent ?? endpoints?.[0]?.id ?? "");
 
   return (
     <>
-      <MessageList messages={messages} isLoading={isLoading} displayRenderers={displayRenderers} error={error ?? undefined} onRetry={reload} />
+      <MessageList messages={messages} isLoading={isLoading} displayRenderers={displayRenderers} error={error ?? undefined} onRetry={reload} keepReasoning={keepReasoning} />
       <div className="px-4 pb-4">
         <MessageInput
           input={input}
@@ -52,6 +58,8 @@ function ChatContent({ displayRenderers, placeholder, endpoints, defaultAgent, e
           endpoints={endpoints}
           activeEndpoint={activeAgent}
           onEndpointChange={setActiveAgent}
+          showAgentSelector={showAgentSelector}
+          compactAgentSelector={compactAgentSelector}
         />
       </div>
     </>
@@ -72,6 +80,9 @@ export function Chat({
   defaultAgent,
   enableAttachments,
   enableVoice,
+  keepReasoning,
+  showAgentSelector,
+  compactAgentSelector,
 }: ChatProps) {
   return (
     <ChatProvider key={sessionId} endpoint={endpoint} token={token} sessionId={sessionId} initialMessages={initialMessages as any}>
@@ -84,6 +95,9 @@ export function Chat({
           defaultAgent={defaultAgent}
           enableAttachments={enableAttachments}
           enableVoice={enableVoice}
+          keepReasoning={keepReasoning}
+          showAgentSelector={showAgentSelector}
+          compactAgentSelector={compactAgentSelector}
         />
         {footer}
       </div>

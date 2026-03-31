@@ -31,6 +31,8 @@ export interface MessageInputProps {
   endpoints?: AgentEndpoint[];
   activeEndpoint?: string;
   onEndpointChange?: (id: string) => void;
+  showAgentSelector?: boolean;
+  compactAgentSelector?: boolean;
 }
 
 // ── Constants ──
@@ -161,25 +163,30 @@ function PlusMenu({ onFile, onCamera, onGallery, onClose }: {
 
 // ── Agent Badge (clickable — opens the same dropdown as @mention) ──
 
-function AgentBadge({ endpoints, activeId, onClick }: { endpoints: AgentEndpoint[]; activeId: string; onClick: () => void }) {
+function AgentBadge({ endpoints, activeId, compact = false, onClick }: { endpoints: AgentEndpoint[]; activeId: string; compact?: boolean; onClick: () => void }) {
   const active = endpoints.find((e) => e.id === activeId) ?? endpoints[0];
   if (!active) return null;
+
+  const avatar = active.avatar ? (
+    <img src={active.avatar} alt="" className="h-4 w-4 rounded-full object-cover" />
+  ) : (
+    <span className="h-4 w-4 rounded-full bg-primary/20 flex items-center justify-center text-[10px] text-primary font-semibold">
+      {active.label.charAt(0).toUpperCase()}
+    </span>
+  );
 
   return (
     <button
       type="button"
       onClick={onClick}
-      className="flex items-center gap-1.5 rounded-full border border-border/50 bg-background/50 px-2.5 py-1 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors shrink-0 cursor-pointer"
-    >
-      {active.avatar ? (
-        <img src={active.avatar} alt="" className="h-4 w-4 rounded-full object-cover" />
-      ) : (
-        <span className="h-4 w-4 rounded-full bg-primary/20 flex items-center justify-center text-[10px] text-primary font-semibold">
-          {active.label.charAt(0).toUpperCase()}
-        </span>
+      className={cn(
+        "flex items-center rounded-full border border-border/50 bg-background/50 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors shrink-0 cursor-pointer",
+        compact ? "p-1" : "gap-1.5 px-2.5 py-1",
       )}
-      <span className="max-w-[80px] truncate">{active.label}</span>
-      <svg className="h-3 w-3 opacity-50" viewBox="0 0 12 12" fill="none"><path d="M3 5l3 3 3-3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+    >
+      {avatar}
+      {!compact && <span className="max-w-[80px] truncate">{active.label}</span>}
+      {!compact && <svg className="h-3 w-3 opacity-50" viewBox="0 0 12 12" fill="none"><path d="M3 5l3 3 3-3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
     </button>
   );
 }
@@ -252,6 +259,8 @@ export function MessageInput({
   endpoints,
   activeEndpoint,
   onEndpointChange,
+  showAgentSelector = true,
+  compactAgentSelector = false,
 }: MessageInputProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -512,8 +521,8 @@ export function MessageInput({
           )}
 
           {/* Agent badge (click to open dropdown) */}
-          {hasMultipleEndpoints && activeEndpoint && (
-            <AgentBadge endpoints={endpoints!} activeId={activeEndpoint} onClick={() => setShowAgentDropdown(!showAgentDropdown)} />
+          {showAgentSelector && hasMultipleEndpoints && activeEndpoint && (
+            <AgentBadge endpoints={endpoints!} activeId={activeEndpoint} compact={compactAgentSelector} onClick={() => setShowAgentDropdown(!showAgentDropdown)} />
           )}
 
           {/* Center: Textarea */}
@@ -522,7 +531,7 @@ export function MessageInput({
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            onPaste={handlePaste}
+            onPaste={enableAttachments ? handlePaste : undefined}
             placeholder={placeholder}
             rows={1}
             disabled={isLoading}

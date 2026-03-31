@@ -12,6 +12,7 @@ export interface MessageBubbleProps {
   isStreaming?: boolean;
   displayRenderers?: DisplayRendererMap;
   className?: string;
+  keepReasoning?: boolean;
 }
 
 function extractText(message: Message): string {
@@ -48,7 +49,7 @@ function CopyButton({ text }: { text: string }) {
   );
 }
 
-export const MessageBubble = memo(function MessageBubble({ message, isStreaming, displayRenderers, className }: MessageBubbleProps) {
+export const MessageBubble = memo(function MessageBubble({ message, isStreaming, displayRenderers, className, keepReasoning }: MessageBubbleProps) {
   const isUser = message.role === "user";
   const hasParts = Array.isArray(message.parts) && message.parts.length > 0;
 
@@ -72,6 +73,7 @@ export const MessageBubble = memo(function MessageBubble({ message, isStreaming,
                   part={part as Parameters<typeof PartRenderer>[0]["part"]}
                   isStreaming={isStreaming}
                   displayRenderers={displayRenderers}
+                  keepReasoning={keepReasoning}
                 />
               ))}
             </div>
@@ -96,4 +98,5 @@ export const MessageBubble = memo(function MessageBubble({ message, isStreaming,
   && prev.isStreaming === next.isStreaming
   && prev.displayRenderers === next.displayRenderers
   && prev.className === next.className
+  && prev.keepReasoning === next.keepReasoning
 );
