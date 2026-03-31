@@ -1,0 +1,452 @@
+[
+  {
+    "id": "F-300",
+    "name": "Domain tool gitlab_issues",
+    "description": "Criar apps/backbone/src/connectors/gitlab/tools/issues.ts com domain tool gitlab_issues agrupando 13 actions (list, get, create, update, delete, move, comment, list_comments, update_comment, delete_comment, list_links, add_link, related_mrs) via z.discriminatedUnion('action', [...]). Factory function createGitLabIssuesTool(adapters). Copiar schemas Zod dos arquivos individuais issue-*.ts existentes. Policy check readonly para acoes de escrita. Importar createIssuesResource de @agentic-backbone/gitlab-v4.",
+    "status": "pending",
+    "priority": 1,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [],
+    "tests": [
+      "Arquivo apps/backbone/src/connectors/gitlab/tools/issues.ts existe",
+      "Exporta createGitLabIssuesTool(adapters) retornando Record<string, any> com key gitlab_issues",
+      "Schema usa z.discriminatedUnion('action', [...]) com 13 actions",
+      "Campo adapter via .and(z.object({ adapter: z.enum(slugs).optional() }))",
+      "Acoes de escrita (create, update, delete, move, comment, update_comment, delete_comment, add_link) verificam policy readonly",
+      "Execute faz dispatch por args.action com switch/case para todas 13 actions",
+      "TypeScript compila sem erros (npx tsc --noEmit no arquivo)"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-10/worktree/sprints/sprint-15/3-prps/PRP-18A-gitlab-domain-tools.md"
+  },
+  {
+    "id": "F-301",
+    "name": "Domain tool gitlab_mrs",
+    "description": "Criar apps/backbone/src/connectors/gitlab/tools/mrs.ts com domain tool gitlab_mrs agrupando 16 actions (list, get, create, update, delete, merge, approve, unapprove, approvals, rebase, diff, pipelines, comment, list_comments, update_comment, delete_comment) via z.discriminatedUnion. Factory function createGitLabMrsTool(adapters). Copiar schemas dos mr-*.ts existentes. Policy check readonly para create, update, delete, merge, approve, unapprove, rebase, comment, update_comment, delete_comment.",
+    "status": "pending",
+    "priority": 2,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [],
+    "tests": [
+      "Arquivo apps/backbone/src/connectors/gitlab/tools/mrs.ts existe",
+      "Exporta createGitLabMrsTool(adapters) retornando Record<string, any> com key gitlab_mrs",
+      "Schema usa z.discriminatedUnion com 16 actions",
+      "Acoes de escrita verificam policy readonly",
+      "Execute despacha todas 16 actions corretamente",
+      "TypeScript compila sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-10/worktree/sprints/sprint-15/3-prps/PRP-18A-gitlab-domain-tools.md"
+  },
+  {
+    "id": "F-302",
+    "name": "Domain tool gitlab_repo",
+    "description": "Criar apps/backbone/src/connectors/gitlab/tools/repo.ts com domain tool gitlab_repo agrupando 17 actions (get_file, list_files, create_file, update_file, delete_file, list_branches, get_branch, create_branch, delete_branch, list_tags, get_tag, create_tag, delete_tag, list_commits, get_commit, commit_diff, compare) via z.discriminatedUnion. Factory function createGitLabRepoTool(adapters). Copiar schemas dos repo-*.ts existentes. Policy check readonly para create_file, update_file, delete_file, create_branch, delete_branch, create_tag, delete_tag.",
+    "status": "pending",
+    "priority": 3,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [],
+    "tests": [
+      "Arquivo apps/backbone/src/connectors/gitlab/tools/repo.ts existe",
+      "Exporta createGitLabRepoTool(adapters) retornando Record<string, any> com key gitlab_repo",
+      "Schema usa z.discriminatedUnion com 17 actions",
+      "Acoes de escrita verificam policy readonly",
+      "Execute despacha todas 17 actions corretamente",
+      "TypeScript compila sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-10/worktree/sprints/sprint-15/3-prps/PRP-18A-gitlab-domain-tools.md"
+  },
+  {
+    "id": "F-303",
+    "name": "Domain tool gitlab_ci",
+    "description": "Criar apps/backbone/src/connectors/gitlab/tools/ci.ts com domain tool gitlab_ci agrupando 12 actions (list_pipelines, get_pipeline, trigger_pipeline, delete_pipeline, retry_pipeline, cancel_pipeline, list_jobs, get_job, job_log, retry_job, cancel_job, play_job) via z.discriminatedUnion. Factory function createGitLabCiTool(adapters). Copiar schemas dos ci-*.ts existentes. Policy check readonly para trigger_pipeline, delete_pipeline, retry_pipeline, cancel_pipeline, retry_job, cancel_job, play_job.",
+    "status": "pending",
+    "priority": 4,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [],
+    "tests": [
+      "Arquivo apps/backbone/src/connectors/gitlab/tools/ci.ts existe",
+      "Exporta createGitLabCiTool(adapters) retornando Record<string, any> com key gitlab_ci",
+      "Schema usa z.discriminatedUnion com 12 actions",
+      "Acoes de escrita verificam policy readonly",
+      "Execute despacha todas 12 actions corretamente",
+      "TypeScript compila sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-10/worktree/sprints/sprint-15/3-prps/PRP-18A-gitlab-domain-tools.md"
+  },
+  {
+    "id": "F-304",
+    "name": "Domain tool gitlab_labels",
+    "description": "Criar apps/backbone/src/connectors/gitlab/tools/labels.ts com domain tool gitlab_labels agrupando 5 actions (list, get, create, update, delete) via z.discriminatedUnion. Factory function createGitLabLabelsTool(adapters). Copiar schemas dos label-*.ts existentes. Policy check readonly para create, update, delete.",
+    "status": "pending",
+    "priority": 6,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [],
+    "tests": [
+      "Arquivo apps/backbone/src/connectors/gitlab/tools/labels.ts existe",
+      "Exporta createGitLabLabelsTool(adapters) retornando Record<string, any> com key gitlab_labels",
+      "Schema usa z.discriminatedUnion com 5 actions",
+      "Acoes de escrita verificam policy readonly",
+      "TypeScript compila sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-10/worktree/sprints/sprint-15/3-prps/PRP-18A-gitlab-domain-tools.md"
+  },
+  {
+    "id": "F-305",
+    "name": "Domain tool gitlab_milestones",
+    "description": "Criar apps/backbone/src/connectors/gitlab/tools/milestones.ts com domain tool gitlab_milestones agrupando 7 actions (list, get, create, update, delete, issues, mrs) via z.discriminatedUnion. Factory function createGitLabMilestonesTool(adapters). Copiar schemas dos milestone-*.ts existentes. Policy check readonly para create, update, delete.",
+    "status": "pending",
+    "priority": 7,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [],
+    "tests": [
+      "Arquivo apps/backbone/src/connectors/gitlab/tools/milestones.ts existe",
+      "Exporta createGitLabMilestonesTool(adapters) retornando Record<string, any> com key gitlab_milestones",
+      "Schema usa z.discriminatedUnion com 7 actions",
+      "Acoes de escrita verificam policy readonly",
+      "TypeScript compila sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-10/worktree/sprints/sprint-15/3-prps/PRP-18A-gitlab-domain-tools.md"
+  },
+  {
+    "id": "F-306",
+    "name": "Domain tool gitlab_releases",
+    "description": "Criar apps/backbone/src/connectors/gitlab/tools/releases.ts com domain tool gitlab_releases agrupando 5 actions (list, get, create, update, delete) via z.discriminatedUnion. Factory function createGitLabReleasesTool(adapters). Copiar schemas dos release-*.ts existentes. Policy check readonly para create, update, delete.",
+    "status": "pending",
+    "priority": 9,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [],
+    "tests": [
+      "Arquivo apps/backbone/src/connectors/gitlab/tools/releases.ts existe",
+      "Exporta createGitLabReleasesTool(adapters) retornando Record<string, any> com key gitlab_releases",
+      "Schema usa z.discriminatedUnion com 5 actions",
+      "Acoes de escrita verificam policy readonly",
+      "TypeScript compila sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-10/worktree/sprints/sprint-15/3-prps/PRP-18A-gitlab-domain-tools.md"
+  },
+  {
+    "id": "F-307",
+    "name": "Domain tool gitlab_wiki",
+    "description": "Criar apps/backbone/src/connectors/gitlab/tools/wiki.ts com domain tool gitlab_wiki agrupando 5 actions (list, get, create, update, delete) via z.discriminatedUnion. Factory function createGitLabWikiTool(adapters). Copiar schemas dos wiki-*.ts existentes. Policy check readonly para create, update, delete.",
+    "status": "pending",
+    "priority": 10,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [],
+    "tests": [
+      "Arquivo apps/backbone/src/connectors/gitlab/tools/wiki.ts existe",
+      "Exporta createGitLabWikiTool(adapters) retornando Record<string, any> com key gitlab_wiki",
+      "Schema usa z.discriminatedUnion com 5 actions",
+      "Acoes de escrita verificam policy readonly",
+      "TypeScript compila sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-10/worktree/sprints/sprint-15/3-prps/PRP-18A-gitlab-domain-tools.md"
+  },
+  {
+    "id": "F-308",
+    "name": "Domain tool gitlab_users",
+    "description": "Criar apps/backbone/src/connectors/gitlab/tools/users.ts com domain tool gitlab_users agrupando 3 actions (me, get, search) via z.discriminatedUnion. Factory function createGitLabUsersTool(adapters). Copiar schemas dos user-*.ts existentes. Nenhuma acao de escrita (todas sao leitura).",
+    "status": "pending",
+    "priority": 12,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [],
+    "tests": [
+      "Arquivo apps/backbone/src/connectors/gitlab/tools/users.ts existe",
+      "Exporta createGitLabUsersTool(adapters) retornando Record<string, any> com key gitlab_users",
+      "Schema usa z.discriminatedUnion com 3 actions",
+      "Nenhum policy check necessario (todas leitura)",
+      "TypeScript compila sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-10/worktree/sprints/sprint-15/3-prps/PRP-18A-gitlab-domain-tools.md"
+  },
+  {
+    "id": "F-309",
+    "name": "Domain tool gitlab_projects",
+    "description": "Criar apps/backbone/src/connectors/gitlab/tools/projects.ts com domain tool gitlab_projects agrupando 6 actions (search, get, list_members, add_member, update_member, remove_member) via z.discriminatedUnion. Factory function createGitLabProjectsTool(adapters). Copiar schemas dos project-*.ts existentes. Policy check readonly para add_member, update_member, remove_member.",
+    "status": "pending",
+    "priority": 13,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [],
+    "tests": [
+      "Arquivo apps/backbone/src/connectors/gitlab/tools/projects.ts existe",
+      "Exporta createGitLabProjectsTool(adapters) retornando Record<string, any> com key gitlab_projects",
+      "Schema usa z.discriminatedUnion com 6 actions",
+      "Acoes de escrita verificam policy readonly",
+      "TypeScript compila sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-10/worktree/sprints/sprint-15/3-prps/PRP-18A-gitlab-domain-tools.md"
+  },
+  {
+    "id": "F-310",
+    "name": "Domain tool whatsapp_messaging",
+    "description": "Criar apps/backbone/src/connectors/evolution/tools/messaging.ts com domain tool whatsapp_messaging agrupando 13 actions (send_text, send_media, send_audio, send_location, send_contact, send_reaction, send_poll, send_sticker, send_list, send_buttons, delete_message, mark_as_read, send_presence) via z.discriminatedUnion. Factory function createWhatsappMessagingTool(slugs). Campo comum eh 'instance' (nao 'adapter'). Copiar schemas dos whatsapp-*.ts existentes.",
+    "status": "pending",
+    "priority": 5,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [],
+    "tests": [
+      "Arquivo apps/backbone/src/connectors/evolution/tools/messaging.ts existe",
+      "Exporta createWhatsappMessagingTool(slugs) retornando Record<string, any> com key whatsapp_messaging",
+      "Schema usa z.discriminatedUnion com 13 actions",
+      "Campo instance via .and(z.object({ instance: z.enum(slugs).optional() }))",
+      "Execute despacha todas 13 actions corretamente",
+      "TypeScript compila sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-10/worktree/sprints/sprint-15/3-prps/PRP-18B-whatsapp-domain-tools.md"
+  },
+  {
+    "id": "F-311",
+    "name": "Domain tool whatsapp_groups",
+    "description": "Criar apps/backbone/src/connectors/evolution/tools/groups.ts com domain tool whatsapp_groups agrupando 11 actions (create, list, info, participants, invite_code, send_invite, update_participant, update_setting, update_subject, update_description, leave) via z.discriminatedUnion. Factory function createWhatsappGroupsTool(slugs). Campo instance.",
+    "status": "pending",
+    "priority": 8,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [],
+    "tests": [
+      "Arquivo apps/backbone/src/connectors/evolution/tools/groups.ts existe",
+      "Exporta createWhatsappGroupsTool(slugs) retornando Record<string, any> com key whatsapp_groups",
+      "Schema usa z.discriminatedUnion com 11 actions",
+      "Execute despacha todas 11 actions corretamente",
+      "TypeScript compila sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-10/worktree/sprints/sprint-15/3-prps/PRP-18B-whatsapp-domain-tools.md"
+  },
+  {
+    "id": "F-312",
+    "name": "Domain tool whatsapp_contacts",
+    "description": "Criar apps/backbone/src/connectors/evolution/tools/contacts.ts com domain tool whatsapp_contacts agrupando 7 actions (check_numbers, find_contacts, find_messages, find_chats, fetch_profile, block, archive_chat) via z.discriminatedUnion. Factory function createWhatsappContactsTool(slugs). Campo instance.",
+    "status": "pending",
+    "priority": 11,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [],
+    "tests": [
+      "Arquivo apps/backbone/src/connectors/evolution/tools/contacts.ts existe",
+      "Exporta createWhatsappContactsTool(slugs) retornando Record<string, any> com key whatsapp_contacts",
+      "Schema usa z.discriminatedUnion com 7 actions",
+      "Execute despacha todas 7 actions corretamente",
+      "TypeScript compila sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-10/worktree/sprints/sprint-15/3-prps/PRP-18B-whatsapp-domain-tools.md"
+  },
+  {
+    "id": "F-313",
+    "name": "Domain tool whatsapp_admin",
+    "description": "Criar apps/backbone/src/connectors/evolution/tools/admin.ts com domain tool whatsapp_admin agrupando 5 actions (connection_state, list_instances, list_labels, handle_label, api_raw) via z.discriminatedUnion. Factory function createWhatsappAdminTool(slugs). A action api_raw absorve evolution-api.ts (parametros: method, endpoint, body?).",
+    "status": "pending",
+    "priority": 14,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [],
+    "tests": [
+      "Arquivo apps/backbone/src/connectors/evolution/tools/admin.ts existe",
+      "Exporta createWhatsappAdminTool(slugs) retornando Record<string, any> com key whatsapp_admin",
+      "Schema usa z.discriminatedUnion com 5 actions",
+      "Action api_raw tem parametros method, endpoint, body",
+      "Execute despacha todas 5 actions corretamente",
+      "TypeScript compila sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-10/worktree/sprints/sprint-15/3-prps/PRP-18B-whatsapp-domain-tools.md"
+  },
+  {
+    "id": "F-314",
+    "name": "Domain tool email",
+    "description": "Criar apps/backbone/src/connectors/email/tools/email.ts com domain tool email agrupando 10 actions (send, search, read, download_attachment, manage_flags, move, delete, list_mailboxes, draft_create, draft_send) via z.discriminatedUnion. Factory function createEmailTool(slugs). Copiar schemas dos tool files individuais existentes. Policy check readonly para acoes de escrita (send, move, delete, manage_flags, draft_create, draft_send).",
+    "status": "pending",
+    "priority": 15,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [],
+    "tests": [
+      "Arquivo apps/backbone/src/connectors/email/tools/email.ts existe",
+      "Exporta createEmailTool(slugs) retornando Record<string, any> com key email",
+      "Schema usa z.discriminatedUnion com 10 actions",
+      "Acoes de escrita verificam policy readonly",
+      "Execute despacha todas 10 actions corretamente",
+      "TypeScript compila sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-10/worktree/sprints/sprint-15/3-prps/PRP-18C-email-domain-tool.md"
+  },
+  {
+    "id": "F-315",
+    "name": "Ativar domain tools em gitlab/index.ts",
+    "description": "Alterar apps/backbone/src/connectors/gitlab/index.ts: substituir ~89 imports individuais por 10 imports de domain tools (createGitLabIssuesTool, createGitLabMrsTool, createGitLabRepoTool, createGitLabCiTool, createGitLabLabelsTool, createGitLabMilestonesTool, createGitLabReleasesTool, createGitLabWikiTool, createGitLabUsersTool, createGitLabProjectsTool). Atualizar createTools(adapters) para retornar spread das 10 domain tools.",
+    "status": "pending",
+    "priority": 17,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": ["F-300", "F-301", "F-302", "F-303", "F-304", "F-305", "F-306", "F-307", "F-308", "F-309"],
+    "tests": [
+      "gitlab/index.ts importa 10 domain tools, zero imports de tool files individuais",
+      "createTools(adapters) retorna spread das 10 domain tools",
+      "Nenhum import referencia arquivos individuais (issue-*.ts, mr-*.ts, etc.)",
+      "ConnectorDef.createTools() continua retornando Record<string, any>",
+      "TypeScript compila sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-10/worktree/sprints/sprint-15/3-prps/PRP-18D-ativacao-connectors.md"
+  },
+  {
+    "id": "F-316",
+    "name": "Ativar domain tools em evolution/tools/index.ts",
+    "description": "Alterar apps/backbone/src/connectors/evolution/tools/index.ts: substituir ~37 imports individuais por 4 imports de domain tools (createWhatsappMessagingTool, createWhatsappGroupsTool, createWhatsappContactsTool, createWhatsappAdminTool). Manter assinatura de createEvolutionTools(slugs) identica.",
+    "status": "pending",
+    "priority": 18,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": ["F-310", "F-311", "F-312", "F-313"],
+    "tests": [
+      "evolution/tools/index.ts importa 4 domain tools, zero imports de whatsapp-*.ts",
+      "createEvolutionTools(slugs) mantem mesma assinatura",
+      "Nenhum import referencia arquivos individuais",
+      "TypeScript compila sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-10/worktree/sprints/sprint-15/3-prps/PRP-18D-ativacao-connectors.md"
+  },
+  {
+    "id": "F-317",
+    "name": "Ativar domain tool em email/tools/index.ts",
+    "description": "Alterar apps/backbone/src/connectors/email/tools/index.ts: substituir 10 exports individuais por 1 re-export da domain tool (export { createEmailTool } from './email.js'). Verificar como email/index.ts consome tools/index.ts e adaptar.",
+    "status": "pending",
+    "priority": 19,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": ["F-314"],
+    "tests": [
+      "email/tools/index.ts exporta apenas createEmailTool, zero exports individuais",
+      "email/index.ts funciona corretamente com a nova exportacao",
+      "TypeScript compila sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-10/worktree/sprints/sprint-15/3-prps/PRP-18D-ativacao-connectors.md"
+  },
+  {
+    "id": "F-318",
+    "name": "Ativar domain tools em implantacao/index.ts",
+    "description": "Alterar apps/backbone/src/connectors/implantacao/index.ts: substituir 28 imports individuais do GitLab por imports das domain tools relevantes (createGitLabIssuesTool, createGitLabMrsTool, createGitLabRepoTool, createGitLabCiTool, etc. de ../gitlab/tools/). Implantacao passa a expor todas actions de cada dominio — comportamento expandido mas aceitavel.",
+    "status": "pending",
+    "priority": 20,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": ["F-300", "F-301", "F-302", "F-303", "F-304", "F-305", "F-306", "F-307", "F-308", "F-309"],
+    "tests": [
+      "implantacao/index.ts importa domain tools do GitLab, zero imports de tool files individuais",
+      "createTools() retorna spread das domain tools",
+      "Nenhum import referencia arquivos individuais",
+      "TypeScript compila sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-10/worktree/sprints/sprint-15/3-prps/PRP-18D-ativacao-connectors.md"
+  },
+  {
+    "id": "F-319",
+    "name": "maxTools em PROVIDER_CONFIGS",
+    "description": "Alterar apps/backbone/src/settings/llm.ts: adicionar maxTools?: number ao tipo de PROVIDER_CONFIGS e adicionar maxTools: 128 para o provider groq. Provider openrouter nao define maxTools (sem limite). Atualizar getProviderConfig() se necessario para incluir maxTools no retorno.",
+    "status": "pending",
+    "priority": 16,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [],
+    "tests": [
+      "PROVIDER_CONFIGS tem tipo com maxTools?: number",
+      "Provider groq tem maxTools: 128",
+      "Provider openrouter nao tem maxTools",
+      "getProviderConfig() retorna maxTools quando definido",
+      "TypeScript compila sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-10/worktree/sprints/sprint-15/3-prps/PRP-18E-max-tools-warning.md"
+  },
+  {
+    "id": "F-320",
+    "name": "Warning quando tools excedem maxTools",
+    "description": "Alterar apps/backbone/src/agent/index.ts: apos composicao de tools via composeAgentTools, verificar se providerConf.maxTools esta definido e Object.keys(tools).length > maxTools. Se sim, emitir console.warn com contagem atual e limite do provider. Warning nao bloqueia execucao.",
+    "status": "pending",
+    "priority": 21,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": ["F-319"],
+    "tests": [
+      "agent/index.ts emite console.warn quando tools > maxTools",
+      "Warning inclui contagem atual e limite do provider",
+      "Warning nao bloqueia execucao do agente",
+      "Sem warning quando maxTools nao esta definido (openrouter)",
+      "TypeScript compila sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-10/worktree/sprints/sprint-15/3-prps/PRP-18E-max-tools-warning.md"
+  },
+  {
+    "id": "F-321",
+    "name": "Remover tools individuais do GitLab",
+    "description": "Remover 89 tool files individuais de apps/backbone/src/connectors/gitlab/tools/: issue-*.ts (13), mr-*.ts (16), repo-*.ts (17), ci-*.ts (12), label-*.ts (5), milestone-*.ts (7), release-*.ts (5), wiki-*.ts (5), user-*.ts (3), project-*.ts (6). Apos remocao o diretorio deve conter apenas: issues.ts, mrs.ts, repo.ts, ci.ts, labels.ts, milestones.ts, releases.ts, wiki.ts, users.ts, projects.ts.",
+    "status": "pending",
+    "priority": 22,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": ["F-315", "F-318"],
+    "tests": [
+      "Nenhum arquivo issue-*.ts, mr-*.ts, repo-*.ts, ci-*.ts, label-*.ts, milestone-*.ts, release-*.ts, wiki-*.ts, user-*.ts, project-*.ts em gitlab/tools/",
+      "Apenas 10 domain tool files permanecem no diretorio",
+      "Nenhum import no codebase referencia os arquivos removidos",
+      "TypeScript compila sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-10/worktree/sprints/sprint-15/3-prps/PRP-18F-limpeza-validacao.md"
+  },
+  {
+    "id": "F-322",
+    "name": "Remover tools individuais do WhatsApp",
+    "description": "Remover 36 arquivos de apps/backbone/src/connectors/evolution/tools/: whatsapp-*.ts (35) + evolution-api.ts (1). Apos remocao o diretorio deve conter apenas: index.ts, messaging.ts, groups.ts, contacts.ts, admin.ts.",
+    "status": "pending",
+    "priority": 23,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": ["F-316"],
+    "tests": [
+      "Nenhum arquivo whatsapp-*.ts nem evolution-api.ts em evolution/tools/",
+      "Apenas index.ts + 4 domain tool files permanecem no diretorio",
+      "Nenhum import no codebase referencia os arquivos removidos",
+      "TypeScript compila sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-10/worktree/sprints/sprint-15/3-prps/PRP-18F-limpeza-validacao.md"
+  },
+  {
+    "id": "F-323",
+    "name": "Remover tools individuais do Email",
+    "description": "Remover 10 arquivos individuais de apps/backbone/src/connectors/email/tools/: send.ts, search.ts, read.ts, download-attachment.ts, manage-flags.ts, move.ts, delete.ts, list-mailboxes.ts, draft-create.ts, draft-send.ts. Apos remocao o diretorio deve conter apenas: index.ts, email.ts.",
+    "status": "pending",
+    "priority": 24,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": ["F-317"],
+    "tests": [
+      "Nenhum dos 10 tool files individuais em email/tools/",
+      "Apenas index.ts + email.ts permanecem no diretorio",
+      "Nenhum import no codebase referencia os arquivos removidos",
+      "TypeScript compila sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-10/worktree/sprints/sprint-15/3-prps/PRP-18F-limpeza-validacao.md"
+  },
+  {
+    "id": "F-324",
+    "name": "Build e validacao final",
+    "description": "Executar npm run build — deve completar sem erros. Verificar que nenhum import em todo o codebase referencia arquivos removidos (grep por nomes antigos). Confirmar que total de tools do agente com todos connectors habilitados <= 128 (idealmente ~45). Smoke test: o servidor deve iniciar sem erros.",
+    "status": "pending",
+    "priority": 25,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": ["F-321", "F-322", "F-323"],
+    "tests": [
+      "npm run build completa sem erros",
+      "grep por nomes antigos (issue-list, mr-create, whatsapp-send-text) retorna zero resultados em imports",
+      "Total de tools do agente com todos connectors <= 128",
+      "Servidor inicia sem erros de import"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-10/worktree/sprints/sprint-15/3-prps/PRP-18F-limpeza-validacao.md"
+  }
+]
