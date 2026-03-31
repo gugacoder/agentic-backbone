@@ -179,7 +179,7 @@
     "id": "F-309",
     "name": "Domain tool gitlab_projects",
     "description": "Criar apps/backbone/src/connectors/gitlab/tools/projects.ts com domain tool gitlab_projects agrupando 6 actions (search, get, list_members, add_member, update_member, remove_member) via z.discriminatedUnion. Factory function createGitLabProjectsTool(adapters). Copiar schemas dos project-*.ts existentes. Policy check readonly para add_member, update_member, remove_member.",
-    "status": "pending",
+    "status": "passing",
     "priority": 13,
     "agent": "coder",
     "task": "vibe-code",
@@ -191,7 +191,8 @@
       "Acoes de escrita verificam policy readonly",
       "TypeScript compila sem erros"
     ],
-    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-10/worktree/sprints/sprint-15/3-prps/PRP-18A-gitlab-domain-tools.md"
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-10/worktree/sprints/sprint-15/3-prps/PRP-18A-gitlab-domain-tools.md",
+    "completed_at": "2026-03-31T03:00:00Z"
   },
   {
     "id": "F-310",
