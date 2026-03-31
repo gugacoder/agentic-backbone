@@ -50,7 +50,26 @@ const CHANNEL_DESCRIPTIONS: Record<string, string> = {
 export interface AssemblePromptOpts {
   userMessage?: string;
   channelId?: string;
+  rich?: boolean;
 }
+
+const RICH_CONTENT_PROMPT = `<rich_content>
+O cliente suporta conteudo rico. Alem de markdown, voce tem display tools para formatar informacoes de forma visual.
+
+Planeje sua resposta usando as display tools quando fizer sentido:
+- display_highlight: para destacar valores, precos, alertas ou pedir escolhas ao usuario
+- display_collection: para colecoes (tabelas, comparacoes, carrosseis, galerias, fontes)
+- display_card: para itens individuais (produtos, links, arquivos, imagens)
+- display_visual: para visualizacoes (graficos, mapas, codigo, progresso, timelines)
+
+Regras:
+- Use display tools para informacao estruturada; use markdown para texto corrido
+- Combine display tools com texto markdown na mesma resposta
+- Nao use display tool quando markdown simples resolve (listas, headings, bold)
+- Uma resposta pode ter multiplas display tools
+</rich_content>
+
+`;
 
 export interface AssembledPrompt {
   system: string;
@@ -164,10 +183,15 @@ Exemplo: agendar mensagem diária às 7h → schedule: {kind:'cron', expr:'0 7 *
     }
   }
 
-  // 10. Mode instructions (generic tag)
+  // 10. Rich content instructions
+  if (opts.rich) {
+    system += RICH_CONTENT_PROMPT;
+  }
+
+  // 11. Mode instructions (generic tag)
   system += `<instructions>\n${instructions}\n</instructions>\n\n`;
 
-  // 10. Tail
+  // 12. Tail
   system += "Follow the instructions strictly.\n";
 
   return {

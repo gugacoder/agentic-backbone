@@ -266,7 +266,8 @@ Mensagem do usuario: ${message}`;
 export async function* sendMessage(
   userId: string,
   sessionId: string,
-  content: string | ContentPart[]
+  content: string | ContentPart[],
+  opts?: { rich?: boolean }
 ): AsyncGenerator<AgentEvent> {
   // Extract text portion for hooks, logging, security checks, and memory search
   const message = typeof content === "string"
@@ -422,7 +423,7 @@ export async function* sendMessage(
   }
   // --- End orchestration ---
 
-  const assembled = await assemblePrompt(effectiveAgentId, "conversation", { userMessage: message, channelId: session.channel_id ?? undefined });
+  const assembled = await assemblePrompt(effectiveAgentId, "conversation", { userMessage: message, channelId: session.channel_id ?? undefined, rich: opts?.rich });
   if (!assembled) {
     throw new Error(`Agent ${effectiveAgentId} has no conversation instructions`);
   }
@@ -452,6 +453,7 @@ export async function* sendMessage(
     role: "conversation",
     tools: conversationTools,
     system: assembled.system,
+    disableDisplayTools: !(opts?.rich ?? false),
     ...(contentPartsArg ? { contentParts: contentPartsArg } : {}),
   })) {
     if (event.type === "text" && event.content) {

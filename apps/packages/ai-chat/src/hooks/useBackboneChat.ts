@@ -12,6 +12,7 @@ export interface UseBackboneChatOptions {
   token: string;
   sessionId: string;
   initialMessages?: Message[];
+  enableRichContent?: boolean;
 }
 
 export function useBackboneChat(options: UseBackboneChatOptions) {
@@ -28,8 +29,9 @@ export function useBackboneChat(options: UseBackboneChatOptions) {
     }
   }, []);
 
+  const rich = options.enableRichContent !== false;
   const chat = useChat({
-    api: `${options.endpoint}/api/v1/ai/conversations/${options.sessionId}/messages?format=datastream`,
+    api: `${options.endpoint}/api/v1/ai/conversations/${options.sessionId}/messages?format=datastream${rich ? "&rich=true" : ""}`,
     headers: { Authorization: `Bearer ${options.token}` },
     initialMessages: options.initialMessages,
     fetch: async (url: string | URL | Request, init?: RequestInit) => {

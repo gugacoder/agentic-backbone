@@ -57,4 +57,4 @@ export { ChoiceButtonsRenderer } from "./display/ChoiceButtonsRenderer.js";
 
 // Display Registry
 export { defaultDisplayRenderers, resolveDisplayRenderer } from "./display/registry.js";
-export type { DisplayRendererMap } from "./display/registry.js";
+export type { DisplayRendererMap, DisplayActionName } from "./display/registry.js";

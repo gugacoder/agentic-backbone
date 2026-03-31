@@ -329,6 +329,7 @@ conversationRoutes.post("/conversations/:sessionId/messages", async (c) => {
   // At this point message is always a string (both branches either assign or return early)
   const effectiveMessage = message as string;
 
+  const rich = c.req.query("rich") === "true";
   const format = c.req.query("format");
 
   if (format === "datastream") {
@@ -339,7 +340,7 @@ conversationRoutes.post("/conversations/:sessionId/messages", async (c) => {
       async start(controller) {
         let hasContent = false;
         try {
-          for await (const event of sendMessage(auth.user, sessionId, effectiveMessage)) {
+          for await (const event of sendMessage(auth.user, sessionId, effectiveMessage, { rich })) {
             try {
               const encoded = encodeDataStreamEvent(event);
               if (encoded !== null) {
@@ -371,7 +372,7 @@ conversationRoutes.post("/conversations/:sessionId/messages", async (c) => {
   }
 
   return streamSSE(c, async (stream) => {
-    for await (const event of sendMessage(auth.user, sessionId, effectiveMessage)) {
+    for await (const event of sendMessage(auth.user, sessionId, effectiveMessage, { rich })) {
       await stream.writeSSE({ data: JSON.stringify(event) });
     }
   });

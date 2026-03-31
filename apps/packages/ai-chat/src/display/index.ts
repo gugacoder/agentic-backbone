@@ -18,4 +18,4 @@ export { LinkPreviewRenderer } from "./LinkPreviewRenderer.js";
 export { MapViewRenderer } from "./MapViewRenderer.js";
 export { ChoiceButtonsRenderer } from "./ChoiceButtonsRenderer.js";
 export { defaultDisplayRenderers, resolveDisplayRenderer } from "./registry.js";
-export type { DisplayRendererMap } from "./registry.js";
+export type { DisplayRendererMap, DisplayActionName } from "./registry.js";
