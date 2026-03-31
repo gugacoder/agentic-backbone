@@ -140,4 +140,6 @@ export interface AiAgentOptions {
   messageMeta?: Record<string, unknown>;
   /** Content parts para user message (substitui prompt como content quando presente) */
   contentParts?: unknown[];
+  /** Desabilita display tools. Default: false (display tools habilitadas) */
+  disableDisplayTools?: boolean;
 }
