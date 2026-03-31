@@ -24,7 +24,7 @@
     "id": "F-301",
     "name": "Domain tool gitlab_mrs",
     "description": "Criar apps/backbone/src/connectors/gitlab/tools/mrs.ts com domain tool gitlab_mrs agrupando 16 actions (list, get, create, update, delete, merge, approve, unapprove, approvals, rebase, diff, pipelines, comment, list_comments, update_comment, delete_comment) via z.discriminatedUnion. Factory function createGitLabMrsTool(adapters). Copiar schemas dos mr-*.ts existentes. Policy check readonly para create, update, delete, merge, approve, unapprove, rebase, comment, update_comment, delete_comment.",
-    "status": "pending",
+    "status": "passing",
     "priority": 2,
     "agent": "coder",
     "task": "vibe-code",
@@ -37,7 +37,8 @@
       "Execute despacha todas 16 actions corretamente",
       "TypeScript compila sem erros"
     ],
-    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-10/worktree/sprints/sprint-15/3-prps/PRP-18A-gitlab-domain-tools.md"
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-10/worktree/sprints/sprint-15/3-prps/PRP-18A-gitlab-domain-tools.md",
+    "completed_at": "2026-03-31T02:10:00Z"
   },
   {
     "id": "F-302",
