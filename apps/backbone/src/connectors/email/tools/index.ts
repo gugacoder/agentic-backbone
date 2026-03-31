@@ -1,10 +1,1 @@
-export { createEmailSendTool } from "./send.js";
-export { createEmailSearchTool } from "./search.js";
-export { createEmailReadTool } from "./read.js";
-export { createEmailDownloadAttachmentTool } from "./download-attachment.js";
-export { createEmailManageFlagsTool } from "./manage-flags.js";
-export { createEmailMoveTool } from "./move.js";
-export { createEmailDeleteTool } from "./delete.js";
-export { createEmailListMailboxesTool } from "./list-mailboxes.js";
-export { createEmailDraftCreateTool } from "./draft-create.js";
-export { createEmailDraftSendTool } from "./draft-send.js";
+export { createEmailTool } from "./email.js";

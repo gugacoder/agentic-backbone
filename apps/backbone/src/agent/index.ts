@@ -51,6 +51,11 @@ export async function* runAgent(
   const providerConf = getProviderConfig(provider);
   const apiKey = process.env[providerConf.apiKeyEnv]!;
 
+  const tools = options?.tools;
+  if (providerConf.maxTools !== undefined && tools && Object.keys(tools).length > providerConf.maxTools) {
+    console.warn(`[agent] ${Object.keys(tools).length} tools exceeds provider limit of ${providerConf.maxTools} for provider "${provider}"`);
+  }
+
   const systemLen = options?.system?.length ?? 0;
   const promptPreview = prompt.slice(0, 120).replace(/\n/g, "\\n");
   console.log(`[agent] role=${role} provider=${provider} model=${model} system=${systemLen}ch prompt="${promptPreview}"`);

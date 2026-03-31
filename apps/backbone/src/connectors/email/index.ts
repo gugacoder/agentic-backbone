@@ -6,18 +6,7 @@ import {
   stopAllEmailPolling,
   pollingStatus,
 } from "./channel-adapter.js";
-import {
-  createEmailSendTool,
-  createEmailSearchTool,
-  createEmailReadTool,
-  createEmailDownloadAttachmentTool,
-  createEmailManageFlagsTool,
-  createEmailMoveTool,
-  createEmailDeleteTool,
-  createEmailListMailboxesTool,
-  createEmailDraftCreateTool,
-  createEmailDraftSendTool,
-} from "./tools/index.js";
+import { createEmailTool } from "./tools/index.js";
 
 export const emailConnector: ConnectorDef = {
   slug: "email",
@@ -34,16 +23,7 @@ export const emailConnector: ConnectorDef = {
     if (adapters.length === 0) return null;
     const slugs = adapters.map((a) => a.slug) as [string, ...string[]];
     return {
-      ...createEmailSendTool(slugs),
-      ...createEmailSearchTool(slugs),
-      ...createEmailReadTool(slugs),
-      ...createEmailDownloadAttachmentTool(slugs),
-      ...createEmailManageFlagsTool(slugs),
-      ...createEmailMoveTool(slugs),
-      ...createEmailDeleteTool(slugs),
-      ...createEmailListMailboxesTool(slugs),
-      ...createEmailDraftCreateTool(slugs),
-      ...createEmailDraftSendTool(slugs),
+      ...createEmailTool(slugs),
     };
   },
 
