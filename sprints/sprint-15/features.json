@@ -416,7 +416,7 @@
     "id": "F-320",
     "name": "Warning quando tools excedem maxTools",
     "description": "Alterar apps/backbone/src/agent/index.ts: apos composicao de tools via composeAgentTools, verificar se providerConf.maxTools esta definido e Object.keys(tools).length > maxTools. Se sim, emitir console.warn com contagem atual e limite do provider. Warning nao bloqueia execucao.",
-    "status": "pending",
+    "status": "passing",
     "priority": 21,
     "agent": "coder",
     "task": "vibe-code",
@@ -430,13 +430,14 @@
       "Sem warning quando maxTools nao esta definido (openrouter)",
       "TypeScript compila sem erros"
     ],
-    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-10/worktree/sprints/sprint-15/3-prps/PRP-18E-max-tools-warning.md"
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-10/worktree/sprints/sprint-15/3-prps/PRP-18E-max-tools-warning.md",
+    "completed_at": "2026-03-31T02:00:00Z"
   },
   {
     "id": "F-321",
     "name": "Remover tools individuais do GitLab",
     "description": "Remover 89 tool files individuais de apps/backbone/src/connectors/gitlab/tools/: issue-*.ts (13), mr-*.ts (16), repo-*.ts (17), ci-*.ts (12), label-*.ts (5), milestone-*.ts (7), release-*.ts (5), wiki-*.ts (5), user-*.ts (3), project-*.ts (6). Apos remocao o diretorio deve conter apenas: issues.ts, mrs.ts, repo.ts, ci.ts, labels.ts, milestones.ts, releases.ts, wiki.ts, users.ts, projects.ts.",
-    "status": "blocked",
+    "status": "pending",
     "priority": 22,
     "agent": "coder",
     "task": "vibe-code",
