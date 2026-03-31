@@ -192,7 +192,7 @@
     "id": "F-310",
     "name": "Domain tool whatsapp_messaging",
     "description": "Criar apps/backbone/src/connectors/evolution/tools/messaging.ts com domain tool whatsapp_messaging agrupando 13 actions (send_text, send_media, send_audio, send_location, send_contact, send_reaction, send_poll, send_sticker, send_list, send_buttons, delete_message, mark_as_read, send_presence) via z.discriminatedUnion. Factory function createWhatsappMessagingTool(slugs). Campo comum eh 'instance' (nao 'adapter'). Copiar schemas dos whatsapp-*.ts existentes.",
-    "status": "pending",
+    "status": "passing",
     "priority": 5,
     "agent": "coder",
     "task": "vibe-code",
@@ -205,7 +205,8 @@
       "Execute despacha todas 13 actions corretamente",
       "TypeScript compila sem erros"
     ],
-    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-10/worktree/sprints/sprint-15/3-prps/PRP-18B-whatsapp-domain-tools.md"
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-10/worktree/sprints/sprint-15/3-prps/PRP-18B-whatsapp-domain-tools.md",
+    "completed_at": "2026-03-31T04:00:00Z"
   },
   {
     "id": "F-311",
