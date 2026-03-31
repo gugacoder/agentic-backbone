@@ -423,7 +423,7 @@ export async function* sendMessage(
   }
   // --- End orchestration ---
 
-  const assembled = await assemblePrompt(effectiveAgentId, "conversation", { userMessage: message, channelId: session.channel_id ?? undefined });
+  const assembled = await assemblePrompt(effectiveAgentId, "conversation", { userMessage: message, channelId: session.channel_id ?? undefined, rich: opts?.rich });
   if (!assembled) {
     throw new Error(`Agent ${effectiveAgentId} has no conversation instructions`);
   }
