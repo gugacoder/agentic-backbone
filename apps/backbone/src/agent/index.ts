@@ -38,6 +38,7 @@ export async function* runAgent(
     routingContext?: RoutingContext;
     agentRoutingRules?: RoutingRule[];
     onRoutingResolved?: (result: ModelResult) => void;
+    contentParts?: unknown[];
   }
 ): AsyncGenerator<AgentEvent> {
   const role = options?.role ?? "conversation";
@@ -103,6 +104,7 @@ export async function* runAgent(
     tools: options?.tools,
     maxTurns: 100,
     ...(options?.system ? { system: options.system } : {}),
+    ...(options?.contentParts ? { contentParts: options.contentParts } : {}),
     providerConfig: {
       ...params,
       webSearch: webSearch.provider,

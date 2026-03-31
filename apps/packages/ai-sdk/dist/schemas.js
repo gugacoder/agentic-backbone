@@ -47,4 +47,5 @@ export const AgentRunOptionsSchema = z.object({
     messageMeta: z.record(z.unknown()).optional(),
     provider: z.string().optional(),
     providers: z.record(z.object({ baseURL: z.string(), apiKey: z.string() })).optional(),
+    contentParts: z.array(z.any()).optional(),
 });

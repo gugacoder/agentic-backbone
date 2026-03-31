@@ -19,8 +19,26 @@ function countMessageTokens(msg) {
     }
     else if (Array.isArray(msg.content)) {
         for (const part of msg.content) {
-            if ("text" in part && typeof part.text === "string") {
+            if (part.type === "text" && typeof part.text === "string") {
                 tokens += countTokens(part.text);
+            }
+            else if (part.type === "image") {
+                tokens += 300;
+            }
+            else if (part.type === "file") {
+                const mime = part.mimeType ?? "";
+                if (mime === "application/pdf") {
+                    tokens += 1500;
+                }
+                else if (mime.startsWith("audio/")) {
+                    tokens += 200;
+                }
+                else {
+                    tokens += 500;
+                }
+            }
+            else {
+                tokens += 500; // unknown part fallback
             }
         }
     }

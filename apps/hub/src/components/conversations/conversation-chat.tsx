@@ -76,10 +76,35 @@ function buildInitialMessages(messages?: BackendMessage[]) {
   while (i < messages.length) {
     const m = messages[i]!;
 
-    // User message — emit as-is
+    // User message — emit with attachment parts if present
     if (m.role === "user") {
-      const content = typeof m.content === "string" ? m.content : "";
-      result.push({ id: m._meta?.id ?? m.id ?? `msg-${i}`, role: "user", content });
+      let content = "";
+      const parts: unknown[] = [];
+
+      if (typeof m.content === "string") {
+        content = m.content;
+      } else if (Array.isArray(m.content)) {
+        for (const p of m.content as Record<string, unknown>[]) {
+          if (p["type"] === "text") {
+            // Regular text (not pre-processed attachment) becomes the message content
+            const text = String(p["text"] ?? "");
+            if (!text.startsWith("[📎") && !content) content = text;
+            parts.push(p);
+          } else if (p["type"] === "image" || p["type"] === "file") {
+            // Binary parts — keep _ref and mimeType for URL-based rendering
+            parts.push({ type: p["type"], _ref: p["_ref"], mimeType: p["mimeType"] });
+          } else {
+            parts.push(p);
+          }
+        }
+      }
+
+      result.push({
+        id: m._meta?.id ?? m.id ?? `msg-${i}`,
+        role: "user",
+        content,
+        ...(parts.length > 0 ? { parts } : {}),
+      });
       i++;
       continue;
     }

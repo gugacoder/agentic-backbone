@@ -1,5 +1,5 @@
 import { useRef, useEffect, useState, useCallback } from "react";
-import { Send, Square, Plus, Mic, X, Camera, Paperclip, Image as ImageIcon, CircleStop } from "lucide-react";
+import { Send, Square, Plus, Mic, X, Camera, Paperclip, Image as ImageIcon, CircleStop, Loader2 } from "lucide-react";
 import { Button } from "../ui/button.js";
 import { cn } from "../lib/utils.js";
 
@@ -17,6 +17,7 @@ export interface MessageInputProps {
   setInput: (value: string) => void;
   handleSubmit: (e: React.FormEvent, attachments?: Attachment[]) => void;
   isLoading?: boolean;
+  isUploading?: boolean;
   stop?: () => void;
   placeholder?: string;
   className?: string;
@@ -157,6 +158,7 @@ export function MessageInput({
   setInput,
   handleSubmit,
   isLoading,
+  isUploading = false,
   stop,
   placeholder = "Caixa de mensagem...",
   className,
@@ -344,11 +346,17 @@ export function MessageInput({
       {/* ── Main content (hidden when recording) ── */}
       <div className={cn(isRecording && "hidden")}>
         {/* Attachment previews */}
-        {attachments.length > 0 && (
+        {(attachments.length > 0 || isUploading) && (
           <div className="flex flex-wrap gap-2 px-4 pt-3 pb-1">
             {attachments.map((att) => (
               <AttachmentPreview key={att.id} attachment={att} onRemove={() => removeAttachment(att.id)} />
             ))}
+            {isUploading && (
+              <div className="flex items-center gap-2 rounded-lg border border-border/50 bg-background/50 px-3 py-2 text-xs text-muted-foreground">
+                <Loader2 className="h-4 w-4 animate-spin shrink-0" />
+                <span>Enviando arquivos...</span>
+              </div>
+            )}
           </div>
         )}
 

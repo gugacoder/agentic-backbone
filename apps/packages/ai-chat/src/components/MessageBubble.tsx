@@ -11,6 +11,7 @@ export interface MessageBubbleProps {
   message: Message;
   isStreaming?: boolean;
   displayRenderers?: DisplayRendererMap;
+  attachmentUrl?: (ref: string) => string;
   className?: string;
 }
 
@@ -48,7 +49,7 @@ function CopyButton({ text }: { text: string }) {
   );
 }
 
-export const MessageBubble = memo(function MessageBubble({ message, isStreaming, displayRenderers, className }: MessageBubbleProps) {
+export const MessageBubble = memo(function MessageBubble({ message, isStreaming, displayRenderers, attachmentUrl, className }: MessageBubbleProps) {
   const isUser = message.role === "user";
   const hasParts = Array.isArray(message.parts) && message.parts.length > 0;
 
@@ -72,6 +73,7 @@ export const MessageBubble = memo(function MessageBubble({ message, isStreaming,
                   part={part as Parameters<typeof PartRenderer>[0]["part"]}
                   isStreaming={isStreaming}
                   displayRenderers={displayRenderers}
+                  attachmentUrl={attachmentUrl}
                 />
               ))}
             </div>
@@ -95,5 +97,6 @@ export const MessageBubble = memo(function MessageBubble({ message, isStreaming,
   prev.message === next.message
   && prev.isStreaming === next.isStreaming
   && prev.displayRenderers === next.displayRenderers
+  && prev.attachmentUrl === next.attachmentUrl
   && prev.className === next.className
 );

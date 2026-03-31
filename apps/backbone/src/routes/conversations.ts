@@ -18,6 +18,35 @@ import { getAuthUser, assertAgentAccess } from "./auth-helpers.js";
 import { getAgent } from "../agents/registry.js";
 import { parseBody } from "./helpers.js";
 import { db } from "../db/index.js";
+import { join, extname } from "node:path";
+import { existsSync, statSync } from "node:fs";
+import { readFile } from "node:fs/promises";
+import { agentDir } from "../context/paths.js";
+import {
+  MIME_LIMITS,
+  ACCEPTED_MIME_TYPES,
+  TOTAL_SIZE_LIMIT,
+  MAX_FILES,
+  saveAttachment,
+} from "../conversations/attachments.js";
+
+const ATTACHMENT_MIME_MAP: Record<string, string> = {
+  ".png": "image/png",
+  ".jpg": "image/jpeg",
+  ".jpeg": "image/jpeg",
+  ".gif": "image/gif",
+  ".webp": "image/webp",
+  ".pdf": "application/pdf",
+  ".wav": "audio/wav",
+  ".mp3": "audio/mpeg",
+  ".ogg": "audio/ogg",
+  ".webm": "audio/webm",
+  ".txt": "text/plain",
+  ".csv": "text/csv",
+  ".json": "application/json",
+  ".docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  ".xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+};
 
 export const conversationRoutes = new Hono();
 
@@ -201,14 +230,104 @@ conversationRoutes.post("/conversations/:sessionId/messages", async (c) => {
   if (denied) return denied;
 
   const auth = getAuthUser(c);
-  const body = await c.req.json<{ message?: string; messages?: Array<{ role: string; content: string }> }>();
+  const ct = c.req.header("content-type") ?? "";
 
-  // Support both legacy { message } and @ai-sdk/react { messages } formats
-  const message = body.message ?? body.messages?.filter((m) => m.role === "user").pop()?.content;
+  let message: string | undefined;
 
-  if (!message) {
-    return c.json({ error: "message is required" }, 400);
+  if (ct.includes("multipart/form-data")) {
+    const body = await c.req.parseBody({ all: true });
+
+    // Extract text message
+    const rawMessage = body["message"];
+    message = typeof rawMessage === "string" && rawMessage.trim().length > 0
+      ? rawMessage
+      : undefined;
+
+    // Normalize files field to File[]
+    const rawFiles = body["files"];
+    const files: File[] =
+      rawFiles === undefined
+        ? []
+        : Array.isArray(rawFiles)
+        ? (rawFiles.filter((f) => f instanceof File) as File[])
+        : rawFiles instanceof File
+        ? [rawFiles]
+        : [];
+
+    // At least one of message or files must be present
+    if (!message && files.length === 0) {
+      return c.json({ error: "At least one of 'message' or 'files' must be provided" }, 400);
+    }
+
+    if (files.length > 0) {
+      // Max files
+      if (files.length > MAX_FILES) {
+        return c.json(
+          { error: `Too many files: maximum ${MAX_FILES} files per message` },
+          413
+        );
+      }
+
+      // Validate MIME types
+      for (const file of files) {
+        if (!ACCEPTED_MIME_TYPES.has(file.type)) {
+          return c.json(
+            {
+              error: `Unsupported media type: ${file.type}`,
+              acceptedTypes: Array.from(ACCEPTED_MIME_TYPES),
+            },
+            415
+          );
+        }
+      }
+
+      // Validate individual file sizes
+      for (const file of files) {
+        const limit = MIME_LIMITS[file.type];
+        if (limit !== undefined && file.size > limit) {
+          const limitMB = Math.round(limit / (1024 * 1024));
+          return c.json(
+            {
+              error: `File '${file.name}' (${file.type}) exceeds the ${limitMB}MB size limit`,
+            },
+            413
+          );
+        }
+      }
+
+      // Validate total size
+      const totalSize = files.reduce((sum, f) => sum + f.size, 0);
+      if (totalSize > TOTAL_SIZE_LIMIT) {
+        const limitMB = Math.round(TOTAL_SIZE_LIMIT / (1024 * 1024));
+        return c.json(
+          { error: `Total upload size exceeds the ${limitMB}MB limit per message` },
+          413
+        );
+      }
+
+      // Save files to {sessionDir}/attachments/
+      const sessionDir = join(agentDir(session.agent_id), "conversations", sessionId);
+      for (const file of files) {
+        await saveAttachment(sessionDir, file);
+      }
+    }
+
+    // If only files provided, use empty string as placeholder until F-331
+    if (!message) message = "";
+  } else {
+    // JSON path — retrocompatible
+    const body = await c.req.json<{ message?: string; messages?: Array<{ role: string; content: string }> }>();
+
+    // Support both legacy { message } and @ai-sdk/react { messages } formats
+    message = body.message ?? body.messages?.filter((m) => m.role === "user").pop()?.content;
+
+    if (!message) {
+      return c.json({ error: "message is required" }, 400);
+    }
   }
+
+  // At this point message is always a string (both branches either assign or return early)
+  const effectiveMessage = message as string;
 
   const format = c.req.query("format");
 
@@ -220,7 +339,7 @@ conversationRoutes.post("/conversations/:sessionId/messages", async (c) => {
       async start(controller) {
         let hasContent = false;
         try {
-          for await (const event of sendMessage(auth.user, sessionId, message)) {
+          for await (const event of sendMessage(auth.user, sessionId, effectiveMessage)) {
             try {
               const encoded = encodeDataStreamEvent(event);
               if (encoded !== null) {
@@ -252,9 +371,44 @@ conversationRoutes.post("/conversations/:sessionId/messages", async (c) => {
   }
 
   return streamSSE(c, async (stream) => {
-    for await (const event of sendMessage(auth.user, sessionId, message)) {
+    for await (const event of sendMessage(auth.user, sessionId, effectiveMessage)) {
       await stream.writeSSE({ data: JSON.stringify(event) });
     }
+  });
+});
+
+// --- Get Attachment ---
+
+conversationRoutes.get("/conversations/:sessionId/attachments/:filename", async (c) => {
+  const sessionId = c.req.param("sessionId");
+  const filename = c.req.param("filename");
+
+  // Sanitize: reject path traversal attempts
+  if (filename.includes("..") || filename.includes("/") || filename.includes("\\")) {
+    return c.json({ error: "Invalid filename" }, 400);
+  }
+
+  const session = getSession(sessionId);
+  if (!session) return c.json({ error: "not found" }, 404);
+
+  const sessionDir = join(agentDir(session.agent_id), "conversations", sessionId);
+  const filePath = join(sessionDir, "attachments", filename);
+
+  if (!existsSync(filePath)) {
+    return c.json({ error: "not found" }, 404);
+  }
+
+  const ext = extname(filename).toLowerCase();
+  const contentType = ATTACHMENT_MIME_MAP[ext] ?? "application/octet-stream";
+  const stat = statSync(filePath);
+  const data = await readFile(filePath);
+
+  return new Response(data, {
+    headers: {
+      "Content-Type": contentType,
+      "Content-Length": String(stat.size),
+      "Cache-Control": "private, max-age=3600",
+    },
   });
 });
 

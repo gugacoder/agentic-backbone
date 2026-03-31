@@ -64,6 +64,7 @@ export async function* runAgent(raw: unknown): AsyncGenerator<AgentEvent> {
     ...(onWebSearch ? { onWebSearch } : {}),
     ...(options.tools ? { tools: options.tools } : {}),
     ...(options.system ? { system: { append: options.system } } : {}),
+    ...(options.contentParts ? { contentParts: options.contentParts } : {}),
   })) {
     if (event.type === "init") {
       yield { type: "init", sessionId: event.sessionId };

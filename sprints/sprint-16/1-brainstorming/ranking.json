@@ -1,0 +1,110 @@
+[
+  {
+    "id": "D-001",
+    "type": "feature",
+    "description": "Criar guides/file-upload/GUIDE.md com: media types suportados (referência MEDIATYPES.txt), pipeline de upload (diagrama do fluxo), formato de referência _ref no JSONL, API da rota multipart, limites por tipo e por mensagem.",
+    "score": 9,
+    "justification": "Documenta o contrato da feature e serve como fonte da verdade para os agentes de implementação. Pode rodar em paralelo com D-002.",
+    "sprint": 16,
+    "implemented": false
+  },
+  {
+    "id": "D-002",
+    "type": "feature",
+    "description": "Instalar dependências mammoth e xlsx em apps/backbone. Refatorar POST /conversations/:sessionId/messages para aceitar multipart/form-data (message + files[]) além de application/json retrocompatível. Criar diretório attachments/ em {sessionDir} no primeiro upload. Validar MIME type (415) e tamanho (413) no backend.",
+    "score": 10,
+    "justification": "Desbloqueador de todas as fases seguintes. Sem multipart e storage, nenhum arquivo chega ao backend. Fase com maior impacto arquitetural.",
+    "sprint": 16,
+    "implemented": false
+  },
+  {
+    "id": "D-003",
+    "type": "feature",
+    "description": "Implementar classificador de arquivos: imagem → ImagePart (base64), pdf/audio → FilePart (base64), texto puro/csv/json → TextPart (conteúdo direto), docx → mammoth → TextPart (markdown), xlsx → SheetJS → TextPart (CSV). Gerar IDs att_{timestamp}_{random6hex}. Montar content Array<Part> com TextPart do usuário no início.",
+    "score": 9,
+    "justification": "Núcleo do pipeline de upload. Define como cada MIME type se transforma em uma Part para o modelo. Depende de D-002.",
+    "sprint": 16,
+    "implemented": false
+  },
+  {
+    "id": "D-004",
+    "type": "feature",
+    "description": "Implementar persistência com _ref no messages.jsonl: ao salvar, substituir data/image base64 por _ref: 'att_xxx.ext'. Implementar resolução de referências em loadSession() do ai-sdk: carregar arquivo do disco → base64; se arquivo não existir → TextPart placeholder '[arquivo removido: nome.pdf]'.",
+    "score": 9,
+    "justification": "Sem _ref, base64 infla o JSONL indefinidamente. Crítico para integridade do storage em sessões longas. Depende de D-003.",
+    "sprint": 16,
+    "implemented": false
+  },
+  {
+    "id": "D-005",
+    "type": "feature",
+    "description": "Refatorar sendMessage() em apps/backbone/src/conversations/index.ts para aceitar content: string | ContentPart[]. Expandir appendModelMessage() em persistence.ts para content: string | ContentPart[] com substituição data→_ref. Expandir InboundMessage.content em channels/delivery/types.ts para string | ContentPart[].",
+    "score": 9,
+    "justification": "Ponto central de integração do backbone. Sem esta refatoração, as fases de Evolution (D-008) e Frontend (D-009) não conseguem entregar ContentPart[] ao pipeline. Depende de D-003.",
+    "sprint": 16,
+    "implemented": false
+  },
+  {
+    "id": "D-006",
+    "type": "feature",
+    "description": "Criar rota GET /conversations/:sessionId/attachments/:filename com autenticação JWT obrigatória. Retornar arquivo com Content-Type correto derivado da extensão. Necessário para o frontend exibir thumbnails e reproduzir áudio.",
+    "score": 8,
+    "justification": "Sem essa rota, arquivos ficam inacessíveis ao frontend — thumbnails e players de áudio ficam quebrados. Depende de D-002 (storage). Pode rodar em paralelo com D-005.",
+    "sprint": 16,
+    "implemented": false
+  },
+  {
+    "id": "D-007",
+    "type": "feature",
+    "description": "Implementar filtro de mídia antiga no replay em loadSession(): última mensagem do usuário mantém todos os parts; mensagens anteriores substituem ImagePart/FilePart binários por TextPart placeholder. Atualizar countMessageTokens() em compaction.ts: ImagePart=300 tokens, FilePart PDF=500/página, FilePart audio=100/min, fallback=500.",
+    "score": 8,
+    "justification": "Evita reenviar binários antigos que desperdiçam tokens sem valor contextual. Sem estimativa de tokens de mídia, compaction pode não disparar em sessões com muitos arquivos. Depende de D-004.",
+    "sprint": 16,
+    "implemented": false
+  },
+  {
+    "id": "D-008",
+    "type": "feature",
+    "description": "Expandir Evolution routes.ts para processar imageMessage (baixar via getBase64FromMediaMessage → ImagePart) e documentMessage (baixar → classificar por MIME → FilePart ou TextPart). Ignorar videoMessage e stickerMessage. Caption presente → TextPart antes do part de mídia. Salvar em {sessionDir}/attachments/. Chamar routeInboundMessage com content array.",
+    "score": 7,
+    "justification": "Expande WhatsApp de áudio-only para multimídia completa. Sem isto, imagens e documentos recebidos via WhatsApp são silenciosamente descartados. Depende de D-005. Pode rodar em paralelo com D-009.",
+    "sprint": 16,
+    "implemented": false
+  },
+  {
+    "id": "D-009",
+    "type": "feature",
+    "description": "Frontend: refatorar handleSubmit em Chat.tsx para construir FormData com message + files e enviar via fetch multipart (mantendo streaming SSE do response). Atualizar MessageBubble.tsx para renderizar ImagePart (thumbnail clicável), AudioPart (player inline), PDF (chip clicável), texto pré-processado (bloco colapsável). Mostrar progress de upload no AttachmentPreview.",
+    "score": 8,
+    "justification": "Fecha o loop UX — sem isto, toda a UI de coleta de attachments é dead code. Renderização é necessária para o usuário ver o que enviou no histórico. Depende de D-004 e D-005. Paralelo com D-008.",
+    "sprint": 16,
+    "implemented": false
+  },
+  {
+    "id": "D-010",
+    "type": "feature",
+    "description": "Validação completa de limites no backend: por tipo (imagem 20MB, áudio 25MB, PDF 30MB, DOCX 15MB, XLSX 10MB, texto 5MB), total por mensagem (50MB), máximo 10 arquivos. Retornar 413 com mensagem indicando qual limite foi violado. Retornar 415 para MIME types não suportados com lista de tipos aceitos.",
+    "score": 7,
+    "justification": "Proteção contra abuso. Parte da fase D-002 mas merece item próprio para garantir cobertura completa de todos os tipos e do limite agregado.",
+    "sprint": 16,
+    "implemented": false
+  },
+  {
+    "id": "D-011",
+    "type": "gap",
+    "description": "Caption de imageMessage/documentMessage no WhatsApp: mensagens de mídia podem conter campo caption. Se presente, incluir como TextPart antes do ImagePart/FilePart no content array. Garante que contexto textual da imagem seja enviado ao modelo.",
+    "score": 5,
+    "justification": "Melhora a qualidade do contexto enviado ao modelo para mensagens WhatsApp com legenda. Não bloqueia funcionamento básico mas é parte da spec D-008.",
+    "sprint": 16,
+    "implemented": false
+  },
+  {
+    "id": "D-012",
+    "type": "gap",
+    "description": "Áudio inbound WhatsApp: implementar fallback inteligente entre FilePart nativo (se modelo configurado suporta áudio nativo via capabilities) e Whisper (transcrição para TextPart). Mantém Whisper como caminho atual; adiciona caminho nativo como upgrade.",
+    "score": 4,
+    "justification": "Extensibilidade futura. O caminho Whisper atual já funciona. FilePart nativo melhora qualidade para modelos que suportam áudio. Não bloqueia o restante da PRP.",
+    "sprint": 16,
+    "implemented": false
+  }
+]

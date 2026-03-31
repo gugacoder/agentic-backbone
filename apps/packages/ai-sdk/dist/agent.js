@@ -14,7 +14,7 @@ import { createWebSearchTool } from "./tools/web-search.js";
 import { createTaskTool } from "./tools/task.js";
 import { createBatchTool } from "./tools/batch.js";
 import { createCodeSearchTool } from "./tools/code-search.js";
-import { loadSession, saveSession } from "./session.js";
+import { loadSession, saveSession, filterOldMedia } from "./session.js";
 import { getSystemPrompt, discoverProjectContext } from "./prompts/assembly.js";
 import { getContextUsage } from "./context/usage.js";
 import { compactMessages } from "./context/compaction.js";
@@ -76,7 +76,7 @@ export async function* runAiAgent(prompt, options) {
         previousMessages = await loadSession(sessionDir);
     }
     const startMs = Date.now();
-    const userMsg = { role: "user", content: prompt };
+    const userMsg = { role: "user", content: options.contentParts ?? prompt };
     if (options.messageMeta) {
         userMsg._meta = { ts: new Date().toISOString(), ...options.messageMeta };
     }
@@ -300,7 +300,7 @@ export async function* runAiAgent(prompt, options) {
             tools,
             maxRetries: 3,
             stopWhen: stepCountIs(options.maxSteps ?? DEFAULT_MAX_STEPS),
-            messages,
+            messages: filterOldMedia(messages, messages.findLastIndex((m) => m.role === "user")),
             system: systemPrompt,
             ...(telemetryConfig ? { experimental_telemetry: telemetryConfig } : {}),
             ...(stepActiveTools ? { activeTools: stepActiveTools } : {}),

@@ -1,3 +1,5 @@
 import type { ModelMessage } from "ai";
-export declare function loadSession(dir: string, sessionId: string): Promise<ModelMessage[]>;
-export declare function saveSession(dir: string, sessionId: string, messages: ModelMessage[]): Promise<void>;
+export declare function resolveRefs(content: unknown[], attachmentsDir: string): Promise<unknown[]>;
+export declare function loadSession(dir: string): Promise<ModelMessage[]>;
+export declare function filterOldMedia(messages: ModelMessage[], lastUserIndex: number): ModelMessage[];
+export declare function saveSession(dir: string, messages: (ModelMessage & { _meta?: Record<string, unknown> })[]): Promise<void>;

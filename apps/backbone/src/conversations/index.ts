@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import { db } from "../db/index.js";
 import { assemblePrompt } from "../context/index.js";
 import { runAgent, type AgentEvent } from "../agent/index.js";
+import type { ContentPart } from "./attachments.js";
 import { instrumentedRunAgent } from "../telemetry/instrumentor.js";
 import {
   initSession as initPersistentSession,
@@ -265,8 +266,16 @@ Mensagem do usuario: ${message}`;
 export async function* sendMessage(
   userId: string,
   sessionId: string,
-  message: string
+  content: string | ContentPart[]
 ): AsyncGenerator<AgentEvent> {
+  // Extract text portion for hooks, logging, security checks, and memory search
+  const message = typeof content === "string"
+    ? content
+    : content
+        .filter((p): p is Extract<ContentPart, { type: "text" }> => p.type === "text")
+        .map((p) => p.text)
+        .join(" ");
+
   const session = getSession(sessionId);
   if (!session) {
     throw new Error("Session not found");
@@ -436,12 +445,14 @@ export async function* sendMessage(
 
   const conversationDir = join(agentDir(agentId), "conversations", sessionId);
   const conversationTools = composeAgentTools(effectiveAgentId, "conversation", { sessionId, userId });
+  const contentPartsArg = Array.isArray(content) ? (content as unknown[]) : undefined;
   for await (const event of instrumentedRunAgent(effectiveAgentId, "chat", assembled.userMessage, {
     sessionDir: conversationDir,
     messageMeta: { id: generateMessageId(), userId },
     role: "conversation",
     tools: conversationTools,
     system: assembled.system,
+    ...(contentPartsArg ? { contentParts: contentPartsArg } : {}),
   })) {
     if (event.type === "text" && event.content) {
       fullText += event.content;

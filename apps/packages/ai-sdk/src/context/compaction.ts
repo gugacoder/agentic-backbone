@@ -41,9 +41,22 @@ function countMessageTokens(msg: ModelMessage): number {
   if (typeof msg.content === "string") {
     tokens += countTokens(msg.content);
   } else if (Array.isArray(msg.content)) {
-    for (const part of msg.content) {
-      if ("text" in part && typeof (part as any).text === "string") {
-        tokens += countTokens((part as any).text);
+    for (const part of msg.content as any[]) {
+      if (part.type === "text" && typeof part.text === "string") {
+        tokens += countTokens(part.text);
+      } else if (part.type === "image") {
+        tokens += 300;
+      } else if (part.type === "file") {
+        const mime: string = part.mimeType ?? "";
+        if (mime === "application/pdf") {
+          tokens += 1500;
+        } else if (mime.startsWith("audio/")) {
+          tokens += 200;
+        } else {
+          tokens += 500;
+        }
+      } else {
+        tokens += 500; // unknown part fallback
       }
     }
   }

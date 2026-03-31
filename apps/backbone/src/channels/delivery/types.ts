@@ -1,4 +1,5 @@
 import type { BackboneEventBus } from "../../events/index.js";
+import type { ContentPart } from "../../conversations/attachments.js";
 
 export interface ChannelAdapterSendOptions {
   channelId: string;
@@ -11,7 +12,7 @@ export interface ChannelAdapterSendOptions {
 
 export interface InboundMessage {
   senderId: string;
-  content: string;
+  content: string | ContentPart[];
   ts: number;
   metadata?: Record<string, unknown>;
 }

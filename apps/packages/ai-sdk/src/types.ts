@@ -138,4 +138,6 @@ export interface AiAgentOptions {
   reasoning?: boolean | { budgetTokens: number };
   /** Metadados do backbone anexados como _meta na user message */
   messageMeta?: Record<string, unknown>;
+  /** Content parts para user message (substitui prompt como content quando presente) */
+  contentParts?: unknown[];
 }

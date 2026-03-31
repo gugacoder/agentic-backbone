@@ -1,0 +1,409 @@
+[
+  {
+    "id": "F-325",
+    "name": "Guide file-upload",
+    "description": "Criar guides/file-upload/GUIDE.md com 8 seções: visão geral, media types suportados (3 categorias: inline nativo, inline texto, pré-processado), limites por tipo/total/contagem, pipeline de upload (diagrama do fluxo multipart→validar→salvar→classificar→montar content→persistir _ref→sendMessage→streamText), formato _ref no JSONL (exemplo JSON com substituição base64→_ref), API da rota multipart (POST /conversations/:sessionId/messages com campos message+files), rota GET attachments (GET /conversations/:sessionId/attachments/:filename com auth), replay e compaction (regras de filtro de mídia antiga e estimativas de tokens). Usar ideacao/upload/MEDIATYPES.txt como semente. Seguir formato de guides existentes.",
+    "status": "passing",
+    "priority": 3,
+    "completed_at": "2026-03-31T00:00:00.000Z",
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [],
+    "tests": [
+      "Arquivo guides/file-upload/GUIDE.md existe",
+      "Guide contém seção 'Visão Geral' explicando upload como content parts",
+      "Guide contém seção 'Media Types Suportados' com 3 categorias (inline nativo, inline texto, pré-processado)",
+      "Guide contém seção 'Limites' com tabela: imagem 20MB, áudio 25MB, PDF 30MB, DOCX 15MB, XLSX 10MB, texto 5MB, total 50MB, max 10 arquivos",
+      "Guide contém seção 'Pipeline de Upload' com diagrama do fluxo",
+      "Guide contém seção 'Formato _ref no JSONL' com exemplo de substituição base64→_ref",
+      "Guide contém seção 'API da Rota Multipart' documentando POST /conversations/:sessionId/messages",
+      "Guide contém seção 'Rota de Servir Arquivos' documentando GET /conversations/:sessionId/attachments/:filename",
+      "Guide contém seção 'Replay e Compaction' com regras de filtro e estimativas de tokens"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-12/worktree/sprints/sprint-16/3-prps/PRP-21A-infraestrutura-upload.md"
+  },
+  {
+    "id": "F-326",
+    "name": "Deps mammoth e xlsx",
+    "description": "Instalar dependências mammoth e xlsx no workspace apps/backbone via npm install mammoth xlsx --workspace=apps/backbone. mammoth converte DOCX→Markdown. xlsx (SheetJS) converte XLSX→CSV. Verificar que as dependências aparecem em apps/backbone/package.json e que npm install completa sem erros.",
+    "status": "passing",
+    "priority": 1,
+    "completed_at": "2026-03-31T00:00:00.000Z",
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [],
+    "tests": [
+      "mammoth aparece em apps/backbone/package.json dependencies",
+      "xlsx aparece em apps/backbone/package.json dependencies",
+      "npm install completa sem erros",
+      "import mammoth from 'mammoth' resolve corretamente",
+      "import XLSX from 'xlsx' resolve corretamente"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-12/worktree/sprints/sprint-16/3-prps/PRP-21A-infraestrutura-upload.md"
+  },
+  {
+    "id": "F-327",
+    "name": "Rota multipart + storage + validação",
+    "description": "Refatorar POST /conversations/:sessionId/messages em apps/backbone/src/routes/conversations.ts para aceitar multipart/form-data além de application/json (retrocompatível). Parser multipart via c.req.parseBody({ all: true }) nativo do Hono. Campos: message (string, opcional) e files (File[], opcional) — ao menos um deve estar presente (400). Validar MIME type (415 com lista de tipos aceitos), tamanho por tipo individual (413: imagem 20MB, áudio 25MB, PDF 30MB, DOCX 15MB, XLSX 10MB, texto 5MB), total 50MB (413), max 10 arquivos (413). Criar {sessionDir}/attachments/ com mkdir({recursive:true}) no primeiro upload. Gerar IDs formato att_{timestamp}_{random6hex}.{ext} via crypto.randomBytes(3).toString('hex'). Salvar arquivos via Buffer.from(await file.arrayBuffer()) → writeFile. Exportar generateAttachmentId() para reuso no Evolution.",
+    "status": "passing",
+    "priority": 2,
+    "completed_at": "2026-03-31T00:00:00.000Z",
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-326"
+    ],
+    "tests": [
+      "POST /conversations/:id/messages aceita multipart/form-data com campos message e files",
+      "POST /conversations/:id/messages com application/json continua funcionando identicamente",
+      "Diretório attachments/ criado automaticamente no primeiro upload",
+      "ID de attachment no formato att_{ts}_{hex}.{ext}",
+      "Arquivos salvos em {sessionDir}/attachments/",
+      "MIME type não suportado → 415 com lista de tipos aceitos no body",
+      "Arquivo acima do limite individual → 413 com mensagem indicando tipo e limite",
+      "Total acima de 50MB → 413 com mensagem clara",
+      "Mais de 10 arquivos → 413 com mensagem clara",
+      "Mensagem sem texto nem arquivos → 400",
+      "generateAttachmentId() exportado e acessível para importação",
+      "TypeScript compila sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-12/worktree/sprints/sprint-16/3-prps/PRP-21A-infraestrutura-upload.md"
+  },
+  {
+    "id": "F-328",
+    "name": "Classificador de arquivos + conversão",
+    "description": "Criar apps/backbone/src/conversations/attachments.ts com: classifyAttachment(info: AttachmentInfo): Promise<ClassifiedPart> — classifica cada MIME type: image/png|jpeg|gif|webp→ImagePart com base64, application/pdf→FilePart com base64, audio/wav|mp3|mpeg|ogg|webm→FilePart com base64, text/plain|csv|json→TextPart com conteúdo direto, .docx→mammoth.convertToMarkdown()→TextPart, .xlsx→XLSX.utils.sheet_to_csv() por sheet→TextPart. TextParts de arquivos recebem prefixo [📎 filename]. ClassifiedPart retorna { part, ref: filename } para uso em _ref. buildContentArray(message, attachments): Promise<ContentPart[]> — monta content array: TextPart do texto do usuário no início (se houver) + parts dos arquivos na sequência. Processamento sequencial para não sobrecarregar memória.",
+    "status": "passing",
+    "priority": 4,
+    "completed_at": "2026-03-31T00:00:00.000Z",
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-327"
+    ],
+    "tests": [
+      "classifyAttachment classifica image/png como ImagePart com base64 e mimeType",
+      "classifyAttachment classifica image/jpeg como ImagePart com base64 e mimeType",
+      "classifyAttachment classifica application/pdf como FilePart com base64 e mimeType",
+      "classifyAttachment classifica audio/wav como FilePart com base64 e mimeType",
+      "classifyAttachment classifica text/plain como TextPart com conteúdo direto e prefixo [📎]",
+      "classifyAttachment classifica text/csv como TextPart com conteúdo direto e prefixo [📎]",
+      "classifyAttachment classifica application/json como TextPart com conteúdo direto e prefixo [📎]",
+      "classifyAttachment converte DOCX para Markdown via mammoth e retorna TextPart com prefixo [📎]",
+      "classifyAttachment converte XLSX para CSV por sheet via SheetJS e retorna TextPart com prefixo [📎]",
+      "buildContentArray coloca TextPart do texto do usuário no início do array",
+      "buildContentArray inclui parts dos arquivos na sequência após o texto",
+      "ClassifiedPart inclui campo ref com filename para uso em _ref",
+      "TypeScript compila sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-12/worktree/sprints/sprint-16/3-prps/PRP-21B-classificacao-persistencia.md"
+  },
+  {
+    "id": "F-329",
+    "name": "Persistência _ref no JSONL (escrita)",
+    "description": "Criar stripBase64ForStorage(content: ContentPart[]): ContentPart[] em apps/backbone/src/conversations/persistence.ts. Percorre o content array e substitui campos binários por referências: ImagePart com _ref → remover image, manter _ref e mimeType; FilePart com _ref → remover data, manter _ref e mimeType; TextPart → sem alteração. Integrar em appendModelMessage(): quando content é ContentPart[], aplicar stripBase64ForStorage() antes de serializar para JSONL. Formato persistido: {\"role\":\"user\",\"content\":[{\"type\":\"text\",\"text\":\"...\"},{\"type\":\"file\",\"_ref\":\"att_xxx.pdf\",\"mimeType\":\"application/pdf\"}]}",
+    "status": "passing",
+    "completed_at": "2026-03-31T00:00:00.000Z",
+    "priority": 6,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-328"
+    ],
+    "tests": [
+      "stripBase64ForStorage remove campo image de ImagePart e mantém _ref e mimeType",
+      "stripBase64ForStorage remove campo data de FilePart e mantém _ref e mimeType",
+      "stripBase64ForStorage não altera TextPart",
+      "JSONL persistido não contém base64 para parts binários — apenas _ref",
+      "appendModelMessage com content string continua funcionando (retrocompatível)",
+      "appendModelMessage com ContentPart[] aplica stripBase64ForStorage antes de serializar",
+      "TypeScript compila sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-12/worktree/sprints/sprint-16/3-prps/PRP-21B-classificacao-persistencia.md"
+  },
+  {
+    "id": "F-331",
+    "name": "Refatorar sendMessage content array",
+    "description": "Modificar sendMessage() em apps/backbone/src/conversations/index.ts: assinatura atual sendMessage(userId, sessionId, message: string) → nova sendMessage(userId, sessionId, content: string | ContentPart[]). Se content é string, manter comportamento atual. Se content é ContentPart[], passar como content array para runAgent(). Verificar que runAgent() do ai-sdk já aceita content array (tipagem Vercel AI SDK). Verificar todos os call sites — nenhum precisa mudar (expansão aditiva). Tipo ContentPart importado do Vercel AI SDK (TextPart, ImagePart, FilePart).",
+    "status": "passing",
+    "completed_at": "2026-03-31T00:00:00.000Z",
+    "priority": 5,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-328"
+    ],
+    "tests": [
+      "sendMessage aceita content: string e funciona como antes",
+      "sendMessage aceita content: ContentPart[] e propaga para runAgent",
+      "Chamadas existentes de sendMessage com string compilam sem mudança",
+      "Content array é propagado até streamText() sem perda de parts",
+      "TypeScript compila sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-12/worktree/sprints/sprint-16/3-prps/PRP-21C-content-array-rota-attachments.md"
+  },
+  {
+    "id": "F-332",
+    "name": "Expandir appendModelMessage e InboundMessage",
+    "description": "Expandir appendModelMessage() em apps/backbone/src/conversations/persistence.ts para aceitar content: string | ContentPart[]. Ao serializar: se string, serializar normalmente; se ContentPart[], aplicar stripBase64ForStorage() (F-329) antes de serializar. Expandir InboundMessage.content em apps/backbone/src/channels/delivery/types.ts de string para string | ContentPart[]. Retrocompatível — canais existentes continuam passando string. Verificar call chain completa: Rota POST → sendMessage(content) → runAgent(content) → streamText(content); Evolution webhook → routeInboundMessage(InboundMessage) → sendMessage(content). Garantir que routeInboundMessage() extrai content sem forçar .toString().",
+    "status": "passing",
+    "completed_at": "2026-03-31T00:00:00.000Z",
+    "priority": 7,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-329",
+      "F-331"
+    ],
+    "tests": [
+      "appendModelMessage aceita content: string e funciona como antes",
+      "appendModelMessage aceita content: ContentPart[] e aplica stripBase64ForStorage",
+      "InboundMessage.content tipado como string | ContentPart[]",
+      "Chamadas existentes com string compilam sem mudança",
+      "routeInboundMessage propaga content array sem forçar toString()",
+      "Call chain completa: rota → sendMessage → runAgent → streamText funciona com ContentPart[]",
+      "TypeScript compila sem erros em apps/backbone"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-12/worktree/sprints/sprint-16/3-prps/PRP-21C-content-array-rota-attachments.md"
+  },
+  {
+    "id": "F-330",
+    "name": "Resolução _ref na leitura",
+    "description": "Criar resolveRefs(content: unknown[], attachmentsDir: string): Promise<unknown[]> em apps/packages/ai-sdk/src/session.ts. Percorre o content array carregado do JSONL e resolve _ref: ImagePart com _ref → carregar arquivo do disco, converter para base64, restaurar campo image; FilePart com _ref → carregar arquivo, converter base64, restaurar campo data. Se arquivo ausente → substituir por TextPart com '[arquivo removido: nome.ext]'. Integrar em loadSession(): após carregar mensagens do JSONL, resolver referências para cada mensagem com content array. TextParts nunca têm _ref. JSONL existente sem _ref continua sendo lido normalmente (retrocompatível). Processar sequencialmente para não carregar todos os base64 em memória de uma vez.",
+    "status": "passing",
+    "completed_at": "2026-03-31T00:00:00.000Z",
+    "priority": 8,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-329"
+    ],
+    "tests": [
+      "resolveRefs carrega arquivo do disco para ImagePart com _ref e reconstrói campo image com base64",
+      "resolveRefs carrega arquivo do disco para FilePart com _ref e reconstrói campo data com base64",
+      "Arquivo ausente → substituído por TextPart com '[arquivo removido: nome.ext]'",
+      "loadSession resolve _ref automaticamente para mensagens com content array",
+      "JSONL sem _ref continua sendo lido normalmente (retrocompatível)",
+      "TextParts não são afetados por resolveRefs",
+      "TypeScript compila sem erros em apps/packages/ai-sdk"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-12/worktree/sprints/sprint-16/3-prps/PRP-21B-classificacao-persistencia.md"
+  },
+  {
+    "id": "F-333",
+    "name": "Rota GET attachments",
+    "description": "Adicionar rota GET /conversations/:sessionId/attachments/:filename em apps/backbone/src/routes/conversations.ts. Handler: (1) sanitizar filename — rejeitar '..', '/', '\\' com 400; (2) resolver caminho da sessão via resolveSessionDir(sessionId), 404 se inexistente; (3) verificar existência do arquivo em attachments/, 404 se inexistente; (4) derivar content-type da extensão via mapa de MIME types (.png→image/png, .jpg/.jpeg→image/jpeg, .gif→image/gif, .webp→image/webp, .pdf→application/pdf, .wav→audio/wav, .mp3→audio/mpeg, .ogg→audio/ogg, .webm→audio/webm, .txt→text/plain, .csv→text/csv, .json→application/json, .docx e .xlsx com MIME correto, fallback application/octet-stream); (5) retornar arquivo com headers Content-Type, Content-Length, Cache-Control: private, max-age=3600. Auth JWT obrigatória (mesmo middleware). Reusar resolveSessionDir existente.",
+    "status": "passing",
+    "priority": 9,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-327"
+    ],
+    "tests": [
+      "Rota GET /conversations/:sessionId/attachments/:filename existe e responde",
+      "Auth JWT obrigatória — sem token retorna 401",
+      "Path traversal (.. no filename) retorna 400",
+      "Sessão inexistente retorna 404",
+      "Arquivo inexistente retorna 404",
+      "Content-Type correto derivado da extensão (testar .png → image/png)",
+      "Header Cache-Control: private, max-age=3600 presente na resposta",
+      "Header Content-Length presente na resposta",
+      "Extensão desconhecida retorna application/octet-stream",
+      "TypeScript compila sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-12/worktree/sprints/sprint-16/3-prps/PRP-21C-content-array-rota-attachments.md",
+    "completed_at": "2026-03-31T14:50:00Z"
+  },
+  {
+    "id": "F-334",
+    "name": "Filtro mídia antiga no replay",
+    "description": "Criar filterOldMedia(messages, lastUserIndex): ModelMessage[] em apps/packages/ai-sdk/src/session.ts. Regras: última mensagem do usuário (i === lastUserIndex) — manter todos os parts intactos; mensagens anteriores do usuário com content array — ImagePart substituído por TextPart '[imagem enviada: {_ref ou \"imagem\"}]', FilePart com data substituído por TextPart '[arquivo enviado: {_ref ou \"arquivo\"}]', TextPart sempre mantido; mensagens do assistant — não alterar. Chamar após loadSession()+resolveRefs(), antes de passar previousMessages para runAgent()/streamText(). lastUserIndex é o índice da última mensagem com role 'user' no array.",
+    "status": "passing",
+    "priority": 10,
+    "completed_at": "2026-03-31T15:30:00Z",
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-330",
+      "F-331"
+    ],
+    "tests": [
+      "filterOldMedia substitui ImagePart por TextPart placeholder em mensagens anteriores do usuário",
+      "filterOldMedia substitui FilePart binário por TextPart placeholder em mensagens anteriores",
+      "filterOldMedia mantém todos os parts da última mensagem do usuário intactos",
+      "filterOldMedia mantém TextPart em todas as mensagens",
+      "filterOldMedia não altera mensagens do assistant",
+      "Placeholder inclui nome do arquivo quando _ref disponível",
+      "TypeScript compila sem erros em apps/packages/ai-sdk"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-12/worktree/sprints/sprint-16/3-prps/PRP-21D-replay-compaction.md"
+  },
+  {
+    "id": "F-335",
+    "name": "Estimativa tokens mídia compaction",
+    "description": "Expandir countMessageTokens() em apps/packages/ai-sdk/src/context/compaction.ts para estimar tokens de content parts de mídia. Quando content é string, retornar mesmo valor de antes (retrocompatível). Quando content é ContentPart[]: TextPart → countTokens(text) como antes; ImagePart → ~300 tokens; FilePart PDF (mimeType application/pdf) → ~1500 tokens; FilePart áudio (mimeType audio/*) → ~200 tokens; Part desconhecido → ~500 tokens (fallback). Estimativas conservadoras — objetivo é que compaction dispare no momento certo, não precisão exata.",
+    "status": "passing",
+    "priority": 11,
+    "completed_at": "2026-03-31T16:00:00Z",
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-330"
+    ],
+    "tests": [
+      "countMessageTokens com content: string retorna mesmo valor de antes",
+      "countMessageTokens retorna ~300 para mensagem contendo ImagePart",
+      "countMessageTokens retorna ~1500 para mensagem contendo FilePart PDF",
+      "countMessageTokens retorna ~200 para mensagem contendo FilePart áudio",
+      "countMessageTokens retorna ~500 para parts desconhecidos",
+      "countMessageTokens soma tokens de múltiplos parts no mesmo content array",
+      "TypeScript compila sem erros em apps/packages/ai-sdk"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-12/worktree/sprints/sprint-16/3-prps/PRP-21D-replay-compaction.md"
+  },
+  {
+    "id": "F-336",
+    "name": "Evolution processar imageMessage",
+    "description": "Modificar apps/backbone/src/connectors/evolution/routes.ts para processar imageMessage no webhook. Pipeline: (1) baixar base64 via getBase64FromMediaMessage (mesmo endpoint já usado para áudio); (2) extrair MIME type de payload.imageMessage.mimetype (fallback image/jpeg); (3) gerar ID via generateAttachmentId() importado de conversations/attachments.ts; (4) criar {sessionDir}/attachments/ com mkdir({recursive:true}); (5) salvar buffer decodificado no arquivo; (6) montar content array: se caption presente (payload.imageMessage.caption) adicionar TextPart com caption, adicionar ImagePart com base64, mimeType e _ref: filename; (7) chamar routeInboundMessage() com content: ContentPart[]. Graceful degradation — se download falhar, logar erro e descartar mensagem.",
+    "status": "passing",
+    "priority": 12,
+    "completed_at": "2026-03-31T18:00:00.000Z",
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-332"
+    ],
+    "tests": [
+      "imageMessage recebida no webhook → imagem salva em {sessionDir}/attachments/",
+      "imageMessage → ImagePart enviado ao modelo via routeInboundMessage",
+      "Caption de imageMessage presente → TextPart adicionado antes do ImagePart",
+      "Caption de imageMessage ausente → content array contém apenas ImagePart",
+      "MIME type extraído de payload.imageMessage.mimetype",
+      "Fallback image/jpeg quando mimetype ausente",
+      "Falha no download → erro logado, mensagem descartada sem crash",
+      "TypeScript compila sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-12/worktree/sprints/sprint-16/3-prps/PRP-21E-evolution-multimidia.md"
+  },
+  {
+    "id": "F-337",
+    "name": "Evolution processar documentMessage",
+    "description": "Modificar apps/backbone/src/connectors/evolution/routes.ts para processar documentMessage no webhook. Pipeline: (1) baixar base64 via getBase64FromMediaMessage; (2) extrair MIME type de payload.documentMessage.mimetype; (3) extrair nome original de payload.documentMessage.fileName; (4) gerar ID, salvar em attachments/; (5) classificar via classifyAttachment() importado de conversations/attachments.ts — reusar mesma lógica (PDF→FilePart, DOCX→mammoth→TextPart, XLSX→SheetJS→TextPart, etc.); (6) montar content array com caption (se houver) + part classificado; (7) chamar routeInboundMessage() com content: ContentPart[]. Para MIME type não suportado: logar warning e descartar.",
+    "status": "passing",
+    "priority": 13,
+    "completed_at": "2026-03-31T19:00:00.000Z",
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-328",
+      "F-332"
+    ],
+    "tests": [
+      "documentMessage com PDF recebida → FilePart enviado ao modelo",
+      "documentMessage com DOCX recebida → texto extraído via mammoth, enviado como TextPart",
+      "documentMessage com XLSX recebida → dados convertidos para CSV, enviados como TextPart",
+      "Caption de documentMessage presente → TextPart adicionado antes do part de mídia",
+      "MIME type não suportado → warning logado, mensagem descartada",
+      "Nome original extraído de payload.documentMessage.fileName",
+      "Falha no download → erro logado, mensagem descartada sem crash",
+      "TypeScript compila sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-12/worktree/sprints/sprint-16/3-prps/PRP-21E-evolution-multimidia.md"
+  },
+  {
+    "id": "F-338",
+    "name": "Evolution audioMessage save attachments",
+    "description": "Melhorar handling de audioMessage/pttMessage em apps/backbone/src/connectors/evolution/routes.ts: manter caminho Whisper atual como default (retrocompatível). Adicionar: (1) baixar base64 da mídia; (2) gerar ID, salvar em {sessionDir}/attachments/ para referência futura; (3) continuar usando transcrição Whisper como conteúdo da mensagem (string). Tipos ignorados (videoMessage, stickerMessage): retornar silenciosamente sem logar warning. Não enviar FilePart nativo nesta fase — apenas salvar arquivo para histórico.",
+    "status": "passing",
+    "priority": 14,
+    "completed_at": "2026-03-31T20:00:00.000Z",
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-327",
+      "F-332"
+    ],
+    "tests": [
+      "audioMessage/pttMessage → transcrição Whisper funciona como antes",
+      "audioMessage → arquivo salvo em {sessionDir}/attachments/",
+      "videoMessage recebido → ignorado silenciosamente sem warning",
+      "stickerMessage recebido → ignorado silenciosamente sem warning",
+      "Fluxo de áudio/Whisper existente não quebrado",
+      "TypeScript compila sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-12/worktree/sprints/sprint-16/3-prps/PRP-21E-evolution-multimidia.md"
+  },
+  {
+    "id": "F-339",
+    "name": "Frontend submit multipart FormData",
+    "description": "Refatorar handleSubmit em apps/packages/ai-chat/src/components/Chat.tsx. Se há attachments: construir FormData com campo message (se texto presente) e campos files (um por arquivo), enviar via fetch com Authorization: Bearer <token> (sem Content-Type — browser define multipart boundary), tratar erros 413 (limite excedido) e 415 (MIME não suportado) mostrando mensagem do backend ao usuário, processar streaming SSE do response (reusar lógica existente de consumo de datastream), limpar input e attachments após envio bem-sucedido. Se não há attachments: usar fluxo JSON original via useChat.handleSubmit (retrocompatível). Novo estado isUploading: boolean para controlar indicador de progresso. Interface em pt-BR.",
+    "status": "passing",
+    "completed_at": "2026-03-31T21:00:00.000Z",
+    "priority": 15,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-327",
+      "F-331"
+    ],
+    "tests": [
+      "handleSubmit com attachments → envia FormData multipart via fetch",
+      "handleSubmit sem attachments → fluxo JSON original via useChat.handleSubmit",
+      "Erro 413 do backend → mensagem de limite exibida ao usuário",
+      "Erro 415 do backend → mensagem de tipo não suportado exibida ao usuário",
+      "Streaming SSE funciona após upload multipart",
+      "Input e attachments limpos após envio bem-sucedido",
+      "Estado isUploading controlado durante ciclo de upload",
+      "TypeScript compila sem erros em apps/packages/ai-chat"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-12/worktree/sprints/sprint-16/3-prps/PRP-21F-frontend-wiring-rendering.md"
+  },
+  {
+    "id": "F-340",
+    "name": "Rendering attachments MessageBubble",
+    "description": "Modificar MessageBubble em apps/packages/ai-chat/src/components/MessageBubble.tsx para renderizar content parts de upload. Imagens (ImagePart): thumbnail com max-w-xs, rounded-lg, border, clicável abre lightbox (modal simples com imagem em tamanho real), URL {endpoint}/conversations/{sessionId}/attachments/{_ref}?token={jwt}, loading='lazy'. Áudio (FilePart com mimeType audio/*): player inline com <audio controls>, URL com ?token=. PDF (FilePart com mimeType application/pdf): chip com ícone de arquivo + nome, clicável para abrir em nova aba/download, URL com ?token=. Texto pré-processado (TextPart com prefixo [📎]): bloco colapsável via shadcn Collapsible, header com ícone de clip + nome do arquivo, preview das primeiras linhas visível, conteúdo completo ao expandir, <pre> com max-h-40 overflow-auto. Componentes shadcn. Interface em pt-BR.",
+    "status": "passing",
+    "completed_at": "2026-03-31T00:00:00.000Z",
+    "priority": 16,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-333",
+      "F-339"
+    ],
+    "tests": [
+      "Imagem no histórico → thumbnail renderizado com max-w-xs e lazy loading",
+      "Imagem clicável → abre lightbox com imagem em tamanho real",
+      "Áudio no histórico → player inline com <audio controls>",
+      "PDF no histórico → chip com ícone e nome, clicável para download/abrir",
+      "Texto pré-processado ([📎]) → bloco colapsável com preview das primeiras linhas",
+      "URLs de assets usam ?token= para autenticação",
+      "Componentes shadcn utilizados (Collapsible, Button)",
+      "TypeScript compila sem erros em apps/packages/ai-chat"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-12/worktree/sprints/sprint-16/3-prps/PRP-21F-frontend-wiring-rendering.md"
+  },
+  {
+    "id": "F-341",
+    "name": "Indicador progresso upload",
+    "description": "Modificar AttachmentPreview em MessageInput.tsx (apps/packages/ai-chat/src/components/). Quando isUploading === true: mostrar spinner (Loader2 com animate-spin) + texto 'Enviando arquivos...' em pt-BR. Posicionado junto ao preview de attachments. Desaparece quando upload completa (sucesso ou erro). Indicador simples (spinner) é suficiente para o MVP — sem barra de progresso granular.",
+    "status": "passing",
+    "priority": 17,
+    "completed_at": "2026-03-31T22:00:00.000Z",
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-339"
+    ],
+    "tests": [
+      "Indicador de progresso visível durante upload (isUploading === true)",
+      "Spinner com Loader2 animate-spin + texto 'Enviando arquivos...'",
+      "Indicador desaparece quando upload completa (sucesso)",
+      "Indicador desaparece quando upload falha (erro)",
+      "Indicador posicionado junto ao preview de attachments",
+      "TypeScript compila sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-12/worktree/sprints/sprint-16/3-prps/PRP-21F-frontend-wiring-rendering.md"
+  }
+]

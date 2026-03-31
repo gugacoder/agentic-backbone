@@ -9,6 +9,7 @@ import { randomBytes } from "node:crypto";
 import { agentDir } from "../context/paths.js";
 import { readYamlAs, writeYamlAs } from "../context/readers.js";
 import { SessionYmlSchema } from "../context/schemas.js";
+import type { ContentPart } from "./attachments.js";
 
 export interface ModelMessageWithMeta {
   role: string;
@@ -54,18 +55,55 @@ export function initSession(
   }
 }
 
+// --- Persistence helpers ---
+
+type StrippedImagePart = { type: "image"; _ref: string; mimeType?: string };
+type StrippedFilePart = { type: "file"; _ref: string; mimeType: string };
+type StoredPart = { type: "text"; text: string } | StrippedImagePart | StrippedFilePart;
+
+/**
+ * Replaces binary fields (image/data) with _ref references for JSONL storage.
+ * Parts without _ref are kept unchanged.
+ */
+export function stripBase64ForStorage(content: ContentPart[]): StoredPart[] {
+  return content.map((part) => {
+    const p = part as unknown as Record<string, unknown>;
+
+    if (part.type === "image" && typeof p["_ref"] === "string") {
+      const stripped: StrippedImagePart = { type: "image", _ref: p["_ref"] };
+      const mimeType = (part as { mimeType?: string }).mimeType;
+      if (mimeType) stripped.mimeType = mimeType;
+      return stripped;
+    }
+
+    if (part.type === "file" && typeof p["_ref"] === "string") {
+      return {
+        type: "file" as const,
+        _ref: p["_ref"],
+        mimeType: (part as { mimeType: string }).mimeType,
+      };
+    }
+
+    return part as StoredPart;
+  });
+}
+
 // --- Message persistence ---
 
 export function appendModelMessage(
   agentId: string,
   sessionId: string,
-  message: { role: string; content: string; _meta?: Record<string, unknown> }
+  message: { role: string; content: string | ContentPart[]; _meta?: Record<string, unknown> }
 ): void {
   const dir = sessionDir(agentId, sessionId);
   mkdirSync(dir, { recursive: true });
 
+  const storedContent = Array.isArray(message.content)
+    ? stripBase64ForStorage(message.content)
+    : message.content;
+
   const jsonlPath = join(dir, "messages.jsonl");
-  const line = JSON.stringify(message) + "\n";
+  const line = JSON.stringify({ ...message, content: storedContent }) + "\n";
   appendFileSync(jsonlPath, line);
 }
 

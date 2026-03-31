@@ -13,12 +13,13 @@ export interface MessageListProps {
   messages: Message[];
   isLoading?: boolean;
   displayRenderers?: DisplayRendererMap;
+  attachmentUrl?: (ref: string) => string;
   className?: string;
   error?: Error;
   onRetry?: () => void;
 }
 
-export function MessageList({ messages, isLoading, displayRenderers, className, error, onRetry }: MessageListProps) {
+export function MessageList({ messages, isLoading, displayRenderers, attachmentUrl, className, error, onRetry }: MessageListProps) {
   const viewportRef = useRef<HTMLDivElement>(null);
   const isFollowingRef = useRef(true);
 
@@ -113,6 +114,7 @@ export function MessageList({ messages, isLoading, displayRenderers, className, 
                     message={message}
                     isStreaming={virtualRow.index === lastAssistantIndex && isLoading && messages[messages.length - 1]?.role === "assistant"}
                     displayRenderers={displayRenderers}
+                    attachmentUrl={attachmentUrl}
                   />
                 </div>
               );
