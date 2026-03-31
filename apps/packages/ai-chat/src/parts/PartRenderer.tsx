@@ -11,8 +11,8 @@ import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "../ui/colla
 import { cn } from "../lib/utils.js";
 
 const HEAVY_RENDERERS = new Set([
-  "display_chart", "display_map", "display_table",
-  "display_spreadsheet", "display_gallery", "display_image",
+  "chart", "map", "table",
+  "spreadsheet", "gallery", "image",
 ]);
 
 // Minimal part types — mirrors @ai-sdk/react Message["parts"]
@@ -141,10 +141,12 @@ export const PartRenderer = memo(function PartRenderer({ part, isStreaming, disp
       const isDisplay = toolInvocation.toolName.startsWith("display_");
 
       if (isDisplay && toolInvocation.state === "result") {
-        const Renderer = resolveDisplayRenderer(toolInvocation.toolName, displayRenderers);
+        const result = toolInvocation.result as Record<string, unknown>;
+        const action = typeof result?.action === "string" ? result.action : undefined;
+        const Renderer = action ? resolveDisplayRenderer(action, displayRenderers) : null;
         if (Renderer) {
-          const rendered = <Renderer {...(toolInvocation.result as Record<string, unknown>)} />;
-          if (!isStreaming && HEAVY_RENDERERS.has(toolInvocation.toolName)) {
+          const rendered = <Renderer {...result} />;
+          if (!isStreaming && action && HEAVY_RENDERERS.has(action)) {
             return <LazyRender>{rendered}</LazyRender>;
           }
           return rendered;
