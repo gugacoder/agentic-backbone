@@ -40,12 +40,12 @@ export interface ModelResult {
 
 export type LlmProvider = "openrouter" | "groq";
 
-const PROVIDER_CONFIGS: Record<LlmProvider, { baseURL: string; apiKeyEnv: string }> = {
+const PROVIDER_CONFIGS: Record<LlmProvider, { baseURL: string; apiKeyEnv: string; maxTools?: number }> = {
   openrouter: { baseURL: "https://openrouter.ai/api/v1", apiKeyEnv: "OPENROUTER_API_KEY" },
-  groq:       { baseURL: "https://api.groq.com/openai/v1", apiKeyEnv: "GROQ_API_KEY" },
+  groq:       { baseURL: "https://api.groq.com/openai/v1", apiKeyEnv: "GROQ_API_KEY", maxTools: 128 },
 };
 
-export function getProviderConfig(provider: LlmProvider): { baseURL: string; apiKeyEnv: string } {
+export function getProviderConfig(provider: LlmProvider): { baseURL: string; apiKeyEnv: string; maxTools?: number } {
   return PROVIDER_CONFIGS[provider] ?? PROVIDER_CONFIGS.openrouter;
 }
 

@@ -347,7 +347,7 @@
     "id": "F-317",
     "name": "Ativar domain tool em email/tools/index.ts",
     "description": "Alterar apps/backbone/src/connectors/email/tools/index.ts: substituir 10 exports individuais por 1 re-export da domain tool (export { createEmailTool } from './email.js'). Verificar como email/index.ts consome tools/index.ts e adaptar.",
-    "status": "blocked",
+    "status": "pending",
     "priority": 19,
     "agent": "coder",
     "task": "vibe-code",
@@ -393,7 +393,7 @@
     "id": "F-319",
     "name": "maxTools em PROVIDER_CONFIGS",
     "description": "Alterar apps/backbone/src/settings/llm.ts: adicionar maxTools?: number ao tipo de PROVIDER_CONFIGS e adicionar maxTools: 128 para o provider groq. Provider openrouter nao define maxTools (sem limite). Atualizar getProviderConfig() se necessario para incluir maxTools no retorno.",
-    "status": "pending",
+    "status": "passing",
     "priority": 16,
     "agent": "coder",
     "task": "vibe-code",
@@ -405,13 +405,14 @@
       "getProviderConfig() retorna maxTools quando definido",
       "TypeScript compila sem erros"
     ],
-    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-10/worktree/sprints/sprint-15/3-prps/PRP-18E-max-tools-warning.md"
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-10/worktree/sprints/sprint-15/3-prps/PRP-18E-max-tools-warning.md",
+    "completed_at": "2026-03-30T03:45:00Z"
   },
   {
     "id": "F-320",
     "name": "Warning quando tools excedem maxTools",
     "description": "Alterar apps/backbone/src/agent/index.ts: apos composicao de tools via composeAgentTools, verificar se providerConf.maxTools esta definido e Object.keys(tools).length > maxTools. Se sim, emitir console.warn com contagem atual e limite do provider. Warning nao bloqueia execucao.",
-    "status": "blocked",
+    "status": "pending",
     "priority": 21,
     "agent": "coder",
     "task": "vibe-code",
