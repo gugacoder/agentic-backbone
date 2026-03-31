@@ -407,6 +407,13 @@ export function ConversationChatPage({ id, basePath }: ConversationChatPageProps
           sessionId={id}
           initialMessages={buildInitialMessages(existingMessages)}
           className="flex-1 flex flex-col overflow-hidden"
+          enableAttachments
+          enableVoice
+          endpoints={[
+            { id: "system.sandbox", label: "Sandbox" },
+            { id: "system.assistant", label: "Assistente" },
+          ]}
+          defaultAgent="system.sandbox"
         />
       </div>
 

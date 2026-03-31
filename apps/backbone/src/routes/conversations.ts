@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { streamSSE } from "hono/streaming";
-import { encodeDataStreamEvent } from "./datastream.js";
+import { encodeDataStreamEvent, encodeDataStreamError } from "./datastream.js";
 import {
   sendMessage,
   createSession,
@@ -218,19 +218,25 @@ conversationRoutes.post("/conversations/:sessionId/messages", async (c) => {
     const encoder = new TextEncoder();
     const readable = new ReadableStream({
       async start(controller) {
+        let hasContent = false;
         try {
           for await (const event of sendMessage(auth.user, sessionId, message)) {
             try {
               const encoded = encodeDataStreamEvent(event);
               if (encoded !== null) {
                 controller.enqueue(encoder.encode(encoded + "\n"));
+                hasContent = true;
               }
             } catch (encodeErr) {
               console.error(`[datastream] error encoding event:`, encodeErr);
             }
           }
+          if (!hasContent) {
+            controller.enqueue(encoder.encode(encodeDataStreamError("Nenhuma resposta gerada pelo agente.") + "\n"));
+          }
         } catch (err) {
           console.error(`[datastream] stream error:`, err);
+          controller.enqueue(encoder.encode(encodeDataStreamError("Erro interno ao processar mensagem.") + "\n"));
         } finally {
           controller.close();
         }

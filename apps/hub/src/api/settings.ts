@@ -13,6 +13,7 @@ export interface SlugDef {
 
 export interface LlmPlan {
   name: string;
+  tier: number;
   title: string;
   description: string;
   slugs: Record<string, SlugDef>;

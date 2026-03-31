@@ -12,6 +12,14 @@ import type { AgentEvent } from "../agent/types.js";
  *   d: — done (usage + finish reason)
  *   g: — reasoning
  */
+/**
+ * Codifica uma mensagem de erro no protocolo DataStream (prefixo 3:).
+ * O @ai-sdk/react useChat interpreta isso como erro e popula o state `error`.
+ */
+export function encodeDataStreamError(message: string): string {
+  return `3:${JSON.stringify(message)}`;
+}
+
 export function encodeDataStreamEvent(event: AgentEvent): string | null {
   try {
     switch (event.type) {

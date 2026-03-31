@@ -25,6 +25,7 @@ const roleLabels: Record<string, string> = {
   memory: "Memoria",
 };
 
+
 function formatModelName(model: string) {
   const parts = model.split("/");
   return parts.length > 1 ? parts[1] : model;
@@ -39,10 +40,16 @@ export function LlmPlanCard({
   return (
     <Card
       className={cn(
-        "transition-colors",
+        "relative transition-colors",
         isActive && "ring-2 ring-primary",
       )}
     >
+      <Badge
+        variant="outline"
+        className="absolute top-3 right-3 text-[10px] px-1.5 py-0 font-mono text-muted-foreground"
+      >
+        tier-{plan.tier}
+      </Badge>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           {plan.title}
