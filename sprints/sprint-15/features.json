@@ -478,7 +478,7 @@
     "id": "F-323",
     "name": "Remover tools individuais do Email",
     "description": "Remover 10 arquivos individuais de apps/backbone/src/connectors/email/tools/: send.ts, search.ts, read.ts, download-attachment.ts, manage-flags.ts, move.ts, delete.ts, list-mailboxes.ts, draft-create.ts, draft-send.ts. Apos remocao o diretorio deve conter apenas: index.ts, email.ts.",
-    "status": "pending",
+    "status": "passing",
     "priority": 24,
     "agent": "coder",
     "task": "vibe-code",
@@ -491,7 +491,8 @@
       "Nenhum import no codebase referencia os arquivos removidos",
       "TypeScript compila sem erros"
     ],
-    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-10/worktree/sprints/sprint-15/3-prps/PRP-18F-limpeza-validacao.md"
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-10/worktree/sprints/sprint-15/3-prps/PRP-18F-limpeza-validacao.md",
+    "completed_at": "2026-03-31T01:20:00Z"
   },
   {
     "id": "F-324",
