@@ -1,5 +1,4 @@
 import type { ComponentType } from "react";
-import type { DisplayToolName } from "@agentic-backbone/ai-sdk";
 
 import { AlertRenderer } from "./AlertRenderer.js";
 import { MetricCardRenderer } from "./MetricCardRenderer.js";
@@ -21,39 +20,62 @@ import { LinkPreviewRenderer } from "./LinkPreviewRenderer.js";
 import { MapViewRenderer } from "./MapViewRenderer.js";
 import { ChoiceButtonsRenderer } from "./ChoiceButtonsRenderer.js";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type DisplayRendererMap = Partial<Record<DisplayToolName, ComponentType<any>>>;
+export type DisplayActionName =
+  | "metric"
+  | "price"
+  | "alert"
+  | "choices"
+  | "table"
+  | "spreadsheet"
+  | "comparison"
+  | "carousel"
+  | "gallery"
+  | "sources"
+  | "product"
+  | "link"
+  | "file"
+  | "image"
+  | "chart"
+  | "map"
+  | "code"
+  | "progress"
+  | "steps";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const defaultDisplayRenderers: Record<DisplayToolName, ComponentType<any>> = {
-  display_alert: AlertRenderer,
-  display_metric: MetricCardRenderer,
-  display_price: PriceHighlightRenderer,
-  display_file: FileCardRenderer,
-  display_code: CodeBlockRenderer,
-  display_sources: SourcesListRenderer,
-  display_steps: StepTimelineRenderer,
-  display_progress: ProgressStepsRenderer,
-  display_chart: ChartRenderer,
-  display_carousel: CarouselRenderer,
-  display_product: ProductCardRenderer,
-  display_comparison: ComparisonTableRenderer,
-  display_table: DataTableRenderer,
-  display_spreadsheet: SpreadsheetRenderer,
-  display_gallery: GalleryRenderer,
-  display_image: ImageViewerRenderer,
-  display_link: LinkPreviewRenderer,
-  display_map: MapViewRenderer,
-  display_choices: ChoiceButtonsRenderer,
+export type DisplayRendererMap = Partial<Record<string, ComponentType<any>>>;
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const defaultDisplayRenderers: Record<DisplayActionName, ComponentType<any>> = {
+  // highlight
+  metric: MetricCardRenderer,
+  price: PriceHighlightRenderer,
+  alert: AlertRenderer,
+  choices: ChoiceButtonsRenderer,
+  // collection
+  table: DataTableRenderer,
+  spreadsheet: SpreadsheetRenderer,
+  comparison: ComparisonTableRenderer,
+  carousel: CarouselRenderer,
+  gallery: GalleryRenderer,
+  sources: SourcesListRenderer,
+  // card
+  product: ProductCardRenderer,
+  link: LinkPreviewRenderer,
+  file: FileCardRenderer,
+  image: ImageViewerRenderer,
+  // visual
+  chart: ChartRenderer,
+  map: MapViewRenderer,
+  code: CodeBlockRenderer,
+  progress: ProgressStepsRenderer,
+  steps: StepTimelineRenderer,
 };
 
 export function resolveDisplayRenderer(
-  toolName: string,
+  action: string,
   overrides?: DisplayRendererMap,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-): ComponentType<any> | undefined {
-  return (
-    overrides?.[toolName as DisplayToolName] ??
-    defaultDisplayRenderers[toolName as DisplayToolName]
-  );
+): ComponentType<any> | null {
+  if (overrides?.[action]) return overrides[action]!;
+  return (defaultDisplayRenderers as Record<string, ComponentType<any>>)[action] ?? null;
 }
