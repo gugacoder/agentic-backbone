@@ -266,7 +266,8 @@ Mensagem do usuario: ${message}`;
 export async function* sendMessage(
   userId: string,
   sessionId: string,
-  content: string | ContentPart[]
+  content: string | ContentPart[],
+  opts?: { rich?: boolean }
 ): AsyncGenerator<AgentEvent> {
   // Extract text portion for hooks, logging, security checks, and memory search
   const message = typeof content === "string"
