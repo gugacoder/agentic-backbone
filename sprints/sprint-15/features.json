@@ -3,7 +3,7 @@
     "id": "F-300",
     "name": "Domain tool gitlab_issues",
     "description": "Criar apps/backbone/src/connectors/gitlab/tools/issues.ts com domain tool gitlab_issues agrupando 13 actions (list, get, create, update, delete, move, comment, list_comments, update_comment, delete_comment, list_links, add_link, related_mrs) via z.discriminatedUnion('action', [...]). Factory function createGitLabIssuesTool(adapters). Copiar schemas Zod dos arquivos individuais issue-*.ts existentes. Policy check readonly para acoes de escrita. Importar createIssuesResource de @agentic-backbone/gitlab-v4.",
-    "status": "pending",
+    "status": "passing",
     "priority": 1,
     "agent": "coder",
     "task": "vibe-code",
@@ -17,7 +17,8 @@
       "Execute faz dispatch por args.action com switch/case para todas 13 actions",
       "TypeScript compila sem erros (npx tsc --noEmit no arquivo)"
     ],
-    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-10/worktree/sprints/sprint-15/3-prps/PRP-18A-gitlab-domain-tools.md"
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-10/worktree/sprints/sprint-15/3-prps/PRP-18A-gitlab-domain-tools.md",
+    "completed_at": "2026-03-31T01:50:00Z"
   },
   {
     "id": "F-301",
@@ -281,11 +282,22 @@
     "id": "F-315",
     "name": "Ativar domain tools em gitlab/index.ts",
     "description": "Alterar apps/backbone/src/connectors/gitlab/index.ts: substituir ~89 imports individuais por 10 imports de domain tools (createGitLabIssuesTool, createGitLabMrsTool, createGitLabRepoTool, createGitLabCiTool, createGitLabLabelsTool, createGitLabMilestonesTool, createGitLabReleasesTool, createGitLabWikiTool, createGitLabUsersTool, createGitLabProjectsTool). Atualizar createTools(adapters) para retornar spread das 10 domain tools.",
-    "status": "pending",
+    "status": "blocked",
     "priority": 17,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-300", "F-301", "F-302", "F-303", "F-304", "F-305", "F-306", "F-307", "F-308", "F-309"],
+    "dependencies": [
+      "F-300",
+      "F-301",
+      "F-302",
+      "F-303",
+      "F-304",
+      "F-305",
+      "F-306",
+      "F-307",
+      "F-308",
+      "F-309"
+    ],
     "tests": [
       "gitlab/index.ts importa 10 domain tools, zero imports de tool files individuais",
       "createTools(adapters) retorna spread das 10 domain tools",
@@ -299,11 +311,16 @@
     "id": "F-316",
     "name": "Ativar domain tools em evolution/tools/index.ts",
     "description": "Alterar apps/backbone/src/connectors/evolution/tools/index.ts: substituir ~37 imports individuais por 4 imports de domain tools (createWhatsappMessagingTool, createWhatsappGroupsTool, createWhatsappContactsTool, createWhatsappAdminTool). Manter assinatura de createEvolutionTools(slugs) identica.",
-    "status": "pending",
+    "status": "blocked",
     "priority": 18,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-310", "F-311", "F-312", "F-313"],
+    "dependencies": [
+      "F-310",
+      "F-311",
+      "F-312",
+      "F-313"
+    ],
     "tests": [
       "evolution/tools/index.ts importa 4 domain tools, zero imports de whatsapp-*.ts",
       "createEvolutionTools(slugs) mantem mesma assinatura",
@@ -316,11 +333,13 @@
     "id": "F-317",
     "name": "Ativar domain tool em email/tools/index.ts",
     "description": "Alterar apps/backbone/src/connectors/email/tools/index.ts: substituir 10 exports individuais por 1 re-export da domain tool (export { createEmailTool } from './email.js'). Verificar como email/index.ts consome tools/index.ts e adaptar.",
-    "status": "pending",
+    "status": "blocked",
     "priority": 19,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-314"],
+    "dependencies": [
+      "F-314"
+    ],
     "tests": [
       "email/tools/index.ts exporta apenas createEmailTool, zero exports individuais",
       "email/index.ts funciona corretamente com a nova exportacao",
@@ -332,11 +351,22 @@
     "id": "F-318",
     "name": "Ativar domain tools em implantacao/index.ts",
     "description": "Alterar apps/backbone/src/connectors/implantacao/index.ts: substituir 28 imports individuais do GitLab por imports das domain tools relevantes (createGitLabIssuesTool, createGitLabMrsTool, createGitLabRepoTool, createGitLabCiTool, etc. de ../gitlab/tools/). Implantacao passa a expor todas actions de cada dominio — comportamento expandido mas aceitavel.",
-    "status": "pending",
+    "status": "blocked",
     "priority": 20,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-300", "F-301", "F-302", "F-303", "F-304", "F-305", "F-306", "F-307", "F-308", "F-309"],
+    "dependencies": [
+      "F-300",
+      "F-301",
+      "F-302",
+      "F-303",
+      "F-304",
+      "F-305",
+      "F-306",
+      "F-307",
+      "F-308",
+      "F-309"
+    ],
     "tests": [
       "implantacao/index.ts importa domain tools do GitLab, zero imports de tool files individuais",
       "createTools() retorna spread das domain tools",
@@ -367,11 +397,13 @@
     "id": "F-320",
     "name": "Warning quando tools excedem maxTools",
     "description": "Alterar apps/backbone/src/agent/index.ts: apos composicao de tools via composeAgentTools, verificar se providerConf.maxTools esta definido e Object.keys(tools).length > maxTools. Se sim, emitir console.warn com contagem atual e limite do provider. Warning nao bloqueia execucao.",
-    "status": "pending",
+    "status": "blocked",
     "priority": 21,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-319"],
+    "dependencies": [
+      "F-319"
+    ],
     "tests": [
       "agent/index.ts emite console.warn quando tools > maxTools",
       "Warning inclui contagem atual e limite do provider",
@@ -385,11 +417,14 @@
     "id": "F-321",
     "name": "Remover tools individuais do GitLab",
     "description": "Remover 89 tool files individuais de apps/backbone/src/connectors/gitlab/tools/: issue-*.ts (13), mr-*.ts (16), repo-*.ts (17), ci-*.ts (12), label-*.ts (5), milestone-*.ts (7), release-*.ts (5), wiki-*.ts (5), user-*.ts (3), project-*.ts (6). Apos remocao o diretorio deve conter apenas: issues.ts, mrs.ts, repo.ts, ci.ts, labels.ts, milestones.ts, releases.ts, wiki.ts, users.ts, projects.ts.",
-    "status": "pending",
+    "status": "blocked",
     "priority": 22,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-315", "F-318"],
+    "dependencies": [
+      "F-315",
+      "F-318"
+    ],
     "tests": [
       "Nenhum arquivo issue-*.ts, mr-*.ts, repo-*.ts, ci-*.ts, label-*.ts, milestone-*.ts, release-*.ts, wiki-*.ts, user-*.ts, project-*.ts em gitlab/tools/",
       "Apenas 10 domain tool files permanecem no diretorio",
@@ -402,11 +437,13 @@
     "id": "F-322",
     "name": "Remover tools individuais do WhatsApp",
     "description": "Remover 36 arquivos de apps/backbone/src/connectors/evolution/tools/: whatsapp-*.ts (35) + evolution-api.ts (1). Apos remocao o diretorio deve conter apenas: index.ts, messaging.ts, groups.ts, contacts.ts, admin.ts.",
-    "status": "pending",
+    "status": "blocked",
     "priority": 23,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-316"],
+    "dependencies": [
+      "F-316"
+    ],
     "tests": [
       "Nenhum arquivo whatsapp-*.ts nem evolution-api.ts em evolution/tools/",
       "Apenas index.ts + 4 domain tool files permanecem no diretorio",
@@ -419,11 +456,13 @@
     "id": "F-323",
     "name": "Remover tools individuais do Email",
     "description": "Remover 10 arquivos individuais de apps/backbone/src/connectors/email/tools/: send.ts, search.ts, read.ts, download-attachment.ts, manage-flags.ts, move.ts, delete.ts, list-mailboxes.ts, draft-create.ts, draft-send.ts. Apos remocao o diretorio deve conter apenas: index.ts, email.ts.",
-    "status": "pending",
+    "status": "blocked",
     "priority": 24,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-317"],
+    "dependencies": [
+      "F-317"
+    ],
     "tests": [
       "Nenhum dos 10 tool files individuais em email/tools/",
       "Apenas index.ts + email.ts permanecem no diretorio",
@@ -436,11 +475,15 @@
     "id": "F-324",
     "name": "Build e validacao final",
     "description": "Executar npm run build — deve completar sem erros. Verificar que nenhum import em todo o codebase referencia arquivos removidos (grep por nomes antigos). Confirmar que total de tools do agente com todos connectors habilitados <= 128 (idealmente ~45). Smoke test: o servidor deve iniciar sem erros.",
-    "status": "pending",
+    "status": "blocked",
     "priority": 25,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-321", "F-322", "F-323"],
+    "dependencies": [
+      "F-321",
+      "F-322",
+      "F-323"
+    ],
     "tests": [
       "npm run build completa sem erros",
       "grep por nomes antigos (issue-list, mr-create, whatsapp-send-text) retorna zero resultados em imports",
