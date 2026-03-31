@@ -1,9 +1,14 @@
 import { Hono, type Context } from "hono";
+import { mkdir, writeFile } from "node:fs/promises";
+import { join } from "node:path";
 import type { EvolutionProbe } from "./probe.js";
 import type { EvolutionStateTracker } from "./state.js";
 import type { EvolutionActions, ActionResult } from "./actions.js";
 import { findChannelsByAdapter } from "../../channels/lookup.js";
 import { routeInboundMessage } from "../../channels/delivery/inbound-router.js";
+import { findOrCreateSession } from "../../conversations/index.js";
+import { agentDir } from "../../context/paths.js";
+import { generateAttachmentId, type ContentPart } from "../../conversations/attachments.js";
 import {
   getPendingRating,
   handlePossibleRatingReply,
@@ -317,7 +322,7 @@ export function createEvolutionRoutes(deps: RouteDeps): Hono {
         const msgKey = body.data?.key as Record<string, unknown>;
         const base64Res = await fetch(`${baseUrl}/chat/getBase64FromMediaMessage/${instanceName}`, {
           method: "POST",
-          headers: { "Content-Type": "application/json", apikey },
+          headers: { "Content-Type": "application/json", apikey: apiKey },
           body: JSON.stringify({ key: msgKey, convertToMp4: false }),
         });
         if (!base64Res.ok) {
@@ -360,6 +365,87 @@ export function createEvolutionRoutes(deps: RouteDeps): Hono {
       } catch (err) {
         console.error("[evolution/webhook] audio transcription error:", err);
         return c.json({ status: "ignored_audio_error" }, 200);
+      }
+    }
+
+    // Detect image messages
+    const imageMsg = rawMessage?.imageMessage as Record<string, unknown> | undefined;
+    if (!messageText && imageMsg && instanceName && remoteJid) {
+      const imgSenderId = remoteJid.split("@")[0]!;
+      const imgChannel = findChannelsByAdapter("whatsapp").find(
+        (ch) => ch.options["instance"] === instanceName
+      );
+      if (!imgChannel || !imgChannel.agent) {
+        return c.json({ status: "no_channel" }, 200);
+      }
+
+      try {
+        const msgKey = body.data?.key as Record<string, unknown>;
+        const base64Res = await fetch(`${baseUrl}/chat/getBase64FromMediaMessage/${instanceName}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", apikey: apiKey },
+          body: JSON.stringify({ key: msgKey, convertToMp4: false }),
+        });
+        if (!base64Res.ok) {
+          console.error(`[evolution/webhook] getBase64FromMediaMessage (image) failed HTTP ${base64Res.status}`);
+          return c.json({ status: "ignored_image_error" }, 200);
+        }
+        const base64Data = await base64Res.json() as { base64?: string; mimetype?: string };
+        if (!base64Data.base64) {
+          console.error("[evolution/webhook] getBase64FromMediaMessage returned no base64 for image");
+          return c.json({ status: "ignored_image_error" }, 200);
+        }
+
+        const mimeType = (imageMsg.mimetype as string | undefined) ?? "image/jpeg";
+        const ext = mimeType.split("/")[1] ?? "jpg";
+        const filename = generateAttachmentId(`photo.${ext}`);
+
+        const agentId = imgChannel.agent;
+        const session = findOrCreateSession(agentId, imgSenderId, imgChannel.slug);
+        const sDir = join(agentDir(agentId), "conversations", session.session_id);
+        await mkdir(join(sDir, "attachments"), { recursive: true });
+        await writeFile(join(sDir, "attachments", filename), Buffer.from(base64Data.base64, "base64"));
+
+        const caption = imageMsg.caption as string | undefined;
+        const imagePart: ContentPart = { type: "image", image: base64Data.base64, mimeType, _ref: filename };
+        const contentParts: ContentPart[] = [];
+        if (caption) {
+          contentParts.push({ type: "text", text: caption });
+        }
+        contentParts.push(imagePart);
+
+        routeInboundMessage(
+          imgChannel.slug,
+          {
+            senderId: imgSenderId,
+            content: contentParts,
+            ts: Date.now(),
+            metadata: { instance: instanceName, remoteJid },
+          },
+          async (sessionId, cbAgentId) => {
+            if (RATING_DISABLED_PENDING_REDESIGN) return;
+            const msgIndex = lastAssistantMessageIndex(cbAgentId, sessionId);
+            if (msgIndex < 0) return;
+            setPendingRating(imgSenderId, {
+              sessionId,
+              agentId: cbAgentId,
+              channelId: imgChannel.slug,
+              instanceName,
+              messageIndex: msgIndex,
+              step: "awaiting_rating",
+            });
+            await sendWhatsAppText(baseUrl, apiKey, instanceName, remoteJid, "Essa resposta foi útil? Responda *SIM* ou *NAO*").catch(
+              (err) => console.error("[evolution/rating] rating question failed:", err)
+            );
+          }
+        ).catch((err) => {
+          console.error("[evolution/webhook] image routing failed:", err);
+        });
+
+        return c.json({ status: "accepted" }, 200);
+      } catch (err) {
+        console.error("[evolution/webhook] image processing error:", err);
+        return c.json({ status: "ignored_image_error" }, 200);
       }
     }
 

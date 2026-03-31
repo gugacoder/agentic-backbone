@@ -266,8 +266,9 @@
     "id": "F-336",
     "name": "Evolution processar imageMessage",
     "description": "Modificar apps/backbone/src/connectors/evolution/routes.ts para processar imageMessage no webhook. Pipeline: (1) baixar base64 via getBase64FromMediaMessage (mesmo endpoint já usado para áudio); (2) extrair MIME type de payload.imageMessage.mimetype (fallback image/jpeg); (3) gerar ID via generateAttachmentId() importado de conversations/attachments.ts; (4) criar {sessionDir}/attachments/ com mkdir({recursive:true}); (5) salvar buffer decodificado no arquivo; (6) montar content array: se caption presente (payload.imageMessage.caption) adicionar TextPart com caption, adicionar ImagePart com base64, mimeType e _ref: filename; (7) chamar routeInboundMessage() com content: ContentPart[]. Graceful degradation — se download falhar, logar erro e descartar mensagem.",
-    "status": "pending",
+    "status": "passing",
     "priority": 12,
+    "completed_at": "2026-03-31T18:00:00.000Z",
     "agent": "coder",
     "task": "vibe-code",
     "dependencies": [
