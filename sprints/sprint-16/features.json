@@ -388,8 +388,9 @@
     "id": "F-341",
     "name": "Indicador progresso upload",
     "description": "Modificar AttachmentPreview em MessageInput.tsx (apps/packages/ai-chat/src/components/). Quando isUploading === true: mostrar spinner (Loader2 com animate-spin) + texto 'Enviando arquivos...' em pt-BR. Posicionado junto ao preview de attachments. Desaparece quando upload completa (sucesso ou erro). Indicador simples (spinner) é suficiente para o MVP — sem barra de progresso granular.",
-    "status": "pending",
+    "status": "passing",
     "priority": 17,
+    "completed_at": "2026-03-31T22:00:00.000Z",
     "agent": "coder",
     "task": "vibe-code",
     "dependencies": [
