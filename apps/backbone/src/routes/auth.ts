@@ -2,12 +2,13 @@ import { Hono } from "hono";
 import { sign } from "hono/jwt";
 import { getUser, getUserByEmail, getUserCredential, getUserByIdentifier, updateUserCredentialPassword } from "../users/manager.js";
 import { verifyPassword, hashPassword } from "../users/password.js";
+import { rateLimit } from "../middleware/rate-limit.js";
 
 export const authPublicRoutes = new Hono();
 export const authProtectedRoutes = new Hono();
 
-// POST /auth/login — public
-authPublicRoutes.post("/auth/login", async (c) => {
+// POST /auth/login — public (rate limited)
+authPublicRoutes.post("/auth/login", rateLimit(), async (c) => {
   const { username, password } = await c.req.json<{
     username: string;
     password: string;
@@ -49,8 +50,8 @@ authPublicRoutes.post("/auth/login", async (c) => {
   return c.json({ token });
 });
 
-// POST /auth/identify — public (step 1 of login wizard)
-authPublicRoutes.post("/auth/identify", async (c) => {
+// POST /auth/identify — public (step 1 of login wizard, rate limited)
+authPublicRoutes.post("/auth/identify", rateLimit(), async (c) => {
   const body = await c.req.json<{ username?: string }>().catch(() => ({ username: undefined }));
   const { username } = body;
 
@@ -98,6 +99,11 @@ authPublicRoutes.post("/auth/identify", async (c) => {
   }
 
   return c.json(response);
+});
+
+// POST /auth/otp-verify — public (rate limited; full implementation in F-355)
+authPublicRoutes.post("/auth/otp-verify", rateLimit(), async (c) => {
+  return c.json({ error: "Not implemented" }, 501);
 });
 
 // GET /auth/me — protected (mounted after JWT middleware)
