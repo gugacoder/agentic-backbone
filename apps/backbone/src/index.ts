@@ -16,7 +16,6 @@ import { existsSync, readFileSync, statSync } from "node:fs";
 import { join, resolve, extname } from "node:path";
 import { serve } from "@hono/node-server";
 import { Hono } from "hono";
-import { sign } from "hono/jwt";
 import { routes } from "./routes/index.js";
 import { startHeartbeat, stopHeartbeat } from "./heartbeat/index.js";
 import { startCron, stopCron } from "./cron/index.js";
@@ -49,14 +48,6 @@ const app = new Hono();
 
 async function bootstrap() {
   bootstrapProviders();
-
-  // Generate internal auth token for agent tools (job submission, etc.)
-  const now = Math.floor(Date.now() / 1000);
-  const internalToken = await sign(
-    { sub: "backbone-internal", role: "sysuser", iat: now, exp: now + 60 * 60 * 24 * 365 },
-    process.env.JWT_SECRET!
-  );
-  process.env.AUTH_TOKEN = internalToken;
 
   // Auto-encrypt any plaintext sensitive fields in .yml files
   encryptAllYamlFiles(CONTEXT_DIR);
