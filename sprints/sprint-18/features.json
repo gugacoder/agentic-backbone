@@ -278,6 +278,28 @@
     "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-18/worktree/sprints/sprint-18/3-prps/PRP-24E-chat-login-alignment.md"
   },
   {
+    "id": "F-363",
+    "name": "Hub settings OTP — configurar instância Evolution dedicada para OTP",
+    "description": "Criar interface de configuração OTP no Hub settings. Backbone: adicionar GET /settings/otp e PUT /settings/otp em routes/settings.ts que lê/grava a seção 'otp' de settings.yml via readYaml/patchYamlAs. Hub: criar componente OtpSettings em apps/hub/src/components/settings/otp-settings.tsx com campos: toggle 'Habilitado', 'Host' (URL), 'API Key' (password input), 'Instância' (nome da instância). Registrar em settings.tsx como nova aba 'OTP' no grupo 'Infraestrutura'. A config de Evolution para OTP é dedicada (independente do conector Evolution global) pois uma instância separada é utilizada exclusivamente para envio de OTPs.",
+    "status": "pending",
+    "priority": 14,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-353"
+    ],
+    "tests": [
+      "GET /settings/otp retorna a seção otp atual de settings.yml",
+      "PUT /settings/otp persiste host, api-key, instance e enabled via patchYamlAs",
+      "Componente OtpSettings renderiza toggle enabled + campos host/api-key/instance",
+      "API Key exibida como campo password (com toggle visibilidade)",
+      "Aba 'OTP' presente no grupo Infraestrutura no Hub settings",
+      "Salvar configuração exibe toast de sucesso",
+      "Build compila sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-18/worktree/sprints/sprint-18/3-prps/PRP-24B-otp-pipeline.md"
+  },
+  {
     "id": "F-362",
     "name": "Chat login wizard 2 etapas",
     "description": "Reescrever apps/chat/src/routes/login.tsx como wizard de 2 etapas com Framer Motion (já instalado). Mesmo padrão do Hub: Etapa 1 (identificação) → Etapa 2 (senha/OTP/escolha). Diferenças do Hub: logo diferente (SVG do Chat), visual existente preservado (gradiente, card translúcido), verificação de role de equipe após login (admin/manager/attendant), returnUrl no search params. Copiar ou importar OtpInput. Reenvio OTP com countdown 60s. Rate limit feedback com countdown. Interface pt-BR.",
