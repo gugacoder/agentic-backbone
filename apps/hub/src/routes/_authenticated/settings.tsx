@@ -2,7 +2,7 @@ import { useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "@/lib/auth";
-import { Cpu, Search, Users, Server, Plug, GitBranch, Key, Globe, LayoutDashboard, Mic } from "lucide-react";
+import { Cpu, Search, Users, Server, Plug, GitBranch, Key, Globe, LayoutDashboard, Mic, MessageSquare } from "lucide-react";
 import { toast } from "sonner";
 import { LlmPlanCard } from "@/components/settings/llm-plan-card";
 import { WebSearchSettings } from "@/components/settings/web-search-settings";
@@ -13,6 +13,7 @@ import { ProvidersSettings } from "@/components/settings/providers-settings";
 import { NgrokSettings } from "@/components/settings/ngrok-settings";
 import { WhisperSettings } from "@/components/settings/whisper-settings";
 import { MenuSettings } from "@/components/settings/menu-settings";
+import { OtpSettings } from "@/components/settings/otp-settings";
 import { UsersList } from "@/components/users/users-list";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -35,6 +36,7 @@ const settingsGroups = [
       { value: "mcp-server", label: "MCP Server", icon: Plug },
       { value: "whisper", label: "Whisper", icon: Mic },
       { value: "ngrok", label: "ngrok", icon: Globe },
+      { value: "otp", label: "OTP", icon: MessageSquare },
     ],
   },
   {
@@ -147,6 +149,7 @@ function SettingsPage() {
         {activeTab === "providers" && <ProvidersSettings />}
         {activeTab === "whisper" && <WhisperSettings />}
         {activeTab === "ngrok" && <NgrokSettings />}
+        {activeTab === "otp" && <OtpSettings />}
         {activeTab === "menu" && <MenuSettings />}
       </div>
     </div>
