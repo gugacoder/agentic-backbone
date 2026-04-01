@@ -2,12 +2,39 @@
 # Usage: docker compose -f docker-compose.platform.yml -f docker-compose.platform.dev-ports.yml up -d
 
 services:
+  caddy:
+    ports:
+      - "${PUBLIC_PORT}:${PUBLIC_PORT}"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
   postgres:
     ports:
-      - "${EXPORT_POSTGRES_PORT}:5432"
+      - "${POSTGRES_PORT}:5432"
+
   redis:
     ports:
-      - "${EXPORT_REDIS_PORT}:6379"
-  evolution:
+      - "${REDIS_PORT}:6379"
+
+  evolution-proxy:
+    image: nginx:alpine
+    restart: unless-stopped
+    environment:
+      EVOLUTION_API_KEY: ${EVOLUTION_API_KEY}
+      EVOLUTION_PORT: ${EVOLUTION_PORT}
+      NGINX_ENVSUBST_TEMPLATE_VARS: "EVOLUTION_API_KEY EVOLUTION_PORT"
+    volumes:
+      - ./docker/evolution/default.conf.template:/etc/nginx/templates/default.conf.template:ro
     ports:
-      - "${EXPORT_EVOLUTION_PORT}:8080"
+      - "${EVOLUTION_PORT}:80"
+    networks:
+      - internal
+    depends_on:
+      - evolution
+
+  whisper:
+    ports:
+      - "${WHISPER_PORT}:8000"
+
+networks:
+  internal:

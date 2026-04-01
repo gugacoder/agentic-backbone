@@ -1,59 +1,93 @@
 import { Hono } from "hono";
-import {
-  listAdapters,
-  getAdapter,
-  updateAdapterConfig,
-  deleteAdapterConfig,
-  testAdapterConnection,
-} from "../adapters/manager.js";
+import { connectorRegistry } from "../connectors/index.js";
+import { formatError } from "../utils/errors.js";
 
-export const adapterRoutes = new Hono();
+export const connectorAdapterRoutes = new Hono();
 
 // --- List Adapters ---
 
-adapterRoutes.get("/adapters", (c) => {
-  return c.json(listAdapters());
+connectorAdapterRoutes.get("/adapters", (c) => {
+  return c.json({ adapters: connectorRegistry.listAdapters() });
+});
+
+// --- Create Adapter ---
+
+connectorAdapterRoutes.post("/adapters", async (c) => {
+  const body = await c.req.json();
+  try {
+    const { slug, scope, connector, label, policy, credential, options } = body;
+    const adapter = connectorRegistry.createAdapter(scope || "shared", slug, {
+      connector,
+      label,
+      policy,
+      credential,
+      options,
+    });
+    return c.json(adapter);
+  } catch (err) {
+    return c.json({ error: formatError(err) }, 400);
+  }
 });
 
 // --- Get Adapter Detail ---
 
-adapterRoutes.get("/adapters/:scope/:slug", (c) => {
+connectorAdapterRoutes.get("/adapters/:scope/:slug", (c) => {
   const scope = c.req.param("scope");
   const slug = c.req.param("slug");
-  const adapter = getAdapter(scope, slug);
+  const adapter = connectorRegistry.getAdapter(scope, slug);
   if (!adapter) return c.json({ error: "not found" }, 404);
   return c.json(adapter);
 });
 
 // --- Update Adapter ---
 
-adapterRoutes.patch("/adapters/:scope/:slug", async (c) => {
+connectorAdapterRoutes.patch("/adapters/:scope/:slug", async (c) => {
   const scope = c.req.param("scope");
   const slug = c.req.param("slug");
   const body = await c.req.json();
   try {
-    const adapter = updateAdapterConfig(scope, slug, body);
+    const adapter = connectorRegistry.updateAdapter(scope, slug, body);
     return c.json(adapter);
   } catch (err) {
-    return c.json({ error: (err as Error).message }, 404);
+    return c.json({ error: formatError(err) }, 500);
   }
 });
 
 // --- Delete Adapter ---
 
-adapterRoutes.delete("/adapters/:scope/:slug", (c) => {
+connectorAdapterRoutes.delete("/adapters/:scope/:slug", (c) => {
   const scope = c.req.param("scope");
   const slug = c.req.param("slug");
-  const deleted = deleteAdapterConfig(scope, slug);
+
+  const agents = connectorRegistry.getAdapterAgents(slug);
+  if (agents.length > 0) {
+    return c.json({
+      error: `Adaptador "${slug}" está associado a ${agents.length} agente(s): ${agents.join(", ")}. Desassocie os agentes antes de excluir.`,
+      agents,
+    }, 409);
+  }
+
+  const deleted = connectorRegistry.deleteAdapter(scope, slug);
   if (!deleted) return c.json({ error: "not found" }, 404);
   return c.json({ status: "deleted" });
 });
 
-// --- Test Connection ---
+// --- Adapter Agents ---
 
-adapterRoutes.post("/adapters/:scope/:slug/test", async (c) => {
-  const scope = c.req.param("scope");
+connectorAdapterRoutes.get("/adapters/:slug/agents", (c) => {
   const slug = c.req.param("slug");
-  const result = await testAdapterConnection(scope, slug);
-  return c.json(result);
+  const agents = connectorRegistry.getAdapterAgents(slug);
+  return c.json({ agents });
+});
+
+// --- Test Adapter Connection ---
+
+connectorAdapterRoutes.post("/adapters/:slug/test", async (c) => {
+  const slug = c.req.param("slug");
+  try {
+    const result = await connectorRegistry.testAdapter(slug);
+    return c.json(result);
+  } catch (err) {
+    return c.json({ ok: false, error: formatError(err) });
+  }
 });

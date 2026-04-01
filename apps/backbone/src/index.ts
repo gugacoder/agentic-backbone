@@ -1,8 +1,9 @@
 // Allow running inside a Claude Code session (nested session guard bypass)
 delete process.env.CLAUDECODE;
 
+
 // ── Validate required env vars ─────────────────────────────
-const REQUIRED_ENV = ["JWT_SECRET", "SYSUSER", "SYSPASS", "BACKBONE_PORT"] as const;
+const REQUIRED_ENV = ["JWT_SECRET", "BACKBONE_PORT"] as const;
 const missing = REQUIRED_ENV.filter((k) => !process.env[k]);
 if (missing.length) {
   console.error(
@@ -15,7 +16,6 @@ import { existsSync, readFileSync, statSync } from "node:fs";
 import { join, resolve, extname } from "node:path";
 import { serve } from "@hono/node-server";
 import { Hono } from "hono";
-import { sign } from "hono/jwt";
 import { routes } from "./routes/index.js";
 import { startHeartbeat, stopHeartbeat } from "./heartbeat/index.js";
 import { startCron, stopCron } from "./cron/index.js";
@@ -24,8 +24,21 @@ import { listAgents } from "./agents/registry.js";
 import { listChannels } from "./channels/registry.js";
 import { initHooks, wireEventBusToHooks, triggerHook } from "./hooks/index.js";
 import { startJobSweeper, stopJobSweeper, shutdownAllJobs } from "./jobs/engine.js";
-import { modules } from "./modules/index.js";
-import { startModules, stopModules } from "./modules/loader.js";
+import { startSecurityAnomalyJob, stopSecurityAnomalyJob } from "./security/anomaly.js";
+import { connectorRegistry } from "./connectors/index.js";
+import { eventBus } from "./events/index.js";
+import { initChannelAdapters, channelAdapterRegistry } from "./channels/delivery/index.js";
+import { CONTEXT_DIR } from "./context/index.js";
+import { encryptAllYamlFiles } from "./context/encryptor.js";
+import { loadPlans } from "./settings/llm.js";
+import { loadApiKeys } from "./auth/api-keys.js";
+import { initBenchmarkTrigger } from "./benchmarks/index.js";
+import { initCircuitBreaker } from "./circuit-breaker/index.js";
+import { initFleetEvents } from "./fleet/events.js";
+import { initTelemetry } from "./telemetry/index.js";
+import { initBilling } from "./billing/index.js";
+import { bootstrapProviders } from "./settings/providers-bootstrap.js";
+import { loadNgrokConfig, startNgrok } from "./ngrok/index.js";
 
 import type { ServerType } from "@hono/node-server";
 
@@ -34,26 +47,44 @@ let server: ServerType;
 const app = new Hono();
 
 async function bootstrap() {
-  // Generate internal auth token for agent tools (job submission, etc.)
-  const now = Math.floor(Date.now() / 1000);
-  const internalToken = await sign(
-    { sub: "backbone-internal", role: "sysuser", iat: now, exp: now + 60 * 60 * 24 * 365 },
-    process.env.JWT_SECRET!
-  );
-  process.env.AUTH_TOKEN = internalToken;
+  bootstrapProviders();
+
+  // Auto-encrypt any plaintext sensitive fields in .yml files
+  encryptAllYamlFiles(CONTEXT_DIR);
+
+  // Load LLM plans before any agent initialization
+  loadPlans();
+
+  // Load API keys for static token auth
+  loadApiKeys();
 
   await initHooks();
   wireEventBusToHooks();
 
-  // Modules must be started BEFORE app.route() — Hono copies routes on mount,
+  initBenchmarkTrigger();
+  initCircuitBreaker();
+  initFleetEvents();
+  initTelemetry();
+  initBilling();
+
+  await initChannelAdapters();
+
+  // Connectors must be started BEFORE app.route() — Hono copies routes on mount,
   // so routes added after .route() won't propagate to the app.
-  await startModules(modules, routes);
-  const moduleNames = modules.map((m) => m.name).join(", ") || "(none)";
-  console.log(`[backbone] modules: ${moduleNames}`);
+  await connectorRegistry.startAll(routes, {
+    eventBus,
+    log: (msg: string) => console.log(`[connectors] ${msg}`),
+    env: process.env as Record<string, string | undefined>,
+    registerChannelAdapter(slug, factory) {
+      channelAdapterRegistry.register(slug, factory);
+      console.log(`[connectors] registered channel-adapter: ${slug}`);
+    },
+  });
+  const connectorNames = connectorRegistry.list().map((c) => c.slug).join(", ") || "(none)";
+  console.log(`[backbone] connectors: ${connectorNames}`);
 
   // Mount routes AFTER modules registered their routes on the `routes` Hono instance
-  app.route("/api", routes);
-  app.route("/", routes);
+  app.route("/api/v1/ai", routes);
 
   // Serve frontend static files when built
   const webDistPath = resolve(process.cwd(), "..", "web", "dist");
@@ -115,7 +146,27 @@ async function bootstrap() {
     startHeartbeat();
     startCron();
     startWatchers();
+
+    // Warm-up: re-encrypt any files created before watcher started
+    setTimeout(() => {
+      try {
+        encryptAllYamlFiles(CONTEXT_DIR);
+      } catch (err) {
+        console.error("[backbone] encryption warm-up failed:", err);
+      }
+    }, 500);
+
     startJobSweeper();
+    startSecurityAnomalyJob();
+
+    // Auto-start ngrok if enabled
+    const ngrokConfig = loadNgrokConfig();
+    if (ngrokConfig.enabled) {
+      startNgrok(info.port).then((status) => {
+        if (status.running) console.log(`[ngrok] tunnel: ${status.url}`);
+        else console.warn(`[ngrok] failed to start: ${status.error}`);
+      }).catch((err) => console.error("[ngrok] auto-start error:", err));
+    }
 
     triggerHook({
       ts: Date.now(),
@@ -154,8 +205,10 @@ async function onShutdown(signal: string) {
     stopCron();
     stopWatchers();
     stopJobSweeper();
+    stopSecurityAnomalyJob();
     shutdownAllJobs();
-    await stopModules();
+    await channelAdapterRegistry.shutdownAll();
+    await connectorRegistry.stopAll();
 
     if (server) {
       await new Promise<void>((resolve, reject) => {

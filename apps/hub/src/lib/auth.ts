@@ -1,79 +1,60 @@
 import { create } from "zustand";
+import { persist } from "zustand/middleware";
 
-const TOKEN_KEY = "cia_token";
+export interface AuthUser {
+  id: string;
+  role: string;
+  displayName: string;
+}
 
 interface AuthState {
   token: string | null;
-  user: string | null;
-  role: "sysuser" | "user" | null;
-  displayName: string | null;
-  isAuthenticated: boolean;
-  isSysuser: boolean;
-  login: (token: string) => void;
+  user: AuthUser | null;
+  login: (username: string, password: string) => Promise<void>;
   logout: () => void;
 }
 
-interface JwtClaims {
-  sub: string;
-  role?: "sysuser" | "user";
-  role_id?: number;
-  name?: string;
-}
+export const useAuthStore = create<AuthState>()(
+  persist(
+    (set, get) => ({
+      token: null,
+      user: null,
 
-function decodeJwtPayload(token: string): JwtClaims {
-  const base64 = token.split(".")[1];
-  const json = atob(base64.replace(/-/g, "+").replace(/_/g, "/"));
-  return JSON.parse(json);
-}
+      login: async (username, password) => {
+        const res = await fetch("/api/v1/ai/auth/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username, password }),
+        });
 
-function deriveAuthFromToken(token: string): {
-  user: string;
-  role: "sysuser" | "user";
-  displayName: string | null;
-} {
-  const claims = decodeJwtPayload(token);
+        if (!res.ok) {
+          const body = await res.json().catch(() => ({ error: "Erro desconhecido" }));
+          throw new Error(body.error ?? "Erro desconhecido");
+        }
 
-  if (claims.role_id !== undefined) {
-    // JWT Laravel — role_id present
-    return {
-      user: claims.sub,
-      role: claims.role_id === 1 ? "sysuser" : "user",
-      displayName: claims.name ?? null,
-    };
-  }
+        const { token } = (await res.json()) as { token: string };
+        set({ token });
 
-  // JWT Backbone — role claim present
-  return {
-    user: claims.sub,
-    role: claims.role ?? "user",
-    displayName: null,
-  };
-}
+        // Fetch user info after login
+        const meRes = await fetch("/api/v1/ai/auth/me", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (meRes.ok) {
+          const me = (await meRes.json()) as { user: string; role: string; displayName: string };
+          set({ user: { id: me.user, role: me.role, displayName: me.displayName } });
+        }
+      },
 
-function initFromStorage(): Omit<AuthState, "login" | "logout"> {
-  const token = localStorage.getItem(TOKEN_KEY);
-  if (!token) {
-    return { token: null, user: null, role: null, displayName: null, isAuthenticated: false, isSysuser: false };
-  }
-  try {
-    const { user, role, displayName } = deriveAuthFromToken(token);
-    return { token, user, role, displayName, isAuthenticated: true, isSysuser: role === "sysuser" };
-  } catch {
-    // Corrupted token — treat as unauthenticated
-    localStorage.removeItem(TOKEN_KEY);
-    return { token: null, user: null, role: null, displayName: null, isAuthenticated: false, isSysuser: false };
-  }
-}
-
-export const useAuthStore = create<AuthState>((set) => ({
-  ...initFromStorage(),
-  login: (token) => {
-    localStorage.setItem(TOKEN_KEY, token);
-    const { user, role, displayName } = deriveAuthFromToken(token);
-    set({ token, user, role, displayName, isAuthenticated: true, isSysuser: role === "sysuser" });
-  },
-  logout: () => {
-    localStorage.removeItem(TOKEN_KEY);
-    set({ token: null, user: null, role: null, displayName: null, isAuthenticated: false, isSysuser: false });
-  },
-}));
+      logout: () => {
+        set({ token: null, user: null });
+        if (window.location.pathname !== "/hub/login") {
+          window.location.href = "/hub/login";
+        }
+      },
+    }),
+    {
+      name: "ab-hub-auth",
+      partialize: (state) => ({ token: state.token, user: state.user }),
+    },
+  ),
+);

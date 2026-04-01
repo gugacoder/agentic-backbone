@@ -1,55 +1,52 @@
-import { readdirSync, readFileSync, writeFileSync, existsSync, mkdirSync, unlinkSync } from "node:fs";
+import { readdirSync, readFileSync, existsSync, mkdirSync, unlinkSync } from "node:fs";
 import { join, basename } from "node:path";
 import { agentDir } from "../context/paths.js";
 import { listAgents } from "../agents/registry.js";
-import { parseFrontmatter, serializeFrontmatter } from "../context/frontmatter.js";
-import { writeFileAtomic, updateFrontmatter } from "../context/frontmatter-writer.js";
+import { readYaml, readYamlAs, writeYamlAs, writeFileAtomic } from "../context/readers.js";
+import { CronYmlSchema, type CronYml } from "../context/schemas.js";
 import type { CronJob, CronJobDef, CronJobState, CronJobPatch, CronSchedule, CronPayload } from "./types.js";
 
 // ── Flat-key ↔ nested conversion ──────────────────────────
 
-function metadataToDef(m: Record<string, unknown>, slug: string): CronJobDef | null {
-  const scheduleKind = m["schedule-kind"] as string | undefined;
-  if (!scheduleKind) return null;
-
+function metadataToDef(m: CronYml, slug: string): CronJobDef | null {
   let schedule: CronSchedule;
-  switch (scheduleKind) {
+  switch (m["schedule-kind"]) {
     case "at":
-      schedule = { kind: "at", at: m["schedule-at"] as string };
+      schedule = { kind: "at", at: m["schedule-at"] ?? "" };
       break;
     case "every":
       schedule = {
         kind: "every",
-        everyMs: Number(m["schedule-everyMs"]),
-        ...(m["schedule-anchorMs"] != null ? { anchorMs: Number(m["schedule-anchorMs"]) } : {}),
+        everyMs: m["schedule-everyMs"] ?? 0,
+        ...(m["schedule-anchorMs"] != null ? { anchorMs: m["schedule-anchorMs"] } : {}),
       };
       break;
     case "cron":
       schedule = {
         kind: "cron",
-        expr: m["schedule-expr"] as string,
-        ...(m["schedule-tz"] ? { tz: m["schedule-tz"] as string } : {}),
+        expr: m["schedule-expr"] ?? "",
+        ...(m["schedule-tz"] ? { tz: m["schedule-tz"] } : {}),
       };
       break;
     default:
       return null;
   }
 
-  const payloadKind = (m["payload-kind"] as string) ?? "heartbeat";
+  const payloadKind = m["payload-kind"];
   let payload: CronPayload;
-  if (payloadKind === "agentTurn") {
-    payload = { kind: "agentTurn", message: (m["payload-message"] as string) ?? "" };
+  if (payloadKind === "conversation" || payloadKind === "request") {
+    payload = { kind: payloadKind, message: m["payload-message"] ?? "" };
   } else {
     payload = { kind: "heartbeat" };
   }
 
   return {
-    name: (m["name"] as string) ?? slug,
-    enabled: m["enabled"] !== false,
+    name: m["name"] ?? slug,
+    enabled: m["enabled"],
     schedule,
     payload,
     deleteAfterRun: m["deleteAfterRun"] === true ? true : undefined,
-    description: m["description"] as string | undefined,
+    description: m["description"] || undefined,
   };
 }
 
@@ -75,7 +72,7 @@ function defToMetadata(def: CronJobDef): Record<string, unknown> {
   }
 
   m["payload-kind"] = def.payload.kind;
-  if (def.payload.kind === "agentTurn") {
+  if (def.payload.kind !== "heartbeat") {
     m["payload-message"] = def.payload.message;
   }
 
@@ -124,14 +121,18 @@ export function scanAgentCronJobs(agentId: string): CronJob[] {
   const stateMap = loadAgentCronState(agentId);
 
   for (const entry of readdirSync(dir)) {
-    if (!entry.endsWith(".md")) continue;
-    const slug = basename(entry, ".md");
+    if (!entry.endsWith(".yml")) continue;
+    const slug = basename(entry, ".yml");
     const filePath = join(dir, entry);
 
     try {
-      const raw = readFileSync(filePath, "utf-8");
-      const { metadata, content } = parseFrontmatter(raw);
-      const def = metadataToDef(metadata, slug);
+      const raw = readYaml(filePath);
+      const result = CronYmlSchema.safeParse(raw);
+      if (!result.success) {
+        console.warn(`[cron] invalid cron file ${entry} for agent ${agentId}:`, result.error.issues);
+        continue;
+      }
+      const def = metadataToDef(result.data, slug);
       if (!def) continue;
 
       jobs.push({
@@ -168,47 +169,45 @@ export function createCronJobFile(
   const dir = cronDir(agentId);
   mkdirSync(dir, { recursive: true });
 
-  const filePath = join(dir, `${slug}.md`);
+  const filePath = join(dir, `${slug}.yml`);
   const metadata = defToMetadata(def);
-  const content = def.description ? `# ${def.name}\n\n${def.description}\n` : "";
-  const serialized = serializeFrontmatter(metadata, content);
-  writeFileAtomic(filePath, serialized);
+  writeYamlAs(filePath, metadata, CronYmlSchema);
   return filePath;
 }
 
 export function updateCronJobFile(jobPath: string, patch: CronJobPatch): void {
-  const updates: Record<string, unknown> = {};
+  const config = readYamlAs(jobPath, CronYmlSchema) as Record<string, unknown>;
 
-  if (patch.name !== undefined) updates["name"] = patch.name;
-  if (patch.enabled !== undefined) updates["enabled"] = patch.enabled;
-  if (patch.deleteAfterRun !== undefined) updates["deleteAfterRun"] = patch.deleteAfterRun;
-  if (patch.description !== undefined) updates["description"] = patch.description;
+  if (patch.name !== undefined) config["name"] = patch.name;
+  if (patch.enabled !== undefined) config["enabled"] = patch.enabled;
+  if (patch.deleteAfterRun !== undefined) config["deleteAfterRun"] = patch.deleteAfterRun;
+  if (patch.description !== undefined) config["description"] = patch.description;
 
   if (patch.schedule) {
-    updates["schedule-kind"] = patch.schedule.kind;
+    config["schedule-kind"] = patch.schedule.kind;
     switch (patch.schedule.kind) {
       case "at":
-        updates["schedule-at"] = patch.schedule.at;
+        config["schedule-at"] = patch.schedule.at;
         break;
       case "every":
-        updates["schedule-everyMs"] = patch.schedule.everyMs;
-        if (patch.schedule.anchorMs != null) updates["schedule-anchorMs"] = patch.schedule.anchorMs;
+        config["schedule-everyMs"] = patch.schedule.everyMs;
+        if (patch.schedule.anchorMs != null) config["schedule-anchorMs"] = patch.schedule.anchorMs;
         break;
       case "cron":
-        updates["schedule-expr"] = patch.schedule.expr;
-        if (patch.schedule.tz) updates["schedule-tz"] = patch.schedule.tz;
+        config["schedule-expr"] = patch.schedule.expr;
+        if (patch.schedule.tz) config["schedule-tz"] = patch.schedule.tz;
         break;
     }
   }
 
   if (patch.payload) {
-    updates["payload-kind"] = patch.payload.kind;
-    if (patch.payload.kind === "agentTurn") {
-      updates["payload-message"] = patch.payload.message;
+    config["payload-kind"] = patch.payload.kind;
+    if (patch.payload.kind !== "heartbeat") {
+      config["payload-message"] = patch.payload.message;
     }
   }
 
-  updateFrontmatter(jobPath, updates);
+  writeYamlAs(jobPath, config, CronYmlSchema);
 }
 
 export function deleteCronJobFile(jobPath: string): void {

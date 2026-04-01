@@ -6,66 +6,47 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 
 interface ConfirmDialogProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
   title: string;
   description: string;
-  confirmText?: string;
-  cancelText?: string;
-  variant?: "default" | "destructive";
-  typedConfirm?: string; // If set, user must type this to confirm
   onConfirm: () => void;
+  destructive?: boolean;
+  children: React.ReactNode;
 }
 
 export function ConfirmDialog({
-  open,
-  onOpenChange,
   title,
   description,
-  confirmText = "Confirmar",
-  cancelText = "Cancelar",
-  variant = "default",
-  typedConfirm,
   onConfirm,
+  destructive,
+  children,
 }: ConfirmDialogProps) {
-  const [typed, setTyped] = useState("");
-
-  const canConfirm = typedConfirm ? typed === typedConfirm : true;
+  const [open, setOpen] = useState(false);
 
   return (
-    <Dialog open={open} onOpenChange={(o) => { if (!o) setTyped(""); onOpenChange(o); }}>
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger render={<span />}>{children}</DialogTrigger>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
-        {typedConfirm && (
-          <div className="py-2">
-            <p className="text-sm text-muted-foreground mb-2">
-              Digite <span className="font-mono font-semibold">{typedConfirm}</span> para confirmar:
-            </p>
-            <Input
-              value={typed}
-              onChange={(e) => setTyped(e.target.value)}
-              placeholder={typedConfirm}
-            />
-          </div>
-        )}
         <DialogFooter>
-          <Button variant="outline" onClick={() => { setTyped(""); onOpenChange(false); }}>
-            {cancelText}
+          <Button variant="outline" onClick={() => setOpen(false)}>
+            Cancelar
           </Button>
           <Button
-            variant={variant === "destructive" ? "destructive" : "default"}
-            disabled={!canConfirm}
-            onClick={() => { setTyped(""); onConfirm(); onOpenChange(false); }}
+            variant={destructive ? "destructive" : "default"}
+            onClick={() => {
+              onConfirm();
+              setOpen(false);
+            }}
           >
-            {confirmText}
+            Confirmar
           </Button>
         </DialogFooter>
       </DialogContent>

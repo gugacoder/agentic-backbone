@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import { streamSSE } from "hono/streaming";
+import { encodeDataStreamEvent, encodeDataStreamError } from "./datastream.js";
 import {
   sendMessage,
   createSession,
@@ -8,9 +9,44 @@ import {
   updateSession,
   deleteSession,
   readMessages,
+  setTakeover,
+  releaseTakeover,
 } from "../conversations/index.js";
-import { getAuthUser } from "./auth-helpers.js";
+import { eventBus } from "../events/index.js";
+import { emitNotification } from "../notifications/index.js";
+import { getAuthUser, assertAgentAccess } from "./auth-helpers.js";
 import { getAgent } from "../agents/registry.js";
+import { parseBody } from "./helpers.js";
+import { db } from "../db/index.js";
+import { join, extname } from "node:path";
+import { existsSync, statSync } from "node:fs";
+import { readFile } from "node:fs/promises";
+import { agentDir } from "../context/paths.js";
+import {
+  MIME_LIMITS,
+  ACCEPTED_MIME_TYPES,
+  TOTAL_SIZE_LIMIT,
+  MAX_FILES,
+  saveAttachment,
+} from "../conversations/attachments.js";
+
+const ATTACHMENT_MIME_MAP: Record<string, string> = {
+  ".png": "image/png",
+  ".jpg": "image/jpeg",
+  ".jpeg": "image/jpeg",
+  ".gif": "image/gif",
+  ".webp": "image/webp",
+  ".pdf": "application/pdf",
+  ".wav": "audio/wav",
+  ".mp3": "audio/mpeg",
+  ".ogg": "audio/ogg",
+  ".webm": "audio/webm",
+  ".txt": "text/plain",
+  ".csv": "text/csv",
+  ".json": "application/json",
+  ".docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  ".xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+};
 
 export const conversationRoutes = new Hono();
 
@@ -42,11 +78,15 @@ conversationRoutes.get("/conversations", (c) => {
 
 conversationRoutes.post("/conversations", async (c) => {
   const auth = getAuthUser(c);
-  const body = await c.req.json<{ agentId?: string }>().catch(() => ({} as { agentId?: string }));
+  const body = await parseBody<{ agentId?: string }>(c);
+  if (body instanceof Response) return body;
   const agentId = body.agentId ?? "system.main";
 
   const agent = getAgent(agentId);
   if (!agent) return c.json({ error: `Agent '${agentId}' not found` }, 404);
+
+  const agentDenied = assertAgentAccess(c, agentId);
+  if (agentDenied) return agentDenied;
 
   const session = createSession(auth.user, agentId);
   return c.json(session, 201);
@@ -71,7 +111,24 @@ conversationRoutes.get("/conversations/:sessionId/messages", (c) => {
   const denied = assertSessionOwnership(c, session);
   if (denied) return denied;
   const messages = readMessages(session.agent_id, sessionId);
-  return c.json(messages);
+
+  // Load feedback for this session and attach to messages
+  const feedbackRows = db
+    .prepare(
+      `SELECT message_id, rating, reason FROM message_feedback WHERE session_id = ?`
+    )
+    .all(sessionId) as { message_id: string; rating: string; reason: string | null }[];
+  const feedbackByMessageId = new Map(feedbackRows.map((r) => [r.message_id, { rating: r.rating, reason: r.reason }]));
+
+  const messagesWithFeedback = messages.map((m) => {
+    const id = m._meta?.id;
+    if (id && feedbackByMessageId.has(id)) {
+      return { ...m, feedback: feedbackByMessageId.get(id) };
+    }
+    return m;
+  });
+
+  return c.json(messagesWithFeedback);
 });
 
 // --- Update Conversation ---
@@ -82,7 +139,7 @@ conversationRoutes.patch("/conversations/:sessionId", async (c) => {
   if (!session) return c.json({ error: "not found" }, 404);
   const denied = assertSessionOwnership(c, session);
   if (denied) return denied;
-  const body = await c.req.json<{ title?: string }>();
+  const body = await c.req.json<{ title?: string; starred?: boolean }>();
   const updated = updateSession(sessionId, body);
   if (!updated) return c.json({ error: "not found" }, 404);
   return c.json(updated);
@@ -101,6 +158,68 @@ conversationRoutes.delete("/conversations/:sessionId", (c) => {
   return c.json({ status: "deleted" });
 });
 
+// --- Takeover ---
+
+conversationRoutes.post("/conversations/:sessionId/takeover", (c) => {
+  const sessionId = c.req.param("sessionId");
+  const session = getSession(sessionId);
+  if (!session) return c.json({ error: "not found" }, 404);
+
+  const auth = getAuthUser(c);
+  const updated = setTakeover(sessionId, auth.user);
+  if (!updated) return c.json({ error: "not found" }, 404);
+
+  eventBus.emit("session:takeover", {
+    ts: Date.now(),
+    sessionId,
+    action: "takeover",
+    takenOverBy: auth.user,
+  });
+
+  emitNotification({
+    type: "takeover_started",
+    severity: "info",
+    title: `Conversa assumida por ${auth.user}`,
+    body: `Sessão ${sessionId} está sob controle do operador.`,
+    metadata: { sessionId, operatorSlug: auth.user },
+  });
+
+  return c.json({
+    sessionId,
+    takenOverBy: updated.takeover_by,
+    takenOverAt: updated.takeover_at,
+  });
+});
+
+// --- Release ---
+
+conversationRoutes.post("/conversations/:sessionId/release", (c) => {
+  const sessionId = c.req.param("sessionId");
+  const session = getSession(sessionId);
+  if (!session) return c.json({ error: "not found" }, 404);
+
+  const auth = getAuthUser(c);
+  const updated = releaseTakeover(sessionId);
+  if (!updated) return c.json({ error: "not found" }, 404);
+
+  eventBus.emit("session:takeover", {
+    ts: Date.now(),
+    sessionId,
+    action: "release",
+    takenOverBy: null,
+  });
+
+  emitNotification({
+    type: "takeover_ended",
+    severity: "info",
+    title: `Conversa devolvida ao agente`,
+    body: `Sessão ${sessionId} foi devolvida ao agente por ${auth.user}.`,
+    metadata: { sessionId, operatorSlug: auth.user },
+  });
+
+  return c.json({ sessionId, released: true });
+});
+
 // --- Send Message (streaming) ---
 
 conversationRoutes.post("/conversations/:sessionId/messages", async (c) => {
@@ -111,16 +230,186 @@ conversationRoutes.post("/conversations/:sessionId/messages", async (c) => {
   if (denied) return denied;
 
   const auth = getAuthUser(c);
-  const { message } = await c.req.json<{ message: string }>();
+  const ct = c.req.header("content-type") ?? "";
 
-  if (!message) {
-    return c.json({ error: "message is required" }, 400);
+  let message: string | undefined;
+
+  if (ct.includes("multipart/form-data")) {
+    const body = await c.req.parseBody({ all: true });
+
+    // Extract text message
+    const rawMessage = body["message"];
+    message = typeof rawMessage === "string" && rawMessage.trim().length > 0
+      ? rawMessage
+      : undefined;
+
+    // Normalize files field to File[]
+    const rawFiles = body["files"];
+    const files: File[] =
+      rawFiles === undefined
+        ? []
+        : Array.isArray(rawFiles)
+        ? (rawFiles.filter((f) => f instanceof File) as File[])
+        : rawFiles instanceof File
+        ? [rawFiles]
+        : [];
+
+    // At least one of message or files must be present
+    if (!message && files.length === 0) {
+      return c.json({ error: "At least one of 'message' or 'files' must be provided" }, 400);
+    }
+
+    if (files.length > 0) {
+      // Max files
+      if (files.length > MAX_FILES) {
+        return c.json(
+          { error: `Too many files: maximum ${MAX_FILES} files per message` },
+          413
+        );
+      }
+
+      // Validate MIME types
+      for (const file of files) {
+        if (!ACCEPTED_MIME_TYPES.has(file.type)) {
+          return c.json(
+            {
+              error: `Unsupported media type: ${file.type}`,
+              acceptedTypes: Array.from(ACCEPTED_MIME_TYPES),
+            },
+            415
+          );
+        }
+      }
+
+      // Validate individual file sizes
+      for (const file of files) {
+        const limit = MIME_LIMITS[file.type];
+        if (limit !== undefined && file.size > limit) {
+          const limitMB = Math.round(limit / (1024 * 1024));
+          return c.json(
+            {
+              error: `File '${file.name}' (${file.type}) exceeds the ${limitMB}MB size limit`,
+            },
+            413
+          );
+        }
+      }
+
+      // Validate total size
+      const totalSize = files.reduce((sum, f) => sum + f.size, 0);
+      if (totalSize > TOTAL_SIZE_LIMIT) {
+        const limitMB = Math.round(TOTAL_SIZE_LIMIT / (1024 * 1024));
+        return c.json(
+          { error: `Total upload size exceeds the ${limitMB}MB limit per message` },
+          413
+        );
+      }
+
+      // Save files to {sessionDir}/attachments/
+      const sessionDir = join(agentDir(session.agent_id), "conversations", sessionId);
+      for (const file of files) {
+        await saveAttachment(sessionDir, file);
+      }
+    }
+
+    // If only files provided, use empty string as placeholder until F-331
+    if (!message) message = "";
+  } else {
+    // JSON path — retrocompatible
+    const body = await c.req.json<{ message?: string; messages?: Array<{ role: string; content: string }> }>();
+
+    // Support both legacy { message } and @ai-sdk/react { messages } formats
+    message = body.message ?? body.messages?.filter((m) => m.role === "user").pop()?.content;
+
+    if (!message) {
+      return c.json({ error: "message is required" }, 400);
+    }
+  }
+
+  // At this point message is always a string (both branches either assign or return early)
+  const effectiveMessage = message as string;
+
+  const rich = c.req.query("rich") === "true";
+  const format = c.req.query("format");
+
+  if (format === "datastream") {
+    // @ai-sdk/react useChat reads the raw body stream (no SSE framing).
+    // Each line must be a bare data-stream-protocol line: "0:\"text\"\n"
+    const encoder = new TextEncoder();
+    const readable = new ReadableStream({
+      async start(controller) {
+        let hasContent = false;
+        try {
+          for await (const event of sendMessage(auth.user, sessionId, effectiveMessage, { rich })) {
+            try {
+              const encoded = encodeDataStreamEvent(event);
+              if (encoded !== null) {
+                controller.enqueue(encoder.encode(encoded + "\n"));
+                hasContent = true;
+              }
+            } catch (encodeErr) {
+              console.error(`[datastream] error encoding event:`, encodeErr);
+            }
+          }
+          if (!hasContent) {
+            controller.enqueue(encoder.encode(encodeDataStreamError("Nenhuma resposta gerada pelo agente.") + "\n"));
+          }
+        } catch (err) {
+          console.error(`[datastream] stream error:`, err);
+          controller.enqueue(encoder.encode(encodeDataStreamError("Erro interno ao processar mensagem.") + "\n"));
+        } finally {
+          controller.close();
+        }
+      },
+    });
+    return new Response(readable, {
+      headers: {
+        "Content-Type": "text/plain; charset=utf-8",
+        "Cache-Control": "no-cache",
+        "Connection": "keep-alive",
+      },
+    });
   }
 
   return streamSSE(c, async (stream) => {
-    for await (const event of sendMessage(auth.user, sessionId, message)) {
+    for await (const event of sendMessage(auth.user, sessionId, effectiveMessage, { rich })) {
       await stream.writeSSE({ data: JSON.stringify(event) });
     }
+  });
+});
+
+// --- Get Attachment ---
+
+conversationRoutes.get("/conversations/:sessionId/attachments/:filename", async (c) => {
+  const sessionId = c.req.param("sessionId");
+  const filename = c.req.param("filename");
+
+  // Sanitize: reject path traversal attempts
+  if (filename.includes("..") || filename.includes("/") || filename.includes("\\")) {
+    return c.json({ error: "Invalid filename" }, 400);
+  }
+
+  const session = getSession(sessionId);
+  if (!session) return c.json({ error: "not found" }, 404);
+
+  const sessionDir = join(agentDir(session.agent_id), "conversations", sessionId);
+  const filePath = join(sessionDir, "attachments", filename);
+
+  if (!existsSync(filePath)) {
+    return c.json({ error: "not found" }, 404);
+  }
+
+  const ext = extname(filename).toLowerCase();
+  const contentType = ATTACHMENT_MIME_MAP[ext] ?? "application/octet-stream";
+  const stat = statSync(filePath);
+  const data = await readFile(filePath);
+
+  return new Response(data, {
+    headers: {
+      "Content-Type": contentType,
+      "Content-Length": String(stat.size),
+      "Cache-Control": "private, max-age=3600",
+    },
   });
 });
 
@@ -140,7 +429,11 @@ conversationRoutes.get("/conversations/:sessionId/export", (c) => {
     let md = `# Conversation: ${session.title ?? sessionId}\n\n`;
     md += `Created: ${session.created_at}\n\n---\n\n`;
     for (const msg of messages) {
-      md += `**${msg.role}** (${msg.ts}):\n\n${msg.content}\n\n---\n\n`;
+      const ts = msg._meta?.ts ?? "";
+      const text = typeof msg.content === "string"
+        ? msg.content
+        : (msg.content as any[]).filter((p: any) => p.type === "text").map((p: any) => p.text).join("");
+      md += `**${msg.role}** (${ts}):\n\n${text}\n\n---\n\n`;
     }
     return new Response(md, {
       headers: {
@@ -150,5 +443,10 @@ conversationRoutes.get("/conversations/:sessionId/export", (c) => {
     });
   }
 
-  return c.json({ session, messages });
+  return new Response(JSON.stringify({ session, messages }), {
+    headers: {
+      "Content-Type": "application/json",
+      "Content-Disposition": `attachment; filename="conversation-${sessionId}.json"`,
+    },
+  });
 });

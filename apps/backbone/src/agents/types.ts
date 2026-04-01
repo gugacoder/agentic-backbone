@@ -11,6 +11,14 @@ export const DEFAULT_HEARTBEAT_CONFIG: HeartbeatConfig = {
   intervalMs: 30_000,
 };
 
+export interface QuotaConfig {
+  maxTokensPerHour?: number;
+  maxHeartbeatsDay?: number;
+  maxToolTimeoutMs?: number;
+  maxTokensPerRun?: number;
+  pauseOnExceed?: boolean;
+}
+
 export interface AgentConfig {
   id: string;
   owner: string;
@@ -20,4 +28,8 @@ export interface AgentConfig {
   heartbeat: HeartbeatConfig;
   metadata: Record<string, unknown>;
   description: string;
+  role?: string;
+  members?: string[];
+  quotas?: QuotaConfig;
+  adapters?: string[];
 }

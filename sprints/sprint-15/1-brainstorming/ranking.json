@@ -1,0 +1,119 @@
+[
+  {
+    "id": "D-001",
+    "type": "feature",
+    "description": "Criar 10 domain tools do GitLab em apps/backbone/src/connectors/gitlab/tools/: issues.ts, mrs.ts, repo.ts, ci.ts, labels.ts, milestones.ts, releases.ts, wiki.ts, users.ts, projects.ts — cada arquivo agrupa actions via z.discriminatedUnion(\"action\", [...])",
+    "score": 10,
+    "justification": "Maior impacto da PRP: reduz 89 tools GitLab para 10. Desbloqueador principal do limite Groq (128 tools). Independente das demais fases 1b e 1c.",
+    "sprint": 15,
+    "implemented": false
+  },
+  {
+    "id": "D-002",
+    "type": "feature",
+    "description": "Criar 4 domain tools do WhatsApp em apps/backbone/src/connectors/evolution/tools/: messaging.ts (13 actions), groups.ts (11 actions), contacts.ts (7 actions), admin.ts (5 actions incluindo api_raw). Remover evolution-api.ts separado.",
+    "score": 9,
+    "justification": "Segundo maior volume: 37 tools individuais → 4 domain tools. Independente do GitLab — pode rodar em paralelo com D-001.",
+    "sprint": 15,
+    "implemented": false
+  },
+  {
+    "id": "D-010",
+    "type": "feature",
+    "description": "Remover todos os tool files individuais substituídos: gitlab/tools/issue-*.ts (13), mr-*.ts (16), repo-*.ts (17), ci-*.ts (12), label-*.ts (5), milestone-*.ts (7), release-*.ts (5), wiki-*.ts (5), user-*.ts (3), project-*.ts (6), evolution/tools/whatsapp-*.ts (35), evolution-api.ts (1), email/tools individuais (10)",
+    "score": 9,
+    "justification": "Limpeza crítica de código morto. Se não removidos, o repositório fica com ~136 arquivos TS que não são mais importados. Deve rodar após fases 2a-2d (atualização dos index).",
+    "sprint": 15,
+    "implemented": false
+  },
+  {
+    "id": "D-003",
+    "type": "feature",
+    "description": "Criar 1 domain tool de Email em apps/backbone/src/connectors/email/tools/email.ts com 10 actions: send, search, read, download_attachment, manage_flags, move, delete, list_mailboxes, draft_create, draft_send — conforme decisão no TASK.md de usar 1 tool unificada.",
+    "score": 8,
+    "justification": "11 tools → 1. Menor esforço das três frentes; completa a cobertura dos connectors-alvo da PRP. Independente de D-001 e D-002.",
+    "sprint": 15,
+    "implemented": false
+  },
+  {
+    "id": "D-004",
+    "type": "feature",
+    "description": "Atualizar apps/backbone/src/connectors/gitlab/index.ts: substituir ~89 imports individuais por 10 imports de domain tools (createGitLabIssuesTool, createGitLabMrsTool, etc.) e atualizar o createTools() para retornar os 10 domain tools.",
+    "score": 8,
+    "justification": "Ativa as domain tools no connector GitLab. Sem essa atualização, os arquivos domain-tool existem mas não são usados. Depende de D-001.",
+    "sprint": 15,
+    "implemented": false
+  },
+  {
+    "id": "D-013",
+    "type": "feature",
+    "description": "Build completo (npm run build) e smoke test com agente usando provider Groq após todas as migrações: verificar que total de tools fica abaixo de 128 e que as domain tools respondem corretamente via execute dispatch.",
+    "score": 8,
+    "justification": "Validação do objetivo principal da PRP. Sem esse teste não há confirmação de que o limite Groq foi eliminado na prática. Fase final da ordem de execução.",
+    "sprint": 15,
+    "implemented": false
+  },
+  {
+    "id": "D-005",
+    "type": "feature",
+    "description": "Atualizar apps/backbone/src/connectors/evolution/tools/index.ts: substituir ~37 imports por 4 imports de domain tools (messaging, groups, contacts, admin).",
+    "score": 8,
+    "justification": "Ativa as domain tools WhatsApp. Depende de D-002. Pode rodar em paralelo com D-004 e D-006.",
+    "sprint": 15,
+    "implemented": false
+  },
+  {
+    "id": "D-006",
+    "type": "feature",
+    "description": "Atualizar apps/backbone/src/connectors/email/tools/index.ts: substituir 10 imports individuais por 1 import da domain tool email.ts.",
+    "score": 7,
+    "justification": "Ativa a domain tool Email. Depende de D-003. Menor esforço das atualizações de index.",
+    "sprint": 15,
+    "implemented": false
+  },
+  {
+    "id": "D-007",
+    "type": "feature",
+    "description": "Atualizar apps/backbone/src/connectors/implantacao/index.ts: substituir 28 imports de tools individuais do GitLab por imports das 10 domain tools do GitLab, e atualizar createTools() para retornar os spread das domain tools.",
+    "score": 7,
+    "justification": "Necessário para não ter imports quebrados após remoção dos arquivos individuais. Implantacao passa a expor todas as actions de cada domínio — comportamento expandido mas aceitável. Depende de D-001.",
+    "sprint": 15,
+    "implemented": false
+  },
+  {
+    "id": "D-011",
+    "type": "gap",
+    "description": "Validar compatibilidade do Zod z.discriminatedUnion().and(z.object({ adapter })) com o Vercel AI SDK: o AI SDK usa o schema Zod para gerar JSON Schema; allOf gerado por .and() pode não ser suportado por todos os modelos. Testar antes de commitar todos os domain tools.",
+    "score": 7,
+    "justification": "Risco técnico não documentado explicitamente no TASK.md. Se o JSON Schema gerado tiver allOf incompatível, o modelo não consegue invocar as tools corretamente. Descoberta durante análise do pattern.",
+    "sprint": 15,
+    "implemented": false
+  },
+  {
+    "id": "D-012",
+    "type": "gap",
+    "description": "Garantir policy check (readonly) nos execute handlers das domain tools: ações de escrita (create, update, delete, merge, etc.) devem verificar se o adapter está em modo readonly e retornar { error: 'Adapter readonly' } sem executar.",
+    "score": 7,
+    "justification": "Os arquivos individuais atuais já implementam essa lógica. A refatoração para domain tools não deve perder essa proteção — risco de regressão silenciosa se os handlers forem escritos sem o check.",
+    "sprint": 15,
+    "implemented": false
+  },
+  {
+    "id": "D-008",
+    "type": "feature",
+    "description": "Adicionar maxTools?: number ao tipo de PROVIDER_CONFIGS em apps/backbone/src/settings/llm.ts e adicionar maxTools: 128 para o provider groq. Atualizar getProviderConfig() se necessário.",
+    "score": 6,
+    "justification": "Infraestrutura para o warning de capacidade. Independente das migrações de domain tools — pode ser feito em paralelo. Confirmar que 'groq' já existe como valor válido de LlmProvider antes de implementar.",
+    "sprint": 15,
+    "implemented": false
+  },
+  {
+    "id": "D-009",
+    "type": "feature",
+    "description": "Adicionar warning em apps/backbone/src/agent/index.ts: após compor tools, se providerConf.maxTools está definido e Object.keys(tools).length > maxTools, emitir console.warn com contagem atual vs. limite.",
+    "score": 6,
+    "justification": "Alerta operacional para detectar futuros connectors que inflem o total de tools além do suportado pelo provider. Não corta tools — apenas avisa. Depende de D-008.",
+    "sprint": 15,
+    "implemented": false
+  }
+]

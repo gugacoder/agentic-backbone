@@ -1,42 +1,40 @@
-import { queryOptions, useMutation, useQueryClient } from "@tanstack/react-query";
-import { api } from "@/lib/api";
-import type { Channel } from "./types";
+import { queryOptions } from "@tanstack/react-query";
+import { request } from "@/lib/api";
 
-export const channelsQuery = queryOptions({
-  queryKey: ["channels"],
-  queryFn: () => api.get<Channel[]>("/channels"),
-});
+export interface Channel {
+  slug: string;
+  owner: string;
+  type: string;
+  agent?: string;
+  metadata: Record<string, unknown>;
+  description: string;
+  listeners: number;
+}
 
-export function channelQuery(slug: string) {
+export function channelsQueryOptions() {
+  return queryOptions({
+    queryKey: ["channels"],
+    queryFn: () => request<Channel[]>("/channels"),
+  });
+}
+
+export function channelQueryOptions(slug: string) {
   return queryOptions({
     queryKey: ["channels", slug],
-    queryFn: () => api.get<Channel>(`/channels/${slug}`),
-    enabled: !!slug,
+    queryFn: () => request<Channel>(`/channels/${slug}`),
   });
 }
 
-export function useCreateChannel() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (data: { userSlug: string; slug: string; type?: string; description?: string }) =>
-      api.post<Channel>("/channels", data),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["channels"] }),
+export async function updateChannel(
+  slug: string,
+  data: Partial<Pick<Channel, "description" | "owner" | "agent" | "metadata">>,
+): Promise<Channel> {
+  return request<Channel>(`/channels/${slug}`, {
+    method: "PATCH",
+    body: JSON.stringify(data),
   });
 }
 
-export function useUpdateChannel() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: ({ slug, ...data }: { slug: string } & Record<string, unknown>) =>
-      api.patch<Channel>(`/channels/${slug}`, data),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["channels"] }),
-  });
-}
-
-export function useDeleteChannel() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (slug: string) => api.delete(`/channels/${slug}`),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["channels"] }),
-  });
+export async function deleteChannel(slug: string): Promise<void> {
+  await request(`/channels/${slug}`, { method: "DELETE" });
 }

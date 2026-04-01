@@ -4,6 +4,7 @@ export interface AuthUser {
   user: string;
   role: "sysuser" | "user";
   jwtSource: "laravel" | "backbone";
+  allowedAgents?: string[];
   /** Laravel JWT only: user display name */
   name?: string;
   /** Laravel JWT only: tenant (unidade principal) */
@@ -20,6 +21,7 @@ export function getAuthUser(c: Context): AuthUser {
     user: payload.sub,
     role: payload.role,
     jwtSource: payload.jwtSource ?? "backbone",
+    allowedAgents: payload.allowedAgents,
   };
 
   if (payload.jwtSource === "laravel") {
@@ -30,6 +32,13 @@ export function getAuthUser(c: Context): AuthUser {
   }
 
   return base;
+}
+
+export function assertAgentAccess(c: Context, agentId: string): Response | null {
+  const auth = getAuthUser(c);
+  if (!auth.allowedAgents) return null;
+  if (auth.allowedAgents.includes(agentId)) return null;
+  return c.json({ error: "forbidden" }, 403);
 }
 
 export function requireSysuser(c: Context): Response | null {

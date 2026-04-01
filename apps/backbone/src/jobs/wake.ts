@@ -1,6 +1,7 @@
 import { triggerManualHeartbeat } from "../heartbeat/index.js";
 import { sendMessage, getSession, createSession } from "../conversations/index.js";
 import type { JobSession } from "./types.js";
+import { formatError } from "../utils/errors.js";
 
 const WAKE_TIMEOUT_MS = 10 * 60 * 1000; // 10min
 
@@ -58,7 +59,7 @@ async function wakeConversation(session: JobSession): Promise<void> {
     await Promise.race([execution, timeout]);
     console.log(`[jobs] wake conversation done for ${session.id} (agent=${agentId}, session=${sessionId})`);
   } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err);
+    const msg = formatError(err);
     console.error(`[jobs] wake conversation failed for ${session.id}: ${msg}`);
   }
 }

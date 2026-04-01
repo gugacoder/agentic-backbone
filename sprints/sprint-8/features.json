@@ -1,0 +1,105 @@
+[
+  {
+    "id": "F-169",
+    "name": "Schemas Zod — 3 novos tipos no AgentEventSchema",
+    "description": "Adicionar 3 novos membros ao AgentEventSchema (discriminated union) em apps/packages/ai-sdk/src/schemas.ts: reasoning (type + content), tool-call (type + toolCallId + toolName + args), tool-result (type + toolCallId + toolName + result). Campos seguem exatamente os nomes do Vercel AI SDK fullStream para zero-mapping. Validar que os tipos existentes (init, text, step_finish, result, usage) continuam funcionando.",
+    "status": "passing",
+    "priority": 1,
+    "completed_at": "2026-03-28T00:00:00.000Z",
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [],
+    "tests": [
+      "AgentEventSchema aceita objeto { type: 'reasoning', content: 'test' } sem erro Zod",
+      "AgentEventSchema aceita objeto { type: 'tool-call', toolCallId: 'id', toolName: 'name', args: {} } sem erro Zod",
+      "AgentEventSchema aceita objeto { type: 'tool-result', toolCallId: 'id', toolName: 'name', result: {} } sem erro Zod",
+      "AgentEventSchema continua validando os 5 tipos existentes (init, text, step_finish, result, usage)"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-1/worktree/sprints/sprint-8/3-prps/PRP-13-rich-stream.md"
+  },
+  {
+    "id": "F-170",
+    "name": "Tipos TypeScript — AiAgentEvent + AiAgentOptions.reasoning",
+    "description": "Em apps/packages/ai-sdk/src/types.ts: (1) Adicionar ao type union AiAgentEvent os 3 novos tipos: { type: 'reasoning'; content: string }, { type: 'tool-call'; toolCallId: string; toolName: string; args: Record<string, unknown> }, { type: 'tool-result'; toolCallId: string; toolName: string; result: unknown }. (2) Adicionar campo reasoning?: boolean | { budgetTokens: number } ao AiAgentOptions. Quando true usa budget padrao 5000 tokens, quando objeto usa budgetTokens especificado, quando false/omitido reasoning nao e ativado.",
+    "status": "passing",
+    "priority": 2,
+    "completed_at": "2026-03-28T00:00:00.000Z",
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [],
+    "tests": [
+      "AiAgentEvent permite yield tipado de { type: 'reasoning', content: string } sem erro TypeScript",
+      "AiAgentEvent permite yield tipado de { type: 'tool-call', toolCallId: string, toolName: string, args: Record<string, unknown> } sem erro TypeScript",
+      "AiAgentEvent permite yield tipado de { type: 'tool-result', toolCallId: string, toolName: string, result: unknown } sem erro TypeScript",
+      "AiAgentOptions aceita reasoning: true, reasoning: { budgetTokens: 8000 } e reasoning: undefined sem erro TypeScript",
+      "Tipos existentes de AiAgentEvent inalterados"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-1/worktree/sprints/sprint-8/3-prps/PRP-13-rich-stream.md"
+  },
+  {
+    "id": "F-172",
+    "name": "Proxy passthrough — encaminhar novos tipos ao backbone",
+    "description": "Em apps/packages/ai-sdk/src/proxy.ts: o runAgent() tem filtro explicito que passa apenas init, text, result, usage, step_finish — GAP CRITICO (RS-006). Adicionar passthrough para reasoning, tool-call e tool-result. Considerar inverter filtro de allowlist para denylist (passar todos por default) para evitar que futuros tipos sejam silenciosamente descartados. Sem esta correcao toda a implementacao de F-169/F-170/F-171 e invisivel ao cliente SSE, pois o backbone nunca usa runAiAgent() diretamente.",
+    "status": "passing",
+    "priority": 3,
+    "completed_at": "2026-03-28T00:00:00.000Z",
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-169",
+      "F-170"
+    ],
+    "tests": [
+      "proxy.ts encaminha evento reasoning com content intacto",
+      "proxy.ts encaminha evento tool-call com toolCallId, toolName e args intactos",
+      "proxy.ts encaminha evento tool-result com toolCallId, toolName e result intactos",
+      "Eventos init, text, result, usage, step_finish continuam sendo encaminhados corretamente",
+      "Clientes existentes que so tratam text/result continuam funcionando sem quebra"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-1/worktree/sprints/sprint-8/3-prps/PRP-13-rich-stream.md"
+  },
+  {
+    "id": "F-171",
+    "name": "Emissao de eventos ricos no loop fullStream",
+    "description": "Em apps/packages/ai-sdk/src/agent.ts: (1) No loop for await (const part of result.fullStream), adicionar handlers para reasoning (yield content via textDelta ou text), tool-call (yield toolCallId, toolName, args) e tool-result (yield toolCallId, toolName, result). Manter text-delta primeiro no if-chain (hot-path). (2) Adicionar providerOptions condicional ao streamText() baseado em AiAgentOptions.reasoning: quando true passa { anthropic: { thinking: { type: 'enabled', budgetTokens: 5000 } } }, quando objeto usa budgetTokens especificado, quando false/undefined nao passa providerOptions.",
+    "status": "passing",
+    "priority": 4,
+    "completed_at": "2026-03-28T00:00:00.000Z",
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-169",
+      "F-170"
+    ],
+    "tests": [
+      "Evento reasoning emitido via yield quando modelo suporta e reasoning habilitado em options",
+      "Evento tool-call emitido com toolCallId, toolName e args corretos",
+      "Evento tool-result emitido com toolCallId, toolName e result corretos",
+      "providerOptions passado ao streamText() quando reasoning: true ou { budgetTokens: N }",
+      "providerOptions NAO passado quando reasoning e false/undefined",
+      "Eventos text-delta e finish-step continuam funcionando como antes"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-1/worktree/sprints/sprint-8/3-prps/PRP-13-rich-stream.md"
+  },
+  {
+    "id": "F-173",
+    "name": "Build ai-sdk + validacao end-to-end",
+    "description": "Apos aplicar todas as mudancas (F-169 a F-172): (1) Executar npm run build:packages — deve compilar sem erros. (2) Verificar typecheck limpo no ai-sdk. (3) Validacao SSE: iniciar backbone via npm run dev:all, obter JWT via POST /api/v1/ai/auth/login, enviar mensagem que provoque tool calls via POST /api/v1/ai/conversations/:sessionId/messages, confirmar presenca de tool-call e tool-result no stream SSE. Clientes existentes devem continuar funcionando.",
+    "status": "passing",
+    "priority": 5,
+    "completed_at": "2026-03-28T00:00:00.000Z",
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-171",
+      "F-172"
+    ],
+    "tests": [
+      "npm run build:packages compila sem erros",
+      "Typecheck do ai-sdk passa sem erros",
+      "Stream SSE contem eventos tool-call e tool-result ao provocar tool calls",
+      "Clientes existentes continuam funcionando sem quebra"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-1/worktree/sprints/sprint-8/3-prps/PRP-13-rich-stream.md"
+  }
+]

@@ -1,11 +1,11 @@
 import { readdirSync, existsSync } from "node:fs";
 import { agentsDir, agentConfigPath, parseAgentId } from "../context/paths.js";
-import { parseFrontmatter } from "../context/frontmatter.js";
-import { readFileSync } from "node:fs";
+import { readYaml } from "../context/readers.js";
+import { AgentYmlSchema } from "../context/schemas.js";
 import {
   type AgentConfig,
   type HeartbeatConfig,
-  DEFAULT_HEARTBEAT_CONFIG,
+  type QuotaConfig,
 } from "./types.js";
 
 let cache: Map<string, AgentConfig> | null = null;
@@ -14,29 +14,46 @@ function parseAgentConfig(agentId: string): AgentConfig | null {
   const configPath = agentConfigPath(agentId);
   if (!existsSync(configPath)) return null;
 
-  const raw = readFileSync(configPath, "utf-8");
-  const { metadata, content } = parseFrontmatter(raw);
+  const raw = readYaml(configPath);
+  const result = AgentYmlSchema.safeParse(raw);
+  if (!result.success) {
+    console.warn(`[agents] invalid AGENT.yml for ${agentId}:`, result.error.issues);
+    return null;
+  }
+
+  const data = result.data;
   const { owner, slug } = parseAgentId(agentId);
 
   const heartbeat: HeartbeatConfig = {
-    enabled: metadata["heartbeat-enabled"] === true,
-    intervalMs:
-      typeof metadata["heartbeat-interval"] === "number"
-        ? metadata["heartbeat-interval"]
-        : DEFAULT_HEARTBEAT_CONFIG.intervalMs,
+    enabled: data["heartbeat-enabled"],
+    intervalMs: data["heartbeat-interval"],
   };
 
-  const enabled = metadata.enabled === true;
+  let quotas: QuotaConfig | undefined;
+  if (data.quotas) {
+    const q = data.quotas;
+    quotas = {
+      maxTokensPerHour: typeof q["max_tokens_per_hour"] === "number" ? q["max_tokens_per_hour"] : undefined,
+      maxHeartbeatsDay: typeof q["max_heartbeats_day"] === "number" ? q["max_heartbeats_day"] : undefined,
+      maxToolTimeoutMs: typeof q["max_tool_timeout_ms"] === "number" ? q["max_tool_timeout_ms"] : undefined,
+      maxTokensPerRun: typeof q["max_tokens_per_run"] === "number" ? q["max_tokens_per_run"] : undefined,
+      pauseOnExceed: typeof q["pause_on_exceed"] === "boolean" ? q["pause_on_exceed"] : undefined,
+    };
+  }
 
   return {
-    id: (metadata.id as string) ?? agentId,
-    owner: (metadata.owner as string) ?? owner,
-    slug: (metadata.slug as string) ?? slug,
-    delivery: (metadata.delivery as string) ?? "",
-    enabled,
+    id: data.id ?? agentId,
+    owner: data.owner ?? owner,
+    slug: data.slug ?? slug,
+    delivery: data.delivery,
+    enabled: data.enabled,
     heartbeat,
-    metadata,
-    description: content.trim(),
+    metadata: data as Record<string, unknown>,
+    description: data.description,
+    role: data.role,
+    members: data.members,
+    quotas,
+    adapters: data.adapters,
   };
 }
 

@@ -5,7 +5,8 @@ export type CronSchedule =
 
 export type CronPayload =
   | { kind: "heartbeat" }
-  | { kind: "agentTurn"; message: string };
+  | { kind: "conversation"; message: string }
+  | { kind: "request"; message: string };
 
 export interface CronJobState {
   nextRunAtMs?: number;
@@ -28,13 +29,13 @@ export interface CronJobDef {
 }
 
 export interface CronJob {
-  /** slug do arquivo (sem .md) */
+  /** slug do arquivo (sem .yml) */
   slug: string;
   /** agentId do owner */
   agentId: string;
-  /** caminho do .md */
+  /** caminho do .yml */
   path: string;
-  /** definição parseada do frontmatter */
+  /** definição parseada do YAML */
   def: CronJobDef;
   /** estado runtime */
   state: CronJobState;

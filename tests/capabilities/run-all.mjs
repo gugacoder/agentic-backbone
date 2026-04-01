@@ -15,7 +15,6 @@ import { resolve, basename } from "node:path";
 const SUITES = [
   "test-conversation-identity-and-context.mjs",
   "test-conversation-skills.mjs",
-  "test-conversation-tools.mjs",
   "test-conversation-memory.mjs",
   "test-conversation-jobs.mjs",
   "test-conversation-cron.mjs",

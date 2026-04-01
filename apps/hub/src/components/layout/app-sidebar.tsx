@@ -1,196 +1,104 @@
-import { useLocation, Link, useNavigate } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
+import { ChevronsUpDown } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
-  SidebarGroup,
-  SidebarGroupLabel,
-  SidebarGroupContent,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarHeader,
   SidebarFooter,
-  SidebarRail,
+  SidebarHeader,
 } from "@/components/ui/sidebar";
-import { Button } from "@/components/ui/button";
 import {
-  LayoutDashboard,
-  Bot,
-  Radio,
-  Brain,
-  Users,
-  Sparkles,
-  Wrench,
-  Plug,
-  Cable,
-  MessageCircle,
-  Settings,
-  Activity,
-  Terminal,
-  LogOut,
-  MessageSquare,
-} from "lucide-react";
-import { useOnlineStatus } from "@/hooks/use-online-status";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { NavMenu } from "@/components/layout/nav-menu";
 import { useAuthStore } from "@/lib/auth";
-import { ThemeToggle } from "@/components/shared/theme-toggle";
+import { useUIStore } from "@/lib/store";
 
-const mainNav = [
-  { title: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { title: "Chat", href: "/chat", icon: MessageSquare },
-  { title: "Agents", href: "/agents", icon: Bot },
-  { title: "Memory", href: "/memory", icon: Brain },
-];
+function UserMenu() {
+  const user = useAuthStore((s) => s.user);
+  const logout = useAuthStore((s) => s.logout);
+  const theme = useUIStore((s) => s.theme);
+  const setTheme = useUIStore((s) => s.setTheme);
 
-const resourceNav = [
-  { title: "Channels", href: "/channels", icon: Radio },
-  { title: "Skills", href: "/skills", icon: Sparkles },
-  { title: "Tools", href: "/tools", icon: Wrench },
-  { title: "Adapters", href: "/adapters", icon: Plug },
-];
-
-const connectivityNav = [
-  { title: "WhatsApp", href: "/conectividade/whatsapp", icon: MessageCircle },
-];
-
-const adminNav = [
-  { title: "Jobs", href: "/jobs", icon: Terminal },
-  { title: "Users", href: "/users", icon: Users },
-  { title: "System", href: "/system", icon: Settings },
-];
-
-export function AppSidebar() {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const online = useOnlineStatus();
-  const { displayName, user, isSysuser, logout } = useAuthStore();
+  const initials = user?.displayName
+    ? user.displayName
+        .split(" ")
+        .slice(0, 2)
+        .map((w) => w[0])
+        .join("")
+        .toUpperCase()
+    : "?";
 
   return (
-    <Sidebar collapsible="icon">
-      <SidebarHeader className="border-b px-4 py-3">
-        <Link to="/dashboard" className="flex items-center gap-2">
-          <Activity className="h-5 w-5 shrink-0" />
-          <span className="font-semibold text-sm group-data-[collapsible=icon]:hidden">
-            Backbone Hub
+    <DropdownMenu>
+      <DropdownMenuTrigger
+        className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+      >
+        <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary text-[11px] font-semibold text-primary-foreground">
+          {initials}
+        </span>
+        <span className="flex-1 truncate">{user?.displayName ?? "Usuário"}</span>
+        <ChevronsUpDown className="size-4 shrink-0 text-muted-foreground" />
+      </DropdownMenuTrigger>
+      <DropdownMenuContent side="top" align="start" className="w-64">
+        <div className="flex items-center gap-3 px-3 py-2">
+          <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground">
+            {initials}
           </span>
-        </Link>
-        {!online && (
-          <span className="text-xs text-destructive group-data-[collapsible=icon]:hidden">
-            Offline
-          </span>
+          <div className="min-w-0">
+            <p className="truncate text-sm font-medium">{user?.displayName}</p>
+            <p className="truncate text-xs text-muted-foreground">{user?.role}</p>
+          </div>
+        </div>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem>
+          <Link to="/account" className="flex w-full">
+            Meu perfil
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <div className="px-2 py-1 text-xs text-muted-foreground">Tema</div>
+        <DropdownMenuRadioGroup value={theme} onValueChange={setTheme}>
+          <DropdownMenuRadioItem value="light">Claro</DropdownMenuRadioItem>
+          <DropdownMenuRadioItem value="dark">Escuro</DropdownMenuRadioItem>
+          <DropdownMenuRadioItem value="system">Automático</DropdownMenuRadioItem>
+        </DropdownMenuRadioGroup>
+        {(user?.role === "admin" || user?.role === "system") && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem>
+              <Link to="/settings" className="flex w-full">
+                Configurações
+              </Link>
+            </DropdownMenuItem>
+          </>
         )}
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={logout} variant="destructive">
+          Sair
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
+export function AppSidebar() {
+  return (
+    <Sidebar className="text-sm">
+      <SidebarHeader className="px-4 py-3">
+        <span className="text-lg font-semibold tracking-tight">Agentic Backbone</span>
       </SidebarHeader>
-      <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel>Overview</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {mainNav.map((item) => (
-                <SidebarMenuItem key={item.href}>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={location.pathname.startsWith(item.href)}
-                    tooltip={item.title}
-                  >
-                    <Link to={item.href}>
-                      <item.icon className="h-4 w-4" />
-                      <span>{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-        <SidebarGroup>
-          <SidebarGroupLabel>Resources</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {resourceNav.map((item) => (
-                <SidebarMenuItem key={item.href}>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={location.pathname.startsWith(item.href)}
-                    tooltip={item.title}
-                  >
-                    <Link to={item.href}>
-                      <item.icon className="h-4 w-4" />
-                      <span>{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-        <SidebarGroup>
-          <SidebarGroupLabel>
-            <Cable className="h-3.5 w-3.5 mr-1 inline-block" />
-            Conectividade
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {connectivityNav.map((item) => (
-                <SidebarMenuItem key={item.href}>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={location.pathname.startsWith(item.href)}
-                    tooltip={item.title}
-                  >
-                    <Link to={item.href}>
-                      <item.icon className="h-4 w-4" />
-                      <span>{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-        {isSysuser && (
-          <SidebarGroup>
-            <SidebarGroupLabel>Admin</SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {adminNav.map((item) => (
-                  <SidebarMenuItem key={item.href}>
-                    <SidebarMenuButton
-                      asChild
-                      isActive={location.pathname.startsWith(item.href)}
-                      tooltip={item.title}
-                    >
-                      <Link to={item.href}>
-                        <item.icon className="h-4 w-4" />
-                        <span>{item.title}</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        )}
+      <SidebarContent className="py-2">
+        <NavMenu />
       </SidebarContent>
-      <SidebarFooter className="border-t px-4 py-3">
-        <div className="flex flex-col gap-1 group-data-[collapsible=icon]:hidden">
-          <span className="text-xs font-medium truncate">{displayName ?? user}</span>
-        </div>
-        <div className="flex items-center gap-1">
-          <ThemeToggle />
-          <Button
-            variant="ghost"
-            size="sm"
-            className="flex-1 justify-start gap-2 text-muted-foreground group-data-[collapsible=icon]:flex-none group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0"
-            onClick={() => {
-              logout();
-              navigate({ to: "/login" });
-            }}
-          >
-            <LogOut className="h-4 w-4 shrink-0" />
-            <span className="group-data-[collapsible=icon]:hidden">Sign Out</span>
-          </Button>
-        </div>
+      <SidebarFooter className="px-2 py-2">
+        <UserMenu />
       </SidebarFooter>
-      <SidebarRail />
     </Sidebar>
   );
 }

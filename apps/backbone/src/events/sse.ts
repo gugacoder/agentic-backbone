@@ -1,7 +1,7 @@
 import type { Context } from "hono";
 import { streamSSE } from "hono/streaming";
 import { eventBus } from "./index.js";
-import type { HeartbeatStatusEvent, ChannelMessageEvent, RegistryChangeEvent, CronJobEvent, JobStatusEvent } from "./index.js";
+import type { HeartbeatStatusEvent, ChannelMessageEvent, RegistryChangeEvent, CronJobEvent, JobStatusEvent, NotificationNewEvent, SessionTakeoverEvent, ApprovalPendingEvent, SecurityAlertEvent, FleetAgentStatusEvent, FleetAlertEvent } from "./index.js";
 
 // --- Types ---
 
@@ -96,6 +96,30 @@ class SSEHub {
 
     eventBus.on("job:status", (evt: JobStatusEvent) => {
       this.broadcast("system", "job:status", evt);
+    });
+
+    eventBus.on("notification:new", (evt: NotificationNewEvent) => {
+      this.broadcast("system", "notification:new", evt);
+    });
+
+    eventBus.on("session:takeover", (evt: SessionTakeoverEvent) => {
+      this.broadcast("system", "session:takeover", evt);
+    });
+
+    eventBus.on("approval:pending", (evt: ApprovalPendingEvent) => {
+      this.broadcast("system", "approval:pending", evt);
+    });
+
+    eventBus.on("security:alert", (evt: SecurityAlertEvent) => {
+      this.broadcast("system", "security:alert", evt);
+    });
+
+    eventBus.on("fleet:agent_status", (evt: FleetAgentStatusEvent) => {
+      this.broadcast("system", "fleet:agent_status", evt);
+    });
+
+    eventBus.on("fleet:alert", (evt: FleetAlertEvent) => {
+      this.broadcast("system", "fleet:alert", evt);
     });
 
     // Forward all module events to SSE (dynamic keys: module:{name}:{event})

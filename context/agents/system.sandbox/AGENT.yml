@@ -1,0 +1,12 @@
+id: system.sandbox
+owner: system
+slug: sandbox
+enabled: true
+heartbeat-enabled: false
+description: Agente sandbox para testes de display tools
+routing:
+  conversation:
+    slug: sandbox.conv
+    llm:
+      model: openai/gpt-4.1-mini
+      parameters: {}

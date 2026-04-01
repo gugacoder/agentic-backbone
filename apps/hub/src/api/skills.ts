@@ -1,52 +1,123 @@
-import { queryOptions, useMutation, useQueryClient } from "@tanstack/react-query";
-import { api } from "@/lib/api";
-import type { Resource } from "./types";
+import { queryOptions } from "@tanstack/react-query";
+import { request } from "@/lib/api";
 
-export const skillsQuery = queryOptions({
-  queryKey: ["skills"],
-  queryFn: () => api.get<Resource[]>("/skills"),
-});
+export interface Resource {
+  slug: string;
+  name: string;
+  description: string;
+  source: string;
+}
 
-export function agentSkillsQuery(agentId: string) {
+export interface Skill {
+  slug: string;
+  name: string;
+  description: string;
+  enabled: boolean;
+  userInvocable?: boolean;
+  trigger?: string;
+  body: string;
+  source: string;
+  dir: string;
+}
+
+export interface CreateSkillInput {
+  slug: string;
+  scope: string;
+  name: string;
+  description?: string;
+  body?: string;
+  metadata?: Record<string, unknown>;
+}
+
+export interface UpdateSkillInput {
+  name?: string;
+  description?: string;
+  body?: string;
+  metadata?: Record<string, unknown>;
+}
+
+export function allSkillsQueryOptions() {
   return queryOptions({
-    queryKey: ["skills", agentId],
-    queryFn: () => api.get<Resource[]>(`/skills?agentId=${agentId}`),
-    enabled: !!agentId,
+    queryKey: ["skills"],
+    queryFn: () => request<Resource[]>("/skills"),
   });
 }
 
-export function useCreateSkill() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (data: { slug: string; scope: string; name: string; description?: string; body?: string }) =>
-      api.post<Resource>("/skills", data),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["skills"] }),
+export function agentSkillsQueryOptions(agentId: string) {
+  return queryOptions({
+    queryKey: ["agents", agentId, "skills"],
+    queryFn: () => request<Skill[]>(`/agents/${agentId}/skills`),
   });
 }
 
-export function useUpdateSkill() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: ({ scope, slug, ...data }: { scope: string; slug: string } & Record<string, unknown>) =>
-      api.patch<Resource>(`/skills/${scope}/${slug}`, data),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["skills"] }),
+export async function assignSkill(
+  agentId: string,
+  slug: string,
+  sourceScope: string,
+): Promise<void> {
+  await request("/skills/assign", {
+    method: "POST",
+    body: JSON.stringify({ sourceScope, slug, agentId }),
   });
 }
 
-export function useDeleteSkill() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: ({ scope, slug }: { scope: string; slug: string }) =>
-      api.delete(`/skills/${scope}/${slug}`),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["skills"] }),
+export async function unassignSkill(
+  agentId: string,
+  slug: string,
+): Promise<void> {
+  await request(`/skills/${agentId}/${slug}`, { method: "DELETE" });
+}
+
+export async function createSkill(input: CreateSkillInput): Promise<Skill> {
+  return request<Skill>("/skills", {
+    method: "POST",
+    body: JSON.stringify(input),
   });
 }
 
-export function useAssignSkill() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (data: { sourceScope: string; slug: string; agentId: string }) =>
-      api.post<Resource>("/skills/assign", data),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["skills"] }),
+export async function updateSkill(
+  scope: string,
+  slug: string,
+  updates: UpdateSkillInput,
+): Promise<Skill> {
+  return request<Skill>(`/skills/${scope}/${slug}`, {
+    method: "PATCH",
+    body: JSON.stringify(updates),
   });
+}
+
+export async function deleteSkill(scope: string, slug: string): Promise<void> {
+  await request(`/skills/${scope}/${slug}`, { method: "DELETE" });
+}
+
+export function allServicesQueryOptions() {
+  return queryOptions({
+    queryKey: ["services"],
+    queryFn: () => request<Resource[]>("/services"),
+  });
+}
+
+export function agentServicesQueryOptions(agentId: string) {
+  return queryOptions({
+    queryKey: ["agents", agentId, "services"],
+    queryFn: () => request<Resource[]>(`/agents/${agentId}/services`),
+  });
+}
+
+export async function assignService(
+  agentId: string,
+  slug: string,
+  sourceScope: string,
+): Promise<void> {
+  await request("/services/assign", {
+    method: "POST",
+    body: JSON.stringify({ sourceScope, slug, agentId }),
+  });
+}
+
+export async function unassignService(
+  agentId: string,
+  slug: string,
+): Promise<void> {
+  await request(`/services/${agentId}/${slug}`, { method: "DELETE" });
 }

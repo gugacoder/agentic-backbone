@@ -1,14 +1,23 @@
-import { assembleHeartbeatPrompt } from "../context/index.js";
-import { runAgent, type UsageData } from "../agent/index.js";
+import { assemblePrompt } from "../context/index.js";
+import { type RoutingContext, type RoutingRule, type ModelResult } from "../agent/index.js";
+import { instrumentedRunAgent } from "../telemetry/instrumentor.js";
 import { eventBus } from "../events/index.js";
 import { deliverToSystemChannel, deliverToChannel } from "../channels/system-channel.js";
+import { resolveLastActiveChannel } from "../conversations/index.js";
 import { listAgents } from "../agents/registry.js";
 import { isWithinActiveHours } from "./active-hours.js";
 import { createHeartbeatScheduler, type HeartbeatScheduler } from "./scheduler.js";
 import { logHeartbeat } from "./log.js";
 import { triggerHook } from "../hooks/index.js";
-import { jobsMcpServer } from "../jobs/tools.js";
-import { agentDir } from "../context/paths.js";
+import { composeAgentTools } from "../agent/tools.js";
+import { collectAgentResult } from "../utils/agent-stream.js";
+import { formatError } from "../utils/errors.js";
+import { emitNotification } from "../notifications/index.js";
+import { trackCost } from "../db/costs.js";
+import { trackHeartbeat } from "../db/analytics.js";
+import { checkExceeded, getQuotas, recordUsage, pauseAgent } from "../quotas/quota-manager.js";
+import { estimateTokens } from "../settings/llm.js";
+import { circuitBreaker } from "../circuit-breaker/index.js";
 
 const HEARTBEAT_OK = "HEARTBEAT_OK";
 const ACK_MAX_CHARS = 300;
@@ -73,6 +82,21 @@ function isDuplicate(state: HeartbeatState, text: string): boolean {
   return withinWindow && text === state.lastText;
 }
 
+// --- Tick helpers ---
+
+function skipWithReason(state: HeartbeatState, agentId: string, reason: SkipReason): void {
+  state.lastStatus = "skipped";
+  state.lastSkipReason = reason;
+  logHeartbeat({ agentId, status: "skipped", reason });
+  eventBus.emit("heartbeat:status", { ts: Date.now(), agentId, status: "skipped", reason });
+  trackHeartbeat({ agentId, status: "skipped" });
+}
+
+function emitHeartbeatResult(agentId: string, status: string, extras: Record<string, unknown>): void {
+  logHeartbeat({ agentId, status, ...extras });
+  eventBus.emit("heartbeat:status", { ts: Date.now(), agentId, status, ...extras } as any);
+}
+
 // --- Tick (per agent) ---
 
 async function tick(agentId: string): Promise<void> {
@@ -89,46 +113,49 @@ async function tick(agentId: string): Promise<void> {
   const agents = listAgents();
   const agentConfig = agents.find((a) => a.id === agentId);
   if (!agentConfig?.enabled) {
-    state.lastStatus = "skipped";
-    state.lastSkipReason = "agent-disabled";
-    logHeartbeat({ agentId, status: "skipped", reason: "agent-disabled" });
-    eventBus.emit("heartbeat:status", {
-      ts: Date.now(),
-      agentId,
-      status: "skipped",
-      reason: "agent-disabled",
-    });
+    skipWithReason(state, agentId, "agent-disabled");
     return;
   }
 
   // Guard: active hours
   if (agentConfig?.heartbeat.activeHours) {
     if (!isWithinActiveHours(agentConfig.heartbeat.activeHours)) {
-      state.lastStatus = "skipped";
-      state.lastSkipReason = "quiet-hours";
-      logHeartbeat({ agentId, status: "skipped", reason: "quiet-hours" });
-      eventBus.emit("heartbeat:status", {
-        ts: Date.now(),
-        agentId,
-        status: "skipped",
-        reason: "quiet-hours",
-      });
+      skipWithReason(state, agentId, "quiet-hours");
       return;
     }
   }
 
+  // Guard: quota
+  const quotaCheck = checkExceeded(agentId, "heartbeat");
+  if (quotaCheck.exceeded) {
+    const quotas = getQuotas(agentId);
+    if (quotas.pauseOnExceed !== false) {
+      pauseAgent(agentId);
+      eventBus.emit("agent:quota-exceeded", {
+        ts: Date.now(),
+        agentId,
+        quota: quotaCheck.reason ?? "unknown",
+        value: 0,
+      });
+      skipWithReason(state, agentId, "agent-disabled");
+      return;
+    } else {
+      console.warn(`[heartbeat:${agentId}] quota exceeded (pause_on_exceed=false): ${quotaCheck.reason}`);
+    }
+  }
+
+  // Guard: circuit-breaker
+  const cbCheck = circuitBreaker.canExecute(agentId);
+  if (!cbCheck.allowed) {
+    circuitBreaker.recordBlocked(agentId, cbCheck.reason ?? "unknown", { mode: "heartbeat" });
+    logHeartbeat({ agentId, status: "skipped", reason: "circuit-breaker-blocked" });
+    return;
+  }
+
   // Guard: empty instructions
-  const prompt = assembleHeartbeatPrompt(agentId);
-  if (!prompt) {
-    state.lastStatus = "skipped";
-    state.lastSkipReason = "empty-instructions";
-    logHeartbeat({ agentId, status: "skipped", reason: "empty-instructions" });
-    eventBus.emit("heartbeat:status", {
-      ts: Date.now(),
-      agentId,
-      status: "skipped",
-      reason: "empty-instructions",
-    });
+  const assembled = await assemblePrompt(agentId, "heartbeat");
+  if (!assembled) {
+    skipWithReason(state, agentId, "empty-instructions");
     return;
   }
 
@@ -145,29 +172,34 @@ async function tick(agentId: string): Promise<void> {
   });
 
   try {
-    let fullText = "";
-    let usageData: UsageData | undefined;
-
     await triggerHook({
       ts: Date.now(),
       hookEvent: "agent:before",
       agentId,
       role: "heartbeat",
-      prompt,
+      prompt: assembled.userMessage,
     });
 
-    for await (const event of runAgent(prompt, {
-      role: "heartbeat",
-      mcpServers: { "backbone-jobs": jobsMcpServer },
-    })) {
-      if (event.type === "result" && event.content) {
-        fullText = event.content;
-      } else if (event.type === "text" && event.content) {
-        fullText += event.content;
-      } else if (event.type === "usage" && event.usage) {
-        usageData = event.usage;
-      }
-    }
+    const tools = composeAgentTools(agentId, "heartbeat");
+    const routingCtx: RoutingContext = {
+      mode: "heartbeat",
+      estimatedPromptTokens: estimateTokens((assembled.system ?? "") + assembled.userMessage),
+      toolsCount: tools ? Object.keys(tools).length : 0,
+    };
+    const agentRules = ((agentConfig.metadata as Record<string, unknown>)?.["routing"] as { rules?: RoutingRule[] } | undefined)?.rules;
+
+    let routingResult: ModelResult | undefined;
+
+    const { fullText, usage: usageData } = await collectAgentResult(
+      instrumentedRunAgent(agentId, "heartbeat", assembled.userMessage, {
+        role: "heartbeat",
+        tools,
+        system: assembled.system,
+        routingContext: routingCtx,
+        agentRoutingRules: agentRules,
+        onRoutingResolved: (r) => { routingResult = r; },
+      })
+    );
 
     await triggerHook({
       ts: Date.now(),
@@ -178,20 +210,30 @@ async function tick(agentId: string): Promise<void> {
       durationMs: Date.now() - startMs,
     });
 
+    if (usageData) {
+      trackCost({
+        agentId,
+        operation: "heartbeat",
+        tokensIn: usageData.inputTokens,
+        tokensOut: usageData.outputTokens,
+        costUsd: usageData.totalCostUsd,
+      });
+      recordUsage(agentId, usageData.inputTokens, usageData.outputTokens, "heartbeat");
+    }
+
+    circuitBreaker.recordOutcome(agentId, true);
+
     const { shouldSkip, cleanText } = normalizeReply(fullText);
     const durationMs = Date.now() - startMs;
+
+    const modelUsed = routingResult?.model;
+    const routingRule = routingResult?.ruleName ?? undefined;
 
     if (shouldSkip) {
       state.lastStatus = "ok";
       console.log(`[heartbeat:${agentId}] ok (${durationMs}ms)`);
-      logHeartbeat({ agentId, status: "ok-token", durationMs, usage: usageData });
-      eventBus.emit("heartbeat:status", {
-        ts: Date.now(),
-        agentId,
-        status: "ok-token",
-        durationMs,
-        usage: usageData,
-      });
+      emitHeartbeatResult(agentId, "ok-token", { durationMs, usage: usageData, modelUsed, routingRule });
+      trackHeartbeat({ agentId, status: "ok", durationMs });
       return;
     }
 
@@ -199,15 +241,8 @@ async function tick(agentId: string): Promise<void> {
       state.lastStatus = "skipped";
       state.lastSkipReason = "duplicate";
       console.log(`[heartbeat:${agentId}] suppressed duplicate (${durationMs}ms)`);
-      logHeartbeat({ agentId, status: "skipped", durationMs, usage: usageData, reason: "duplicate" });
-      eventBus.emit("heartbeat:status", {
-        ts: Date.now(),
-        agentId,
-        status: "skipped",
-        reason: "duplicate",
-        durationMs,
-        usage: usageData,
-      });
+      emitHeartbeatResult(agentId, "skipped", { durationMs, usage: usageData, reason: "duplicate", modelUsed, routingRule });
+      trackHeartbeat({ agentId, status: "skipped", durationMs });
       return;
     }
 
@@ -219,33 +254,38 @@ async function tick(agentId: string): Promise<void> {
     console.log(
       `[heartbeat:${agentId}] delivered (${durationMs}ms): ${preview}`
     );
-    logHeartbeat({ agentId, status: "sent", durationMs, usage: usageData, preview });
-    eventBus.emit("heartbeat:status", {
-      ts: Date.now(),
-      agentId,
-      status: "sent",
-      preview,
-      durationMs,
-      usage: usageData,
-    });
-    const deliveryChannel = agentConfig?.delivery;
-    if (deliveryChannel && deliveryChannel !== "system-channel") {
-      deliverToChannel(deliveryChannel, agentId, cleanText);
+    emitHeartbeatResult(agentId, "sent", { preview, durationMs, usage: usageData, modelUsed, routingRule });
+    trackHeartbeat({ agentId, status: "ok", durationMs });
+    const deliveryMode = agentConfig?.delivery;
+    if (deliveryMode === "last-active") {
+      const lastChannel = resolveLastActiveChannel(agentId, agentConfig.owner);
+      if (lastChannel) {
+        await deliverToChannel(lastChannel, agentId, cleanText);
+      } else {
+        deliverToSystemChannel(agentId, cleanText);
+      }
+    } else if (deliveryMode && deliveryMode !== "system-channel") {
+      await deliverToChannel(deliveryMode, agentId, cleanText);
     } else {
       deliverToSystemChannel(agentId, cleanText);
     }
+
   } catch (err) {
-    const reason = err instanceof Error ? err.message : String(err);
+    const reason = formatError(err);
     const durationMs = Date.now() - startMs;
     state.lastStatus = "failed";
     console.error(`[heartbeat:${agentId}] failed:`, err);
-    logHeartbeat({ agentId, status: "failed", durationMs, reason });
-    eventBus.emit("heartbeat:status", {
-      ts: Date.now(),
+    emitHeartbeatResult(agentId, "failed", { reason, durationMs });
+    trackHeartbeat({ agentId, status: "error", durationMs });
+    circuitBreaker.recordOutcome(agentId, false);
+
+    emitNotification({
+      type: "heartbeat_error",
+      severity: "error",
       agentId,
-      status: "failed",
-      reason,
-      durationMs,
+      title: `Heartbeat falhou: ${agentId}`,
+      body: reason,
+      metadata: { durationMs },
     });
   } finally {
     state.running = false;

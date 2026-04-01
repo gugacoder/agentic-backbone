@@ -1,0 +1,556 @@
+[
+  {
+    "id": "F-049",
+    "name": "Tabela cost_daily + populacao incremental",
+    "description": "Criar tabelas cost_daily e budget_alerts no SQLite. Populacao incremental via INSERT ON CONFLICT DO UPDATE nos pontos de heartbeat (heartbeat/index.ts), conversa (conversations/index.ts) e cron (cron/index.ts). Agregar tokens_in, tokens_out, cost_usd e calls por dia/agente/operacao.",
+    "status": "passing",
+    "completed_at": "2026-03-07",
+    "priority": 1,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [],
+    "tests": [
+      "Tabela cost_daily criada com indices em date e agent_id",
+      "Tabela budget_alerts criada",
+      "Heartbeat concluido incrementa cost_daily com operation=heartbeat",
+      "Conversa concluida incrementa cost_daily com operation=conversation",
+      "Cron concluido incrementa cost_daily com operation=cron",
+      "INSERT ON CONFLICT agrega corretamente (tokens, custo, calls)"
+    ],
+    "prp_path": "sprints/sprint-3/3-prps/PRP-13-dashboard-custos-granular.md"
+  },
+  {
+    "id": "F-050",
+    "name": "Endpoints de custos + API module",
+    "description": "Criar routes/costs.ts com endpoints: GET /costs/summary (resumo por periodo/agente), GET /costs/trend (serie temporal), GET/POST/PATCH/DELETE /budget-alerts (CRUD alertas). Verificar alertas excedidos ao inserir custos e gerar notificacao budget_exceeded. No Hub, criar api/costs.ts com queryOptions.",
+    "status": "passing",
+    "completed_at": "2026-03-07",
+    "priority": 2,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-049"
+    ],
+    "tests": [
+      "GET /costs/summary retorna totalCostUsd, byAgent, byOperation",
+      "GET /costs/trend retorna points com serie temporal",
+      "GET /budget-alerts lista alertas",
+      "POST /budget-alerts cria alerta",
+      "PATCH /budget-alerts/:id atualiza alerta",
+      "DELETE /budget-alerts/:id remove alerta",
+      "Alerta excedido gera notificacao budget_exceeded"
+    ],
+    "prp_path": "sprints/sprint-3/3-prps/PRP-13-dashboard-custos-granular.md"
+  },
+  {
+    "id": "F-051",
+    "name": "Pagina /costs com cards de resumo e filtros",
+    "description": "Criar rota routes/_authenticated/costs/index.tsx. Filtros de periodo (date range) e agente em query params. Tres cards de resumo: custo total, total de chamadas, tokens consumidos. Adicionar 'Custos' ao menu lateral. Card de custos no dashboard linka para /costs.",
+    "status": "passing",
+    "completed_at": "2026-03-07",
+    "priority": 3,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-050"
+    ],
+    "tests": [
+      "Rota /costs renderiza pagina de custos",
+      "Filtros de periodo e agente refletidos em query params",
+      "Cards de resumo exibem totais corretos do periodo",
+      "Menu lateral inclui 'Custos' com icone DollarSign",
+      "Card de custos no dashboard linka para /costs",
+      "Responsivo: mobile stack vertical, desktop grid"
+    ],
+    "prp_path": "sprints/sprint-3/3-prps/PRP-13-dashboard-custos-granular.md"
+  },
+  {
+    "id": "F-052",
+    "name": "Graficos de custos (tendencia, por agente, por operacao)",
+    "description": "Criar tres componentes de grafico usando shadcn Chart (Recharts): cost-trend-chart.tsx (AreaChart por dia), cost-by-agent-chart.tsx (BarChart horizontal), cost-by-operation-chart.tsx (PieChart/donut). Layout grid desktop, stack mobile.",
+    "status": "passing",
+    "completed_at": "2026-03-07",
+    "priority": 4,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-051"
+    ],
+    "tests": [
+      "Grafico de tendencia exibe serie temporal de custos",
+      "Breakdown por agente mostra bar chart horizontal",
+      "Breakdown por operacao mostra pie/donut chart",
+      "Graficos responsivos em largura total no mobile"
+    ],
+    "prp_path": "sprints/sprint-3/3-prps/PRP-13-dashboard-custos-granular.md"
+  },
+  {
+    "id": "F-053",
+    "name": "Alertas de orcamento (CRUD + notificacao automatica)",
+    "description": "Criar components/costs/budget-alert-list.tsx e budget-alert-form.tsx. Lista com escopo, limite, periodo, status toggle, acoes. Dialog com React Hook Form + Zod. Notificacao automatica ao exceder alerta via sistema de notificacoes PRP-12.",
+    "status": "passing",
+    "completed_at": "2026-03-07",
+    "priority": 5,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-051"
+    ],
+    "tests": [
+      "Lista de alertas exibe escopo, limite, periodo e status",
+      "Criar alerta via dialog funciona",
+      "Editar alerta funciona",
+      "Toggle ativar/desativar funciona",
+      "Excluir alerta funciona",
+      "Alerta excedido gera notificacao automatica"
+    ],
+    "prp_path": "sprints/sprint-3/3-prps/PRP-13-dashboard-custos-granular.md"
+  },
+  {
+    "id": "F-054",
+    "name": "Tabela analytics_daily + populacao incremental",
+    "description": "Criar tabela analytics_daily no SQLite com contadores de heartbeats (total/ok/error/skipped), conversations, messages (in/out), cron (total/ok/error) e avg_response_ms. Populacao incremental via INSERT ON CONFLICT DO UPDATE nos mesmos pontos de integracao.",
+    "status": "passing",
+    "completed_at": "2026-03-07",
+    "priority": 6,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [],
+    "tests": [
+      "Tabela analytics_daily criada com indices",
+      "Heartbeat incrementa contadores corretos",
+      "Conversa incrementa conversations e messages",
+      "Cron incrementa cron_total/ok/error",
+      "avg_response_ms calculado corretamente via soma/count"
+    ],
+    "prp_path": "sprints/sprint-3/3-prps/PRP-14-analytics-tendencia.md"
+  },
+  {
+    "id": "F-055",
+    "name": "Endpoints de analytics + API module",
+    "description": "Criar routes/analytics.ts com endpoints: GET /analytics/overview (metricas agregadas com comparison vs periodo anterior), GET /analytics/trend (serie temporal por metrica), GET /analytics/agents (ranking). No Hub, criar api/analytics.ts com queryOptions.",
+    "status": "passing",
+    "completed_at": "2026-03-07",
+    "priority": 7,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-054"
+    ],
+    "tests": [
+      "GET /analytics/overview retorna heartbeats, conversations, cron, avgResponseMs, comparison",
+      "comparison calcula deltas vs periodo anterior de mesma duracao",
+      "GET /analytics/trend retorna points por metrica (heartbeats/conversations/errors/response_time)",
+      "GET /analytics/agents retorna ranking com metricas por agente"
+    ],
+    "prp_path": "sprints/sprint-3/3-prps/PRP-14-analytics-tendencia.md"
+  },
+  {
+    "id": "F-056",
+    "name": "Pagina /analytics com cards de resumo e deltas",
+    "description": "Criar rota routes/_authenticated/analytics/index.tsx. Filtros de periodo e agente em query params. Quatro cards: heartbeats, conversas, taxa de erro, tempo de resposta — cada um com delta vs periodo anterior e cor semantica. Adicionar 'Analytics' ao menu lateral.",
+    "status": "passing",
+    "completed_at": "2026-03-07",
+    "priority": 8,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-055"
+    ],
+    "tests": [
+      "Rota /analytics renderiza pagina",
+      "Filtros de periodo e agente em query params",
+      "Cards exibem metricas com deltas",
+      "Indicadores verde/vermelho com logica invertida para erro e tempo",
+      "Menu lateral inclui 'Analytics' com icone TrendingUp"
+    ],
+    "prp_path": "sprints/sprint-3/3-prps/PRP-14-analytics-tendencia.md"
+  },
+  {
+    "id": "F-057",
+    "name": "Graficos de tendencia (tabs por metrica)",
+    "description": "Criar components/analytics/analytics-trend-chart.tsx com tabs: Heartbeats (stacked area ok/error/skipped), Conversas (line chart), Erros (bar chart), Tempo de Resposta (line com area). Todos usando shadcn Chart (Recharts). Tabs com scroll horizontal no mobile.",
+    "status": "passing",
+    "completed_at": "2026-03-07",
+    "priority": 9,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-056"
+    ],
+    "tests": [
+      "Tab Heartbeats mostra stacked area (ok/error/skipped)",
+      "Tab Conversas mostra line chart",
+      "Tab Erros mostra bar chart",
+      "Tab Tempo de Resposta mostra line com area",
+      "Tabs alternam sem reload",
+      "Graficos responsivos no mobile"
+    ],
+    "prp_path": "sprints/sprint-3/3-prps/PRP-14-analytics-tendencia.md"
+  },
+  {
+    "id": "F-058",
+    "name": "Ranking de agentes (tabela comparativa)",
+    "description": "Criar components/analytics/agent-ranking-table.tsx. Tabela ordenavel com colunas: agente, heartbeats, taxa de erro (badge cor), conversas, resp. media, custo (link para /costs?agent=X). Dados via GET /analytics/agents.",
+    "status": "passing",
+    "completed_at": "2026-03-07",
+    "priority": 10,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-056"
+    ],
+    "tests": [
+      "Tabela exibe ranking de agentes",
+      "Ordenavel por qualquer coluna",
+      "Taxa de erro com badge de cor",
+      "Link de custo navega para /costs?agent=X",
+      "Dados corretos do periodo filtrado"
+    ],
+    "prp_path": "sprints/sprint-3/3-prps/PRP-14-analytics-tendencia.md"
+  },
+  {
+    "id": "F-059",
+    "name": "Servico de trace + parsing de spawn.jsonl",
+    "description": "Criar modulo src/traces/index.ts com funcao getTrace(type, id). Parseia spawn.jsonl / messages.jsonl sob demanda para extrair TraceStep[] (text, tool_call, tool_result) com timestamps, duracao, tokens, conteudo. Suporte a heartbeat, conversation e cron.",
+    "status": "passing",
+    "completed_at": "2026-03-07",
+    "priority": 11,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [],
+    "tests": [
+      "getTrace('heartbeat', id) retorna trace estruturado de heartbeat",
+      "getTrace('conversation', id) retorna trace de conversa com tool calls",
+      "getTrace('cron', id) retorna trace de cron job",
+      "Steps incluem type, timestamp, durationMs, tokens",
+      "Tool calls incluem toolName, toolInput, toolOutput",
+      "Textos truncados a 500 chars no listing"
+    ],
+    "prp_path": "sprints/sprint-3/3-prps/PRP-15-trace-timeline.md"
+  },
+  {
+    "id": "F-060",
+    "name": "Endpoint /traces/:type/:id",
+    "description": "Criar routes/traces.ts com endpoint GET /traces/:type/:id. Retorna Trace completo (id, agentId, type, startedAt, durationMs, tokens, costUsd, model, steps[]). No Hub, criar api/traces.ts com traceQueryOptions.",
+    "status": "passing",
+    "completed_at": "2026-03-07",
+    "priority": 12,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-059"
+    ],
+    "tests": [
+      "GET /traces/heartbeat/:id retorna trace estruturado",
+      "GET /traces/conversation/:id retorna trace",
+      "GET /traces/cron/:id retorna trace",
+      "Response inclui model, costUsd, totalTokensIn/Out",
+      "api/traces.ts exporta traceQueryOptions"
+    ],
+    "prp_path": "sprints/sprint-3/3-prps/PRP-15-trace-timeline.md"
+  },
+  {
+    "id": "F-061",
+    "name": "TraceDrawer + TraceTimeline + TraceStepItem",
+    "description": "Criar components/traces/trace-drawer.tsx (Sheet desktop, Vaul mobile), trace-header.tsx (resumo), trace-timeline.tsx (timeline vertical), trace-step-item.tsx (expandivel). Steps com icones por tipo, barra de duracao proporcional, JSON formatado para tool input/output.",
+    "status": "passing",
+    "completed_at": "2026-03-07",
+    "priority": 13,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-060"
+    ],
+    "tests": [
+      "Trace drawer abre com Sheet no desktop",
+      "Trace drawer abre com Vaul no mobile",
+      "Header exibe resumo: tokens, custo, duracao, modelo",
+      "Timeline mostra steps com icones por tipo",
+      "Click expande/colapsa conteudo",
+      "Barra de duracao proporcional por step",
+      "JSON de tool input/output com formatacao legivel"
+    ],
+    "prp_path": "sprints/sprint-3/3-prps/PRP-15-trace-timeline.md"
+  },
+  {
+    "id": "F-062",
+    "name": "Integracao com heartbeat, conversa e cron history",
+    "description": "Adicionar botao/icone 'Trace' no historico de heartbeats (pagina do agente), em mensagens do agente no chat (hover), e no historico de cron. Click abre TraceDrawer com type e id correspondentes.",
+    "status": "passing",
+    "completed_at": "2026-03-07",
+    "priority": 14,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-061"
+    ],
+    "tests": [
+      "Botao Trace visivel em entradas do historico de heartbeats",
+      "Click abre TraceDrawer com type=heartbeat",
+      "Icone Trace em mensagens do agente no chat (hover)",
+      "Click abre TraceDrawer com type=conversation",
+      "Botao Trace em execucoes do historico de cron",
+      "Click abre TraceDrawer com type=cron"
+    ],
+    "prp_path": "sprints/sprint-3/3-prps/PRP-15-trace-timeline.md"
+  },
+  {
+    "id": "F-063",
+    "name": "Tabela knowledge_docs + pipeline de upload/conversao",
+    "description": "Criar tabela knowledge_docs no SQLite. Pipeline: upload multipart -> conversao para markdown (pdf-parse para PDF, direto para TXT/MD) -> salva em knowledge/ do agente -> insere registro -> dispara reindexAgent(). Exclusao remove arquivo, registro e embeddings. Limites: 10MB/arquivo, 50 docs/agente.",
+    "status": "passing",
+    "completed_at": "2026-03-07",
+    "priority": 15,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [],
+    "tests": [
+      "Tabela knowledge_docs criada com indice em agent_id",
+      "Upload PDF converte para markdown",
+      "Upload TXT/MD salva direto",
+      "Documento salvo em knowledge/ do agente",
+      "Registro criado com status processing -> indexed",
+      "Exclusao remove arquivo, registro e embeddings",
+      "Limite 10MB aplicado",
+      "Limite 50 documentos aplicado"
+    ],
+    "prp_path": "sprints/sprint-3/3-prps/PRP-16-knowledge-base-rag.md"
+  },
+  {
+    "id": "F-064",
+    "name": "Endpoints de knowledge + API module",
+    "description": "Criar endpoints em routes/agents.ts ou routes/knowledge.ts: GET /agents/:id/knowledge (listar docs), POST /agents/:id/knowledge (upload multipart), GET /agents/:id/knowledge/:docId (detalhes), DELETE /agents/:id/knowledge/:docId. No Hub, criar api/knowledge.ts.",
+    "status": "passing",
+    "completed_at": "2026-03-07",
+    "priority": 16,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-063"
+    ],
+    "tests": [
+      "GET /agents/:id/knowledge lista documentos do agente",
+      "POST /agents/:id/knowledge faz upload e retorna 201",
+      "GET /agents/:id/knowledge/:docId retorna detalhes",
+      "DELETE /agents/:id/knowledge/:docId retorna 204",
+      "api/knowledge.ts exporta queryOptions e funcoes de mutacao"
+    ],
+    "prp_path": "sprints/sprint-3/3-prps/PRP-16-knowledge-base-rag.md"
+  },
+  {
+    "id": "F-065",
+    "name": "Aba Knowledge na pagina do agente + upload dialog",
+    "description": "Nova aba 'Knowledge Base' na pagina /agents/:id. Lista de documentos com nome, tamanho, chunks, status, data. Botao 'Enviar documento' abre dialog com drag-and-drop, preview, barra de progresso. Detalhes do documento em drawer.",
+    "status": "passing",
+    "completed_at": "2026-03-07",
+    "priority": 17,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-064"
+    ],
+    "tests": [
+      "Aba Knowledge visivel na pagina do agente",
+      "Lista exibe documentos com nome, tamanho, chunks, status",
+      "Botao 'Enviar documento' abre dialog",
+      "Upload com drag-and-drop funciona",
+      "Barra de progresso durante upload",
+      "Status processing -> indexed visivel",
+      "Detalhes do documento em drawer"
+    ],
+    "prp_path": "sprints/sprint-3/3-prps/PRP-16-knowledge-base-rag.md"
+  },
+  {
+    "id": "F-066",
+    "name": "Integracao com pipeline de embeddings (reindex)",
+    "description": "Integrar upload/exclusao de knowledge docs com pipeline existente em memory/. Ao salvar documento, chamar reindexAgent(agentId). Pipeline ignora arquivos inalterados. Ao excluir, remover chunks do sqlite-vec e disparar reindex. Atualizar knowledge_docs.chunks e status.",
+    "status": "passing",
+    "completed_at": "2026-03-07",
+    "priority": 18,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-063"
+    ],
+    "tests": [
+      "Documento salvo dispara reindexAgent()",
+      "Pipeline indexa novo documento em sqlite-vec + FTS5",
+      "knowledge_docs.chunks atualizado com contagem real",
+      "knowledge_docs.status atualizado para indexed ou error",
+      "Exclusao remove chunks do sqlite-vec",
+      "Agente consulta knowledge base em conversas via busca hibrida"
+    ],
+    "prp_path": "sprints/sprint-3/3-prps/PRP-16-knowledge-base-rag.md"
+  },
+  {
+    "id": "F-067",
+    "name": "Schema takeover + logica backend",
+    "description": "Adicionar colunas takeover_by e takeover_at na tabela sessions. Quando takeover_by nao eh null, sendMessage() nao aciona runAgent(). Mensagens do operador salvas com metadata { operator: true, operatorSlug }. Mensagens de usuarios externos salvas normalmente.",
+    "status": "passing",
+    "completed_at": "2026-03-07",
+    "priority": 19,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [],
+    "tests": [
+      "Colunas takeover_by e takeover_at adicionadas",
+      "sendMessage() verifica takeover_by antes de acionar runAgent()",
+      "Agente nao responde durante takeover",
+      "Mensagens do operador salvas com metadata operator:true",
+      "Mensagens de usuarios externos salvas normalmente durante takeover"
+    ],
+    "prp_path": "sprints/sprint-3/3-prps/PRP-17-takeover-conversa.md"
+  },
+  {
+    "id": "F-068",
+    "name": "Endpoints takeover/release + adaptacao messages",
+    "description": "Criar endpoints POST /conversations/:sessionId/takeover (seta takeover_by do JWT, emite SSE session:takeover, gera notificacao) e POST /conversations/:sessionId/release (limpa takeover, emite SSE, gera notificacao). Adaptar POST messages para nao acionar agente durante takeover.",
+    "status": "passing",
+    "completed_at": "2026-03-07",
+    "priority": 20,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-067"
+    ],
+    "tests": [
+      "POST /takeover seta takeover_by e takeover_at",
+      "POST /takeover emite evento SSE session:takeover",
+      "POST /takeover gera notificacao takeover_started",
+      "POST /release limpa takeover_by e takeover_at",
+      "POST /release emite evento SSE session:takeover",
+      "POST /release gera notificacao takeover_ended",
+      "POST messages durante takeover nao aciona agente"
+    ],
+    "prp_path": "sprints/sprint-3/3-prps/PRP-17-takeover-conversa.md"
+  },
+  {
+    "id": "F-069",
+    "name": "UI de takeover (banner, botoes, mensagens operador)",
+    "description": "Criar components: takeover-button.tsx (icone UserCheck, dialog confirmacao), takeover-banner.tsx (quem assumiu, duracao, botao devolver), operator-message.tsx (badge visual distinto, icone User, cor --primary). Input funciona normalmente durante takeover.",
+    "status": "passing",
+    "completed_at": "2026-03-07",
+    "priority": 21,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-068"
+    ],
+    "tests": [
+      "Botao 'Assumir conversa' visivel quando takeover_by eh null",
+      "Dialog de confirmacao antes de assumir",
+      "Banner de takeover exibe operador e duracao",
+      "Botao 'Devolver ao agente' com confirmacao",
+      "Mensagens do operador com badge visual distinto",
+      "Input funciona normalmente durante takeover"
+    ],
+    "prp_path": "sprints/sprint-3/3-prps/PRP-17-takeover-conversa.md"
+  },
+  {
+    "id": "F-070",
+    "name": "Indicadores na lista de sessoes + SSE",
+    "description": "Na lista de sessoes (/conversations), badge 'Operador' em sessoes com takeover ativo. Filtro opcional por conversas com operador. Evento SSE session:takeover invalida queries de conversations e atualiza estado em real-time.",
+    "status": "passing",
+    "completed_at": "2026-03-07",
+    "priority": 22,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-069"
+    ],
+    "tests": [
+      "Badge 'Operador' em sessoes com takeover ativo",
+      "Filtro por conversas com operador funciona",
+      "SSE session:takeover invalida queries",
+      "Estado de takeover atualiza em real-time"
+    ],
+    "prp_path": "sprints/sprint-3/3-prps/PRP-17-takeover-conversa.md"
+  },
+  {
+    "id": "F-071",
+    "name": "Templates no filesystem (5 templates iniciais)",
+    "description": "Criar 5 templates em context/.templates/agents/: atendente, vendedor, suporte-tecnico, monitor-sistemas, assistente-pessoal. Cada um com TEMPLATE.md (frontmatter: name, description, icon, category, tags, heartbeat_enabled, active_hours), SOUL.md, CONVERSATION.md, HEARTBEAT.md pre-prontos em pt-BR.",
+    "status": "passing",
+    "priority": 23,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [],
+    "tests": [
+      "5 diretorios de template criados",
+      "Cada template tem TEMPLATE.md com frontmatter valido",
+      "Cada template tem SOUL.md com personalidade em pt-BR",
+      "Cada template tem CONVERSATION.md com instrucoes",
+      "HEARTBEAT.md do monitor-sistemas tem conteudo (heartbeat habilitado)",
+      "Demais HEARTBEAT.md vazios (heartbeat desabilitado)"
+    ],
+    "prp_path": "sprints/sprint-3/3-prps/PRP-18-templates-agente.md",
+    "completed_at": "2026-03-07T00:00:00.000Z"
+  },
+  {
+    "id": "F-072",
+    "name": "Endpoints de templates + API module",
+    "description": "Criar routes/templates.ts com endpoints: GET /templates/agents (listar), GET /templates/agents/:slug (detalhes com preview dos markdowns), POST /agents/from-template (criar agente copiando arquivos do template). No Hub, criar api/templates.ts.",
+    "status": "passing",
+    "completed_at": "2026-03-07",
+    "priority": 24,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-071"
+    ],
+    "tests": [
+      "GET /templates/agents lista 5 templates",
+      "GET /templates/agents/:slug retorna detalhes com preview",
+      "POST /agents/from-template copia arquivos e cria agente",
+      "Agente criado aparece no registry (hot reload)",
+      "api/templates.ts exporta queryOptions e createAgentFromTemplate"
+    ],
+    "prp_path": "sprints/sprint-3/3-prps/PRP-18-templates-agente.md"
+  },
+  {
+    "id": "F-073",
+    "name": "Galeria de templates + rota /agents/new",
+    "description": "Criar rota routes/_authenticated/agents/new.tsx. Grid de cards agrupados por categoria com busca client-side. Opcao 'Criar do zero' no final. Botao 'Novo agente' em /agents navega para /agents/new. Layout grid 3 colunas desktop, 2 mobile.",
+    "status": "passing",
+    "completed_at": "2026-03-07",
+    "priority": 25,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-072"
+    ],
+    "tests": [
+      "Rota /agents/new exibe galeria de templates",
+      "Cards agrupados por categoria",
+      "Busca por nome/descricao funciona",
+      "Opcao 'Criar do zero' disponivel",
+      "Botao 'Novo agente' em /agents navega para /agents/new",
+      "Grid responsivo: 3 colunas desktop, 2 mobile"
+    ],
+    "prp_path": "sprints/sprint-3/3-prps/PRP-18-templates-agente.md"
+  },
+  {
+    "id": "F-074",
+    "name": "Wizard de criacao em 3 steps",
+    "description": "Criar components/agents/create-from-template-wizard.tsx. Step 1: preview do template (SOUL.md renderizado). Step 2: personalizar nome, slug (auto-gerado), descricao, owner. Step 3: confirmar e criar. Stepper visual, React Hook Form + Zod, redirect para pagina do agente apos criacao.",
+    "status": "passing",
+    "completed_at": "2026-03-07",
+    "priority": 26,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-073"
+    ],
+    "tests": [
+      "Step 1 mostra preview do template com SOUL.md renderizado",
+      "Step 2 permite personalizar nome, slug, descricao, owner",
+      "Slug auto-gerado a partir do nome (editavel)",
+      "Step 3 exibe resumo e botao criar",
+      "Criar agente funciona e redireciona para pagina do agente",
+      "Stepper visual indica progresso",
+      "Validacao Zod nos campos obrigatorios"
+    ],
+    "prp_path": "sprints/sprint-3/3-prps/PRP-18-templates-agente.md"
+  }
+]

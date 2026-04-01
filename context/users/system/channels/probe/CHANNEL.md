@@ -1,4 +1,4 @@
----
+    ---
 slug: probe
 owner: system
 type: diagnostic

@@ -1,0 +1,799 @@
+[
+  {
+    "id": "F-200",
+    "name": "Utilidade cn() e dependencias",
+    "description": "Criar src/lib/utils.ts com funcao cn() (clsx + tailwind-merge). Adicionar deps Radix e utilitarias ao package.json (collapsible, dialog, scroll-area, separator, cva, tailwind-merge). Remover export './styles.css' do campo exports do package.json. Validar: cn() exportada, deps declaradas, export styles.css ausente.",
+    "status": "passing",
+    "priority": 1,
+    "agent": "coder",
+    "task": "vibe-code",
+    "completed_at": "2026-03-29T21:10:00Z",
+    "dependencies": [],
+    "tests": [
+      "src/lib/utils.ts existe e exporta funcao cn()",
+      "package.json declara @radix-ui/react-collapsible, @radix-ui/react-dialog, @radix-ui/react-scroll-area, @radix-ui/react-separator, class-variance-authority, tailwind-merge como dependencies",
+      "package.json NAO contem './styles.css' no campo exports"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-7/worktree/sprints/sprint-14/3-prps/PRP-16A-infraestrutura-shadcn-interna.md"
+  },
+  {
+    "id": "F-201",
+    "name": "Componentes shadcn copiados do Hub",
+    "description": "Copiar 7 componentes shadcn de apps/hub/src/components/ui/ para apps/packages/ai-chat/src/ui/: badge.tsx, button.tsx, card.tsx, dialog.tsx, scroll-area.tsx, separator.tsx, table.tsx. Ajustar import de cn de '@/lib/utils' para '../lib/utils'. Componentes sao internos — NAO exportar no src/index.ts.",
+    "status": "passing",
+    "priority": 2,
+    "agent": "coder",
+    "task": "vibe-code",
+    "completed_at": "2026-03-29T21:30:00Z",
+    "dependencies": [
+      "F-200"
+    ],
+    "tests": [
+      "src/ui/badge.tsx existe e importa cn de '../lib/utils'",
+      "src/ui/button.tsx existe e importa cn de '../lib/utils'",
+      "src/ui/card.tsx existe e importa cn de '../lib/utils'",
+      "src/ui/dialog.tsx existe e importa cn de '../lib/utils'",
+      "src/ui/scroll-area.tsx existe e importa cn de '../lib/utils'",
+      "src/ui/separator.tsx existe e importa cn de '../lib/utils'",
+      "src/ui/table.tsx existe e importa cn de '../lib/utils'",
+      "Nenhum componente src/ui/ eh exportado no src/index.ts"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-7/worktree/sprints/sprint-14/3-prps/PRP-16A-infraestrutura-shadcn-interna.md"
+  },
+  {
+    "id": "F-202",
+    "name": "Componentes shadcn criados do zero",
+    "description": "Criar 3 componentes shadcn em src/ui/ que nao existem no Hub: alert.tsx (variantes default/destructive via CVA), collapsible.tsx (re-export Radix primitives), progress.tsx (barra com bg-primary proporcional a value). Todos importam cn de '../lib/utils'. Internos — NAO exportar no src/index.ts.",
+    "status": "passing",
+    "priority": 3,
+    "agent": "coder",
+    "task": "vibe-code",
+    "completed_at": "2026-03-29T21:45:00Z",
+    "dependencies": [
+      "F-200"
+    ],
+    "tests": [
+      "src/ui/alert.tsx existe com variantes 'default' e 'destructive' via CVA",
+      "src/ui/collapsible.tsx existe e re-exporta Collapsible, CollapsibleTrigger, CollapsibleContent do Radix",
+      "src/ui/progress.tsx existe e renderiza barra com bg-primary proporcional ao value",
+      "Todos os 3 componentes importam cn de '../lib/utils'",
+      "Nenhum componente src/ui/ eh exportado no src/index.ts"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-7/worktree/sprints/sprint-14/3-prps/PRP-16A-infraestrutura-shadcn-interna.md"
+  },
+  {
+    "id": "F-228",
+    "name": "ChartRenderer com cores CSS var",
+    "description": "Reescrever ChartRenderer.tsx para usar Card do shadcn como wrapper e cores via var(--chart-1) a var(--chart-5) do host. Manter recharts como dep de comportamento. Eixos/grid usam var(--border), labels usam var(--muted-foreground). Suportar Bar, Line, Pie, Area. Zero classe ai-chat-display-chart, zero cor HSL/hex hardcoded.",
+    "status": "passing",
+    "priority": 4,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-201"
+    ],
+    "tests": [
+      "ChartRenderer usa Card do shadcn como wrapper",
+      "Cores das series usam CHART_COLORS com var(--chart-1) a var(--chart-5)",
+      "Eixos e grid usam stroke='var(--border)'",
+      "Labels usam fill='var(--muted-foreground)'",
+      "Zero classe ai-chat-display-chart no arquivo",
+      "Zero hsl(), oklch(), #hex, rgb() hardcoded no arquivo",
+      "recharts continua como dep (nao removido)"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-7/worktree/sprints/sprint-14/3-prps/PRP-16E-display-complexos-shadcn.md",
+    "completed_at": "2026-03-29T22:00:00Z"
+  },
+  {
+    "id": "F-203",
+    "name": "Chat.tsx com tokens shadcn",
+    "description": "Reescrever Chat.tsx: substituir classe 'ai-chat' por cn('flex flex-col h-full bg-background text-foreground', className). Remover qualquer import de styles.css. Substituir clsx por cn. Manter ChatProvider wrapper e toda a logica intacta. API publica identica.",
+    "status": "passing",
+    "priority": 5,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-200"
+    ],
+    "tests": [
+      "Chat.tsx usa cn() em vez de clsx ou join()",
+      "Chat.tsx usa bg-background text-foreground — zero classe 'ai-chat'",
+      "Zero import de styles.css",
+      "ChatProvider wrapper mantido",
+      "API publica (ChatProps, exports) inalterada"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-7/worktree/sprints/sprint-14/3-prps/PRP-16B-core-chat-shadcn.md",
+    "completed_at": "2026-03-29T22:10:00Z"
+  },
+  {
+    "id": "F-204",
+    "name": "MessageList.tsx com ScrollArea",
+    "description": "Reescrever MessageList.tsx: substituir div.ai-chat-list por ScrollArea do shadcn. Mensagens em flex col gap-3 p-4. Empty state com text-muted-foreground. Manter logica de auto-scroll inteligente (threshold 100px do bottom) e isStreaming na ultima mensagem assistant.",
+    "status": "passing",
+    "priority": 6,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-200",
+      "F-201"
+    ],
+    "tests": [
+      "MessageList usa ScrollArea do shadcn (importa de ../ui/scroll-area)",
+      "Zero classe ai-chat-list no arquivo",
+      "Auto-scroll inteligente mantido",
+      "isStreaming na ultima mensagem assistant mantido",
+      "Empty state usa text-muted-foreground"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-7/worktree/sprints/sprint-14/3-prps/PRP-16B-core-chat-shadcn.md",
+    "completed_at": "2026-03-29T21:15:06Z"
+  },
+  {
+    "id": "F-205",
+    "name": "MessageBubble.tsx com tokens shadcn",
+    "description": "Reescrever MessageBubble.tsx: user bubble com bg-primary text-primary-foreground, rounded-br-sm. Assistant bubble com bg-muted text-foreground, rounded-bl-sm. Ambos max-w-[80%]. Manter iteracao de message.parts via PartRenderer e fallback para message.content via Markdown. Zero classe ai-chat-bubble.",
+    "status": "passing",
+    "priority": 7,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-200"
+    ],
+    "tests": [
+      "User bubble usa bg-primary text-primary-foreground",
+      "Assistant bubble usa bg-muted text-foreground",
+      "Zero classe ai-chat-bubble* no arquivo",
+      "PartRenderer iteracao mantida",
+      "Fallback para Markdown mantido"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-7/worktree/sprints/sprint-14/3-prps/PRP-16B-core-chat-shadcn.md",
+    "completed_at": "2026-03-29T22:20:00Z"
+  },
+  {
+    "id": "F-206",
+    "name": "MessageInput.tsx com Button shadcn",
+    "description": "Reescrever MessageInput.tsx: usar Button do shadcn para send (size icon) e abort (variant destructive). Textarea com bg-transparent, text-foreground, placeholder:text-muted-foreground. Container com border border-input bg-background rounded-xl. Manter auto-expand (1-6 rows), Enter para enviar, Shift+Enter nova linha, focus automatico.",
+    "status": "passing",
+    "priority": 8,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-200",
+      "F-201"
+    ],
+    "tests": [
+      "MessageInput usa Button do shadcn (importa de ../ui/button)",
+      "Botao send usa size='icon'",
+      "Botao abort usa variant='destructive'",
+      "Zero classe ai-chat-input* no arquivo",
+      "Auto-expand (min 1, max 6 rows) funciona",
+      "Enter envia, Shift+Enter nova linha",
+      "Focus automatico ao montar"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-7/worktree/sprints/sprint-14/3-prps/PRP-16B-core-chat-shadcn.md",
+    "completed_at": "2026-03-29T22:30:00Z"
+  },
+  {
+    "id": "F-207",
+    "name": "Markdown.tsx com tokens Tailwind",
+    "description": "Reescrever Markdown.tsx: substituir classes ai-chat-markdown/ai-chat-code-block/ai-chat-inline-code por tokens Tailwind nos components override do react-markdown. Pre: bg-muted border rounded-md. Code inline: bg-muted border rounded-sm font-mono. Links: text-primary underline. Blockquotes: border-l-[3px] border-border text-muted-foreground. Tables: border border-border. Container com selectores [&_p]:mb-3 etc. Manter remark-gfm e rehype-highlight. NAO usar @tailwindcss/typography.",
+    "status": "passing",
+    "priority": 9,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-200"
+    ],
+    "tests": [
+      "Zero classe ai-chat-markdown, ai-chat-code-block, ai-chat-inline-code",
+      "Code blocks usam bg-muted border border-border font-mono",
+      "Inline code usa bg-muted border border-border rounded-sm",
+      "Links usam text-primary underline",
+      "Blockquotes usam border-border text-muted-foreground",
+      "Tables usam border border-border",
+      "remark-gfm e rehype-highlight mantidos",
+      "Zero hsl(), oklch(), #hex, rgb() no arquivo"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-7/worktree/sprints/sprint-14/3-prps/PRP-16B-core-chat-shadcn.md",
+    "completed_at": "2026-03-29T22:40:00Z"
+  },
+  {
+    "id": "F-208",
+    "name": "StreamingIndicator.tsx com animate-pulse",
+    "description": "Reescrever StreamingIndicator.tsx: substituir animacao CSS ai-chat-blink por animate-pulse do Tailwind. Cursor: span com inline-block w-2 h-4 align-text-bottom bg-current animate-pulse. bg-current herda cor do texto pai.",
+    "status": "passing",
+    "priority": 10,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [],
+    "tests": [
+      "StreamingIndicator usa animate-pulse (Tailwind built-in)",
+      "Zero referencia a ai-chat-blink ou animacao CSS customizada",
+      "bg-current herda cor do texto pai"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-7/worktree/sprints/sprint-14/3-prps/PRP-16B-core-chat-shadcn.md",
+    "completed_at": "2026-03-29T21:23:43.316Z"
+  },
+  {
+    "id": "F-209",
+    "name": "ReasoningBlock.tsx com Collapsible shadcn",
+    "description": "Reescrever ReasoningBlock.tsx: usar Collapsible/CollapsibleTrigger/CollapsibleContent do shadcn. Container bg-muted/50 border border-border rounded-md. Trigger com Brain icon, texto 'Raciocinio', chevron. Conteudo com max-h-96 overflow-y-auto text-muted-foreground. Manter logica de expanded state e auto-colapso apos streaming.",
+    "status": "passing",
+    "priority": 11,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-200",
+      "F-202"
+    ],
+    "tests": [
+      "ReasoningBlock importa Collapsible de ../ui/collapsible",
+      "Zero classe ai-chat-reasoning* no arquivo",
+      "Colapse/expande funciona via Collapsible",
+      "Icones Brain, ChevronDown, ChevronRight de lucide-react",
+      "Logica de expanded state e auto-colapso mantida"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-7/worktree/sprints/sprint-14/3-prps/PRP-16C-parts-shadcn.md",
+    "completed_at": "2026-03-29T22:50:00Z"
+  },
+  {
+    "id": "F-210",
+    "name": "ToolActivity.tsx com tokens semanticos",
+    "description": "Reescrever ToolActivity.tsx: container com flex items-center gap-2 rounded-md border bg-muted/50. Icon com text-primary. Tool name com font-medium font-mono. Spinner ativo com Loader2 animate-spin. Check concluido com text-primary (decisao D-010, zero cor hardcoded). Zero classe ai-chat-tool-activity.",
+    "status": "passing",
+    "priority": 12,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-200"
+    ],
+    "tests": [
+      "Zero classe ai-chat-tool-activity* no arquivo",
+      "Spinner usa Loader2 com animate-spin (nao ai-chat-spin)",
+      "Check de conclusao usa text-primary (nao text-green-500)",
+      "Tool icon usa text-primary",
+      "Zero hsl(), oklch(), #hex, rgb() no arquivo"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-7/worktree/sprints/sprint-14/3-prps/PRP-16C-parts-shadcn.md",
+    "completed_at": "2026-03-29T23:00:00Z"
+  },
+  {
+    "id": "F-211",
+    "name": "ToolResult.tsx com Collapsible shadcn",
+    "description": "Reescrever ToolResult.tsx: usar Collapsible/CollapsibleTrigger/CollapsibleContent do shadcn. Container rounded-md border bg-muted/50. Trigger com icon, toolName font-mono, chevron. Erro: text-destructive. Sucesso: text-foreground. Conteudo em pre com max-h-80 font-mono text-xs bg-muted. Manter logica de expanded state e serializacao.",
+    "status": "passing",
+    "priority": 13,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-200",
+      "F-202"
+    ],
+    "tests": [
+      "ToolResult importa Collapsible de ../ui/collapsible",
+      "Zero classe ai-chat-tool-result* no arquivo",
+      "Erro diferenciado com text-destructive",
+      "Sucesso usa text-foreground",
+      "Colapse/expande funciona via Collapsible",
+      "Logica de serializacao mantida"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-7/worktree/sprints/sprint-14/3-prps/PRP-16C-parts-shadcn.md",
+    "completed_at": "2026-03-29T23:15:00Z"
+  },
+  {
+    "id": "F-212",
+    "name": "AlertRenderer.tsx com Alert shadcn",
+    "description": "Reescrever AlertRenderer.tsx: usar Alert/AlertTitle/AlertDescription do shadcn. Mapeamento: error → variant destructive; success/info/warning/default → variant default (decisao D-011, success sem cor extra — icone CheckCircle comunica semantica). Zero classe ai-chat-display-alert.",
+    "status": "passing",
+    "completed_at": "2026-03-29T23:30:00Z",
+    "priority": 14,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-200",
+      "F-202"
+    ],
+    "tests": [
+      "AlertRenderer importa Alert de ../ui/alert",
+      "Variante error mapeia para variant='destructive'",
+      "Variante success usa variant='default' (sem cor extra)",
+      "Zero classe ai-chat-display-alert* no arquivo",
+      "Zero hsl(), oklch(), #hex, rgb() no arquivo"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-7/worktree/sprints/sprint-14/3-prps/PRP-16D-display-simples-medios-shadcn.md"
+  },
+  {
+    "id": "F-213",
+    "name": "MetricCardRenderer.tsx com Card shadcn",
+    "description": "Reescrever MetricCardRenderer.tsx: usar Card do shadcn com p-4. Label text-sm text-muted-foreground. Value text-2xl font-bold text-foreground. Unit text-sm text-muted-foreground. TrendIndicator: text-primary (positivo), text-destructive (negativo), text-muted-foreground (neutro). Zero classe ai-chat-display-metric.",
+    "status": "passing",
+    "priority": 15,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-200",
+      "F-201"
+    ],
+    "tests": [
+      "MetricCardRenderer importa Card de ../ui/card",
+      "Zero classe ai-chat-display-metric* no arquivo",
+      "Trend positivo usa text-primary",
+      "Trend negativo usa text-destructive",
+      "Zero hsl(), oklch(), #hex, rgb() no arquivo"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-7/worktree/sprints/sprint-14/3-prps/PRP-16D-display-simples-medios-shadcn.md",
+    "completed_at": "2026-03-29T23:45:00Z"
+  },
+  {
+    "id": "F-214",
+    "name": "FileCardRenderer.tsx com Card e Button shadcn",
+    "description": "Reescrever FileCardRenderer.tsx: usar Card com flex items-center gap-3 p-3. File icon com text-primary h-8 w-8. Nome font-medium truncate. Tipo e tamanho text-xs text-muted-foreground. Download button com Button variant ghost size icon asChild. Zero classe ai-chat-display-file.",
+    "status": "passing",
+    "priority": 16,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-200",
+      "F-201"
+    ],
+    "tests": [
+      "FileCardRenderer importa Card e Button de ../ui/",
+      "Zero classe ai-chat-display-file* no arquivo",
+      "Download button usa Button variant='ghost' size='icon'",
+      "Zero hsl(), oklch(), #hex, rgb() no arquivo"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-7/worktree/sprints/sprint-14/3-prps/PRP-16D-display-simples-medios-shadcn.md",
+    "completed_at": "2026-03-29T23:55:00Z"
+  },
+  {
+    "id": "F-215",
+    "name": "PriceHighlightRenderer.tsx com Card e Badge",
+    "description": "Reescrever PriceHighlightRenderer.tsx: usar Card p-4 + Badge variant destructive para desconto. Preco text-2xl font-bold. Preco original text-sm text-muted-foreground line-through. Zero classe ai-chat-display-price.",
+    "status": "passing",
+    "priority": 17,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-200",
+      "F-201"
+    ],
+    "tests": [
+      "PriceHighlightRenderer importa Card e Badge de ../ui/",
+      "Desconto usa Badge variant='destructive'",
+      "Zero classe ai-chat-display-price* no arquivo",
+      "Zero hsl(), oklch(), #hex, rgb() no arquivo"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-7/worktree/sprints/sprint-14/3-prps/PRP-16D-display-simples-medios-shadcn.md",
+    "completed_at": "2026-03-29T00:10:00Z"
+  },
+  {
+    "id": "F-216",
+    "name": "SourcesListRenderer.tsx com tokens Tailwind",
+    "description": "Reescrever SourcesListRenderer.tsx: lista com space-y-2. Label text-xs font-medium text-muted-foreground uppercase. Items com hover:bg-muted. Titulo text-primary. Snippet text-xs text-muted-foreground line-clamp-2. Zero classe ai-chat-display-sources.",
+    "status": "passing",
+    "priority": 18,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-200"
+    ],
+    "tests": [
+      "Zero classe ai-chat-display-sources* no arquivo",
+      "Titulo das fontes usa text-primary",
+      "Items usam hover:bg-muted",
+      "Zero hsl(), oklch(), #hex, rgb() no arquivo"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-7/worktree/sprints/sprint-14/3-prps/PRP-16D-display-simples-medios-shadcn.md",
+    "completed_at": "2026-03-29T21:41:54.117Z"
+  },
+  {
+    "id": "F-217",
+    "name": "CodeBlockRenderer.tsx com Button shadcn",
+    "description": "Reescrever CodeBlockRenderer.tsx: container rounded-md border bg-muted. Header com language text-xs text-muted-foreground font-mono + Button variant ghost size sm para copy. Pre com p-4 font-mono text-sm. Manter logica de copy-to-clipboard com feedback visual (Check/Copy icons). Zero classe ai-chat-display-code.",
+    "status": "passing",
+    "priority": 19,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-200",
+      "F-201"
+    ],
+    "tests": [
+      "CodeBlockRenderer importa Button de ../ui/button",
+      "Zero classe ai-chat-display-code* no arquivo",
+      "Copy-to-clipboard funciona com feedback visual",
+      "Zero hsl(), oklch(), #hex, rgb() no arquivo"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-7/worktree/sprints/sprint-14/3-prps/PRP-16D-display-simples-medios-shadcn.md",
+    "completed_at": "2026-03-29T21:43:38Z"
+  },
+  {
+    "id": "F-218",
+    "name": "LinkPreviewRenderer.tsx com Card shadcn",
+    "description": "Reescrever LinkPreviewRenderer.tsx: usar Card com overflow-hidden hover:bg-muted/50. Imagem em aspect-video object-cover. Titulo font-medium text-foreground. Descricao text-xs text-muted-foreground line-clamp-2. Hostname text-xs text-muted-foreground. Zero classe ai-chat-display-link-preview.",
+    "status": "passing",
+    "priority": 20,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-200",
+      "F-201"
+    ],
+    "tests": [
+      "LinkPreviewRenderer importa Card de ../ui/card",
+      "Zero classe ai-chat-display-link-preview* no arquivo",
+      "Hover usa bg-muted/50 transition-colors",
+      "Zero hsl(), oklch(), #hex, rgb() no arquivo"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-7/worktree/sprints/sprint-14/3-prps/PRP-16D-display-simples-medios-shadcn.md",
+    "completed_at": "2026-03-29T00:40:00Z"
+  },
+  {
+    "id": "F-219",
+    "name": "ChoiceButtonsRenderer.tsx com Button e Card",
+    "description": "Reescrever ChoiceButtonsRenderer.tsx: layout de botoes usa Button variant outline size sm. Layout de cards (quando choices tem description) usa Card com p-3 hover:bg-muted/50. Zero classe ai-chat-display-choice.",
+    "status": "passing",
+    "priority": 21,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-200",
+      "F-201"
+    ],
+    "tests": [
+      "ChoiceButtonsRenderer importa Button e Card de ../ui/",
+      "Botoes usam variant='outline' size='sm'",
+      "Cards com descricao usam hover:bg-muted/50",
+      "Zero classe ai-chat-display-choice* no arquivo",
+      "Zero hsl(), oklch(), #hex, rgb() no arquivo"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-7/worktree/sprints/sprint-14/3-prps/PRP-16D-display-simples-medios-shadcn.md",
+    "completed_at": "2026-03-29T01:00:00Z"
+  },
+  {
+    "id": "F-220",
+    "name": "ComparisonTableRenderer.tsx com Table e ScrollArea",
+    "description": "Reescrever ComparisonTableRenderer.tsx: usar Table/TableHeader/TableBody/TableRow/TableHead/TableCell + ScrollArea do shadcn. Headers font-semibold text-center. Feature labels font-medium. Zero classe ai-chat-display-comparison.",
+    "status": "passing",
+    "priority": 22,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-200",
+      "F-201"
+    ],
+    "tests": [
+      "ComparisonTableRenderer importa Table e ScrollArea de ../ui/",
+      "Zero classe ai-chat-display-comparison* no arquivo",
+      "Headers usam TableHead com font-semibold",
+      "Zero hsl(), oklch(), #hex, rgb() no arquivo"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-7/worktree/sprints/sprint-14/3-prps/PRP-16D-display-simples-medios-shadcn.md",
+    "completed_at": "2026-03-29T01:10:00Z"
+  },
+  {
+    "id": "F-221",
+    "name": "SpreadsheetRenderer.tsx com Table e ScrollArea",
+    "description": "Reescrever SpreadsheetRenderer.tsx: mesmo padrao do ComparisonTable — Table + ScrollArea do shadcn. Headers em TableHead, celulas em TableCell. Zero classe ai-chat-display-spreadsheet.",
+    "status": "passing",
+    "priority": 23,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-200",
+      "F-201"
+    ],
+    "tests": [
+      "SpreadsheetRenderer importa Table e ScrollArea de ../ui/",
+      "Zero classe ai-chat-display-spreadsheet* no arquivo",
+      "Zero hsl(), oklch(), #hex, rgb() no arquivo"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-7/worktree/sprints/sprint-14/3-prps/PRP-16D-display-simples-medios-shadcn.md",
+    "completed_at": "2026-03-29T02:30:00Z"
+  },
+  {
+    "id": "F-222",
+    "name": "StepTimelineRenderer.tsx com Badge e tokens",
+    "description": "Reescrever StepTimelineRenderer.tsx: circulo de step com bg-primary (completed), bg-primary/20 border-primary (active), bg-muted (pending). Linha conectora w-px bg-border. Titulo com text-foreground/text-primary/text-muted-foreground por status. Badge variant secondary para badges. Zero classe ai-chat-display-timeline.",
+    "status": "passing",
+    "completed_at": "2026-03-29T02:45:00Z",
+    "priority": 24,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-200",
+      "F-201"
+    ],
+    "tests": [
+      "StepTimelineRenderer importa Badge de ../ui/badge",
+      "Step completed usa bg-primary text-primary-foreground",
+      "Step active usa bg-primary/20 border-primary",
+      "Step pending usa bg-muted text-muted-foreground",
+      "Zero classe ai-chat-display-timeline* no arquivo",
+      "Zero hsl(), oklch(), #hex, rgb() no arquivo"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-7/worktree/sprints/sprint-14/3-prps/PRP-16D-display-simples-medios-shadcn.md"
+  },
+  {
+    "id": "F-223",
+    "name": "ProgressStepsRenderer.tsx com Progress e Badge",
+    "description": "Reescrever ProgressStepsRenderer.tsx: usar Progress do shadcn interno para barra + Badge. Titulo font-medium text-foreground. Contador text-muted-foreground. Steps com Check (completed, text-primary) ou Circle (pending, text-muted-foreground). Zero classe ai-chat-display-progress.",
+    "status": "passing",
+    "priority": 25,
+    "agent": "coder",
+    "task": "vibe-code",
+    "completed_at": "2026-03-29T23:55:00Z",
+    "dependencies": [
+      "F-200",
+      "F-201",
+      "F-202"
+    ],
+    "tests": [
+      "ProgressStepsRenderer importa Progress de ../ui/progress",
+      "Step completed usa Check com text-primary",
+      "Step pending usa Circle com text-muted-foreground",
+      "Zero classe ai-chat-display-progress* no arquivo",
+      "Zero hsl(), oklch(), #hex, rgb() no arquivo"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-7/worktree/sprints/sprint-14/3-prps/PRP-16D-display-simples-medios-shadcn.md"
+  },
+  {
+    "id": "F-224",
+    "name": "MapViewRenderer.tsx com Card e Separator",
+    "description": "Reescrever MapViewRenderer.tsx: usar Card com overflow-hidden. Area de mapa em aspect-video bg-muted text-muted-foreground com MapPin icon. Separator entre mapa e lista de locations. Locations com MapPin text-primary, nome font-medium, endereco text-xs text-muted-foreground. Zero classe ai-chat-display-map.",
+    "status": "passing",
+    "priority": 26,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-200",
+      "F-201"
+    ],
+    "tests": [
+      "MapViewRenderer importa Card e Separator de ../ui/",
+      "Zero classe ai-chat-display-map* no arquivo",
+      "MapPin usa text-primary",
+      "Zero hsl(), oklch(), #hex, rgb() no arquivo"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-7/worktree/sprints/sprint-14/3-prps/PRP-16D-display-simples-medios-shadcn.md",
+    "completed_at": "2026-03-29T03:00:00.000Z"
+  },
+  {
+    "id": "F-225",
+    "name": "DataTableRenderer.tsx com Table e sort",
+    "description": "Reescrever DataTableRenderer.tsx: usar Table + ScrollArea + Button + Badge do shadcn. Headers sortable com Button variant ghost. Celulas tipadas: money (Intl.NumberFormat BRL), image (rounded-sm), link (text-primary underline), badge (Badge variant secondary), default (texto). Manter logica de sort (state + comparador). Zero classe ai-chat-display-datatable.",
+    "status": "passing",
+    "priority": 27,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-200",
+      "F-201"
+    ],
+    "tests": [
+      "DataTableRenderer importa Table, ScrollArea, Button, Badge de ../ui/",
+      "Sort headers usam Button variant='ghost'",
+      "Celula money formata com Intl.NumberFormat BRL",
+      "Celula badge usa Badge variant='secondary'",
+      "Celula link usa text-primary underline",
+      "Zero classe ai-chat-display-datatable* no arquivo",
+      "Logica de sort mantida"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-7/worktree/sprints/sprint-14/3-prps/PRP-16E-display-complexos-shadcn.md",
+    "completed_at": "2026-03-29T03:15:00.000Z"
+  },
+  {
+    "id": "F-226",
+    "name": "CarouselRenderer.tsx com embla + shadcn",
+    "description": "Reescrever CarouselRenderer.tsx: manter embla-carousel-react para scroll. Slides em Card do shadcn. Arrows com Button variant outline size icon rounded-full. Dots: bg-primary (ativo) / bg-muted (inativo). Badges dentro de slides com Badge do shadcn. Zero classe ai-chat-display-carousel.",
+    "status": "passing",
+    "priority": 28,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-200",
+      "F-201"
+    ],
+    "tests": [
+      "CarouselRenderer importa Card, Button, Badge de ../ui/",
+      "embla-carousel-react mantido para logica de scroll",
+      "Arrows usam Button variant='outline' size='icon'",
+      "Dot ativo usa bg-primary, inativo usa bg-muted",
+      "Zero classe ai-chat-display-carousel* no arquivo",
+      "Zero hsl(), oklch(), #hex, rgb() no arquivo"
+    ],
+    "completed_at": "2026-03-29T03:30:00Z",
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-7/worktree/sprints/sprint-14/3-prps/PRP-16E-display-complexos-shadcn.md"
+  },
+  {
+    "id": "F-227",
+    "name": "ProductCardRenderer.tsx com Card e Badge",
+    "description": "Reescrever ProductCardRenderer.tsx: usar Card + CardContent + CardTitle + Badge + Button do shadcn. Imagem aspect-video object-cover. Desconto Badge variant destructive absolute top-2 right-2. Preco text-lg font-bold. Original line-through text-muted-foreground. CTA Button w-full size sm. Zero classe ai-chat-display-product.",
+    "status": "passing",
+    "priority": 29,
+    "agent": "coder",
+    "task": "vibe-code",
+    "completed_at": "2026-03-29T23:58:00Z",
+    "dependencies": [
+      "F-200",
+      "F-201"
+    ],
+    "tests": [
+      "ProductCardRenderer importa Card, Badge, Button de ../ui/",
+      "Desconto usa Badge variant='destructive'",
+      "CTA usa Button w-full size='sm'",
+      "Zero classe ai-chat-display-product* no arquivo",
+      "Zero hsl(), oklch(), #hex, rgb() no arquivo"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-7/worktree/sprints/sprint-14/3-prps/PRP-16E-display-complexos-shadcn.md"
+  },
+  {
+    "id": "F-229",
+    "name": "GalleryRenderer.tsx com Dialog lightbox",
+    "description": "Reescrever GalleryRenderer.tsx: grid grid-cols-2 md:grid-cols-3 gap-2 para thumbnails. Dialog do shadcn para lightbox. Hover overlay bg-background/50 com ZoomIn icon. DialogContent max-w-4xl p-0 bg-background/95. Captions text-sm text-muted-foreground. Zero classe ai-chat-display-gallery.",
+    "status": "passing",
+    "priority": 30,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-200",
+      "F-201"
+    ],
+    "tests": [
+      "GalleryRenderer importa Dialog de ../ui/dialog",
+      "Grid usa grid-cols-2 md:grid-cols-3",
+      "Lightbox usa DialogContent com max-w-4xl",
+      "Hover overlay usa bg-background/50",
+      "Zero classe ai-chat-display-gallery* no arquivo",
+      "Zero hsl(), oklch(), #hex, rgb() no arquivo"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-7/worktree/sprints/sprint-14/3-prps/PRP-16E-display-complexos-shadcn.md",
+    "completed_at": "2026-03-29T23:59:00Z"
+  },
+  {
+    "id": "F-230",
+    "name": "ImageViewerRenderer.tsx com Dialog e zoom",
+    "description": "Reescrever ImageViewerRenderer.tsx: Dialog do shadcn para lightbox. Hover overlay bg-background/50 com ZoomIn. Toolbar com Button variant ghost size icon para zoom in/out/reset. Zoom range 0.25x-4x com state interno. Indicator text-xs text-muted-foreground. Zero classe ai-chat-display-image-viewer.",
+    "status": "passing",
+    "priority": 31,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-200",
+      "F-201"
+    ],
+    "tests": [
+      "ImageViewerRenderer importa Dialog e Button de ../ui/",
+      "Zoom controls usam Button variant='ghost' size='icon'",
+      "Zoom range 0.25x-4x funciona",
+      "Zoom indicator mostra percentual em text-muted-foreground",
+      "Zero classe ai-chat-display-image-viewer* no arquivo",
+      "Zero hsl(), oklch(), #hex, rgb() no arquivo"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-7/worktree/sprints/sprint-14/3-prps/PRP-16E-display-complexos-shadcn.md",
+    "completed_at": "2026-03-29T23:59:30Z"
+  },
+  {
+    "id": "F-231",
+    "name": "Deletar styles.css",
+    "description": "Deletar apps/packages/ai-chat/src/styles.css (2345 linhas). Conteudo eliminado: 77 CSS variables --ai-chat-*, classes BEM .ai-chat-*, bloco .dark proprio, 3 animacoes customizadas. Verificar que nenhum .tsx ainda importa styles.css antes de deletar.",
+    "status": "passing",
+    "priority": 32,
+    "completed_at": "2026-03-29T23:59:45Z",
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-203",
+      "F-204",
+      "F-205",
+      "F-206",
+      "F-207",
+      "F-208",
+      "F-209",
+      "F-210",
+      "F-211",
+      "F-212",
+      "F-213",
+      "F-214",
+      "F-215",
+      "F-216",
+      "F-217",
+      "F-218",
+      "F-219",
+      "F-220",
+      "F-221",
+      "F-222",
+      "F-223",
+      "F-224",
+      "F-225",
+      "F-226",
+      "F-227",
+      "F-228",
+      "F-229",
+      "F-230"
+    ],
+    "tests": [
+      "src/styles.css nao existe (deletado)",
+      "Zero import de styles.css em qualquer arquivo .tsx do pacote",
+      "Nenhum arquivo .css existe no pacote"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-7/worktree/sprints/sprint-14/3-prps/PRP-16F-limpeza-integracao-shadcn.md"
+  },
+  {
+    "id": "F-232",
+    "name": "Limpar imports orfaos e validar package.json",
+    "description": "Buscar e remover qualquer import residual de styles.css em .tsx do pacote. Validar que exports do package.json contem apenas '.': './src/index.ts' (sem './styles.css'). Verificar que nenhum componente src/ui/ eh exportado no src/index.ts.",
+    "status": "passing",
+    "completed_at": "2026-03-29T23:59:55Z",
+    "priority": 33,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-231"
+    ],
+    "tests": [
+      "Zero import de styles.css em qualquer arquivo do pacote",
+      "package.json exports NAO contem './styles.css'",
+      "Nenhum componente src/ui/ exportado no src/index.ts"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-7/worktree/sprints/sprint-14/3-prps/PRP-16F-limpeza-integracao-shadcn.md"
+  },
+  {
+    "id": "F-233",
+    "name": "Atualizar Hub — remover import stylesheet",
+    "description": "Encontrar e remover import '@agentic-backbone/ai-chat/styles.css' no Hub (provavelmente em apps/hub/src/main.tsx). Nenhuma outra alteracao no Hub. O <Chat /> continua funcionando com mesmas props — agora herda tema shadcn automaticamente.",
+    "status": "passing",
+    "priority": 34,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-231"
+    ],
+    "tests": [
+      "Zero import de '@agentic-backbone/ai-chat/styles.css' em qualquer arquivo do Hub",
+      "Nenhuma outra alteracao no Hub alem da remocao do import"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-7/worktree/sprints/sprint-14/3-prps/PRP-16F-limpeza-integracao-shadcn.md",
+    "completed_at": "2026-03-29T03:45:00.000Z"
+  },
+  {
+    "id": "F-234",
+    "name": "Validacao zero cor hardcoded",
+    "description": "Executar grep nos arquivos .tsx do pacote ai-chat para garantir zero cor hardcoded. Buscar hsl(, oklch(, rgb( e #hex literals. Resultados permitidos: var(--chart-1) a var(--chart-5) e var(--border)/var(--muted-foreground) no ChartRenderer. Qualquer outro resultado deve ser corrigido.",
+    "status": "passing",
+    "priority": 35,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-231"
+    ],
+    "tests": [
+      "grep por 'hsl(' retorna zero resultados em .tsx do pacote",
+      "grep por 'oklch(' retorna zero resultados em .tsx do pacote",
+      "grep por 'rgb(' retorna zero resultados em .tsx do pacote",
+      "grep por hex colors (#[0-9a-fA-F]{3,8}) retorna zero resultados em .tsx do pacote (exceto comments/strings permitidos)"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-7/worktree/sprints/sprint-14/3-prps/PRP-16F-limpeza-integracao-shadcn.md",
+    "completed_at": "2026-03-29T04:00:00Z"
+  },
+  {
+    "id": "F-235",
+    "name": "CHANGELOG e build final",
+    "description": "Criar ou atualizar apps/packages/ai-chat/CHANGELOG.md com entrada 0.2.0 documentando: reescrita visual shadcn/ui, eliminacao styles.css, zero cor hardcoded, remocao export ./styles.css, novas deps Radix, API publica inalterada. Executar npm run build e validar que compila sem erro.",
+    "status": "passing",
+    "priority": 36,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-232",
+      "F-233",
+      "F-234"
+    ],
+    "tests": [
+      "CHANGELOG.md existe com entrada 0.2.0",
+      "Entrada documenta reescrita shadcn, remocao styles.css, zero cor hardcoded",
+      "npm run build compila sem erro"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-7/worktree/sprints/sprint-14/3-prps/PRP-16F-limpeza-integracao-shadcn.md",
+    "completed_at": "2026-03-29T19:30:00Z"
+  }
+]

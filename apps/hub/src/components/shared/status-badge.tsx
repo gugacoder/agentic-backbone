@@ -1,49 +1,22 @@
 import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
 
-type StatusType =
-  | "ok"
-  | "ok-token"
-  | "sent"
-  | "skipped"
-  | "failed"
-  | "active"
-  | "blocked"
-  | "pending"
-  | "completed"
-  | "running"
-  | "connected"
-  | "disconnected"
-  | "disabled"
-  | "timeout";
-
-const statusStyles: Record<StatusType, string> = {
-  ok: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400",
-  "ok-token": "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400",
-  sent: "bg-blue-500/15 text-blue-700 dark:text-blue-400",
-  skipped: "bg-amber-500/15 text-amber-700 dark:text-amber-400",
-  failed: "bg-red-500/15 text-red-700 dark:text-red-400",
-  active: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400",
-  blocked: "bg-orange-500/15 text-orange-700 dark:text-orange-400",
-  pending: "bg-muted text-muted-foreground",
-  completed: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400",
-  running: "bg-blue-500/15 text-blue-700 dark:text-blue-400",
-  connected: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400",
-  disconnected: "bg-red-500/15 text-red-700 dark:text-red-400",
-  disabled: "bg-muted text-muted-foreground",
-  timeout: "bg-amber-500/15 text-amber-700 dark:text-amber-400",
-};
+const statusConfig = {
+  active: { label: "Ativo", className: "bg-green-500/15 text-green-700 dark:text-green-400 border-green-500/20" },
+  inactive: { label: "Inativo", className: "bg-muted text-muted-foreground border-border" },
+  error: { label: "Erro", className: "bg-destructive/15 text-destructive border-destructive/20" },
+  warning: { label: "Alerta", className: "bg-yellow-500/15 text-yellow-700 dark:text-yellow-400 border-yellow-500/20" },
+} as const;
 
 interface StatusBadgeProps {
-  status: string;
-  className?: string;
+  status: keyof typeof statusConfig;
+  label?: string;
 }
 
-export function StatusBadge({ status, className }: StatusBadgeProps) {
-  const style = statusStyles[status as StatusType] ?? "bg-muted text-muted-foreground";
+export function StatusBadge({ status, label }: StatusBadgeProps) {
+  const config = statusConfig[status];
   return (
-    <Badge variant="secondary" className={cn("font-medium", style, className)}>
-      {status}
+    <Badge variant="outline" className={config.className}>
+      {label ?? config.label}
     </Badge>
   );
 }

@@ -3,6 +3,7 @@ import { randomUUID } from "node:crypto";
 import pidusage from "pidusage";
 import { eventBus } from "../events/index.js";
 import { triggerManualHeartbeat } from "../heartbeat/index.js";
+import { emitNotification } from "../notifications/index.js";
 import type { JobSession, SubmitJobInput, JobSummary, JobStatus } from "./types.js";
 
 // --- Constants ---
@@ -73,6 +74,26 @@ function finalizeJob(session: JobSession, code: number | null, signal: string | 
     durationMs: session.durationMs,
     tail: session.tail,
   });
+
+  if (session.status === "failed" || session.status === "timeout") {
+    emitNotification({
+      type: "job_failed",
+      severity: "error",
+      agentId: session.agentId,
+      title: `Job falhou: ${session.command.slice(0, 80)}`,
+      body: `Exit code: ${code}, Signal: ${signal ?? "none"}, Duracao: ${session.durationMs}ms`,
+      metadata: { jobId: session.id, exitCode: code, durationMs: session.durationMs },
+    });
+  } else if (session.status === "completed") {
+    emitNotification({
+      type: "job_completed",
+      severity: "info",
+      agentId: session.agentId,
+      title: `Job concluido: ${session.command.slice(0, 80)}`,
+      body: `Duracao: ${session.durationMs}ms`,
+      metadata: { jobId: session.id, durationMs: session.durationMs },
+    });
+  }
 
   // Wake the agent
   triggerManualHeartbeat(session.agentId).catch((err) =>
@@ -185,6 +206,10 @@ export function submitJob(input: SubmitJobInput): JobSummary {
 export function getJob(jobId: string): JobSummary | null {
   const session = runningJobs.get(jobId) ?? finishedJobs.get(jobId);
   return session ? toSummary(session) : null;
+}
+
+export function getJobSession(jobId: string): JobSession | null {
+  return runningJobs.get(jobId) ?? finishedJobs.get(jobId) ?? null;
 }
 
 export function listJobs(agentId?: string): JobSummary[] {

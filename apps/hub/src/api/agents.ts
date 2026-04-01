@@ -1,134 +1,205 @@
-import { queryOptions, useMutation, useQueryClient } from "@tanstack/react-query";
-import { api } from "@/lib/api";
-import type { Agent, HeartbeatLogEntry, HeartbeatStats } from "./types";
+import { queryOptions } from "@tanstack/react-query";
+import { request } from "@/lib/api";
 
-export const agentsQuery = queryOptions({
-  queryKey: ["agents"],
-  queryFn: () => api.get<Agent[]>("/agents"),
-});
+export interface Agent {
+  id: string;
+  slug: string;
+  owner: string;
+  enabled: boolean;
+  description?: string;
+  heartbeatEnabled?: boolean;
+  role?: string;
+  members?: string[];
+  adapters?: string[];
+}
 
-export function agentQuery(id: string) {
+export interface AgentStats {
+  totalExecutions: number;
+  countByStatus: Record<string, number>;
+  totalCostUsd: number;
+  avgDurationMs: number;
+  lastTimestamp?: string;
+}
+
+export function agentsQueryOptions(scope?: "all") {
+  return queryOptions({
+    queryKey: scope ? ["agents", "scope", scope] : ["agents"],
+    queryFn: () => request<Agent[]>(scope ? `/agents?scope=${scope}` : "/agents"),
+  });
+}
+
+export function agentQueryOptions(id: string) {
   return queryOptions({
     queryKey: ["agents", id],
-    queryFn: () => api.get<Agent>(`/agents/${id}`),
-    enabled: !!id,
+    queryFn: () => request<Agent>(`/agents/${id}`),
   });
 }
 
-export function agentFilesQuery(id: string) {
+export function agentStatsQueryOptions(id: string) {
   return queryOptions({
-    queryKey: ["agents", id, "files"],
-    queryFn: () => api.get<string[]>(`/agents/${id}/files`),
-    enabled: !!id,
+    queryKey: ["agents", id, "stats"],
+    queryFn: () => request<AgentStats>(`/agents/${id}/heartbeat/stats`),
   });
 }
 
-export function agentFileQuery(id: string, filename: string) {
+export interface HeartbeatLogEntry {
+  id: string;
+  status: "ok" | "skipped" | "error";
+  durationMs: number;
+  preview?: string;
+  createdAt: string;
+}
+
+export function agentHeartbeatHistoryQueryOptions(id: string) {
+  return queryOptions({
+    queryKey: ["agents", id, "heartbeat-history"],
+    queryFn: () => request<{ rows: HeartbeatLogEntry[]; total: number }>(`/agents/${id}/heartbeat/history`).then((r) => r.rows),
+  });
+}
+
+export async function toggleAgentEnabled(id: string, enabled: boolean): Promise<void> {
+  await request(`/agents/${id}/heartbeat/toggle`, {
+    method: "POST",
+    body: JSON.stringify({ enabled }),
+  });
+}
+
+export async function triggerHeartbeat(id: string): Promise<void> {
+  await request(`/agents/${id}/heartbeat/trigger`, { method: "POST" });
+}
+
+export interface CreateAgentPayload {
+  slug: string;
+  owner: string;
+  description?: string;
+  enabled?: boolean;
+}
+
+export async function createAgent(payload: CreateAgentPayload): Promise<Agent> {
+  return request<Agent>("/agents", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export interface AgentFileResponse {
+  filename: string;
+  content: string;
+}
+
+export function agentFileQueryOptions(id: string, filename: string) {
   return queryOptions({
     queryKey: ["agents", id, "files", filename],
-    queryFn: () => api.get<{ filename: string; content: string }>(`/agents/${id}/files/${filename}`),
-    enabled: !!id && !!filename,
+    queryFn: () => request<AgentFileResponse>(`/agents/${id}/files/${filename}`),
+    retry: false,
   });
 }
 
-export function agentHeartbeatQuery(id: string) {
-  return queryOptions({
-    queryKey: ["agents", id, "heartbeat"],
-    queryFn: () => api.get<Record<string, unknown>>(`/agents/${id}/heartbeat`),
-    enabled: !!id,
-    refetchInterval: 10_000,
+export async function saveAgentFile(
+  id: string,
+  filename: string,
+  content: string,
+  changeNote?: string,
+): Promise<void> {
+  await request(`/agents/${id}/files/${filename}`, {
+    method: "PUT",
+    body: JSON.stringify({ content, change_note: changeNote }),
   });
 }
 
-export function heartbeatHistoryQuery(id: string, limit = 50, offset = 0) {
-  return queryOptions({
-    queryKey: ["agents", id, "heartbeat", "history", limit, offset],
-    queryFn: () =>
-      api.get<{ rows: HeartbeatLogEntry[]; total: number }>(
-        `/agents/${id}/heartbeat/history?limit=${limit}&offset=${offset}`
-      ),
-    enabled: !!id,
-    refetchInterval: 30_000,
+export interface HeartbeatConfigData {
+  enabled: boolean;
+  intervalMs: number;
+  activeHoursStart?: string;
+  activeHoursEnd?: string;
+  activeHoursDays?: number[];
+}
+
+export function extractHeartbeatConfig(agent: Agent & { heartbeat?: { enabled: boolean; intervalMs: number }; metadata?: Record<string, unknown> }): HeartbeatConfigData {
+  return {
+    enabled: agent.heartbeat?.enabled ?? agent.heartbeatEnabled ?? false,
+    intervalMs: agent.heartbeat?.intervalMs ?? 30000,
+    activeHoursStart: (agent.metadata?.["active-hours-start"] as string) ?? undefined,
+    activeHoursEnd: (agent.metadata?.["active-hours-end"] as string) ?? undefined,
+    activeHoursDays: (agent.metadata?.["active-hours-days"] as number[]) ?? undefined,
+  };
+}
+
+export async function duplicateAgent(id: string): Promise<Agent> {
+  return request<Agent>(`/agents/${id}/duplicate`, { method: "POST" });
+}
+
+export async function deleteAgent(id: string): Promise<void> {
+  await request(`/agents/${id}`, { method: "DELETE" });
+}
+
+export async function updateAgentAdapters(id: string, adapters: string[]): Promise<Agent> {
+  return request<Agent>(`/agents/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify({ adapters }),
   });
 }
 
-export function heartbeatStatsQuery(id: string) {
-  return queryOptions({
-    queryKey: ["agents", id, "heartbeat", "stats"],
-    queryFn: () => api.get<HeartbeatStats>(`/agents/${id}/heartbeat/stats`),
-    enabled: !!id,
-    refetchInterval: 30_000,
-  });
+export interface MemoryStatus {
+  fileCount: number;
+  chunkCount: number;
+  lastSync?: string;
 }
 
-export function agentMemoryStatusQuery(id: string) {
+export function agentMemoryStatusQueryOptions(id: string) {
   return queryOptions({
     queryKey: ["agents", id, "memory", "status"],
-    queryFn: () => api.get<{ fileCount: number; chunkCount: number }>(`/agents/${id}/memory/status`),
-    enabled: !!id,
+    queryFn: () => request<MemoryStatus>(`/agents/${id}/memory/status`),
   });
 }
 
-export function useCreateAgent() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (data: Partial<Agent> & { owner: string; slug: string }) =>
-      api.post<Agent>("/agents", data),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["agents"] }),
+export interface MemorySearchResult {
+  path: string;
+  snippet: string;
+  score: number;
+  source: "vector" | "text";
+}
+
+export async function searchAgentMemory(
+  id: string,
+  query: string,
+  limit = 10,
+): Promise<MemorySearchResult[]> {
+  return request<MemorySearchResult[]>(`/agents/${id}/memory/search`, {
+    method: "POST",
+    body: JSON.stringify({ query, limit }),
   });
 }
 
-export function useUpdateAgent() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: ({ id, ...data }: { id: string } & Record<string, unknown>) =>
-      api.patch<Agent>(`/agents/${id}`, data),
-    onSuccess: (_, vars) => {
-      qc.invalidateQueries({ queryKey: ["agents"] });
-      qc.invalidateQueries({ queryKey: ["agents", vars.id] });
-    },
+export async function syncAgentMemory(id: string): Promise<void> {
+  await request(`/agents/${id}/memory/sync`, { method: "POST" });
+}
+
+export function agentFilesQueryOptions(id: string) {
+  return queryOptions({
+    queryKey: ["agents", id, "files"],
+    queryFn: () => request<string[]>(`/agents/${id}/files`),
   });
 }
 
-export function useDeleteAgent() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (id: string) => api.delete(`/agents/${id}`),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["agents"] }),
-  });
+export async function resetAgentMemory(id: string): Promise<void> {
+  await request(`/agents/${id}/memory/reset`, { method: "POST" });
 }
 
-export function useToggleAgent() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: ({ id, enabled }: { id: string; enabled: boolean }) =>
-      api.patch<Agent>(`/agents/${id}`, { enabled }),
-    onSuccess: (_, vars) => {
-      qc.invalidateQueries({ queryKey: ["agents"] });
-      qc.invalidateQueries({ queryKey: ["agents", vars.id] });
-    },
-  });
-}
-
-export function useToggleHeartbeat() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: ({ id, enabled }: { id: string; enabled: boolean }) =>
-      api.post(`/agents/${id}/heartbeat/toggle`, { enabled }),
-    onSuccess: (_, vars) => {
-      qc.invalidateQueries({ queryKey: ["agents", vars.id, "heartbeat"] });
-      qc.invalidateQueries({ queryKey: ["agents"] });
-    },
-  });
-}
-
-export function useSaveAgentFile() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: ({ id, filename, content }: { id: string; filename: string; content: string }) =>
-      api.put(`/agents/${id}/files/${filename}`, { content }),
-    onSuccess: (_, vars) => {
-      qc.invalidateQueries({ queryKey: ["agents", vars.id, "files"] });
-    },
+export async function saveHeartbeatConfig(
+  id: string,
+  config: HeartbeatConfigData,
+): Promise<Agent> {
+  return request<Agent>(`/agents/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify({
+      heartbeatEnabled: config.enabled,
+      heartbeatInterval: config.intervalMs,
+      metadata: {
+        "active-hours-start": config.activeHoursStart ?? null,
+        "active-hours-end": config.activeHoursEnd ?? null,
+        "active-hours-days": config.activeHoursDays ?? null,
+      },
+    }),
   });
 }

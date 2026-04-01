@@ -1,22 +1,54 @@
 import { Hono } from "hono";
 import { verify } from "hono/jwt";
+import { validateApiKey } from "../auth/api-keys.js";
 import { authPublicRoutes, authProtectedRoutes } from "./auth.js";
 import { systemRoutes } from "./system.js";
 import { agentRoutes } from "./agents.js";
 import { channelRoutes } from "./channels.js";
 import { skillRoutes } from "./skills.js";
-import { toolRoutes } from "./tools.js";
-import { adapterRoutes } from "./adapters.js";
+import { connectorAdapterRoutes } from "./adapters.js";
 import { conversationRoutes } from "./conversations.js";
 import { userRoutes } from "./users.js";
 import { settingsRoutes } from "./settings.js";
 import { cronRoutes } from "./cron.js";
 import { jobRoutes } from "./jobs.js";
+import { notificationRoutes } from "./notifications.js";
+import { serviceRoutes } from "./services.js";
+import { channelAdapterRoutes } from "./channel-adapters.js";
+import { costRoutes } from "./costs.js";
+import { analyticsRoutes } from "./analytics.js";
+import { traceRoutes } from "./traces.js";
+import { knowledgeRoutes } from "./knowledge.js";
+import { templateRoutes } from "./templates.js";
+import { evaluationRoutes } from "./evaluation.js";
+import { approvalRoutes } from "./approvals.js";
+import { feedbackRoutes } from "./feedback.js";
+import { securityRoutes } from "./security.js";
+import { inboxRoutes } from "./inbox.js";
+import { webhookRoutes } from "./webhooks.js";
+import { lgpdRoutes } from "./lgpd.js";
+import { handoffRoutes } from "./handoffs.js";
+import { quotaRoutes } from "./quotas.js";
+import { versionRoutes } from "./versions.js";
+import { draftRoutes } from "./drafts.js";
+import { ratingRoutes } from "./ratings.js";
+import { workflowRoutes } from "./workflows.js";
+import { mcpRoutes } from "./mcp.js";
+import { emailRoutes } from "./email.js";
+import { routingRoutes } from "./routing.js";
+import { benchmarkRoutes } from "./benchmarks.js";
+import { circuitBreakerRoutes } from "./circuit-breaker.js";
+import { complianceRoutes } from "./compliance.js";
+import { fleetRoutes } from "./fleet.js";
+import { otelRoutes } from "./otel.js";
+import { billingRoutes } from "./billing.js";
+import { transcriptionRoutes } from "./transcriptions.js";
+import { initMcpServerRoutes } from "../mcp-server/index.js";
 import { getHeartbeatStatus } from "../heartbeat/index.js";
 import { listAgents } from "../agents/registry.js";
 import { listChannels } from "../channels/registry.js";
 import { sseHub } from "../events/sse.js";
-import { getModuleHealth } from "../modules/loader.js";
+import { connectorRegistry } from "../connectors/index.js";
 
 export const routes = new Hono();
 
@@ -35,7 +67,7 @@ routes.get("/health", (c) =>
       type: ch.type,
       listeners: sseHub.getClientCount(ch.slug),
     })),
-    modules: getModuleHealth(),
+    connectors: connectorRegistry.healthAll(),
   })
 );
 
@@ -46,6 +78,12 @@ routes.route("/", authPublicRoutes);
 // Hybrid auth: accepts both Laravel JWT (role_id + unidades) and Backbone JWT (role)
 
 routes.use("*", async (c, next) => {
+  // Skip auth for webhook/event callbacks (external services can't send JWT)
+  const path = new URL(c.req.url).pathname;
+  if (path.includes("/webhook")) {
+    return next();
+  }
+
   const secret = process.env.JWT_SECRET!;
 
   // Try Authorization header first
@@ -63,6 +101,19 @@ routes.use("*", async (c, next) => {
 
   if (!token) {
     return c.json({ error: "unauthorized" }, 401);
+  }
+
+  // API key path — prefix sk_ bypasses JWT entirely
+  if (token.startsWith("sk_")) {
+    const apiKey = validateApiKey(token);
+    if (!apiKey) return c.json({ error: "invalid api key" }, 401);
+    c.set("jwtPayload", {
+      sub: apiKey.user,
+      role: apiKey.role,
+      allowedAgents: apiKey.allowedAgents,
+      jwtSource: "api-key",
+    });
+    return next();
   }
 
   try {
@@ -99,10 +150,43 @@ routes.route("/", systemRoutes);
 routes.route("/", agentRoutes);
 routes.route("/", channelRoutes);
 routes.route("/", skillRoutes);
-routes.route("/", toolRoutes);
-routes.route("/", adapterRoutes);
+routes.route("/", connectorAdapterRoutes);
 routes.route("/", conversationRoutes);
 routes.route("/", userRoutes);
 routes.route("/", settingsRoutes);
 routes.route("/", cronRoutes);
 routes.route("/", jobRoutes);
+routes.route("/", notificationRoutes);
+routes.route("/", serviceRoutes);
+routes.route("/", channelAdapterRoutes);
+routes.route("/", costRoutes);
+routes.route("/", analyticsRoutes);
+routes.route("/", traceRoutes);
+routes.route("/", knowledgeRoutes);
+routes.route("/", templateRoutes);
+routes.route("/", evaluationRoutes);
+routes.route("/", approvalRoutes);
+routes.route("/", feedbackRoutes);
+routes.route("/", securityRoutes);
+routes.route("/", inboxRoutes);
+routes.route("/", webhookRoutes);
+routes.route("/", lgpdRoutes);
+routes.route("/", handoffRoutes);
+routes.route("/", quotaRoutes);
+routes.route("/", versionRoutes);
+routes.route("/", draftRoutes);
+routes.route("/", ratingRoutes);
+routes.route("/", workflowRoutes);
+routes.route("/", mcpRoutes);
+routes.route("/", emailRoutes);
+routes.route("/", routingRoutes);
+routes.route("/", benchmarkRoutes);
+routes.route("/", circuitBreakerRoutes);
+routes.route("/", complianceRoutes);
+routes.route("/", fleetRoutes);
+routes.route("/", otelRoutes);
+routes.route("/", billingRoutes);
+routes.route("/", transcriptionRoutes);
+
+// MCP Server — registers GET /mcp/sse + POST /mcp/message directly on routes
+initMcpServerRoutes(routes);

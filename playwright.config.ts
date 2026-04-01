@@ -1,24 +1,23 @@
-import { defineConfig } from "@playwright/test";
+import { defineConfig, devices } from "@playwright/test";
 
 export default defineConfig({
-  testDir: "./tests/e2e",
-  timeout: 120_000,
-  expect: { timeout: 30_000 },
+  testDir: "./e2e",
   fullyParallel: false,
+  forbidOnly: !!process.env.CI,
   retries: 0,
+  reporter: "list",
+  timeout: 30_000,
+
   use: {
-    headless: true,
-    screenshot: "only-on-failure",
+    baseURL: "http://localhost:6001",
     trace: "on-first-retry",
+    screenshot: "only-on-failure",
   },
+
   projects: [
     {
       name: "hub",
-      testMatch: "hub/**/*.spec.ts",
-      use: {
-        baseURL: "http://localhost:7700",
-        browserName: "chromium",
-      },
+      use: { ...devices["Desktop Chrome"] },
     },
   ],
 });

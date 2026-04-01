@@ -1,0 +1,593 @@
+{
+  "display_metric": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+      "label": { "type": "string" },
+      "value": { "anyOf": [{ "type": "string" }, { "type": "number" }] },
+      "unit": { "type": "string" },
+      "trend": {
+        "type": "object",
+        "properties": {
+          "direction": { "type": "string", "enum": ["up", "down", "neutral"] },
+          "value": { "type": "string" }
+        },
+        "required": ["direction", "value"],
+        "additionalProperties": false
+      },
+      "icon": { "type": "string" }
+    },
+    "required": ["label", "value"],
+    "additionalProperties": false
+  },
+  "display_chart": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+      "type": { "type": "string", "enum": ["bar", "line", "pie", "area", "donut"] },
+      "title": { "type": "string" },
+      "data": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "label": { "type": "string" },
+            "value": { "type": "number" },
+            "color": { "type": "string" }
+          },
+          "required": ["label", "value"],
+          "additionalProperties": false
+        }
+      },
+      "format": {
+        "type": "object",
+        "properties": {
+          "prefix": { "type": "string" },
+          "suffix": { "type": "string" },
+          "locale": { "type": "string", "default": "pt-BR" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "required": ["type", "title", "data"],
+    "additionalProperties": false
+  },
+  "display_table": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+      "title": { "type": "string" },
+      "columns": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "key": { "type": "string" },
+            "label": { "type": "string" },
+            "type": {
+              "type": "string",
+              "enum": ["text", "number", "money", "image", "link", "badge"],
+              "default": "text"
+            },
+            "align": {
+              "type": "string",
+              "enum": ["left", "center", "right"],
+              "default": "left"
+            }
+          },
+          "required": ["key", "label"],
+          "additionalProperties": false
+        }
+      },
+      "rows": {
+        "type": "array",
+        "items": { "type": "object", "additionalProperties": {} }
+      },
+      "sortable": { "type": "boolean", "default": false }
+    },
+    "required": ["columns", "rows"],
+    "additionalProperties": false
+  },
+  "display_progress": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+      "title": { "type": "string" },
+      "steps": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "label": { "type": "string" },
+            "status": { "type": "string", "enum": ["completed", "current", "pending"] },
+            "description": { "type": "string" }
+          },
+          "required": ["label", "status"],
+          "additionalProperties": false
+        }
+      }
+    },
+    "required": ["steps"],
+    "additionalProperties": false
+  },
+  "display_product": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+      "title": { "type": "string" },
+      "image": { "type": "string", "format": "uri" },
+      "price": {
+        "type": "object",
+        "properties": {
+          "value": { "type": "number" },
+          "currency": { "type": "string", "default": "BRL" }
+        },
+        "required": ["value"],
+        "additionalProperties": false
+      },
+      "originalPrice": {
+        "type": "object",
+        "properties": {
+          "value": { "type": "number" },
+          "currency": { "type": "string", "default": "BRL" }
+        },
+        "required": ["value"],
+        "additionalProperties": false
+      },
+      "rating": {
+        "type": "object",
+        "properties": {
+          "score": { "type": "number", "minimum": 0, "maximum": 5 },
+          "count": { "type": "number" }
+        },
+        "required": ["score", "count"],
+        "additionalProperties": false
+      },
+      "source": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "url": { "type": "string", "format": "uri" },
+          "favicon": { "type": "string", "format": "uri" }
+        },
+        "required": ["name", "url"],
+        "additionalProperties": false
+      },
+      "badges": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "label": { "type": "string" },
+            "variant": {
+              "type": "string",
+              "enum": ["default", "success", "warning", "error", "info"],
+              "default": "default"
+            }
+          },
+          "required": ["label"],
+          "additionalProperties": false
+        }
+      },
+      "url": { "type": "string", "format": "uri" },
+      "description": { "type": "string" }
+    },
+    "required": ["title"],
+    "additionalProperties": false
+  },
+  "display_comparison": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+      "title": { "type": "string" },
+      "items": {
+        "type": "array",
+        "items": { "$ref": "#/definitions/DisplayProduct" }
+      },
+      "attributes": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "key": { "type": "string" },
+            "label": { "type": "string" }
+          },
+          "required": ["key", "label"],
+          "additionalProperties": false
+        }
+      }
+    },
+    "required": ["items"],
+    "additionalProperties": false,
+    "definitions": {
+      "DisplayProduct": {
+        "type": "object",
+        "properties": {
+          "title": { "type": "string" },
+          "image": { "type": "string", "format": "uri" },
+          "price": {
+            "type": "object",
+            "properties": {
+              "value": { "type": "number" },
+              "currency": { "type": "string", "default": "BRL" }
+            },
+            "required": ["value"],
+            "additionalProperties": false
+          },
+          "originalPrice": {
+            "type": "object",
+            "properties": {
+              "value": { "type": "number" },
+              "currency": { "type": "string", "default": "BRL" }
+            },
+            "required": ["value"],
+            "additionalProperties": false
+          },
+          "rating": {
+            "type": "object",
+            "properties": {
+              "score": { "type": "number", "minimum": 0, "maximum": 5 },
+              "count": { "type": "number" }
+            },
+            "required": ["score", "count"],
+            "additionalProperties": false
+          },
+          "source": {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string" },
+              "url": { "type": "string", "format": "uri" },
+              "favicon": { "type": "string", "format": "uri" }
+            },
+            "required": ["name", "url"],
+            "additionalProperties": false
+          },
+          "badges": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "label": { "type": "string" },
+                "variant": {
+                  "type": "string",
+                  "enum": ["default", "success", "warning", "error", "info"],
+                  "default": "default"
+                }
+              },
+              "required": ["label"],
+              "additionalProperties": false
+            }
+          },
+          "url": { "type": "string", "format": "uri" },
+          "description": { "type": "string" }
+        },
+        "required": ["title"],
+        "additionalProperties": false
+      }
+    }
+  },
+  "display_price": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+      "value": {
+        "type": "object",
+        "properties": {
+          "value": { "type": "number" },
+          "currency": { "type": "string", "default": "BRL" }
+        },
+        "required": ["value"],
+        "additionalProperties": false
+      },
+      "label": { "type": "string" },
+      "context": { "type": "string" },
+      "source": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "url": { "type": "string", "format": "uri" },
+          "favicon": { "type": "string", "format": "uri" }
+        },
+        "required": ["name", "url"],
+        "additionalProperties": false
+      },
+      "badge": {
+        "type": "object",
+        "properties": {
+          "label": { "type": "string" },
+          "variant": {
+            "type": "string",
+            "enum": ["default", "success", "warning", "error", "info"],
+            "default": "default"
+          }
+        },
+        "required": ["label"],
+        "additionalProperties": false
+      }
+    },
+    "required": ["value", "label"],
+    "additionalProperties": false
+  },
+  "display_image": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+      "url": { "type": "string", "format": "uri" },
+      "alt": { "type": "string" },
+      "caption": { "type": "string" },
+      "width": { "type": "number" },
+      "height": { "type": "number" }
+    },
+    "required": ["url"],
+    "additionalProperties": false
+  },
+  "display_gallery": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+      "title": { "type": "string" },
+      "images": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "url": { "type": "string", "format": "uri" },
+            "alt": { "type": "string" },
+            "caption": { "type": "string" }
+          },
+          "required": ["url"],
+          "additionalProperties": false
+        }
+      },
+      "layout": { "type": "string", "enum": ["grid", "masonry"], "default": "grid" },
+      "columns": { "type": "number", "minimum": 2, "maximum": 5, "default": 3 }
+    },
+    "required": ["images"],
+    "additionalProperties": false
+  },
+  "display_carousel": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+      "title": { "type": "string" },
+      "items": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "image": { "type": "string", "format": "uri" },
+            "title": { "type": "string" },
+            "subtitle": { "type": "string" },
+            "price": {
+              "type": "object",
+              "properties": {
+                "value": { "type": "number" },
+                "currency": { "type": "string", "default": "BRL" }
+              },
+              "required": ["value"],
+              "additionalProperties": false
+            },
+            "url": { "type": "string", "format": "uri" },
+            "badges": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "label": { "type": "string" },
+                  "variant": {
+                    "type": "string",
+                    "enum": ["default", "success", "warning", "error", "info"],
+                    "default": "default"
+                  }
+                },
+                "required": ["label"],
+                "additionalProperties": false
+              }
+            }
+          },
+          "required": ["title"],
+          "additionalProperties": false
+        }
+      }
+    },
+    "required": ["items"],
+    "additionalProperties": false
+  },
+  "display_sources": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+      "label": { "type": "string", "default": "Fontes consultadas" },
+      "sources": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "title": { "type": "string" },
+            "url": { "type": "string", "format": "uri" },
+            "favicon": { "type": "string", "format": "uri" },
+            "snippet": { "type": "string" }
+          },
+          "required": ["title", "url"],
+          "additionalProperties": false
+        }
+      }
+    },
+    "required": ["sources"],
+    "additionalProperties": false
+  },
+  "display_link": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+      "url": { "type": "string", "format": "uri" },
+      "title": { "type": "string" },
+      "description": { "type": "string" },
+      "image": { "type": "string", "format": "uri" },
+      "favicon": { "type": "string", "format": "uri" },
+      "domain": { "type": "string" }
+    },
+    "required": ["url", "title"],
+    "additionalProperties": false
+  },
+  "display_map": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+      "title": { "type": "string" },
+      "pins": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "lat": { "type": "number" },
+            "lng": { "type": "number" },
+            "label": { "type": "string" },
+            "address": { "type": "string" }
+          },
+          "required": ["lat", "lng"],
+          "additionalProperties": false
+        }
+      },
+      "zoom": { "type": "number", "minimum": 1, "maximum": 20, "default": 14 }
+    },
+    "required": ["pins"],
+    "additionalProperties": false
+  },
+  "display_file": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+      "name": { "type": "string" },
+      "type": { "type": "string" },
+      "size": { "type": "number" },
+      "url": { "type": "string", "format": "uri" },
+      "preview": { "type": "string" }
+    },
+    "required": ["name", "type"],
+    "additionalProperties": false
+  },
+  "display_code": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+      "language": { "type": "string" },
+      "code": { "type": "string" },
+      "title": { "type": "string" },
+      "lineNumbers": { "type": "boolean", "default": true }
+    },
+    "required": ["language", "code"],
+    "additionalProperties": false
+  },
+  "display_spreadsheet": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+      "title": { "type": "string" },
+      "headers": {
+        "type": "array",
+        "items": { "type": "string" }
+      },
+      "rows": {
+        "type": "array",
+        "items": {
+          "type": "array",
+          "items": {
+            "anyOf": [
+              { "type": "string" },
+              { "type": "number" },
+              { "type": "null" }
+            ]
+          }
+        }
+      },
+      "format": {
+        "type": "object",
+        "properties": {
+          "moneyColumns": {
+            "type": "array",
+            "items": { "type": "number" }
+          },
+          "percentColumns": {
+            "type": "array",
+            "items": { "type": "number" }
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "required": ["headers", "rows"],
+    "additionalProperties": false
+  },
+  "display_steps": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+      "title": { "type": "string" },
+      "steps": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "title": { "type": "string" },
+            "description": { "type": "string" },
+            "status": {
+              "type": "string",
+              "enum": ["completed", "current", "pending"],
+              "default": "pending"
+            }
+          },
+          "required": ["title"],
+          "additionalProperties": false
+        }
+      },
+      "orientation": {
+        "type": "string",
+        "enum": ["vertical", "horizontal"],
+        "default": "vertical"
+      }
+    },
+    "required": ["steps"],
+    "additionalProperties": false
+  },
+  "display_alert": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+      "variant": { "type": "string", "enum": ["info", "warning", "error", "success"] },
+      "title": { "type": "string" },
+      "message": { "type": "string" },
+      "icon": { "type": "string" }
+    },
+    "required": ["variant", "message"],
+    "additionalProperties": false
+  },
+  "display_choices": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+      "question": { "type": "string" },
+      "choices": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "id": { "type": "string" },
+            "label": { "type": "string" },
+            "description": { "type": "string" },
+            "icon": { "type": "string" }
+          },
+          "required": ["id", "label"],
+          "additionalProperties": false
+        }
+      },
+      "layout": {
+        "type": "string",
+        "enum": ["buttons", "cards", "list"],
+        "default": "buttons"
+      }
+    },
+    "required": ["choices"],
+    "additionalProperties": false
+  }
+}

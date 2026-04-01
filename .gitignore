@@ -15,6 +15,7 @@ dist/
 .env.local
 .env.*.local
 
+
 # =============================================================================
 # SQLite databases & WAL files
 # =============================================================================
@@ -73,7 +74,7 @@ apps/hub/dev-dist/
 # =============================================================================
 # Agent harness runtime artifacts
 # =============================================================================
-.harness/
+.harness/runs/*
 
 # =============================================================================
 # Claude Code local settings
@@ -85,5 +86,32 @@ apps/hub/dev-dist/
 # =============================================================================
 .user-folder/
 
-**/context/**/conversations/
-**/context/**/journal/
+# =============================================================================
+# Agent Backbone
+# =============================================================================
+context/agents/*
+context/agents/*/
+context/credentials/*/*
+context/credentials/*/*/
+context/plans/*
+context/plans/*/
+context/shared/*/*
+context/shared/*/*/
+context/users/*
+context/users/*/
+# System
+# !context/agents/system.main/
+# !context/users/system/
+# !context/credentials/users/system.yml
+!context/**/system/
+!context/**/system.*
+!context/**/system.*/
+# Geral
+context/**/conversations/**
+context/**/journal/**
+context/**/sqlite*
+
+# =============================================================================
+# Arquivos mantidos
+# =============================================================================
+!**/.gitkeep

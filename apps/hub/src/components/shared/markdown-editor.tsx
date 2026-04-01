@@ -1,58 +1,93 @@
-import { useState } from "react";
-import { Textarea } from "@/components/ui/textarea";
+import { useState, useCallback, useRef, useEffect } from "react";
+import Markdown from "react-markdown";
+import { Eye, Pencil, Check, Loader2, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Eye, Pencil } from "lucide-react";
-import { cn } from "@/lib/utils";
+
+type SaveStatus = "idle" | "saving" | "saved" | "error";
 
 interface MarkdownEditorProps {
   value: string;
   onChange: (value: string) => void;
+  saveStatus: SaveStatus;
   placeholder?: string;
-  className?: string;
-  minHeight?: string;
+  minHeight?: number;
+  onPreviewChange?: (preview: boolean) => void;
 }
 
 export function MarkdownEditor({
   value,
   onChange,
-  placeholder,
-  className,
-  minHeight = "200px",
+  saveStatus,
+  placeholder = "Escreva em markdown...",
+  minHeight = 400,
+  onPreviewChange,
 }: MarkdownEditorProps) {
-  const [preview, setPreview] = useState(false);
+  const [preview, setPreview] = useState(true);
+
+  const togglePreview = (val: boolean) => {
+    setPreview(val);
+    onPreviewChange?.(val);
+  };
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    if (!preview && textareaRef.current) {
+      textareaRef.current.focus();
+    }
+  }, [preview]);
+
+  const handleChange = useCallback(
+    (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+      onChange(e.target.value);
+    },
+    [onChange],
+  );
 
   return (
-    <div className={cn("space-y-2", className)}>
-      <div className="flex items-center justify-end gap-1">
-        <Button
-          variant={preview ? "ghost" : "secondary"}
-          size="sm"
-          onClick={() => setPreview(false)}
-        >
-          <Pencil className="h-3.5 w-3.5 mr-1" />
-          Edit
-        </Button>
-        <Button
-          variant={preview ? "secondary" : "ghost"}
-          size="sm"
-          onClick={() => setPreview(true)}
-        >
-          <Eye className="h-3.5 w-3.5 mr-1" />
-          Preview
-        </Button>
+    <div className="flex flex-col gap-2">
+      {/* Toolbar */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-1">
+          <Button
+            variant={preview ? "secondary" : "ghost"}
+            size="sm"
+            onClick={() => togglePreview(true)}
+          >
+            <Eye className="size-3.5" />
+            <span className="ml-1">Preview</span>
+          </Button>
+          <Button
+            variant={preview ? "ghost" : "secondary"}
+            size="sm"
+            onClick={() => togglePreview(false)}
+          >
+            <Pencil className="size-3.5" />
+            <span className="ml-1">Editar</span>
+          </Button>
+        </div>
+
+        <SaveStatusIndicator status={saveStatus} />
       </div>
+
+      {/* Editor / Preview */}
       {preview ? (
         <div
-          className="prose prose-sm dark:prose-invert max-w-none rounded-md border bg-muted/50 p-4 overflow-auto"
+          className="prose prose-sm dark:prose-invert max-w-none overflow-auto rounded-md border bg-background p-4"
           style={{ minHeight }}
-          dangerouslySetInnerHTML={{ __html: simpleMarkdown(value) }}
-        />
+        >
+          {value.trim() ? (
+            <Markdown>{value}</Markdown>
+          ) : (
+            <p className="text-muted-foreground italic">Nenhum conteudo</p>
+          )}
+        </div>
       ) : (
-        <Textarea
+        <textarea
+          ref={textareaRef}
           value={value}
-          onChange={(e) => onChange(e.target.value)}
+          onChange={handleChange}
           placeholder={placeholder}
-          className="font-mono text-sm"
+          className="w-full resize-y rounded-md border bg-background p-4 font-mono text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
           style={{ minHeight }}
         />
       )}
@@ -60,17 +95,29 @@ export function MarkdownEditor({
   );
 }
 
-function simpleMarkdown(text: string): string {
-  return text
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/^### (.+)$/gm, "<h3>$1</h3>")
-    .replace(/^## (.+)$/gm, "<h2>$1</h2>")
-    .replace(/^# (.+)$/gm, "<h1>$1</h1>")
-    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
-    .replace(/\*(.+?)\*/g, "<em>$1</em>")
-    .replace(/`(.+?)`/g, "<code>$1</code>")
-    .replace(/^- (.+)$/gm, "<li>$1</li>")
-    .replace(/\n/g, "<br />");
+function SaveStatusIndicator({ status }: { status: SaveStatus }) {
+  if (status === "idle") return null;
+
+  return (
+    <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+      {status === "saving" && (
+        <>
+          <Loader2 className="size-3 animate-spin" />
+          Salvando...
+        </>
+      )}
+      {status === "saved" && (
+        <>
+          <Check className="size-3 text-green-600" />
+          Salvo
+        </>
+      )}
+      {status === "error" && (
+        <>
+          <AlertCircle className="size-3 text-destructive" />
+          Erro ao salvar
+        </>
+      )}
+    </span>
+  );
 }

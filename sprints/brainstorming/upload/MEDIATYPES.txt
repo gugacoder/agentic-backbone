@@ -1,0 +1,21 @@
+FORMATOS DE ARQUIVO SUPORTADOS PARA UPLOAD
+===========================================
+
+SUPORTE NATIVO (enviado direto pro modelo via FilePart/ImagePart)
+----------------------------------------------------------------
+image/png
+image/jpeg
+image/gif
+image/webp
+application/pdf
+audio/wav
+audio/mp3
+audio/mpeg
+text/plain
+text/csv
+application/json
+
+PRE-PROCESSADO (convertido para texto antes de enviar)
+------------------------------------------------------
+application/vnd.openxmlformats-officedocument.wordprocessingml.document   (.docx)
+application/vnd.openxmlformats-officedocument.spreadsheetml.sheet         (.xlsx)

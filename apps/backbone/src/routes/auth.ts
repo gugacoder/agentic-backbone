@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { sign } from "hono/jwt";
-import { getUserWithPasswordHash, getUser } from "../users/manager.js";
+import { getUser, getUserByEmail, getUserCredential } from "../users/manager.js";
 import { verifyPassword } from "../users/password.js";
 
 export const authPublicRoutes = new Hono();
@@ -17,29 +17,24 @@ authPublicRoutes.post("/auth/login", async (c) => {
     return c.json({ error: "username and password are required" }, 400);
   }
 
-  let role: "sysuser" | "user";
-
-  if (username === process.env.SYSUSER) {
-    // Sysuser login — validate against env var
-    if (password !== process.env.SYSPASS) {
-      return c.json({ error: "invalid credentials" }, 401);
-    }
-    role = "sysuser";
-  } else {
-    // Regular user login — validate against filesystem
-    const record = getUserWithPasswordHash(username);
-    if (!record) {
-      return c.json({ error: "invalid credentials" }, 401);
-    }
-    if (!verifyPassword(password, record.passwordHash)) {
-      return c.json({ error: "invalid credentials" }, 401);
-    }
-    role = "user";
+  let record = getUserByEmail(username);
+  if (!record) {
+    const bySlug = getUserCredential(username);
+    if (bySlug) record = { slug: username, ...bySlug };
   }
+  if (!record) {
+    return c.json({ error: "invalid credentials" }, 401);
+  }
+  if (!verifyPassword(password, record.password)) {
+    return c.json({ error: "invalid credentials" }, 401);
+  }
+
+  const role: "sysuser" | "user" = record.config.role === "sysadmin" ? "sysuser" : "user";
+  const sub = record.slug;
 
   const now = Math.floor(Date.now() / 1000);
   const payload = {
-    sub: username,
+    sub,
     role,
     iat: now,
     exp: now + 60 * 60 * 24, // 24h
@@ -55,7 +50,6 @@ authProtectedRoutes.get("/auth/me", (c) => {
   const payload = c.get("jwtPayload");
 
   if (payload.jwtSource === "laravel") {
-    // Laravel JWT — return Cia user data derived from token claims
     return c.json({
       user: payload.sub,
       role: payload.role,
@@ -67,22 +61,10 @@ authProtectedRoutes.get("/auth/me", (c) => {
     });
   }
 
-  // Backbone JWT — existing behavior
-  const role = payload.role as "sysuser" | "user";
-
-  if (role === "sysuser") {
-    return c.json({
-      user: payload.sub,
-      role: "sysuser",
-      displayName: payload.sub,
-      jwtSource: "backbone",
-    });
-  }
-
   const userConfig = getUser(payload.sub);
   return c.json({
     user: payload.sub,
-    role: "user",
+    role: payload.role,
     displayName: userConfig?.displayName ?? payload.sub,
     jwtSource: "backbone",
   });

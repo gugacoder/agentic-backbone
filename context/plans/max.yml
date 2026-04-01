@@ -1,0 +1,107 @@
+name: max
+tier: 4
+title: Max
+description: Qualidade maxima. Unico plan com Sonnet. Reservado para agentes criticos e tool calling complexo.
+
+slugs:
+  small.low:
+    class: small
+    effort: low
+    llm:
+      model: anthropic/claude-haiku-4-5
+      parameters: {}
+    tags: [triagem, classificacao, anthropic]
+    title: Pequeno direto
+    description: Haiku 4.5 sem thinking — rapido, mesmo ecossistema, sem overhead
+
+  small.mid:
+    class: small
+    effort: mid
+    llm:
+      model: anthropic/claude-haiku-4-5
+      parameters:
+        thinking: adaptive
+    tags: [triagem, raciocinio-leve]
+    title: Pequeno com raciocinio
+    description: Haiku 4.5 com thinking adaptativo
+
+  small.high:
+    class: small
+    effort: high
+    llm:
+      model: anthropic/claude-haiku-4-5
+      parameters:
+        thinking: adaptive
+    tags: [triagem, raciocinio-completo]
+    title: Pequeno com raciocinio completo
+    description: Haiku 4.5 com thinking forcado — teto do tier small no plan max
+
+  medium.low:
+    class: medium
+    effort: low
+    llm:
+      model: anthropic/claude-sonnet-4-6
+      parameters: {}
+    tags: [conversacao, tool-calling, sonnet]
+    title: Medio direto
+    description: Sonnet 4.6 sem thinking — padrao de ouro em tool calling
+
+  medium.mid:
+    class: medium
+    effort: mid
+    llm:
+      model: anthropic/claude-sonnet-4-6
+      parameters:
+        thinking: adaptive
+    tags: [conversacao, tool-calling, raciocinio-moderado, sonnet]
+    title: Medio com raciocinio
+    description: Sonnet 4.6 com thinking adaptativo — configuracao principal do plan max
+
+  medium.high:
+    class: medium
+    effort: high
+    llm:
+      model: anthropic/claude-sonnet-4-6
+      parameters:
+        thinking: adaptive
+    tags: [conversacao, raciocinio-completo, sonnet]
+    title: Medio com raciocinio completo
+    description: Sonnet 4.6 com thinking sempre ativo
+
+  large.low:
+    class: large
+    effort: low
+    llm:
+      model: anthropic/claude-sonnet-4-6
+      parameters: {}
+    tags: [analise, sintese, sonnet]
+    title: Grande direto
+    description: Sonnet 4.6 para tarefas complexas sem thinking
+
+  large.mid:
+    class: large
+    effort: mid
+    llm:
+      model: anthropic/claude-sonnet-4-6
+      parameters:
+        thinking: adaptive
+    tags: [analise, sintese, raciocinio, sonnet]
+    title: Grande com raciocinio
+    description: Sonnet 4.6 com thinking para tarefas complexas
+
+  large.high:
+    class: large
+    effort: high
+    llm:
+      model: anthropic/claude-sonnet-4-6
+      parameters:
+        thinking: adaptive
+    tags: [analise, sintese, raciocinio-maximo, sonnet]
+    title: Grande com raciocinio maximo
+    description: Sonnet 4.6 com thinking completo — maximo absoluto do sistema
+
+roles:
+  conversation: medium.mid
+  heartbeat: small.low
+  memory: medium.low
+  cron: medium.low

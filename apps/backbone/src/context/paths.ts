@@ -15,8 +15,9 @@ if (!process.env.CONTEXT_FOLDER) {
 }
 
 export const CONTEXT_DIR = resolve(REPO_ROOT, process.env.CONTEXT_FOLDER);
+export const DATA_DIR = resolve(REPO_ROOT, "data");
 
-export type ResourceKind = "skills" | "tools" | "adapters" | "connectors";
+export type ResourceKind = "skills" | "adapters" | "services";
 
 // --- Top-level directories ---
 
@@ -24,12 +25,28 @@ export function sharedDir(): string {
   return join(CONTEXT_DIR, "shared");
 }
 
-export function systemDir(): string {
-  return join(CONTEXT_DIR, "system");
+export function plansDir(): string {
+  return join(CONTEXT_DIR, "plans");
+}
+
+export function settingsPath(): string {
+  return join(CONTEXT_DIR, "settings.yml");
 }
 
 export function usersDir(): string {
   return join(CONTEXT_DIR, "users");
+}
+
+export function credentialsUsersDir(): string {
+  return join(CONTEXT_DIR, "credentials", "users");
+}
+
+export function userCredentialPath(slug: string): string {
+  return join(credentialsUsersDir(), `${slug}.yml`);
+}
+
+export function apiKeysDir(): string {
+  return join(CONTEXT_DIR, "credentials", "api-keys");
 }
 
 export function agentsDir(): string {
@@ -86,18 +103,34 @@ export function agentJournalDayPath(agentId: string, day: string): string {
   return join(agentDir(agentId), "journal", day, "MEMORY.md");
 }
 
+export function agentConversationPath(agentId: string): string {
+  return join(agentDir(agentId), "CONVERSATION.md");
+}
+
+export function agentRequestPath(agentId: string): string {
+  return join(agentDir(agentId), "REQUEST.md");
+}
+
 export function agentConfigPath(agentId: string): string {
-  return join(agentDir(agentId), "AGENT.md");
+  return join(agentDir(agentId), "AGENT.yml");
+}
+
+export function agentWorkspaceDir(agentId: string): string {
+  return join(agentDir(agentId), "workspace");
+}
+
+export function agentUserMemoryPath(agentId: string, userSlug: string): string {
+  return join(agentDir(agentId), "users", userSlug, "USER.md");
+}
+
+export function userMdPath(slug: string): string {
+  return join(userDir(slug), "USER.md");
 }
 
 // --- Resource kind directories at each level ---
 
 export function sharedResourceDir(kind: ResourceKind): string {
   return join(sharedDir(), kind);
-}
-
-export function systemResourceDir(kind: ResourceKind): string {
-  return join(systemDir(), kind);
 }
 
 export function userResourceDir(userSlug: string, kind: ResourceKind): string {

@@ -1,5 +1,6 @@
 import { Hono } from "hono";
-import { listAgents, getAgent, refreshAgentRegistry } from "../agents/registry.js";
+import { streamSSE } from "hono/streaming";
+import { listAgents, getAgent } from "../agents/registry.js";
 import {
   createAgent,
   updateAgent,
@@ -9,16 +10,25 @@ import {
   writeAgentFile,
   listAgentFiles,
 } from "../agents/manager.js";
+import { createVersion } from "../versions/version-manager.js";
 import {
   getHeartbeatStatus,
   updateHeartbeatAgent,
   triggerManualHeartbeat,
 } from "../heartbeat/index.js";
 import { getHeartbeatHistory, getHeartbeatStats } from "../heartbeat/log.js";
+import { emitFleetAgentStatus } from "../fleet/events.js";
 import { getAgentMemoryManager } from "../memory/manager.js";
 import { loadAllSkills } from "../skills/loader.js";
-import { loadAgentTools } from "../tools/loader.js";
+import { loadAgentServices, findService } from "../services/loader.js";
+import { executeServiceDirect } from "../services/executor.js";
+import { assemblePrompt } from "../context/index.js";
+import { runAgent } from "../agent/index.js";
 import { getAuthUser, filterByOwner, assertOwnership } from "./auth-helpers.js";
+import { composeAgentTools } from "../agent/tools.js";
+import { formatError } from "../utils/errors.js";
+import { collectAgentResult } from "../utils/agent-stream.js";
+import { parseBody } from "./helpers.js";
 
 export const agentRoutes = new Hono();
 
@@ -35,6 +45,13 @@ function assertAgentOwnership(
 
 agentRoutes.get("/agents", (c) => {
   const auth = getAuthUser(c);
+  const scope = c.req.query("scope");
+  if (scope === "all") {
+    if (auth.role !== "sysuser") {
+      return c.json({ error: "forbidden" }, 403);
+    }
+    return c.json(listAgents());
+  }
   return c.json(filterByOwner(listAgents(), auth));
 });
 
@@ -46,6 +63,19 @@ agentRoutes.get("/agents/:id", (c) => {
   const denied = assertOwnership(c, agent.owner);
   if (denied) return denied;
   return c.json(agent);
+});
+
+// --- Agent Tools ---
+
+agentRoutes.get("/agents/:id/tools", (c) => {
+  const id = c.req.param("id");
+  const agent = getAgent(id);
+  if (!agent) return c.json({ error: "not found" }, 404);
+  const denied = assertOwnership(c, agent.owner);
+  if (denied) return denied;
+  const tools = composeAgentTools(id, "conversation") ?? {};
+  const names = Object.keys(tools).sort();
+  return c.json({ agentId: id, count: names.length, tools: names });
 });
 
 // --- Create Agent ---
@@ -61,7 +91,7 @@ agentRoutes.post("/agents", async (c) => {
     const agent = createAgent(body);
     return c.json(agent, 201);
   } catch (err) {
-    return c.json({ error: (err as Error).message }, 400);
+    return c.json({ error: formatError(err) }, 400);
   }
 });
 
@@ -82,12 +112,53 @@ agentRoutes.patch("/agents/:id", async (c) => {
       } else {
         updateHeartbeatAgent(id, { ...agent.heartbeat, enabled: false });
       }
+      emitFleetAgentStatus(id);
     }
 
     return c.json(agent);
   } catch (err) {
-    return c.json({ error: (err as Error).message }, 404);
+    return c.json({ error: formatError(err) }, 500);
   }
+});
+
+// --- Presence (MCP live-chat) ---
+
+agentRoutes.post("/agents/:id/presence", async (c) => {
+  const id = c.req.param("id");
+  const denied = assertAgentOwnership(c, id);
+  if (denied) return denied;
+
+  const { action } = await c.req.json<{ action: "online" | "offline" }>();
+  const { mcpClientPool } = await import("../connectors/mcp/index.js");
+  const {
+    activateNotifications,
+    deactivateNotifications,
+    isNotificationActive,
+  } = await import("../connectors/mcp/notification-handler.js");
+
+  const adapterSlug = "coletivos-mcp";
+
+  try {
+    if (action === "online") {
+      await mcpClientPool.callTool(adapterSlug, "presence_online", { limit: 5 }, id);
+      activateNotifications(id, adapterSlug);
+      return c.json({ status: "online", handler: "active" });
+    } else if (action === "offline") {
+      await mcpClientPool.callTool(adapterSlug, "presence_offline", {}, id);
+      deactivateNotifications(id);
+      return c.json({ status: "offline", handler: "inactive" });
+    }
+    return c.json({ error: "action must be 'online' or 'offline'" }, 400);
+  } catch (err: any) {
+    console.error(`[presence] error for ${id}:`, err?.message ?? err);
+    return c.json({ error: err?.message ?? "presence call failed" }, 500);
+  }
+});
+
+agentRoutes.get("/agents/:id/presence", async (c) => {
+  const id = c.req.param("id");
+  const { isNotificationActive } = await import("../connectors/mcp/notification-handler.js");
+  return c.json({ active: isNotificationActive(id) });
 });
 
 // --- Delete Agent ---
@@ -114,7 +185,7 @@ agentRoutes.post("/agents/:id/duplicate", async (c) => {
     const agent = duplicateAgent(sourceId, effectiveOwner, slug);
     return c.json(agent, 201);
   } catch (err) {
-    return c.json({ error: (err as Error).message }, 400);
+    return c.json({ error: formatError(err) }, 400);
   }
 });
 
@@ -128,27 +199,37 @@ agentRoutes.get("/agents/:id/files", (c) => {
   return c.json(files);
 });
 
-agentRoutes.get("/agents/:id/files/*", (c) => {
-  const agentId = c.req.param("id");
-  const denied = assertAgentOwnership(c, agentId);
-  if (denied) return denied;
-  const filename = c.req.path.replace(new RegExp(`^/agents/${agentId.replace(".", "\\.")}/files/`), "");
-  const content = readAgentFile(agentId, filename);
-  if (content === null) return c.json({ error: "not found" }, 404);
-  return c.json({ filename, content });
+agentRoutes.get("/agents/:id/files/:filename{.+}", (c) => {
+  try {
+    const agentId = c.req.param("id");
+    const denied = assertAgentOwnership(c, agentId);
+    if (denied) return denied;
+    const filename = c.req.param("filename");
+    const content = readAgentFile(agentId, filename);
+    if (content === null) return c.json({ error: "not found" }, 404);
+    return c.json({ filename, content });
+  } catch (err) {
+    console.error("[agents/files] GET error:", err);
+    return c.json({ error: formatError(err) }, 500);
+  }
 });
 
-agentRoutes.put("/agents/:id/files/*", async (c) => {
+agentRoutes.put("/agents/:id/files/:filename{.+}", async (c) => {
   const agentId = c.req.param("id");
   const denied = assertAgentOwnership(c, agentId);
   if (denied) return denied;
-  const filename = c.req.path.replace(new RegExp(`^/agents/${agentId.replace(".", "\\.")}/files/`), "");
-  const { content } = await c.req.json<{ content: string }>();
+  const filename = c.req.param("filename");
+  const { content, changeNote, createdBy } = await c.req.json<{ content: string; changeNote?: string; createdBy?: string }>();
   try {
+    // Save current content as a version before overwriting
+    const current = readAgentFile(agentId, filename);
+    if (current !== null) {
+      createVersion(agentId, filename, current, { changeNote, createdBy });
+    }
     writeAgentFile(agentId, filename, content);
     return c.json({ status: "saved" });
   } catch (err) {
-    return c.json({ error: (err as Error).message }, 400);
+    return c.json({ error: formatError(err) }, 400);
   }
 });
 
@@ -278,12 +359,96 @@ agentRoutes.get("/agents/:id/skills", (c) => {
   return c.json(skills);
 });
 
-// --- Agent Tools ---
+// --- Agent Services ---
 
-agentRoutes.get("/agents/:id/tools", (c) => {
+agentRoutes.get("/agents/:id/services", (c) => {
   const agentId = c.req.param("id");
   const denied = assertAgentOwnership(c, agentId);
   if (denied) return denied;
-  const tools = loadAgentTools(agentId);
-  return c.json(tools);
+  const services = loadAgentServices(agentId);
+  return c.json(services);
+});
+
+// --- Agent Request (direct invocation in request mode) ---
+
+agentRoutes.post("/agents/:id/request", async (c) => {
+  const agentId = c.req.param("id");
+  const denied = assertAgentOwnership(c, agentId);
+  if (denied) return denied;
+
+  const agent = getAgent(agentId);
+  if (!agent) return c.json({ error: "not found" }, 404);
+
+  const { prompt: userMessage } = await c.req.json<{ prompt: string }>();
+  if (!userMessage) return c.json({ error: "prompt is required" }, 400);
+
+  const assembled = await assemblePrompt(agentId, "request", {
+    userMessage,
+  });
+  if (!assembled) {
+    return c.json({ error: "agent has no REQUEST.md instructions" }, 400);
+  }
+
+  const wantsSSE = c.req.header("Accept") === "text/event-stream";
+
+  if (wantsSSE) {
+    return streamSSE(c, async (stream) => {
+      for await (const event of runAgent(assembled.userMessage, { role: "request", system: assembled.system })) {
+        await stream.writeSSE({ data: JSON.stringify(event) });
+      }
+    });
+  }
+
+  // JSON synchronous response
+  const startMs = Date.now();
+  const { fullText: result, usage } = await collectAgentResult(runAgent(assembled.userMessage, { role: "request", system: assembled.system }));
+  return c.json({ result, usage, durationMs: Date.now() - startMs });
+});
+
+// --- Agent Service Invocation ---
+
+agentRoutes.post("/agents/:id/services/:slug", async (c) => {
+  const agentId = c.req.param("id");
+  const serviceSlug = c.req.param("slug");
+  const denied = assertAgentOwnership(c, agentId);
+  if (denied) return denied;
+
+  const service = findService(agentId, serviceSlug);
+  if (!service) {
+    return c.json({ error: `service '${serviceSlug}' not found` }, 404);
+  }
+
+  const body = await parseBody(c);
+  if (body instanceof Response) return body;
+
+  // skip-agent: execute directly without LLM
+  if (service.skipAgent) {
+    const execResult = await executeServiceDirect(service, body);
+    return c.json(execResult, execResult.ok ? 200 : 500);
+  }
+
+  // LLM-backed service invocation via request mode
+  const payload =
+    typeof body.prompt === "string" ? body.prompt : JSON.stringify(body);
+
+  const assembled = await assemblePrompt(agentId, "request", {
+    userMessage: payload,
+  });
+  if (!assembled) {
+    return c.json({ error: "agent has no REQUEST.md instructions" }, 400);
+  }
+
+  const wantsSSE = c.req.header("Accept") === "text/event-stream";
+
+  if (wantsSSE) {
+    return streamSSE(c, async (stream) => {
+      for await (const event of runAgent(assembled.userMessage, { role: "request", system: assembled.system })) {
+        await stream.writeSSE({ data: JSON.stringify(event) });
+      }
+    });
+  }
+
+  const startMs = Date.now();
+  const { fullText: result, usage } = await collectAgentResult(runAgent(assembled.userMessage, { role: "request", system: assembled.system }));
+  return c.json({ result, usage, durationMs: Date.now() - startMs });
 });

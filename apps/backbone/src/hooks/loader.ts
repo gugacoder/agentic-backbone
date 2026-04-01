@@ -1,9 +1,10 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
-import { parseFrontmatter } from "../context/frontmatter.js";
-import { sharedDir, systemDir, agentDir } from "../context/paths.js";
+import { parseFrontmatter } from "../context/readers.js";
+import { sharedDir, userDir, agentDir } from "../context/paths.js";
 import type { HookEntry, HookEventName, HookHandler } from "./types.js";
+import { formatError } from "../utils/errors.js";
 
 const HOOK_FILENAME = "HOOK.md";
 const HANDLER_FILENAME = "handler.mjs";
@@ -88,7 +89,7 @@ async function importHandlers(entries: HookEntry[]): Promise<void> {
     } catch (err) {
       entry.handler = null;
       entry.error =
-        err instanceof Error ? err.message : String(err);
+        formatError(err);
       console.warn(`[hooks] failed to load handler for ${entry.slug}:`, err);
     }
   }
@@ -97,7 +98,7 @@ async function importHandlers(entries: HookEntry[]): Promise<void> {
 export async function loadGlobalHooks(): Promise<HookEntry[]> {
   const entries = [
     ...scanHooksDir(join(sharedDir(), "hooks"), "shared"),
-    ...scanHooksDir(join(systemDir(), "hooks"), "system"),
+    ...scanHooksDir(join(userDir("system"), "hooks"), "user:system"),
   ];
   await importHandlers(entries);
   return entries;

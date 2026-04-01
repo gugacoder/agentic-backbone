@@ -1,0 +1,122 @@
+name: free
+tier: 0
+title: Gratuito
+description: |
+  Inferencia gratuita via Groq LPU. Tool calling nativo e confiavel.
+  Uso recomendado: desenvolvimento, demos, clientes em avaliacao, projetos de baixo volume.
+  Limitacoes: 1.000 req/dia nos modelos medium/large, 14.400 req/dia no small.
+
+slugs:
+  small.low:
+    class: small
+    effort: low
+    llm:
+      provider: groq
+      model: llama-3.1-8b-instant
+      parameters:
+        reasoning_effort: none
+    tags: [triagem, classificacao, 14k-req-dia]
+    title: Pequeno direto
+    description: Llama 3.1 8B — 14.400 req/dia, protege o budget dos modelos maiores
+
+  small.mid:
+    class: small
+    effort: mid
+    llm:
+      provider: groq
+      model: llama-3.1-8b-instant
+      parameters:
+        reasoning_effort: low
+    tags: [triagem, raciocinio-leve]
+    title: Pequeno com raciocinio
+    description: Llama 3.1 8B com raciocinio leve
+
+  small.high:
+    class: small
+    effort: high
+    llm:
+      provider: groq
+      model: llama-3.1-8b-instant
+      parameters:
+        reasoning_effort: high
+    tags: [triagem, raciocinio-completo]
+    title: Pequeno com raciocinio completo
+    description: Llama 3.1 8B com raciocinio maximo — teto do tier small
+
+  medium.low:
+    class: medium
+    effort: low
+    llm:
+      provider: groq
+      model: openai/gpt-oss-120b
+      parameters:
+        reasoning_effort: none
+    tags: [conversacao, tool-calling, agentic]
+    title: Medio direto
+    description: GPT-OSS 120B sem reasoning — melhor modelo do Groq free
+
+  medium.mid:
+    class: medium
+    effort: mid
+    llm:
+      provider: groq
+      model: openai/gpt-oss-120b
+      parameters:
+        reasoning_effort: low
+    tags: [conversacao, tool-calling, raciocinio-moderado]
+    title: Medio com raciocinio
+    description: GPT-OSS 120B com reasoning leve — configuracao principal do plan free
+
+  medium.high:
+    class: medium
+    effort: high
+    llm:
+      provider: groq
+      model: openai/gpt-oss-120b
+      parameters:
+        reasoning_effort: high
+    tags: [conversacao, raciocinio-completo, agentic]
+    title: Medio com raciocinio completo
+    description: GPT-OSS 120B com reasoning maximo
+
+  large.low:
+    class: large
+    effort: low
+    llm:
+      provider: groq
+      model: openai/gpt-oss-120b
+      parameters:
+        reasoning_effort: none
+    tags: [analise, sintese, structured-outputs]
+    title: Grande direto
+    description: GPT-OSS 120B sem reasoning para tarefas longas
+
+  large.mid:
+    class: large
+    effort: mid
+    llm:
+      provider: groq
+      model: openai/gpt-oss-120b
+      parameters:
+        reasoning_effort: low
+    tags: [analise, sintese, raciocinio]
+    title: Grande com raciocinio
+    description: GPT-OSS 120B com reasoning leve para tarefas complexas
+
+  large.high:
+    class: large
+    effort: high
+    llm:
+      provider: groq
+      model: openai/gpt-oss-120b
+      parameters:
+        reasoning_effort: high
+    tags: [analise, sintese, raciocinio-maximo]
+    title: Grande com raciocinio maximo
+    description: GPT-OSS 120B com reasoning completo — teto absoluto do plan free
+
+roles:
+  conversation: medium.mid
+  heartbeat: small.low
+  memory: medium.low
+  cron: small.low

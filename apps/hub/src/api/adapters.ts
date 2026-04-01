@@ -1,48 +1,27 @@
-import { queryOptions, useMutation, useQueryClient } from "@tanstack/react-query";
-import { api } from "@/lib/api";
-import type { AdapterConfig } from "./types";
+import { queryOptions } from "@tanstack/react-query";
+import { request } from "@/lib/api";
 
-export const adaptersQuery = queryOptions({
-  queryKey: ["adapters"],
-  queryFn: () => api.get<AdapterConfig[]>("/adapters"),
-});
+export interface Adapter {
+  slug: string;
+  connector: string;
+  source: string;
+  name: string;
+  description: string;
+  policy: string;
+  enabled: boolean;
+  credential: Record<string, unknown>;
+  options: Record<string, unknown>;
+}
 
-export const adapterQuery = (scope: string, slug: string) =>
+export const adaptersQueryOptions = () =>
   queryOptions({
-    queryKey: ["adapters", scope, slug],
-    queryFn: () => api.get<AdapterConfig>(`/adapters/${scope}/${slug}`),
+    queryKey: ["adapters"],
+    queryFn: () => request<{ adapters: Adapter[] }>("/adapters").then((r) => r.adapters),
   });
 
-export function useUpdateAdapter() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: ({
-      scope,
-      slug,
-      ...data
-    }: {
-      scope: string;
-      slug: string;
-    } & Record<string, unknown>) =>
-      api.patch<AdapterConfig>(`/adapters/${scope}/${slug}`, data),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["adapters"] }),
-  });
-}
-
-export function useDeleteAdapter() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: ({ scope, slug }: { scope: string; slug: string }) =>
-      api.delete(`/adapters/${scope}/${slug}`),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["adapters"] }),
-  });
-}
-
-export function useTestConnection() {
-  return useMutation({
-    mutationFn: ({ scope, slug }: { scope: string; slug: string }) =>
-      api.post<{ status: string; message: string }>(
-        `/adapters/${scope}/${slug}/test`
-      ),
+export function adapterAgentsQueryOptions(slug: string) {
+  return queryOptions({
+    queryKey: ["adapters", slug, "agents"],
+    queryFn: () => request<{ agents: string[] }>(`/adapters/${slug}/agents`).then(r => r.agents),
   });
 }

@@ -2,33 +2,58 @@ import { Hono } from "hono";
 import { listChannels, getChannel } from "../channels/registry.js";
 import { createChannel, updateChannel, deleteChannel } from "../channels/manager.js";
 import { createSSEHandler, sseHub } from "../events/sse.js";
-import { assembleConversationPrompt } from "../context/index.js";
+import { assemblePrompt } from "../context/index.js";
 import { runAgent } from "../agent/index.js";
 import { deliverToSystemChannel, deliverToChannel } from "../channels/system-channel.js";
 import { getAuthUser, filterByOwner, assertOwnership } from "./auth-helpers.js";
+import { formatError } from "../utils/errors.js";
+import { collectAgentResult } from "../utils/agent-stream.js";
+import { channelAdapterRegistry } from "../channels/delivery/index.js";
+import type { ChannelConfig } from "../channels/types.js";
+
+async function enrichWithHealth(channel: ChannelConfig) {
+  const adapterSlug = channel["channel-adapter"];
+  let connected = false;
+  if (adapterSlug) {
+    try {
+      const adapter = await channelAdapterRegistry.resolve(adapterSlug, {
+        ...channel.options,
+        "channel-id": channel.slug,
+        "channel-adapter": adapterSlug,
+      });
+      const health = adapter.health?.();
+      connected = health?.status === "healthy";
+    } catch {
+      // adapter not available
+    }
+  }
+  return { ...channel, metadata: { ...channel.metadata, connected } };
+}
 
 export const channelRoutes = new Hono();
 
 // --- List Channels ---
 
-channelRoutes.get("/channels", (c) => {
+channelRoutes.get("/channels", async (c) => {
   const auth = getAuthUser(c);
-  const channels = filterByOwner(listChannels(), auth).map((ch) => ({
-    ...ch,
-    listeners: sseHub.getClientCount(ch.slug),
-  }));
+  const channels = await Promise.all(
+    filterByOwner(listChannels(), auth).map(async (ch) => ({
+      ...(await enrichWithHealth(ch)),
+      listeners: sseHub.getClientCount(ch.slug),
+    }))
+  );
   return c.json(channels);
 });
 
 // --- Get Channel ---
 
-channelRoutes.get("/channels/:slug", (c) => {
+channelRoutes.get("/channels/:slug", async (c) => {
   const channel = getChannel(c.req.param("slug"));
   if (!channel) return c.json({ error: "not found" }, 404);
   const denied = assertOwnership(c, channel.owner);
   if (denied) return denied;
   return c.json({
-    ...channel,
+    ...(await enrichWithHealth(channel)),
     listeners: sseHub.getClientCount(channel.slug),
   });
 });
@@ -45,7 +70,7 @@ channelRoutes.post("/channels", async (c) => {
     const channel = createChannel(body);
     return c.json(channel, 201);
   } catch (err) {
-    return c.json({ error: (err as Error).message }, 400);
+    return c.json({ error: formatError(err) }, 400);
   }
 });
 
@@ -63,7 +88,7 @@ channelRoutes.patch("/channels/:slug", async (c) => {
     const updated = updateChannel(channel.owner, slug, body);
     return c.json(updated);
   } catch (err) {
-    return c.json({ error: (err as Error).message }, 400);
+    return c.json({ error: formatError(err) }, 400);
   }
 });
 
@@ -79,6 +104,56 @@ channelRoutes.delete("/channels/:slug", (c) => {
   const deleted = deleteChannel(channel.owner, slug);
   if (!deleted) return c.json({ error: "delete failed" }, 500);
   return c.json({ status: "deleted" });
+});
+
+// --- Reconnect ---
+
+channelRoutes.post("/channels/:slug/reconnect", async (c) => {
+  const channel = getChannel(c.req.param("slug"));
+  if (!channel) return c.json({ error: "not found" }, 404);
+  const denied = assertOwnership(c, channel.owner);
+  if (denied) return denied;
+
+  const adapterSlug = channel["channel-adapter"];
+  if (!adapterSlug) return c.json({ error: "no adapter" }, 400);
+
+  try {
+    const adapter = await channelAdapterRegistry.resolve(adapterSlug, {
+      ...channel.options,
+      "channel-id": channel.slug,
+      "channel-adapter": adapterSlug,
+    });
+    if (!adapter.reconnect) return c.json({ error: "adapter does not support reconnect" }, 400);
+    await adapter.reconnect();
+    return c.json({ status: "reconnecting" });
+  } catch (err) {
+    return c.json({ error: formatError(err) }, 500);
+  }
+});
+
+// --- Disconnect ---
+
+channelRoutes.post("/channels/:slug/disconnect", async (c) => {
+  const channel = getChannel(c.req.param("slug"));
+  if (!channel) return c.json({ error: "not found" }, 404);
+  const denied = assertOwnership(c, channel.owner);
+  if (denied) return denied;
+
+  const adapterSlug = channel["channel-adapter"];
+  if (!adapterSlug) return c.json({ error: "no adapter" }, 400);
+
+  try {
+    const adapter = await channelAdapterRegistry.resolve(adapterSlug, {
+      ...channel.options,
+      "channel-id": channel.slug,
+      "channel-adapter": adapterSlug,
+    });
+    if (!adapter.disconnect) return c.json({ error: "adapter does not support disconnect" }, 400);
+    await adapter.disconnect();
+    return c.json({ status: "disconnecting" });
+  } catch (err) {
+    return c.json({ error: formatError(err) }, 500);
+  }
 });
 
 // --- Channel SSE ---
@@ -105,7 +180,7 @@ channelRoutes.post("/channels/:slug/emit", async (c) => {
   }>();
   if (!content) return c.json({ error: "content is required" }, 400);
 
-  deliverToChannel(channelId, agentId ?? "system.main", content);
+  await deliverToChannel(channelId, agentId ?? "system.main", content);
   return c.json({ status: "delivered", channelId }, 200);
 });
 
@@ -128,15 +203,9 @@ channelRoutes.post("/channels/:slug/messages", async (c) => {
 
   (async () => {
     try {
-      const prompt = await assembleConversationPrompt(agent, message);
-      let fullText = "";
-      for await (const event of runAgent(prompt, { role: "conversation" })) {
-        if (event.type === "result" && event.content) {
-          fullText = event.content;
-        } else if (event.type === "text" && event.content) {
-          fullText += event.content;
-        }
-      }
+      const assembled = await assemblePrompt(agent, "conversation", { userMessage: message });
+      if (!assembled) return;
+      const { fullText } = await collectAgentResult(runAgent(assembled.userMessage, { role: "conversation", system: assembled.system }));
       if (fullText) {
         deliverToSystemChannel(agent, fullText);
       }

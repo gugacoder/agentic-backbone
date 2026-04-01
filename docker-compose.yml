@@ -5,27 +5,64 @@ include:
 
 services:
   backbone:
+    image: ghcr.io/gugacoder/agentic-backbone/backbone:${TAG:-staging}
     build:
       context: .
       dockerfile: apps/backbone/Dockerfile
-    depends_on:
-      redis:
-        condition: service_healthy
-    ports:
-      - "${BACKBONE_PORT}:${BACKBONE_PORT}"
+    restart: unless-stopped
+    env_file:
+      - .env
     environment:
-      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
-      - BACKBONE_PORT=${BACKBONE_PORT}
-      - JWT_SECRET=${JWT_SECRET}
-      - SYSUSER=${SYSUSER}
-      - SYSPASS=${SYSPASS}
+      CONTEXT_FOLDER: /app/context
+      SERVER_HOST: 0.0.0.0
     volumes:
-      - backbone-data:/app/apps/backbone/data
-      - ./apps/backbone/context:/app/apps/backbone/context
+      - ./context:/app/context
+      - ./data:/app/apps/backbone/data
     networks:
       internal:
         aliases:
           - backbone.internal
+      web_network:
+      shared-net:
 
-volumes:
-  backbone-data:
+  hub:
+    image: ghcr.io/gugacoder/agentic-backbone/hub:${TAG:-staging}
+    build:
+      context: .
+      dockerfile: apps/hub/Dockerfile
+    restart: unless-stopped
+    env_file:
+      - .env
+    depends_on:
+      - backbone
+    volumes:
+      - ./apps/hub/nginx.prod.conf:/etc/nginx/conf.d/default.conf:ro
+    networks:
+      internal:
+        aliases:
+          - hub.internal
+      web_network:
+      shared-net:
+
+  chat:
+    image: ghcr.io/gugacoder/agentic-backbone/chat:${TAG:-staging}
+    build:
+      context: .
+      dockerfile: apps/chat/Dockerfile
+    restart: unless-stopped
+    env_file:
+      - .env
+    depends_on:
+      - backbone
+    networks:
+      internal:
+        aliases:
+          - chat.internal
+      web_network:
+      shared-net:
+
+networks:
+  shared-net:
+    external: true
+  web_network:
+    external: true

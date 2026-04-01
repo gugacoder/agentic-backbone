@@ -1,25 +1,22 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ThemeProvider } from "next-themes";
-import "./index.css";
 import { App } from "./App";
+import "./index.css";
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 10_000,
-      retry: 1,
-    },
-  },
-});
+// Apply persisted theme before first render to prevent flash
+try {
+  const stored = JSON.parse(localStorage.getItem("ab-hub-ui") ?? "{}") as { state?: { theme?: string } };
+  const theme = stored.state?.theme ?? "system";
+  const prefersDark = theme === "system"
+    ? window.matchMedia("(prefers-color-scheme: dark)").matches
+    : theme === "dark";
+  document.documentElement.classList.toggle("dark", prefersDark);
+} catch {
+  // ignore parse errors
+}
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <ThemeProvider attribute="class" defaultTheme="system" storageKey="hub-theme">
-      <QueryClientProvider client={queryClient}>
-        <App />
-      </QueryClientProvider>
-    </ThemeProvider>
+    <App />
   </StrictMode>
 );

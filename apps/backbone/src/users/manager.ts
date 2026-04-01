@@ -1,46 +1,52 @@
 import {
   existsSync,
   readdirSync,
-  readFileSync,
   mkdirSync,
-  writeFileSync,
   rmSync,
 } from "node:fs";
 import { join } from "node:path";
-import { usersDir, userDir } from "../context/paths.js";
-import { parseFrontmatter } from "../context/frontmatter.js";
+import {
+  usersDir,
+  userDir,
+  userMdPath,
+  credentialsUsersDir,
+  userCredentialPath,
+} from "../context/paths.js";
+import { readMarkdownAs, writeMarkdownAs, patchMarkdownAs, readYamlAs, writeYamlAs, patchYamlAs } from "../context/readers.js";
+import { UserMdSchema, UserCredentialYmlSchema } from "../context/schemas.js";
 import {
   type UserConfig,
   type UserPermissions,
+  type UserAddress,
   DEFAULT_PERMISSIONS,
   SYSTEM_USER,
 } from "./types.js";
-import { hashPassword } from "./password.js";
 
 function parseUserConfig(slug: string): UserConfig | null {
-  const mdPath = join(userDir(slug), "USER.md");
+  const mdPath = userMdPath(slug);
   if (!existsSync(mdPath)) return null;
 
-  const raw = readFileSync(mdPath, "utf-8");
-  const { metadata } = parseFrontmatter(raw);
+  const result = UserMdSchema.safeParse(
+    (() => { try { return readMarkdownAs(mdPath, UserMdSchema).metadata; } catch { return null; } })()
+  );
+  if (!result.success) {
+    console.warn(`[users] invalid USER.md for ${slug}:`, result.error.issues);
+    return null;
+  }
+  const u = result.data;
 
   return {
-    slug: (metadata.slug as string) ?? slug,
-    displayName: (metadata.displayName as string) ?? slug,
+    slug: u.slug ?? slug,
+    displayName: u.displayName ?? slug,
+    email: u.email,
+    phoneNumber: u.phoneNumber,
+    role: u.role,
     permissions: {
-      canCreateAgents:
-        metadata.canCreateAgents !== undefined
-          ? Boolean(metadata.canCreateAgents)
-          : DEFAULT_PERMISSIONS.canCreateAgents,
-      canCreateChannels:
-        metadata.canCreateChannels !== undefined
-          ? Boolean(metadata.canCreateChannels)
-          : DEFAULT_PERMISSIONS.canCreateChannels,
-      maxAgents:
-        typeof metadata.maxAgents === "number"
-          ? metadata.maxAgents
-          : DEFAULT_PERMISSIONS.maxAgents,
+      canCreateAgents: u.canCreateAgents,
+      canCreateChannels: u.canCreateChannels,
+      maxAgents: u.maxAgents,
     },
+    address: u.address,
   };
 }
 
@@ -54,7 +60,6 @@ export function listUsers(): UserConfig[] {
     if (config) users.push(config);
   }
 
-  // Ensure system user is always present
   if (!users.find((u) => u.slug === "system")) {
     users.unshift(SYSTEM_USER);
   }
@@ -70,98 +75,148 @@ export function getUser(slug: string): UserConfig | null {
 }
 
 export function userExists(slug: string): boolean {
-  return existsSync(join(userDir(slug), "USER.md"));
+  return existsSync(userMdPath(slug));
 }
 
-export function getUserWithPasswordHash(
+export function getUserCredential(
   slug: string
-): { config: UserConfig; passwordHash: string } | null {
-  const mdPath = join(userDir(slug), "USER.md");
-  if (!existsSync(mdPath)) return null;
+): { config: UserConfig; password: string } | null {
+  const credPath = userCredentialPath(slug);
+  if (!existsSync(credPath)) return null;
 
-  const raw = readFileSync(mdPath, "utf-8");
-  const { metadata } = parseFrontmatter(raw);
+  let cred: ReturnType<typeof UserCredentialYmlSchema.parse>;
+  try {
+    cred = readYamlAs(credPath, UserCredentialYmlSchema);
+  } catch {
+    return null;
+  }
 
-  const passwordHash = metadata.passwordHash as string | undefined;
-  if (!passwordHash) return null;
+  if (!cred.password) return null;
 
   const config = parseUserConfig(slug);
   if (!config) return null;
 
-  return { config, passwordHash };
+  return { config, password: cred.password };
+}
+
+export function getUserByEmail(
+  email: string
+): { slug: string; config: UserConfig; password: string } | null {
+  const dir = usersDir();
+  if (!existsSync(dir)) return null;
+
+  for (const slug of readdirSync(dir)) {
+    const mdPath = userMdPath(slug);
+    if (!existsSync(mdPath)) continue;
+
+    let data: ReturnType<typeof UserMdSchema.parse>;
+    try {
+      data = readMarkdownAs(mdPath, UserMdSchema).metadata;
+    } catch {
+      continue;
+    }
+
+    if (data.email !== email) continue;
+
+    const record = getUserCredential(slug);
+    if (!record) continue;
+
+    return { slug, config: record.config, password: record.password };
+  }
+
+  return null;
 }
 
 export function createUser(
   slug: string,
   displayName: string,
   password: string,
-  permissions?: Partial<UserPermissions>
+  permissions?: Partial<UserPermissions>,
+  email?: string,
+  phoneNumber?: string,
+  address?: UserAddress
 ): UserConfig {
   const dir = userDir(slug);
   mkdirSync(dir, { recursive: true });
   mkdirSync(join(dir, "channels"), { recursive: true });
+  mkdirSync(credentialsUsersDir(), { recursive: true });
 
   const perms = { ...DEFAULT_PERMISSIONS, ...permissions };
-  const passwordHash = hashPassword(password);
+  const userEmail = email ?? "";
 
-  const frontmatter = [
-    "---",
-    `slug: ${slug}`,
-    `displayName: ${displayName}`,
-    `passwordHash: "${passwordHash}"`,
-    `canCreateAgents: ${perms.canCreateAgents}`,
-    `canCreateChannels: ${perms.canCreateChannels}`,
-    `maxAgents: ${perms.maxAgents}`,
-    "---",
-  ].join("\n");
+  writeMarkdownAs(userMdPath(slug), {
+    slug,
+    displayName,
+    email: userEmail,
+    phoneNumber: phoneNumber ?? undefined,
+    canCreateAgents: perms.canCreateAgents,
+    canCreateChannels: perms.canCreateChannels,
+    maxAgents: perms.maxAgents,
+    address: address ?? undefined,
+  }, `# ${displayName}\n`, UserMdSchema);
 
-  writeFileSync(join(dir, "USER.md"), `${frontmatter}\n\n# ${displayName}\n`);
+  writeYamlAs(userCredentialPath(slug), {
+    type: "user-password",
+    password,
+  }, UserCredentialYmlSchema);
 
-  return { slug, displayName, permissions: perms };
+  return { slug, displayName, email: userEmail, phoneNumber, permissions: perms, address };
 }
 
 export function updateUser(
   slug: string,
   updates: {
     displayName?: string;
+    email?: string;
+    phoneNumber?: string;
     password?: string;
+    role?: string | null;
+    address?: UserAddress;
     permissions?: Partial<UserPermissions>;
   }
 ): UserConfig | null {
-  const mdPath = join(userDir(slug), "USER.md");
-  if (!existsSync(mdPath)) return null;
+  if (!userExists(slug)) return null;
 
-  const current = getUser(slug);
-  if (!current) return null;
+  const profilePatch: Record<string, unknown> = {};
 
-  const displayName = updates.displayName ?? current.displayName;
-  const perms = { ...current.permissions, ...updates.permissions };
-
-  // Preserve existing passwordHash or compute new one
-  const raw = readFileSync(mdPath, "utf-8");
-  const { metadata } = parseFrontmatter(raw);
-  const passwordHash = updates.password
-    ? hashPassword(updates.password)
-    : (metadata.passwordHash as string) ?? "";
-
-  const frontmatterLines = [
-    "---",
-    `slug: ${slug}`,
-    `displayName: ${displayName}`,
-  ];
-  if (passwordHash) {
-    frontmatterLines.push(`passwordHash: "${passwordHash}"`);
+  if (updates.displayName !== undefined) profilePatch.displayName = updates.displayName;
+  if (updates.email !== undefined) profilePatch.email = updates.email;
+  if (updates.phoneNumber !== undefined) profilePatch.phoneNumber = updates.phoneNumber;
+  if (updates.role !== undefined) profilePatch.role = updates.role ?? undefined;
+  if (updates.address !== undefined) profilePatch.address = updates.address;
+  if (updates.permissions) {
+    if (updates.permissions.canCreateAgents !== undefined)
+      profilePatch.canCreateAgents = updates.permissions.canCreateAgents;
+    if (updates.permissions.canCreateChannels !== undefined)
+      profilePatch.canCreateChannels = updates.permissions.canCreateChannels;
+    if (updates.permissions.maxAgents !== undefined)
+      profilePatch.maxAgents = updates.permissions.maxAgents;
   }
-  frontmatterLines.push(
-    `canCreateAgents: ${perms.canCreateAgents}`,
-    `canCreateChannels: ${perms.canCreateChannels}`,
-    `maxAgents: ${perms.maxAgents}`,
-    "---"
-  );
 
-  writeFileSync(mdPath, `${frontmatterLines.join("\n")}\n\n# ${displayName}\n`);
+  const { metadata: updated } = patchMarkdownAs(userMdPath(slug), profilePatch, UserMdSchema);
 
-  return { slug, displayName, permissions: perms };
+  if (updates.password) {
+    const credPath = userCredentialPath(slug);
+    if (existsSync(credPath)) {
+      patchYamlAs(credPath, { password: updates.password }, UserCredentialYmlSchema);
+    } else {
+      writeYamlAs(credPath, { type: "user-password", password: updates.password }, UserCredentialYmlSchema);
+    }
+  }
+
+  return {
+    slug: updated.slug ?? slug,
+    displayName: updated.displayName ?? slug,
+    email: updated.email,
+    phoneNumber: updated.phoneNumber,
+    role: updated.role,
+    permissions: {
+      canCreateAgents: updated.canCreateAgents,
+      canCreateChannels: updated.canCreateChannels,
+      maxAgents: updated.maxAgents,
+    },
+    address: updated.address,
+  };
 }
 
 export function deleteUser(slug: string): boolean {
@@ -170,5 +225,11 @@ export function deleteUser(slug: string): boolean {
   if (!existsSync(dir)) return false;
 
   rmSync(dir, { recursive: true, force: true });
+
+  const credPath = userCredentialPath(slug);
+  if (existsSync(credPath)) {
+    rmSync(credPath);
+  }
+
   return true;
 }

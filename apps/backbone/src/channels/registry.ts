@@ -1,7 +1,8 @@
-import { readdirSync, readFileSync, existsSync } from "node:fs";
+import { readdirSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { usersDir } from "../context/paths.js";
-import { parseFrontmatter } from "../context/frontmatter.js";
+import { readYaml } from "../context/readers.js";
+import { ChannelYmlSchema } from "../context/schemas.js";
 import type { ChannelConfig } from "./types.js";
 
 let cache: Map<string, ChannelConfig> | null = null;
@@ -16,18 +17,27 @@ function scanChannels(): Map<string, ChannelConfig> {
     if (!existsSync(channelsDir)) continue;
 
     for (const channelSlug of readdirSync(channelsDir)) {
-      const mdPath = join(channelsDir, channelSlug, "CHANNEL.md");
-      if (!existsSync(mdPath)) continue;
+      const ymlPath = join(channelsDir, channelSlug, "CHANNEL.yml");
+      if (!existsSync(ymlPath)) continue;
 
-      const raw = readFileSync(mdPath, "utf-8");
-      const { metadata, content } = parseFrontmatter(raw);
+      const raw = readYaml(ymlPath);
+      const result = ChannelYmlSchema.safeParse(raw);
+      if (!result.success) {
+        console.warn(`[channels] invalid CHANNEL.yml for ${channelSlug}:`, result.error.issues);
+        continue;
+      }
+      const data = result.data;
 
       map.set(channelSlug, {
-        slug: (metadata.slug as string) ?? channelSlug,
-        owner: (metadata.owner as string) ?? userSlug,
-        type: (metadata.type as string) ?? "generic",
-        metadata,
-        description: content.trim(),
+        slug: data.slug ?? channelSlug,
+        owner: data.owner ?? userSlug,
+        type: data.type,
+        description: data.description,
+        agent: data.agent,
+        "channel-adapter": data["channel-adapter"],
+        instructions: data.instructions,
+        options: data.options ?? {},
+        metadata: data as Record<string, unknown>,
       });
     }
   }

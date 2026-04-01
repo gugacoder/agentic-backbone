@@ -1,0 +1,107 @@
+name: economic
+tier: 1
+title: Economico
+description: Custo minimo. Modelos leves e ultra-baratos para volume alto e tarefas de baixo risco.
+
+slugs:
+  small.low:
+    class: small
+    effort: low
+    llm:
+      model: stepfun/step-3.5-flash
+      parameters: {}
+    tags: [triagem, classificacao, ultra-barato]
+    title: Pequeno direto
+    description: Step Flash sem raciocinio — mais barato disponivel com tool calling
+
+  small.mid:
+    class: small
+    effort: mid
+    llm:
+      model: stepfun/step-3.5-flash
+      parameters:
+        thinking: adaptive
+    tags: [triagem, raciocinio-leve]
+    title: Pequeno com raciocinio
+    description: Step Flash com raciocinio adaptativo
+
+  small.high:
+    class: small
+    effort: high
+    llm:
+      model: google/gemini-2.0-flash-001
+      parameters:
+        thinking: adaptive
+    tags: [triagem, raciocinio-completo]
+    title: Pequeno com raciocinio completo
+    description: Flash 2.0 com raciocinio forcado — teto do tier small economico
+
+  medium.low:
+    class: medium
+    effort: low
+    llm:
+      model: google/gemini-2.5-flash-lite
+      parameters: {}
+    tags: [conversacao, tool-calling, economico]
+    title: Medio direto
+    description: Gemini Flash Lite sem thinking — rapido e barato
+
+  medium.mid:
+    class: medium
+    effort: mid
+    llm:
+      model: google/gemini-2.5-flash-lite
+      parameters:
+        thinking: adaptive
+    tags: [conversacao, tool-calling, raciocinio-moderado]
+    title: Medio com raciocinio
+    description: Gemini Flash Lite com thinking adaptativo
+
+  medium.high:
+    class: medium
+    effort: high
+    llm:
+      model: google/gemini-2.0-flash-001
+      parameters:
+        thinking: adaptive
+    tags: [conversacao, raciocinio-completo]
+    title: Medio com raciocinio completo
+    description: Flash 2.0 com thinking sempre ativo
+
+  large.low:
+    class: large
+    effort: low
+    llm:
+      model: deepseek/deepseek-chat-v3.1
+      parameters: {}
+    tags: [analise, sintese, economico]
+    title: Grande direto
+    description: DeepSeek V3.1 sem thinking — melhor custo-beneficio para tarefas longas
+
+  large.mid:
+    class: large
+    effort: mid
+    llm:
+      model: deepseek/deepseek-chat-v3.1
+      parameters:
+        thinking: adaptive
+    tags: [analise, sintese, raciocinio]
+    title: Grande com raciocinio
+    description: DeepSeek V3.1 com thinking adaptativo
+
+  large.high:
+    class: large
+    effort: high
+    llm:
+      model: deepseek/deepseek-v3.2
+      parameters:
+        thinking: adaptive
+    tags: [analise, sintese, raciocinio-maximo]
+    title: Grande com raciocinio maximo
+    description: DeepSeek V3.2 com thinking completo — teto do plan economico
+
+roles:
+  conversation: medium.mid
+  heartbeat: small.low
+  memory: medium.low
+  cron: small.mid

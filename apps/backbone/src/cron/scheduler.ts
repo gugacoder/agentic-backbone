@@ -3,6 +3,7 @@ import { scanCronJobs, loadAgentCronState, saveAgentCronState } from "./store.js
 import { eventBus } from "../events/index.js";
 import type { CronJob, CronJobState } from "./types.js";
 import type { CronExecutionResult } from "./executor.js";
+import { formatError } from "../utils/errors.js";
 
 const MAX_TIMER_DELAY_MS = 60_000;
 const ERROR_BACKOFF_SCHEDULE_MS = [30_000, 60_000, 300_000, 900_000, 3_600_000];
@@ -132,7 +133,7 @@ export function createCronScheduler(
       } catch (err) {
         job.state.runningAtMs = undefined;
         job.state.lastStatus = "error";
-        job.state.lastError = err instanceof Error ? err.message : String(err);
+        job.state.lastError = formatError(err);
         job.state.consecutiveErrors = (job.state.consecutiveErrors ?? 0) + 1;
         applyBackoff(job);
 

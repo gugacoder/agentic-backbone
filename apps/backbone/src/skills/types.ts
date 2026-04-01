@@ -9,8 +9,12 @@ export interface SkillMetadata {
 }
 
 export interface Skill {
+  slug: string;
   name: string;
   description: string;
+  enabled: boolean;
+  userInvocable?: boolean;
+  trigger?: string;
   body: string;
   source: string;
   dir: string;

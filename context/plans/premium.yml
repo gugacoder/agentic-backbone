@@ -1,0 +1,107 @@
+name: premium
+tier: 3
+title: Premium
+description: Alta qualidade sem Sonnet. Haiku 4.5 para conversas e agentes. Gemini Flash para tarefas leves e longas.
+
+slugs:
+  small.low:
+    class: small
+    effort: low
+    llm:
+      model: google/gemini-2.5-flash-lite
+      parameters: {}
+    tags: [triagem, classificacao, rapido]
+    title: Pequeno direto
+    description: Flash Lite sem raciocinio — leve e eficiente
+
+  small.mid:
+    class: small
+    effort: mid
+    llm:
+      model: google/gemini-2.5-flash-lite
+      parameters:
+        thinking: adaptive
+    tags: [triagem, raciocinio-leve]
+    title: Pequeno com raciocinio
+    description: Flash Lite com raciocinio adaptativo
+
+  small.high:
+    class: small
+    effort: high
+    llm:
+      model: google/gemini-2.5-flash
+      parameters:
+        thinking: adaptive
+    tags: [triagem, raciocinio-completo]
+    title: Pequeno com raciocinio completo
+    description: Gemini 2.5 Flash com thinking forcado — teto do tier small premium
+
+  medium.low:
+    class: medium
+    effort: low
+    llm:
+      model: anthropic/claude-haiku-4-5
+      parameters: {}
+    tags: [conversacao, tool-calling, anthropic]
+    title: Medio direto
+    description: Haiku 4.5 sem thinking — rapido, confiavel, mesmo ecossistema Anthropic
+
+  medium.mid:
+    class: medium
+    effort: mid
+    llm:
+      model: anthropic/claude-haiku-4-5
+      parameters:
+        thinking: adaptive
+    tags: [conversacao, tool-calling, raciocinio-moderado]
+    title: Medio com raciocinio
+    description: Haiku 4.5 com thinking adaptativo — equilibrio ideal do plan premium
+
+  medium.high:
+    class: medium
+    effort: high
+    llm:
+      model: anthropic/claude-haiku-4-5
+      parameters:
+        thinking: adaptive
+    tags: [conversacao, raciocinio-completo, swe-73]
+    title: Medio com raciocinio completo
+    description: Haiku 4.5 com thinking sempre ativo — SWE-bench 73%+
+
+  large.low:
+    class: large
+    effort: low
+    llm:
+      model: anthropic/claude-haiku-4-5
+      parameters: {}
+    tags: [analise, sintese, anthropic]
+    title: Grande direto
+    description: Haiku 4.5 para tarefas complexas sem thinking
+
+  large.mid:
+    class: large
+    effort: mid
+    llm:
+      model: google/gemini-3-flash-preview
+      parameters:
+        thinking: adaptive
+    tags: [analise, sintese, raciocinio, 1m-ctx]
+    title: Grande com raciocinio
+    description: Gemini 3 Flash com thinking — near-Pro agentic, 1M contexto
+
+  large.high:
+    class: large
+    effort: high
+    llm:
+      model: google/gemini-3-flash-preview
+      parameters:
+        thinking: adaptive
+    tags: [analise, sintese, raciocinio-maximo, 1m-ctx]
+    title: Grande com raciocinio maximo
+    description: Gemini 3 Flash com thinking completo — teto do plan premium
+
+roles:
+  conversation: medium.mid
+  heartbeat: small.low
+  memory: medium.low
+  cron: medium.low

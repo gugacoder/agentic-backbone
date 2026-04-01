@@ -1,4 +1,5 @@
 import { db } from "../db/index.js";
+import { createRunLogQueries } from "../db/run-log.js";
 import type { UsageData } from "../agent/index.js";
 
 export interface HeartbeatLogParams {
@@ -8,6 +9,8 @@ export interface HeartbeatLogParams {
   usage?: UsageData;
   reason?: string;
   preview?: string;
+  modelUsed?: string;
+  routingRule?: string;
 }
 
 export interface HeartbeatLogEntry {
@@ -25,6 +28,8 @@ export interface HeartbeatLogEntry {
   stop_reason: string | null;
   reason: string | null;
   preview: string | null;
+  model_used: string | null;
+  routing_rule: string | null;
 }
 
 export interface HeartbeatStats {
@@ -42,23 +47,17 @@ const insertStmt = db.prepare(`
   INSERT INTO heartbeat_log
     (agent_id, status, duration_ms, input_tokens, output_tokens,
      cache_read_tokens, cache_creation_tokens, cost_usd, num_turns,
-     stop_reason, reason, preview)
+     stop_reason, reason, preview, model_used, routing_rule)
   VALUES
     (@agentId, @status, @durationMs, @inputTokens, @outputTokens,
      @cacheReadTokens, @cacheCreationTokens, @costUsd, @numTurns,
-     @stopReason, @reason, @preview)
+     @stopReason, @reason, @preview, @modelUsed, @routingRule)
 `);
 
-const historyStmt = db.prepare(`
-  SELECT * FROM heartbeat_log
-  WHERE agent_id = ?
-  ORDER BY ts DESC
-  LIMIT ? OFFSET ?
-`);
-
-const countStmt = db.prepare(`
-  SELECT COUNT(*) as total FROM heartbeat_log WHERE agent_id = ?
-`);
+const { getHistory: getHeartbeatHistoryQuery } = createRunLogQueries<HeartbeatLogEntry>({
+  historyQuery: `SELECT * FROM heartbeat_log WHERE agent_id = ? ORDER BY ts DESC LIMIT ? OFFSET ?`,
+  countQuery: `SELECT COUNT(*) as total FROM heartbeat_log WHERE agent_id = ?`,
+});
 
 const statsStmt = db.prepare(`
   SELECT
@@ -113,6 +112,8 @@ export function logHeartbeat(params: HeartbeatLogParams): void {
     stopReason: u?.stopReason ?? null,
     reason: params.reason ?? null,
     preview: params.preview ?? null,
+    modelUsed: params.modelUsed ?? null,
+    routingRule: params.routingRule ?? null,
   });
 }
 
@@ -120,11 +121,7 @@ export function getHeartbeatHistory(
   agentId: string,
   opts: { limit?: number; offset?: number } = {}
 ): { rows: HeartbeatLogEntry[]; total: number } {
-  const limit = opts.limit ?? 50;
-  const offset = opts.offset ?? 0;
-  const rows = historyStmt.all(agentId, limit, offset) as HeartbeatLogEntry[];
-  const { total } = countStmt.get(agentId) as { total: number };
-  return { rows, total };
+  return getHeartbeatHistoryQuery(agentId, opts);
 }
 
 export function getHeartbeatStats(agentId: string): HeartbeatStats {

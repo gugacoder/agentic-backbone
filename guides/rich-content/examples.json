@@ -1,0 +1,344 @@
+{
+  "display_metric": {
+    "description": "Valor métrico isolado com label, unidade e tendência direcional",
+    "example": {
+      "label": "Receita mensal",
+      "value": 128500,
+      "unit": "BRL",
+      "trend": {
+        "direction": "up",
+        "value": "+12,3%"
+      },
+      "icon": "trending-up"
+    },
+    "use_when": "Exibir KPIs, indicadores de desempenho ou métricas de sistema com variação temporal"
+  },
+  "display_chart": {
+    "description": "Gráfico de barras, linhas, pizza, área ou donut com dados estruturados",
+    "example": {
+      "type": "bar",
+      "title": "Vendas por categoria (Jan–Jun)",
+      "data": [
+        { "label": "Eletrônicos", "value": 45200, "color": "#6366f1" },
+        { "label": "Roupas", "value": 28700, "color": "#8b5cf6" },
+        { "label": "Casa", "value": 19400, "color": "#a78bfa" },
+        { "label": "Livros", "value": 8900, "color": "#c4b5fd" }
+      ],
+      "format": {
+        "prefix": "R$ ",
+        "locale": "pt-BR"
+      }
+    },
+    "use_when": "Visualizar séries de dados comparativos, distribuições ou tendências que se beneficiam de representação gráfica"
+  },
+  "display_table": {
+    "description": "Tabela estruturada com tipos de coluna, alinhamento e ordenação opcional",
+    "example": {
+      "title": "Cotações de câmbio",
+      "columns": [
+        { "key": "moeda", "label": "Moeda", "type": "text", "align": "left" },
+        { "key": "compra", "label": "Compra", "type": "money", "align": "right" },
+        { "key": "venda", "label": "Venda", "type": "money", "align": "right" },
+        { "key": "variacao", "label": "Variação", "type": "badge", "align": "center" }
+      ],
+      "rows": [
+        { "moeda": "USD", "compra": 5.18, "venda": 5.22, "variacao": "+0,8%" },
+        { "moeda": "EUR", "compra": 5.64, "venda": 5.70, "variacao": "+0,3%" },
+        { "moeda": "GBP", "compra": 6.58, "venda": 6.65, "variacao": "-0,1%" }
+      ],
+      "sortable": true
+    },
+    "use_when": "Apresentar dados tabulares com mais de 3 colunas, tipos especiais de célula ou necessidade de ordenação"
+  },
+  "display_progress": {
+    "description": "Sequência de etapas com status visual (concluída, atual, pendente)",
+    "example": {
+      "title": "Status do pedido #4821",
+      "steps": [
+        { "label": "Pedido recebido", "status": "completed", "description": "Confirmado em 28/03/2026 às 14:32" },
+        { "label": "Pagamento aprovado", "status": "completed", "description": "Cartão de crédito — R$ 349,90" },
+        { "label": "Em separação", "status": "current", "description": "Previsão: 29/03/2026" },
+        { "label": "Em transporte", "status": "pending" },
+        { "label": "Entregue", "status": "pending" }
+      ]
+    },
+    "use_when": "Mostrar progresso em processos com fases bem definidas — rastreio de pedido, onboarding, pipeline"
+  },
+  "display_product": {
+    "description": "Card de produto com imagem, preço, rating, badges e fonte",
+    "example": {
+      "title": "Pneu Levorin Praieiro 26x1.95",
+      "image": "https://example.com/pneu-levorin.jpg",
+      "price": { "value": 35.90, "currency": "BRL" },
+      "originalPrice": { "value": 41.50, "currency": "BRL" },
+      "rating": { "score": 4.8, "count": 15000 },
+      "source": { "name": "Pedal Ciclo", "url": "https://pedalciclo.com.br" },
+      "badges": [{ "label": "Menor preço", "variant": "success" }],
+      "url": "https://pedalciclo.com.br/pneu-levorin-praieiro",
+      "description": "Pneu para uso misto estrada/terra, câmara grossa"
+    },
+    "use_when": "Apresentar um produto específico encontrado em pesquisa ou recomendação"
+  },
+  "display_comparison": {
+    "description": "Comparação lado a lado de múltiplos produtos com atributos destacados",
+    "example": {
+      "title": "Comparativo: pneus 26x1.95",
+      "items": [
+        {
+          "title": "Levorin Praieiro",
+          "price": { "value": 35.90, "currency": "BRL" },
+          "rating": { "score": 4.8, "count": 15000 },
+          "badges": [{ "label": "Melhor custo-benefício", "variant": "success" }]
+        },
+        {
+          "title": "Vittoria Cross XG Pro",
+          "price": { "value": 89.90, "currency": "BRL" },
+          "rating": { "score": 4.9, "count": 3200 },
+          "badges": [{ "label": "Premium", "variant": "info" }]
+        },
+        {
+          "title": "Maxxis Pace",
+          "price": { "value": 58.00, "currency": "BRL" },
+          "rating": { "score": 4.7, "count": 8100 }
+        }
+      ],
+      "attributes": [
+        { "key": "price", "label": "Preço" },
+        { "key": "rating", "label": "Avaliação" }
+      ]
+    },
+    "use_when": "Responder 'qual o melhor entre X e Y?' com atributos comparáveis lado a lado"
+  },
+  "display_price": {
+    "description": "Destaque de preço unitário com contexto, fonte e badge",
+    "example": {
+      "value": { "value": 5.21, "currency": "BRL" },
+      "label": "Dólar comercial",
+      "context": "Cotação de venda — 29/03/2026 às 10:15",
+      "source": { "name": "Banco Central", "url": "https://www.bcb.gov.br" },
+      "badge": { "label": "+0,8% hoje", "variant": "warning" }
+    },
+    "use_when": "Exibir cotação de câmbio, preço de referência, valor de serviço ou tarifa isolada"
+  },
+  "display_image": {
+    "description": "Imagem única com legenda e dimensões opcionais",
+    "example": {
+      "url": "https://example.com/diagrama-circuito.png",
+      "alt": "Diagrama do circuito de alimentação",
+      "caption": "Figura 3: Circuito de alimentação 5V com regulador LM7805",
+      "width": 800,
+      "height": 450
+    },
+    "use_when": "Exibir imagem técnica, foto de produto ou ilustração quando legenda e controle de dimensão são necessários"
+  },
+  "display_gallery": {
+    "description": "Grade ou masonry de múltiplas imagens com legenda por item",
+    "example": {
+      "title": "Fotos do produto — Mesa de madeira maciça",
+      "images": [
+        { "url": "https://example.com/mesa-frente.jpg", "alt": "Vista frontal", "caption": "Mesa 160cm" },
+        { "url": "https://example.com/mesa-detalhe.jpg", "alt": "Detalhe da madeira", "caption": "Madeira de lei" },
+        { "url": "https://example.com/mesa-lateral.jpg", "alt": "Vista lateral" },
+        { "url": "https://example.com/mesa-ambiente.jpg", "alt": "Foto ambiente" }
+      ],
+      "layout": "grid",
+      "columns": 2
+    },
+    "use_when": "Exibir múltiplas imagens de produto, portfólio ou resultados de busca visual"
+  },
+  "display_carousel": {
+    "description": "Carrossel horizontal de cards com imagem, título, preço e link",
+    "example": {
+      "title": "Produtos relacionados",
+      "items": [
+        {
+          "image": "https://example.com/camara-26.jpg",
+          "title": "Câmara 26x1.95 Kenda",
+          "subtitle": "Válvula schrader",
+          "price": { "value": 18.90, "currency": "BRL" },
+          "url": "https://pedalciclo.com.br/camara-kenda"
+        },
+        {
+          "image": "https://example.com/kit-remendo.jpg",
+          "title": "Kit Remendo Park Tool",
+          "subtitle": "8 remendos + cola",
+          "price": { "value": 14.50, "currency": "BRL" },
+          "url": "https://pedalciclo.com.br/kit-remendo",
+          "badges": [{ "label": "Promoção", "variant": "warning" }]
+        },
+        {
+          "image": "https://example.com/bomba.jpg",
+          "title": "Bomba de ar portátil",
+          "price": { "value": 39.90, "currency": "BRL" }
+        }
+      ]
+    },
+    "use_when": "Exibir lista de sugestões, produtos relacionados ou destaques que se beneficiam de navegação horizontal"
+  },
+  "display_sources": {
+    "description": "Lista de fontes consultadas com título, URL, favicon e snippet",
+    "example": {
+      "label": "Fontes consultadas",
+      "sources": [
+        {
+          "title": "Preço do Pneu Levorin Praieiro — Pedal Ciclo",
+          "url": "https://pedalciclo.com.br/pneu-levorin",
+          "favicon": "https://pedalciclo.com.br/favicon.ico",
+          "snippet": "Pneu Levorin Praieiro 26x1.95 por R$ 35,90. Envio para todo Brasil."
+        },
+        {
+          "title": "Comparativo de pneus 26 polegadas — Bike Radar BR",
+          "url": "https://bikeradar.com.br/comparativo-pneus",
+          "snippet": "Testamos os 10 pneus mais vendidos de 26 polegadas em 2026."
+        }
+      ]
+    },
+    "use_when": "Sempre que o agente consultou URLs externas — transparência e rastreabilidade das informações"
+  },
+  "display_link": {
+    "description": "Preview de link com título, descrição, imagem e domínio",
+    "example": {
+      "url": "https://docs.anthropic.com/claude/docs/tool-use",
+      "title": "Tool Use — Documentação Claude",
+      "description": "Aprenda a usar tool use com a API Claude para estender as capacidades do modelo.",
+      "image": "https://docs.anthropic.com/og-image.png",
+      "favicon": "https://docs.anthropic.com/favicon.ico",
+      "domain": "docs.anthropic.com"
+    },
+    "use_when": "Exibir um link único que merece destaque visual com preview — artigo, documentação, referência importante"
+  },
+  "display_map": {
+    "description": "Mapa interativo com pins de localização, rótulos e zoom configurável",
+    "example": {
+      "title": "Lojas próximas — São Paulo, SP",
+      "pins": [
+        {
+          "lat": -23.561684,
+          "lng": -46.655981,
+          "label": "Loja Centro",
+          "address": "Av. Paulista, 1000 — Bela Vista"
+        },
+        {
+          "lat": -23.587001,
+          "lng": -46.632200,
+          "label": "Loja Vila Olímpia",
+          "address": "Rua Olimpíadas, 205 — Vila Olímpia"
+        }
+      ],
+      "zoom": 13
+    },
+    "use_when": "Exibir localização de estabelecimentos, pontos de referência, rotas ou resultados geográficos"
+  },
+  "display_file": {
+    "description": "Card de arquivo com nome, tipo MIME, tamanho e link para download",
+    "example": {
+      "name": "relatorio-vendas-q1-2026.pdf",
+      "type": "application/pdf",
+      "size": 245760,
+      "url": "https://example.com/files/relatorio-q1.pdf",
+      "preview": "Relatório de Vendas — 1º Trimestre 2026\nReceita total: R$ 384.900\nVariação YoY: +18,2%"
+    },
+    "use_when": "Referenciar arquivos para download ou visualização — PDFs, planilhas, documentos gerados"
+  },
+  "display_code": {
+    "description": "Bloco de código com syntax highlighting, título e números de linha",
+    "example": {
+      "language": "typescript",
+      "code": "import { useChat } from 'ai/react';\n\nexport function Chat({ sessionId }: { sessionId: string }) {\n  const { messages, append } = useChat({\n    api: `/api/v1/ai/conversations/${sessionId}/messages?format=datastream`,\n    streamProtocol: 'data',\n  });\n\n  return <div>{messages.map(m => <p key={m.id}>{m.content}</p>)}</div>;\n}",
+      "title": "Integração useChat com DataStream",
+      "lineNumbers": true
+    },
+    "use_when": "Exibir trechos de código quando título ou números de linha são necessários; para código inline simples, usar markdown ```"
+  },
+  "display_spreadsheet": {
+    "description": "Planilha com headers tipados e formatação especial para colunas monetárias e percentuais",
+    "example": {
+      "title": "Fluxo de caixa — Março 2026",
+      "headers": ["Data", "Descrição", "Receita", "Despesa", "Saldo"],
+      "rows": [
+        ["01/03", "Saldo inicial", null, null, 12500.00],
+        ["05/03", "Venda produto A", 3800.00, null, 16300.00],
+        ["10/03", "Aluguel", null, 2500.00, 13800.00],
+        ["15/03", "Venda produto B", 5200.00, null, 19000.00],
+        ["28/03", "Salários", null, 8400.00, 10600.00]
+      ],
+      "format": {
+        "moneyColumns": [2, 3, 4]
+      }
+    },
+    "use_when": "Exibir dados financeiros, planilhas exportadas ou relatórios tabulares com formatação monetária/percentual"
+  },
+  "display_steps": {
+    "description": "Timeline de etapas numeradas com status e descrição por passo",
+    "example": {
+      "title": "Como configurar o ambiente de desenvolvimento",
+      "steps": [
+        {
+          "title": "Instalar Node.js 20+",
+          "description": "Baixe o instalador LTS em nodejs.org ou use nvm: `nvm install 20`",
+          "status": "completed"
+        },
+        {
+          "title": "Clonar o repositório",
+          "description": "Execute: `git clone https://github.com/org/repo && cd repo`",
+          "status": "current"
+        },
+        {
+          "title": "Instalar dependências",
+          "description": "Execute: `npm install` na raiz do projeto",
+          "status": "pending"
+        },
+        {
+          "title": "Configurar variáveis de ambiente",
+          "description": "Copie `.env.example` para `.env` e preencha as chaves necessárias",
+          "status": "pending"
+        },
+        {
+          "title": "Iniciar o servidor de desenvolvimento",
+          "description": "Execute: `npm run dev:all`",
+          "status": "pending"
+        }
+      ],
+      "orientation": "vertical"
+    },
+    "use_when": "Tutoriais passo a passo, processos sequenciais com instruções detalhadas por etapa"
+  },
+  "display_alert": {
+    "description": "Alerta visual com variante (info, warning, error, success) e mensagem",
+    "example": {
+      "variant": "warning",
+      "title": "Ação irreversível",
+      "message": "A exclusão do workspace removerá todos os dados permanentemente. Esta operação não pode ser desfeita.",
+      "icon": "triangle-alert"
+    },
+    "use_when": "Avisos importantes, confirmações de risco, erros de validação — quando a cor e o ícone da variante são essenciais para comunicar a severidade"
+  },
+  "display_choices": {
+    "description": "Conjunto de opções clicáveis para o usuário selecionar um caminho",
+    "example": {
+      "question": "Como você prefere pagar?",
+      "choices": [
+        {
+          "id": "pix",
+          "label": "Pix",
+          "description": "Aprovação instantânea, disponível 24h",
+          "icon": "qr-code"
+        },
+        {
+          "id": "cartao",
+          "label": "Cartão de crédito",
+          "description": "Parcelamento em até 12x sem juros",
+          "icon": "credit-card"
+        },
+        {
+          "id": "boleto",
+          "label": "Boleto bancário",
+          "description": "Vencimento em 3 dias úteis",
+          "icon": "file-text"
+        }
+      ],
+      "layout": "cards"
+    },
+    "use_when": "Perguntas de múltipla escolha, seleção de fluxo, menus de navegação — quando o frontend precisa capturar e processar a escolha do usuário"
+  }
+}

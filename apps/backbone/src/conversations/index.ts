@@ -1,17 +1,28 @@
 import { randomUUID } from "node:crypto";
 import { db } from "../db/index.js";
-import { assembleConversationPrompt } from "../context/index.js";
+import { assemblePrompt } from "../context/index.js";
 import { runAgent, type AgentEvent } from "../agent/index.js";
+import type { ContentPart } from "./attachments.js";
+import { instrumentedRunAgent } from "../telemetry/instrumentor.js";
 import {
   initSession as initPersistentSession,
-  appendMessage,
+  appendModelMessage,
+  generateMessageId,
   updateSessionMetadata,
   readMessages,
 } from "./persistence.js";
 import { flushMemory } from "../memory/flush.js";
-import { createMemoryKaiTools } from "../memory/kai-tools.js";
+import { composeAgentTools } from "../agent/tools.js";
 import { getAgent } from "../agents/registry.js";
 import { triggerHook } from "../hooks/index.js";
+import { trackCost } from "../db/costs.js";
+import { trackConversation } from "../db/analytics.js";
+import type { UsageData } from "../agent/index.js";
+import { checkMessageSecurity } from "../security/filter.js";
+import { eventBus } from "../events/index.js";
+import { join } from "node:path";
+import { agentDir } from "../context/paths.js";
+import { checkExceeded, getQuotas, recordUsage, pauseAgent } from "../quotas/quota-manager.js";
 
 export { readMessages };
 
@@ -19,46 +30,75 @@ export interface Session {
   session_id: string;
   user_id: string;
   agent_id: string;
+  channel_id: string | null;
   sdk_session_id: string | null;
   title: string | null;
+  starred: number;
+  takeover_by: string | null;
+  takeover_at: string | null;
+  orchestration_path: string | null;
+  current_agent_id: string | null;
   created_at: string;
   updated_at: string;
 }
 
 // --- Prepared statements ---
 
-const insertSession = db.prepare(
-  `INSERT INTO sessions (session_id, user_id, agent_id) VALUES (?, ?, ?)`
+const selectHandoffsForSupervisor = db.prepare(
+  `SELECT member_id, label, trigger_intent, priority FROM agent_handoffs
+   WHERE supervisor_id = ? AND enabled = 1 ORDER BY priority ASC`
 );
 
-const selectSession = db.prepare(
-  `SELECT session_id, user_id, agent_id, sdk_session_id, title, created_at, updated_at
-   FROM sessions WHERE session_id = ?`
+const selectOrchestrationPath = db.prepare(
+  `SELECT orchestration_path FROM sessions WHERE session_id = ?`
 );
 
-const setSdkSessionId = db.prepare(
-  `UPDATE sessions SET sdk_session_id = ?, updated_at = datetime('now')
+const updateOrchestration = db.prepare(
+  `UPDATE sessions SET current_agent_id = ?, orchestration_path = ?, updated_at = datetime('now')
    WHERE session_id = ?`
 );
 
+const insertSession = db.prepare(
+  `INSERT INTO sessions (session_id, user_id, agent_id, channel_id) VALUES (?, ?, ?, ?)`
+);
+
+const selectSession = db.prepare(
+  `SELECT session_id, user_id, agent_id, channel_id, sdk_session_id, title, starred, takeover_by, takeover_at, orchestration_path, current_agent_id, created_at, updated_at
+   FROM sessions WHERE session_id = ?`
+);
+
+
+
 const selectAllSessions = db.prepare(
-  `SELECT session_id, user_id, agent_id, sdk_session_id, title, created_at, updated_at
+  `SELECT session_id, user_id, agent_id, channel_id, sdk_session_id, title, starred, takeover_by, takeover_at, orchestration_path, current_agent_id, created_at, updated_at
    FROM sessions ORDER BY updated_at DESC`
 );
 
 const selectSessionsByUser = db.prepare(
-  `SELECT session_id, user_id, agent_id, sdk_session_id, title, created_at, updated_at
+  `SELECT session_id, user_id, agent_id, channel_id, sdk_session_id, title, starred, takeover_by, takeover_at, orchestration_path, current_agent_id, created_at, updated_at
    FROM sessions WHERE user_id = ? ORDER BY updated_at DESC`
 );
 
 const selectSessionsByUserAndAgent = db.prepare(
-  `SELECT session_id, user_id, agent_id, sdk_session_id, title, created_at, updated_at
+  `SELECT session_id, user_id, agent_id, channel_id, sdk_session_id, title, starred, takeover_by, takeover_at, orchestration_path, current_agent_id, created_at, updated_at
    FROM sessions WHERE user_id = ? AND agent_id = ? ORDER BY updated_at DESC`
 );
 
 const selectSessionsByAgent = db.prepare(
-  `SELECT session_id, user_id, agent_id, sdk_session_id, title, created_at, updated_at
+  `SELECT session_id, user_id, agent_id, channel_id, sdk_session_id, title, starred, takeover_by, takeover_at, orchestration_path, current_agent_id, created_at, updated_at
    FROM sessions WHERE agent_id = ? ORDER BY updated_at DESC`
+);
+
+const findSessionByChannelKey = db.prepare(
+  `SELECT session_id, user_id, agent_id, channel_id, sdk_session_id, title, starred, takeover_by, takeover_at, orchestration_path, current_agent_id, created_at, updated_at
+   FROM sessions WHERE agent_id = ? AND user_id = ? AND channel_id = ?
+   ORDER BY updated_at DESC LIMIT 1`
+);
+
+const lastActiveChannel = db.prepare(
+  `SELECT channel_id FROM sessions
+   WHERE agent_id = ? AND user_id = ? AND channel_id IS NOT NULL
+   ORDER BY updated_at DESC LIMIT 1`
 );
 
 const updateSessionTitle = db.prepare(
@@ -66,9 +106,26 @@ const updateSessionTitle = db.prepare(
    WHERE session_id = ?`
 );
 
+const updateSessionStarred = db.prepare(
+  `UPDATE sessions SET starred = ?, updated_at = datetime('now')
+   WHERE session_id = ?`
+);
+
 const deleteSessionStmt = db.prepare(
   `DELETE FROM sessions WHERE session_id = ?`
 );
+
+const setTakeoverStmt = db.prepare(
+  `UPDATE sessions SET takeover_by = ?, takeover_at = datetime('now'), updated_at = datetime('now')
+   WHERE session_id = ?`
+);
+
+const clearTakeoverStmt = db.prepare(
+  `UPDATE sessions SET takeover_by = NULL, takeover_at = NULL, updated_at = datetime('now')
+   WHERE session_id = ?`
+);
+
+
 
 // --- Message counter for flush ---
 
@@ -78,9 +135,9 @@ const FLUSH_EVERY = 20;
 
 // --- API ---
 
-export function createSession(userId: string, agentId = "system.main"): Session {
+export function createSession(userId: string, agentId = "system.main", channelId?: string): Session {
   const sessionId = randomUUID();
-  insertSession.run(sessionId, userId, agentId);
+  insertSession.run(sessionId, userId, agentId, channelId ?? null);
 
   // Persist session to filesystem
   initPersistentSession(agentId, sessionId, userId);
@@ -90,8 +147,14 @@ export function createSession(userId: string, agentId = "system.main"): Session 
     session_id: sessionId,
     user_id: userId,
     agent_id: agentId,
+    channel_id: channelId ?? null,
     sdk_session_id: null,
     title: null,
+    starred: 0,
+    takeover_by: null,
+    takeover_at: null,
+    orchestration_path: null,
+    current_agent_id: null,
     created_at: now,
     updated_at: now,
   };
@@ -116,13 +179,17 @@ export function listSessions(userId?: string, agentId?: string): Session[] {
 
 export function updateSession(
   sessionId: string,
-  updates: { title?: string }
+  updates: { title?: string; starred?: boolean }
 ): Session | null {
   const session = getSession(sessionId);
   if (!session) return null;
 
   if (updates.title !== undefined) {
     updateSessionTitle.run(updates.title, sessionId);
+  }
+
+  if (updates.starred !== undefined) {
+    updateSessionStarred.run(updates.starred ? 1 : 0, sessionId);
   }
 
   return getSession(sessionId);
@@ -133,11 +200,83 @@ export function deleteSession(sessionId: string): boolean {
   return result.changes > 0;
 }
 
+export function setTakeover(sessionId: string, operatorSlug: string): Session | null {
+  setTakeoverStmt.run(operatorSlug, sessionId);
+  return getSession(sessionId);
+}
+
+export function releaseTakeover(sessionId: string): Session | null {
+  clearTakeoverStmt.run(sessionId);
+  return getSession(sessionId);
+}
+
+export function findOrCreateSession(agentId: string, userId: string, channelId: string): Session {
+  const existing = findSessionByChannelKey.get(agentId, userId, channelId) as Session | undefined;
+  if (existing) return existing;
+  return createSession(userId, agentId, channelId);
+}
+
+export function resolveLastActiveChannel(agentId: string, userId: string): string | null {
+  const row = lastActiveChannel.get(agentId, userId) as { channel_id: string } | undefined;
+  return row?.channel_id ?? null;
+}
+
+// --- Orchestration ---
+
+interface HandoffRow {
+  member_id: string;
+  label: string;
+  trigger_intent: string;
+  priority: number;
+}
+
+async function resolveRoutingDecision(
+  message: string,
+  handoffs: HandoffRow[]
+): Promise<{ action: "delegate"; to: string } | { action: "respond" }> {
+  const handoffsList = handoffs
+    .map((h) => `- ${h.member_id}: ${h.label} (${h.trigger_intent})`)
+    .join("\n");
+
+  const routingPrompt = `<orchestration>
+Voce e um supervisor. Analise a mensagem do usuario e decida:
+1. Responda diretamente se nao se enquadra em nenhuma especialidade listada
+2. Delegue para o especialista correto se a intencao se encaixar:
+${handoffsList}
+Responda APENAS com JSON: {"action": "delegate", "to": "agent_id"} ou {"action": "respond"}
+</orchestration>
+
+Mensagem do usuario: ${message}`;
+
+  let result = "";
+  for await (const event of runAgent(routingPrompt, { role: "conversation" })) {
+    if (event.type === "text" && event.content) result += event.content;
+    if (event.type === "result" && event.content) result = event.content;
+  }
+
+  const match = result.match(/\{[^{}]+\}/s);
+  if (!match) return { action: "respond" };
+  try {
+    return JSON.parse(match[0]) as { action: "delegate"; to: string } | { action: "respond" };
+  } catch {
+    return { action: "respond" };
+  }
+}
+
 export async function* sendMessage(
   userId: string,
   sessionId: string,
-  message: string
+  content: string | ContentPart[],
+  opts?: { rich?: boolean }
 ): AsyncGenerator<AgentEvent> {
+  // Extract text portion for hooks, logging, security checks, and memory search
+  const message = typeof content === "string"
+    ? content
+    : content
+        .filter((p): p is Extract<ContentPart, { type: "text" }> => p.type === "text")
+        .map((p) => p.text)
+        .join(" ");
+
   const session = getSession(sessionId);
   if (!session) {
     throw new Error("Session not found");
@@ -150,12 +289,49 @@ export async function* sendMessage(
     throw new Error(`Agent ${agentId} not found`);
   }
 
-  // Persist user message
-  appendMessage(agentId, sessionId, {
-    ts: new Date().toISOString(),
-    role: "user",
-    content: message,
-  });
+  // Takeover: session is under operator control
+  if (session.takeover_by !== null) {
+    const isOperator = userId === session.takeover_by;
+
+    if (isOperator) {
+      // Operator message: saved as assistant with operator metadata, no agent
+      appendModelMessage(agentId, sessionId, {
+        role: "assistant",
+        content: message,
+        _meta: { id: generateMessageId(), ts: new Date().toISOString(), metadata: { operator: true, operatorSlug: userId } },
+      });
+
+      await triggerHook({
+        ts: Date.now(),
+        hookEvent: "message:sent",
+        userId,
+        sessionId,
+        content: message,
+      });
+
+      yield { type: "result", content: message };
+      return;
+    } else {
+      // External user message during takeover: saved normally, no agent
+      appendModelMessage(agentId, sessionId, {
+        role: "user",
+        content: message,
+        _meta: { id: generateMessageId(), ts: new Date().toISOString(), userId },
+      });
+
+      await triggerHook({
+        ts: Date.now(),
+        hookEvent: "message:received",
+        userId,
+        sessionId,
+        message,
+      });
+
+      return;
+    }
+  }
+
+  // User message is persisted by ai-sdk via saveSession (unified persistence)
 
   await triggerHook({
     ts: Date.now(),
@@ -165,37 +341,129 @@ export async function* sendMessage(
     message,
   });
 
-  const prompt = await assembleConversationPrompt(agentId, message, userId);
+  // Security filter — check before running agent
+  const securityResult = await checkMessageSecurity(message, agentId, sessionId);
+  if (securityResult.action === "blocked") {
+    const errorMsg = "Mensagem nao permitida pelo sistema de seguranca.";
+    const ts = new Date().toISOString();
+    appendModelMessage(agentId, sessionId, {
+      role: "user",
+      content: message,
+      _meta: { id: generateMessageId(), ts, userId },
+    });
+    appendModelMessage(agentId, sessionId, {
+      role: "assistant",
+      content: errorMsg,
+      _meta: { id: generateMessageId(), ts },
+    });
+    yield { type: "result", content: errorMsg };
+    return;
+  }
+  // flagged: continue to agent, already logged in security_events
+
+  // --- Quota enforcement ---
+  const quotaCheck = checkExceeded(agentId, "conversation");
+  if (quotaCheck.exceeded) {
+    const quotas = getQuotas(agentId);
+    if (quotas.pauseOnExceed !== false) {
+      pauseAgent(agentId);
+      eventBus.emit("agent:quota-exceeded", {
+        ts: Date.now(),
+        agentId,
+        quota: quotaCheck.reason ?? "unknown",
+        value: 0,
+      });
+      const errorMsg = "Agente pausado: limite de quota atingido.";
+      const ts = new Date().toISOString();
+      appendModelMessage(agentId, sessionId, {
+        role: "user",
+        content: message,
+        _meta: { id: generateMessageId(), ts, userId },
+      });
+      appendModelMessage(agentId, sessionId, {
+        role: "assistant",
+        content: errorMsg,
+        _meta: { id: generateMessageId(), ts },
+      });
+      yield { type: "result", content: errorMsg };
+      return;
+    } else {
+      console.warn(`[conversation:${agentId}] quota exceeded (pause_on_exceed=false): ${quotaCheck.reason}`);
+    }
+  }
+  // --- End quota enforcement ---
+
+  // --- Orchestration: supervisor routing ---
+  let effectiveAgentId = agentId;
+  if (agent.role === "supervisor") {
+    const handoffs = selectHandoffsForSupervisor.all(agentId) as HandoffRow[];
+    if (handoffs.length > 0) {
+      const decision = await resolveRoutingDecision(message, handoffs);
+      if (decision.action === "delegate") {
+        const memberAgent = getAgent(decision.to);
+        if (memberAgent) {
+          // Update session orchestration state
+          const pathRow = selectOrchestrationPath.get(sessionId) as
+            | { orchestration_path: string | null }
+            | undefined;
+          const currentPath: string[] = pathRow?.orchestration_path
+            ? (JSON.parse(pathRow.orchestration_path) as string[])
+            : [];
+          currentPath.push(decision.to);
+          updateOrchestration.run(
+            decision.to,
+            JSON.stringify(currentPath),
+            sessionId
+          );
+
+          effectiveAgentId = decision.to;
+        }
+      }
+    }
+  }
+  // --- End orchestration ---
+
+  const assembled = await assemblePrompt(effectiveAgentId, "conversation", { userMessage: message, channelId: session.channel_id ?? undefined, rich: opts?.rich });
+  if (!assembled) {
+    throw new Error(`Agent ${effectiveAgentId} has no conversation instructions`);
+  }
 
   let fullText = "";
-  let sdkSessionId = session.sdk_session_id ?? undefined;
+  let usageData: UsageData | undefined;
   const agentStartMs = Date.now();
+
+  // Expose agent identity to tools (used by cron, job tools)
+  process.env.AGENT_ID = effectiveAgentId;
 
   await triggerHook({
     ts: Date.now(),
     hookEvent: "agent:before",
-    agentId,
+    agentId: effectiveAgentId,
     role: "conversation",
     sessionId,
-    prompt,
+    prompt: assembled.userMessage,
   });
 
-  for await (const event of runAgent(prompt, {
-    sdkSessionId,
+  const conversationDir = join(agentDir(agentId), "conversations", sessionId);
+  const conversationTools = composeAgentTools(effectiveAgentId, "conversation", { sessionId, userId });
+  const contentPartsArg = Array.isArray(content) ? (content as unknown[]) : undefined;
+  for await (const event of instrumentedRunAgent(effectiveAgentId, "chat", assembled.userMessage, {
+    sessionDir: conversationDir,
+    messageMeta: { id: generateMessageId(), userId },
     role: "conversation",
-    tools: createMemoryKaiTools(agentId),
+    tools: conversationTools,
+    system: assembled.system,
+    disableDisplayTools: !(opts?.rich ?? false),
+    ...(contentPartsArg ? { contentParts: contentPartsArg } : {}),
   })) {
-    // Capture SDK session on first init for future resume
-    if (event.type === "init" && event.sessionId) {
-      setSdkSessionId.run(event.sessionId, sessionId);
-      sdkSessionId = event.sessionId;
-    }
-
     if (event.type === "text" && event.content) {
       fullText += event.content;
     }
     if (event.type === "result" && event.content) {
       fullText = event.content;
+    }
+    if (event.type === "usage" && event.usage) {
+      usageData = event.usage as UsageData;
     }
 
     yield event;
@@ -204,21 +472,34 @@ export async function* sendMessage(
   await triggerHook({
     ts: Date.now(),
     hookEvent: "agent:after",
-    agentId,
+    agentId: effectiveAgentId,
     role: "conversation",
     sessionId,
     resultText: fullText,
     durationMs: Date.now() - agentStartMs,
   });
 
-  // Persist assistant message
-  if (fullText) {
-    appendMessage(agentId, sessionId, {
-      ts: new Date().toISOString(),
-      role: "assistant",
-      content: fullText,
+  if (usageData) {
+    trackCost({
+      agentId: effectiveAgentId,
+      operation: "conversation",
+      tokensIn: usageData.inputTokens,
+      tokensOut: usageData.outputTokens,
+      costUsd: usageData.totalCostUsd,
     });
+    recordUsage(effectiveAgentId, usageData.inputTokens, usageData.outputTokens, "conversation");
+  }
 
+  const durationMs = Date.now() - agentStartMs;
+  trackConversation({
+    agentId: effectiveAgentId,
+    messagesIn: 1,
+    messagesOut: fullText ? 1 : 0,
+    durationMs,
+  });
+
+  // Assistant message is persisted by ai-sdk via saveSession (unified persistence)
+  if (fullText) {
     await triggerHook({
       ts: Date.now(),
       hookEvent: "message:sent",
@@ -240,7 +521,7 @@ export async function* sendMessage(
   if (count % FLUSH_EVERY === 0) {
     flushMemory({
       agentId,
-      sdkSessionId,
+      sessionId,
     }).catch((err) => {
       console.warn("[memory-flush] background flush failed:", err);
     });

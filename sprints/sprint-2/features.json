@@ -1,0 +1,368 @@
+[
+  {
+    "id": "F-031",
+    "name": "Endpoint /system/dashboard + API module",
+    "description": "Criar endpoint GET /system/dashboard em routes/system.ts que agrega dados de heartbeat_log, sessions, cron_run_log, registries de agentes e jobs. Retorna contagens, custos do dia, recentActivity (UNION de logs), proximos cron jobs. No Hub, criar api/dashboard.ts com dashboardQueryOptions().",
+    "status": "passing",
+    "completed_at": "2026-03-07T14:00:00Z",
+    "priority": 1,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [],
+    "tests": [
+      "GET /system/dashboard retorna JSON com agents, heartbeats, conversations, cronJobs, jobs, recentActivity, system",
+      "recentActivity retorna ultimos 20 eventos ordenados por ts DESC",
+      "Filtro today usa date(ts) = date('now')",
+      "api/dashboard.ts exporta dashboardQueryOptions com queryKey ['dashboard']"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-2/worktree/sprints/sprint-2/3-prps/PRP-08-dashboard-sistema.md"
+  },
+  {
+    "id": "F-044",
+    "name": "Schema DB + endpoints de notificacoes",
+    "description": "Criar tabelas notifications e push_subscriptions no SQLite com indices. Criar routes/notifications.ts com endpoints: GET /notifications (filtros, paginacao), GET /notifications/count, PATCH /:id/read, POST /read-all, DELETE /:id, POST /push/subscribe, DELETE /push/subscribe. Emitir evento SSE notification:new.",
+    "status": "passing",
+    "completed_at": "2026-03-07T14:30:00Z",
+    "priority": 2,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [],
+    "tests": [
+      "Tabelas notifications e push_subscriptions criadas com indices",
+      "GET /notifications retorna rows + total com filtros e paginacao",
+      "GET /notifications/count retorna { unread: N }",
+      "PATCH /:id/read marca como lida",
+      "POST /read-all marca todas como lidas",
+      "Evento SSE notification:new emitido ao inserir"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-2/worktree/sprints/sprint-2/3-prps/PRP-12-notificacoes-alertas.md"
+  },
+  {
+    "id": "F-041",
+    "name": "Endpoint /jobs/:id/stream + API module",
+    "description": "Criar endpoint SSE GET /jobs/:id/stream em routes/jobs.ts. Emite eventos stdout, stderr e status conforme linhas chegam. Para jobs concluidos, retorna acumulado + status e encerra. No Hub, criar api/jobs.ts com jobsQueryOptions() e jobQueryOptions().",
+    "status": "passing",
+    "completed_at": "2026-03-07T15:00:00Z",
+    "priority": 3,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [],
+    "tests": [
+      "GET /jobs/:id/stream retorna SSE com eventos stdout, stderr, status",
+      "Jobs concluidos retornam acumulado e encerram",
+      "api/jobs.ts exporta jobsQueryOptions e jobQueryOptions"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-2/worktree/sprints/sprint-2/3-prps/PRP-11-supervisor-jobs.md"
+  },
+  {
+    "id": "F-035",
+    "name": "Tab LLM com selector de plano",
+    "description": "Reestruturar /settings com sub-rotas (LLM, Web Search, Usuarios placeholder, Sistema). Criar components/settings/llm-plan-card.tsx. Cards lado a lado mostrando label, descricao, modelos por role, effort, thinking. Plano ativo com badge + borda. Botao Ativar faz PATCH /settings/llm, toast, invalida query.",
+    "status": "passing",
+    "completed_at": "2026-03-07T16:00:00Z",
+    "priority": 4,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [],
+    "tests": [
+      "Pagina /settings exibe planos LLM como cards",
+      "Plano ativo tem badge 'Ativo' e borda destacada",
+      "Clicar 'Ativar' troca plano no backend e mostra toast",
+      "Cada card mostra modelos por role, effort e thinking",
+      "Tabs navegaveis por URL (sub-rotas)",
+      "Layout responsivo: cards lado a lado desktop, empilhados mobile"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-2/worktree/sprints/sprint-2/3-prps/PRP-09-configuracoes-llm.md"
+  },
+  {
+    "id": "F-032",
+    "name": "DashboardPage com StatCards",
+    "description": "Substituir redirect em routes/_authenticated/index.tsx por DashboardPage. Criar components/dashboard/stat-card.tsx. Exibir 6 cards em grid (agentes, heartbeats, custos, conversas, cron jobs, jobs) com cor de status, click navegavel. SSE invalida ['dashboard'] em heartbeat:status e job:status.",
+    "status": "passing",
+    "completed_at": "2026-03-07T16:30:00Z",
+    "priority": 5,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-031"
+    ],
+    "tests": [
+      "Rota / renderiza dashboard (nao redireciona para /agents)",
+      "6 cards de resumo exibem dados do backend",
+      "Cards clicaveis navegam para pagina correspondente",
+      "Card heartbeats muda cor conforme taxa de erro (>10% amarelo, >25% vermelho)",
+      "Grid responsivo: 3 colunas desktop, 2 mobile"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-2/worktree/sprints/sprint-2/3-prps/PRP-08-dashboard-sistema.md"
+  },
+  {
+    "id": "F-033",
+    "name": "ActivityTimeline com filtros",
+    "description": "Criar components/dashboard/activity-timeline.tsx. Timeline vertical com eventos recentes (heartbeat, cron, conversa). Icone por tipo, badge status, timestamp relativo, preview expandivel. Filtro por tipo via toggle group client-side. Maximo 20 eventos. SSE atualiza via invalidacao.",
+    "status": "passing",
+    "completed_at": "2026-03-07T17:00:00Z",
+    "priority": 6,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-031"
+    ],
+    "tests": [
+      "Timeline exibe ultimos 20 eventos com icone, status, hora e preview",
+      "Filtro por tipo (heartbeat/cron/conversa) funciona",
+      "Preview truncado expandivel com click",
+      "SSE heartbeat:status atualiza timeline sem refresh"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-2/worktree/sprints/sprint-2/3-prps/PRP-08-dashboard-sistema.md"
+  },
+  {
+    "id": "F-045",
+    "name": "Gerador de notificacoes no backend",
+    "description": "Inserir notificacoes nos pontos criticos: heartbeat/index.ts (heartbeat_error), cron/index.ts (cron_error, cron_ok), jobs/engine.ts (job_completed, job_failed). Cada insercao: INSERT + emitir SSE + push se severity error/warning. Dependencia web-push com VAPID keys opcionais.",
+    "status": "passing",
+    "completed_at": "2026-03-07T17:30:00Z",
+    "priority": 7,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-044"
+    ],
+    "tests": [
+      "Heartbeat com erro gera notificacao tipo heartbeat_error",
+      "Cron job com erro gera notificacao tipo cron_error",
+      "Job falho gera notificacao tipo job_failed",
+      "Push enviado para subscriptions quando severity error/warning",
+      "Push desabilitado graciosamente se VAPID keys ausentes"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-2/worktree/sprints/sprint-2/3-prps/PRP-12-notificacoes-alertas.md"
+  },
+  {
+    "id": "F-046",
+    "name": "NotificationBell + popover no header",
+    "description": "Criar components/notifications/notification-bell.tsx. Bell icon no header com badge vermelho de nao lidas. Popover com 5 recentes: icone por severidade, titulo, agente, hora, bolinha nao lida. Click marca lida e navega. Rodape: marcar todas, ver todas. SSE notification:new invalida queries e toast para errors.",
+    "status": "passing",
+    "completed_at": "2026-03-07T18:00:00Z",
+    "priority": 8,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-044"
+    ],
+    "tests": [
+      "Bell icon exibe contagem de nao lidas",
+      "Click abre popover com 5 notificacoes recentes",
+      "Click na notificacao marca como lida e navega",
+      "Marcar todas como lidas funciona",
+      "SSE notification:new atualiza badge sem refresh",
+      "Toast sonner para notificacoes de severidade error"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-2/worktree/sprints/sprint-2/3-prps/PRP-12-notificacoes-alertas.md"
+  },
+  {
+    "id": "F-042",
+    "name": "Lista de jobs em /jobs",
+    "description": "Criar rota /jobs com tabela: status badge, agente, comando truncado, inicio, duracao, CPU, memoria. Filtros por status e agente. SSE job:status invalida ['jobs']. Click na linha abre drawer. Adicionar 'Jobs' ao menu lateral.",
+    "status": "passing",
+    "completed_at": "2026-03-07T18:30:00Z",
+    "priority": 9,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-041"
+    ],
+    "tests": [
+      "Rota /jobs exibe lista de jobs",
+      "Filtro por status funciona (todos/rodando/concluidos/falhos)",
+      "Filtro por agente funciona",
+      "SSE job:status atualiza lista automaticamente",
+      "Menu lateral inclui Jobs",
+      "Layout responsivo: tabela desktop, cards mobile"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-2/worktree/sprints/sprint-2/3-prps/PRP-11-supervisor-jobs.md"
+  },
+  {
+    "id": "F-036",
+    "name": "Tab Web Search",
+    "description": "Criar components/settings/web-search-settings.tsx. Select com opcoes DuckDuckGo, Brave, Nenhum. Save automatico ao mudar selecao via PATCH /settings/web-search. Toast de confirmacao. Fetch via webSearchSettingsQueryOptions().",
+    "status": "passing",
+    "completed_at": "2026-03-07T19:00:00Z",
+    "priority": 10,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-035"
+    ],
+    "tests": [
+      "Tab Web Search exibe selector de provedor",
+      "Mudar selecao salva automaticamente no backend",
+      "Toast confirma alteracao"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-2/worktree/sprints/sprint-2/3-prps/PRP-09-configuracoes-llm.md"
+  },
+  {
+    "id": "F-037",
+    "name": "Tab Sistema (info + env vars)",
+    "description": "Criar components/settings/system-info.tsx. Cards somente leitura: versao, Node.js, plataforma, status de API keys (presente/ausente), diretorio de contexto. Fetch via systemInfoQueryOptions() e GET /system/env.",
+    "status": "passing",
+    "completed_at": "2026-03-07T19:30:00Z",
+    "priority": 11,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-035"
+    ],
+    "tests": [
+      "Tab Sistema mostra versao, Node.js e plataforma",
+      "Status de API keys exibe presente/ausente (nao valores)",
+      "Cards somente leitura sem edicao"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-2/worktree/sprints/sprint-2/3-prps/PRP-09-configuracoes-llm.md"
+  },
+  {
+    "id": "F-038",
+    "name": "Lista de usuarios em /settings/users",
+    "description": "Substituir placeholder da tab Usuarios em /settings/users. Fetch via usersQueryOptions(). Tabela (desktop) / cards (mobile) com nome, slug, email, permission badges, max agentes. Botao 'Novo usuario' abre dialog. Click na linha abre edicao. Sysuser com badge especial nao editavel.",
+    "status": "passing",
+    "completed_at": "2026-03-07T20:00:00Z",
+    "priority": 12,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-035"
+    ],
+    "tests": [
+      "Lista exibe todos os usuarios cadastrados",
+      "Permissoes exibidas como badges coloridos",
+      "Sysuser com badge especial e nao editavel",
+      "Layout responsivo: tabela desktop, cards mobile"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-2/worktree/sprints/sprint-2/3-prps/PRP-10-gestao-usuarios.md"
+  },
+  {
+    "id": "F-034",
+    "name": "UpcomingCronJobs + navegacao dashboard",
+    "description": "Criar components/dashboard/upcoming-cron-jobs.tsx. Tabela compacta com 5 proximos cron jobs (agente badge, slug, horario relativo). Link 'Ver todos' para /cron. Adicionar 'Dashboard' como primeiro item do menu lateral com icone LayoutDashboard.",
+    "status": "passing",
+    "completed_at": "2026-03-07T20:30:00Z",
+    "priority": 13,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-032"
+    ],
+    "tests": [
+      "Proximos 5 cron jobs listados com horario relativo",
+      "Link 'Ver todos' navega para /cron",
+      "Menu lateral inclui 'Dashboard' como primeiro item",
+      "Dashboard responsivo e completo com cards + timeline + cron jobs"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-2/worktree/sprints/sprint-2/3-prps/PRP-08-dashboard-sistema.md"
+  },
+  {
+    "id": "F-043",
+    "name": "Detalhe do job com TerminalOutput",
+    "description": "Rota /jobs/:id como drawer. Header com status, agente, PID, botoes Cancelar/Limpar. components/jobs/terminal-output.tsx com fundo escuro, monoespaco, stderr vermelho, auto-scroll toggle. Jobs ativos conectam no SSE /jobs/:id/stream. Metricas: CPU, memoria, exit code, duracao.",
+    "status": "passing",
+    "completed_at": "2026-03-07T21:00:00Z",
+    "priority": 14,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-042"
+    ],
+    "tests": [
+      "Click na linha abre drawer com detalhe",
+      "Stdout/stderr em terminal view com cores distintas",
+      "Jobs ativos mostram stdout em streaming via SSE",
+      "Auto-scroll funciona e pode ser desabilitado",
+      "Cancelar mata job e atualiza status",
+      "Limpar remove job concluido"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-2/worktree/sprints/sprint-2/3-prps/PRP-11-supervisor-jobs.md"
+  },
+  {
+    "id": "F-039",
+    "name": "Formulario criar/editar usuario",
+    "description": "Criar components/users/user-form.tsx com React Hook Form + Zod. Dialog com campos: slug, nome, email, senha, confirmar senha, switches de permissoes, max agentes. Criacao via POST /users, edicao via PATCH /users/:slug. Slug readonly na edicao, senha opcional na edicao.",
+    "status": "passing",
+    "completed_at": "2026-03-07T21:30:00Z",
+    "priority": 15,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-038"
+    ],
+    "tests": [
+      "Formulario valida slug (kebab-case, 3-30 chars), nome (2-100), senha (min 6)",
+      "Criar usuario funciona e aparece na lista",
+      "Editar usuario atualiza nome, email, permissoes",
+      "Senha opcional na edicao (vazio = nao alterar)",
+      "Slug readonly na edicao"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-2/worktree/sprints/sprint-2/3-prps/PRP-10-gestao-usuarios.md"
+  },
+  {
+    "id": "F-047",
+    "name": "Central de notificacoes /notifications",
+    "description": "Criar rota /notifications. Lista paginada (50/pagina) com filtros por tipo, estado (todas/nao lidas) e agente. Cada item: icone severidade, titulo, corpo expandivel, agente badge, hora, acoes (marcar lida, excluir). Bulk 'marcar todas como lidas'. SSE notification:new atualiza lista.",
+    "status": "passing",
+    "completed_at": "2026-03-07T22:00:00Z",
+    "priority": 16,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-046"
+    ],
+    "tests": [
+      "Pagina /notifications lista notificacoes com paginacao",
+      "Filtros por tipo, estado e agente funcionam",
+      "Marcar como lida (individual) funciona",
+      "Excluir notificacao funciona",
+      "Marcar todas como lidas funciona",
+      "SSE atualiza lista sem refresh"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-2/worktree/sprints/sprint-2/3-prps/PRP-12-notificacoes-alertas.md"
+  },
+  {
+    "id": "F-040",
+    "name": "Excluir usuario + endpoint agentes do usuario",
+    "description": "Botao Excluir no dialog de edicao com ConfirmDialog. DELETE /users/:slug. Nao permite excluir system. Criar endpoint GET /users/:slug/agents no backbone para mostrar contagem de agentes do usuario na edicao.",
+    "status": "passing",
+    "completed_at": "2026-03-07T22:30:00Z",
+    "priority": 17,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-039"
+    ],
+    "tests": [
+      "Excluir usuario pede confirmacao",
+      "DELETE remove usuario do sistema",
+      "Nao permite excluir usuario system (botao oculto/desabilitado)",
+      "GET /users/:slug/agents retorna agentes do usuario"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-2/worktree/sprints/sprint-2/3-prps/PRP-10-gestao-usuarios.md"
+  },
+  {
+    "id": "F-048",
+    "name": "Push notifications PWA",
+    "description": "Criar components/notifications/push-permission-banner.tsx. Banner discreto pedindo permissao push. Registrar subscription via POST /push/subscribe. Push mostra titulo + corpo resumido. Click abre Hub na pagina relevante. Banner respeita escolha em localStorage. Push desabilitado se VAPID ausente.",
+    "status": "passing",
+    "completed_at": "2026-03-07T23:00:00Z",
+    "priority": 18,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-045",
+      "F-046"
+    ],
+    "tests": [
+      "Banner de permissao push aparece uma vez",
+      "Aceitar registra subscription no backend",
+      "Push notification chega quando Hub fechado (se VAPID configurado)",
+      "Click na push abre Hub na pagina relevante",
+      "Banner nao aparece se VAPID keys ausentes"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-2/worktree/sprints/sprint-2/3-prps/PRP-12-notificacoes-alertas.md"
+  }
+]

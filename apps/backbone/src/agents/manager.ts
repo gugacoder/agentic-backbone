@@ -1,6 +1,5 @@
 import {
   existsSync,
-  readFileSync,
   writeFileSync,
   mkdirSync,
   rmSync,
@@ -9,8 +8,8 @@ import {
 } from "node:fs";
 import { join } from "node:path";
 import { agentDir, agentsDir, agentConfigPath } from "../context/paths.js";
-import { parseFrontmatter, serializeFrontmatter } from "../context/frontmatter.js";
-import { updateFrontmatter, writeFileAtomic } from "../context/frontmatter-writer.js";
+import { readYaml, readYamlAs, writeYamlAs, readContextFile } from "../context/readers.js";
+import { AgentYmlSchema } from "../context/schemas.js";
 import { refreshAgentRegistry, getAgent } from "./registry.js";
 import type { AgentConfig } from "./types.js";
 
@@ -32,6 +31,7 @@ export interface UpdateAgentInput {
   heartbeatEnabled?: boolean;
   heartbeatInterval?: number;
   metadata?: Record<string, unknown>;
+  adapters?: string[];
 }
 
 export function createAgent(input: CreateAgentInput): AgentConfig {
@@ -46,9 +46,9 @@ export function createAgent(input: CreateAgentInput): AgentConfig {
   mkdirSync(join(dir, "conversations"), { recursive: true });
   mkdirSync(join(dir, "tasks"), { recursive: true });
   mkdirSync(join(dir, "skills"), { recursive: true });
-  mkdirSync(join(dir, "tools"), { recursive: true });
+  mkdirSync(join(dir, "services"), { recursive: true });
 
-  const meta: Record<string, unknown> = {
+  const config: Record<string, unknown> = {
     id: agentId,
     owner: input.owner,
     slug: input.slug,
@@ -56,16 +56,17 @@ export function createAgent(input: CreateAgentInput): AgentConfig {
     enabled: input.enabled ?? false,
     "heartbeat-enabled": input.heartbeatEnabled ?? false,
     "heartbeat-interval": input.heartbeatInterval ?? 30000,
+    description: input.description ?? "",
     ...input.metadata,
   };
 
-  const content = input.description ?? `# ${input.slug}\n`;
-  const md = serializeFrontmatter(meta, content);
-  writeFileSync(agentConfigPath(agentId), md);
+  writeYamlAs(agentConfigPath(agentId), config, AgentYmlSchema);
 
-  // Create default SOUL.md and HEARTBEAT.md
+  // Create default markdown files
   writeFileSync(join(dir, "SOUL.md"), `# ${input.slug} Soul\n\nDescribe this agent's identity and behavior.\n`);
   writeFileSync(join(dir, "HEARTBEAT.md"), `# Heartbeat Instructions\n\n- [ ] Add heartbeat tasks here\n`);
+  writeFileSync(join(dir, "CONVERSATION.md"), `# Conversation Instructions\n`);
+  writeFileSync(join(dir, "REQUEST.md"), `# Request Instructions\n`);
 
   refreshAgentRegistry();
   return getAgent(agentId)!;
@@ -77,27 +78,21 @@ export function updateAgent(agentId: string, updates: UpdateAgentInput): AgentCo
     throw new Error(`Agent ${agentId} not found`);
   }
 
-  // Build frontmatter updates
-  const fmUpdates: Record<string, unknown> = {};
-  if (updates.delivery !== undefined) fmUpdates.delivery = updates.delivery;
-  if (updates.enabled !== undefined) fmUpdates.enabled = updates.enabled;
-  if (updates.heartbeatEnabled !== undefined) fmUpdates["heartbeat-enabled"] = updates.heartbeatEnabled;
-  if (updates.heartbeatInterval !== undefined) fmUpdates["heartbeat-interval"] = updates.heartbeatInterval;
+  const config = readYamlAs(configPath, AgentYmlSchema) as Record<string, unknown>;
+
+  if (updates.delivery !== undefined) config.delivery = updates.delivery;
+  if (updates.enabled !== undefined) config.enabled = updates.enabled;
+  if (updates.heartbeatEnabled !== undefined) config["heartbeat-enabled"] = updates.heartbeatEnabled;
+  if (updates.heartbeatInterval !== undefined) config["heartbeat-interval"] = updates.heartbeatInterval;
+  if (updates.description !== undefined) config.description = updates.description;
+  if (updates.adapters !== undefined) config.adapters = updates.adapters;
   if (updates.metadata) {
     for (const [key, value] of Object.entries(updates.metadata)) {
-      fmUpdates[key] = value;
+      config[key] = value;
     }
   }
 
-  // Handle description (body content) change — requires full rewrite
-  if (updates.description !== undefined) {
-    const raw = readFileSync(configPath, "utf-8");
-    const { metadata } = parseFrontmatter(raw);
-    Object.assign(metadata, fmUpdates);
-    writeFileAtomic(configPath, serializeFrontmatter(metadata, updates.description));
-  } else if (Object.keys(fmUpdates).length > 0) {
-    updateFrontmatter(configPath, fmUpdates);
-  }
+  writeYamlAs(configPath, config, AgentYmlSchema);
 
   refreshAgentRegistry();
   return getAgent(agentId)!;
@@ -130,14 +125,13 @@ export function duplicateAgent(
 
   cpSync(sourceDir, destDir, { recursive: true });
 
-  // Update the AGENT.md with new identity
+  // Update the AGENT.yml with new identity
   const configPath = agentConfigPath(newId);
-  const raw = readFileSync(configPath, "utf-8");
-  const { metadata, content } = parseFrontmatter(raw);
-  metadata.id = newId;
-  metadata.owner = newOwner;
-  metadata.slug = newSlug;
-  writeFileSync(configPath, serializeFrontmatter(metadata, content));
+  const config = readYamlAs(configPath, AgentYmlSchema) as Record<string, unknown>;
+  config.id = newId;
+  config.owner = newOwner;
+  config.slug = newSlug;
+  writeYamlAs(configPath, config, AgentYmlSchema);
 
   refreshAgentRegistry();
   return getAgent(newId)!;
@@ -146,7 +140,7 @@ export function duplicateAgent(
 export function readAgentFile(agentId: string, filename: string): string | null {
   const filePath = join(agentDir(agentId), filename);
   if (!existsSync(filePath)) return null;
-  return readFileSync(filePath, "utf-8");
+  return readContextFile(filePath);
 }
 
 export function writeAgentFile(agentId: string, filename: string, content: string): void {

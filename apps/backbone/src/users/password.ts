@@ -1,13 +1,20 @@
-import { scryptSync, randomBytes, timingSafeEqual } from "node:crypto";
+import { timingSafeEqual } from "node:crypto";
 
-export function hashPassword(password: string): string {
-  const salt = randomBytes(16).toString("hex");
-  const hash = scryptSync(password, salt, 64).toString("hex");
-  return `${salt}:${hash}`;
+/** Minimum 12 chars, at least one letter and one digit. */
+const MIN_LENGTH = 12;
+const HAS_LETTER = /[a-zA-Z]/;
+const HAS_DIGIT = /\d/;
+
+export function validatePasswordPolicy(password: string): string | null {
+  if (password.length < MIN_LENGTH) return `senha deve ter no minimo ${MIN_LENGTH} caracteres`;
+  if (!HAS_LETTER.test(password)) return "senha deve conter pelo menos uma letra";
+  if (!HAS_DIGIT.test(password)) return "senha deve conter pelo menos um digito";
+  return null;
 }
 
-export function verifyPassword(password: string, stored: string): boolean {
-  const [salt, hash] = stored.split(":");
-  const test = scryptSync(password, salt, 64);
-  return timingSafeEqual(Buffer.from(hash, "hex"), test);
+export function verifyPassword(input: string, stored: string): boolean {
+  const a = Buffer.from(input, "utf-8");
+  const b = Buffer.from(stored, "utf-8");
+  if (a.length !== b.length) return false;
+  return timingSafeEqual(a, b);
 }

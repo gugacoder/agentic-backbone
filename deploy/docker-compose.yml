@@ -1,0 +1,190 @@
+# ==============================================================================
+# Agentic Backbone — Full Stack (Staging / Production)
+# ==============================================================================
+# Imagens vem do ghcr.io (GitHub Actions builda).
+# VPS so faz pull + up. Zero build local.
+#
+# Uso:
+#   docker compose pull    - Baixar imagens atualizadas
+#   docker compose up -d   - Subir/atualizar stack
+#   docker compose logs -f - Ver logs
+#   docker compose down    - Derrubar stack
+# ==============================================================================
+
+name: ab-${ENVIRONMENT}
+
+services:
+
+  # ============================================================================
+  # INIT — Cria diretorios de dados
+  # ============================================================================
+  init:
+    image: busybox:1.37
+    restart: "no"
+    command: |
+      sh -c "
+        mkdir -p /data/postgres /data/redis /data/backbone &&
+        chmod 777 /data /data/postgres /data/redis /data/backbone &&
+        echo 'Init complete'
+      "
+    volumes:
+      - ./data:/data
+    networks:
+      - internal
+
+  # ============================================================================
+  # POSTGRES
+  # ============================================================================
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    depends_on:
+      init:
+        condition: service_completed_successfully
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${PROJECT:-agentic-backbone}
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data
+    networks:
+      internal:
+        aliases:
+          - postgres.internal
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${PROJECT:-agentic-backbone}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # ============================================================================
+  # REDIS
+  # ============================================================================
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    depends_on:
+      init:
+        condition: service_completed_successfully
+    command: redis-server --appendonly yes
+    volumes:
+      - ./data/redis:/data
+    networks:
+      internal:
+        aliases:
+          - redis.internal
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ============================================================================
+  # BACKBONE — Node.js runtime
+  # ============================================================================
+  backbone:
+    image: ghcr.io/gugacoder/agentic-backbone/backbone:${TAG:-staging}
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      CONTEXT_FOLDER: /app/context
+      SERVER_HOST: 0.0.0.0
+    volumes:
+      - ../context:/app/context
+      - ./data/backbone:/app/apps/backbone/data
+    networks:
+      internal:
+        aliases:
+          - backbone.internal
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:${BACKBONE_PORT}/api/v1/ai/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # ============================================================================
+  # HUB — Vite React SPA (nginx)
+  # ============================================================================
+  hub:
+    image: ghcr.io/gugacoder/agentic-backbone/hub:${TAG:-staging}
+    restart: unless-stopped
+    networks:
+      internal:
+        aliases:
+          - hub.internal
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:80/hub/"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # ============================================================================
+  # CHAT — Vite React SPA (nginx)
+  # ============================================================================
+  chat:
+    image: ghcr.io/gugacoder/agentic-backbone/chat:${TAG:-staging}
+    restart: unless-stopped
+    networks:
+      internal:
+        aliases:
+          - chat.internal
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:80/chat/"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # ============================================================================
+  # CADDY — Reverse proxy (unico servico exposto ao Traefik)
+  # ============================================================================
+  caddy:
+    image: caddy:alpine
+    restart: unless-stopped
+    depends_on:
+      backbone:
+        condition: service_healthy
+      hub:
+        condition: service_healthy
+      chat:
+        condition: service_healthy
+    environment:
+      PUBLIC_PORT: 80
+      BACKBONE_HOST: backbone.internal
+      BACKBONE_PORT: ${BACKBONE_PORT}
+      HUB_HOST: hub.internal
+      HUB_PORT: 80
+      CHAT_HOST: chat.internal
+      CHAT_PORT: 80
+      ADMINER_HOST: adminer.internal
+      ADMINER_PORT: 8080
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+    networks:
+      internal:
+      codr-net:
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=codr-net"
+      - "traefik.http.routers.ab-${ENVIRONMENT}.rule=Host(`${PUBLIC_DOMAIN}`)"
+      - "traefik.http.routers.ab-${ENVIRONMENT}.entrypoints=websecure"
+      - "traefik.http.routers.ab-${ENVIRONMENT}.tls.certresolver=letsencrypt"
+      - "traefik.http.services.ab-${ENVIRONMENT}.loadbalancer.server.port=80"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+networks:
+  internal:
+    driver: bridge
+  codr-net:
+    external: true

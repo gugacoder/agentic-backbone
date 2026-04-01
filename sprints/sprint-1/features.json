@@ -1,0 +1,641 @@
+[
+  {
+    "id": "F-001",
+    "name": "Setup Vite + React 19 + TanStack Router",
+    "description": "Criar apps/hub/ com Vite 6, React 19, TanStack Router (com plugin Vite), TypeScript. Configurar package.json, vite.config.ts (proxy /api para backbone), tsconfig.json (path alias @/*). Entry point main.tsx + App.tsx com RouterProvider.",
+    "status": "passing",
+    "priority": 1,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [],
+    "tests": [
+      "npm run dev:hub inicia sem erros na porta HUB_PORT",
+      "package.json contem react@19, react-dom@19, @tanstack/react-router",
+      "vite.config.ts tem proxy /api para backbone e plugin TanStackRouterVite",
+      "tsconfig.json com strict: true, target ES2022, path alias @/*"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-1/worktree/sprints/sprint-1/3-prps/PRP-01-scaffold-hub.md",
+    "completed_at": "2026-03-07T04:25:00Z"
+  },
+  {
+    "id": "F-002",
+    "name": "Tailwind CSS 4 + shadcn/ui + CSS tokens",
+    "description": "Instalar Tailwind CSS 4 + @tailwindcss/vite. Inicializar shadcn/ui com componentes base (button, card, input, label, badge, switch, select, dialog, dropdown-menu, tabs, table, tooltip, separator, sheet, sidebar, scroll-area, skeleton). Definir CSS tokens semanticos em index.css com suporte a dark mode via class strategy.",
+    "status": "passing",
+    "priority": 2,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-001"
+    ],
+    "tests": [
+      "index.css contem @import tailwindcss e CSS tokens semanticos",
+      "Componentes shadcn/ui importaveis (Button, Card, Input etc.)",
+      "Dark mode funciona via classe dark no html",
+      "Nenhuma cor Tailwind direta (bg-blue-500 etc.) no codigo fonte"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-1/worktree/sprints/sprint-1/3-prps/PRP-01-scaffold-hub.md",
+    "completed_at": "2026-03-07T04:35:00Z"
+  },
+  {
+    "id": "F-003",
+    "name": "Auth store + API client + Login page",
+    "description": "Criar lib/api.ts (request<T> com JWT injection e interceptacao 401), lib/auth.ts (useAuthStore Zustand com persist em localStorage, login/logout), routes/login.tsx (formulario email/senha, validacao, feedback de erro, redirect apos sucesso).",
+    "status": "passing",
+    "priority": 3,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-001",
+      "F-002"
+    ],
+    "tests": [
+      "Login com SYSUSER/SYSPASS redireciona para /agents",
+      "Login com credenciais invalidas exibe erro inline",
+      "Refresh mantem sessao (token persistido em localStorage)",
+      "request<T> injeta Authorization header automaticamente",
+      "Resposta 401 limpa token e redireciona para /login"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-1/worktree/sprints/sprint-1/3-prps/PRP-01-scaffold-hub.md",
+    "completed_at": "2026-03-07T04:36:00Z"
+  },
+  {
+    "id": "F-004",
+    "name": "Layout responsivo (sidebar + bottom nav)",
+    "description": "Criar routes/__root.tsx (root layout com QueryClientProvider), routes/_authenticated.tsx (auth guard, layout com sidebar/bottom nav), components/layout/app-sidebar.tsx (sidebar desktop com shadcn Sidebar), components/layout/bottom-nav.tsx (bottom nav mobile), components/layout/breadcrumb-bar.tsx (top bar com breadcrumbs e menu hamburger).",
+    "status": "passing",
+    "priority": 4,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-003"
+    ],
+    "tests": [
+      "Layout exibe sidebar em desktop (>= 768px)",
+      "Layout exibe bottom nav em mobile (< 768px)",
+      "Navegacao entre items funciona sem reload",
+      "Breadcrumb exibe rota atual",
+      "Rotas protegidas redirecionam para /login sem token"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-1/worktree/sprints/sprint-1/3-prps/PRP-01-scaffold-hub.md",
+    "completed_at": "2026-03-07T05:00:00Z"
+  },
+  {
+    "id": "F-005",
+    "name": "SSE hook + Query client + UI store",
+    "description": "Criar lib/query-client.ts (QueryClient com staleTime 30s), hooks/use-sse.ts (conecta em /system/events, reconexao com backoff, invalida queries por tipo de evento), lib/store.ts (useUIStore Zustand com sidebarOpen e theme com persist).",
+    "status": "passing",
+    "priority": 5,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-003"
+    ],
+    "tests": [
+      "SSE conecta ao backbone e exibe connected: true",
+      "Reconexao automatica apos desconexao",
+      "Evento heartbeat:status invalida query de stats do agente",
+      "Tema dark/light funciona via toggle e persiste entre reloads"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-1/worktree/sprints/sprint-1/3-prps/PRP-01-scaffold-hub.md",
+    "completed_at": "2026-03-07T05:10:00Z"
+  },
+  {
+    "id": "F-006",
+    "name": "PWA + paginas placeholder + componentes shared",
+    "description": "Configurar vite-plugin-pwa (manifest, service worker). Criar paginas placeholder para todas as rotas (agents, conversations, channels, cron, settings) com redirect index->agents. Criar componentes shared: page-header, empty-state, status-badge, confirm-dialog. Criar stubs de API query factories em api/.",
+    "status": "passing",
+    "priority": 6,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-004",
+      "F-005"
+    ],
+    "tests": [
+      "PWA instalavel com manifest e service worker",
+      "Todas as rotas placeholder renderizam titulo da secao",
+      "/ redireciona para /agents",
+      "npm run build:hub gera build de producao sem erros",
+      "Componentes shared (PageHeader, EmptyState, StatusBadge, ConfirmDialog) importaveis"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-1/worktree/sprints/sprint-1/3-prps/PRP-01-scaffold-hub.md",
+    "completed_at": "2026-03-07T05:20:00Z"
+  },
+  {
+    "id": "F-007",
+    "name": "Lista de agentes + AgentCard",
+    "description": "Substituir placeholder /agents: fetch agentes e stats, grid responsivo de AgentCards (1/2/3 cols), busca por nome, filtro ativo/inativo, toggle enabled via switch no card, click navega para /agents/:id. SSE heartbeat:status atualiza card em tempo real com icone pulsante.",
+    "status": "passing",
+    "priority": 7,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-006"
+    ],
+    "tests": [
+      "Pagina /agents lista todos os agentes do backbone",
+      "Cards mostram nome, owner, status, ultima atividade, custo",
+      "Heartbeat ativo pulsa visualmente via CSS animation",
+      "Toggle enabled/disabled atualiza backbone e UI sem reload",
+      "Busca filtra agentes por nome",
+      "Filtro ativo/inativo funciona",
+      "Grid responsivo: 1/2/3 colunas conforme breakpoint"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-1/worktree/sprints/sprint-1/3-prps/PRP-02-dashboard-agentes.md",
+    "completed_at": "2026-03-07T05:30:00Z"
+  },
+  {
+    "id": "F-008",
+    "name": "Pagina de detalhe do agente + tabs",
+    "description": "Criar routes/_authenticated/agents.$id.tsx: fetch agente, layout com tabs horizontais (Visao Geral, Configuracao, Conversas, Memoria, Agenda). Tab ativa via search param ?tab=. Tabs nao implementadas ficam como placeholder. Header com breadcrumb, StatusBadge, botoes de acao.",
+    "status": "passing",
+    "priority": 8,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-007"
+    ],
+    "tests": [
+      "Click no AgentCard navega para /agents/:id",
+      "5 tabs renderizam (Visao Geral, Configuracao, Conversas, Memoria, Agenda)",
+      "Tab ativa persiste na URL via ?tab=overview",
+      "Header exibe breadcrumb Agentes > slug e StatusBadge",
+      "Tabs placeholder exibem mensagem Em breve"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-1/worktree/sprints/sprint-1/3-prps/PRP-02-dashboard-agentes.md",
+    "completed_at": "2026-03-07T06:00:00Z"
+  },
+  {
+    "id": "F-009",
+    "name": "Metricas de heartbeat",
+    "description": "Criar components/agents/agent-metrics.tsx: grid de 4 cards numericos (total execucoes, por status ok/skipped/error, custo total USD, duracao media). Fetch via agentStatsQueryOptions. SSE heartbeat:status invalida query de stats.",
+    "status": "passing",
+    "priority": 9,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-008"
+    ],
+    "tests": [
+      "Tab Visao Geral exibe 4 cards de metricas",
+      "Numeros formatados com separador de milhar",
+      "Custo formatado com 4 decimais",
+      "Metricas atualizam apos evento SSE heartbeat:status"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-1/worktree/sprints/sprint-1/3-prps/PRP-02-dashboard-agentes.md",
+    "completed_at": "2026-03-07T06:10:00Z"
+  },
+  {
+    "id": "F-010",
+    "name": "Timeline de heartbeat + acoes do agente",
+    "description": "Criar components/agents/heartbeat-timeline.tsx: lista dos ultimos 20 heartbeats com timestamp, status badge, duracao, preview expandivel. SSE prepend nova entry. Acoes: toggle heartbeat (switch), trigger manual (botao), nova conversa (cria sessao e navega).",
+    "status": "passing",
+    "priority": 10,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-009"
+    ],
+    "tests": [
+      "Timeline mostra ultimos heartbeats com status e preview",
+      "Preview expandivel com click",
+      "SSE heartbeat:status adiciona entry no topo da timeline",
+      "Toggle heartbeat funciona via switch",
+      "Trigger manual dispara heartbeat e resultado aparece na timeline",
+      "Botao Nova Conversa cria sessao e navega para /conversations/:id"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-1/worktree/sprints/sprint-1/3-prps/PRP-02-dashboard-agentes.md",
+    "completed_at": "2026-03-07T06:20:00Z"
+  },
+  {
+    "id": "F-011",
+    "name": "Formulario de criacao de agente",
+    "description": "Criar routes/_authenticated/agents.new.tsx e components/agents/agent-form.tsx: formulario com campos slug (kebab-case, validacao), owner (select), descricao, enabled (switch). POST /agents, redirect para /agents/:id?tab=config apos sucesso.",
+    "status": "passing",
+    "priority": 11,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-008"
+    ],
+    "tests": [
+      "Formulario em /agents/new cria agente no backbone",
+      "Slug invalido mostra erro de validacao",
+      "Slug duplicado mostra erro do backend inline",
+      "Sucesso redireciona para /agents/:id?tab=config",
+      "Botao cancelar volta para /agents"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-1/worktree/sprints/sprint-1/3-prps/PRP-03-gestao-agentes.md",
+    "completed_at": "2026-03-07T06:30:00Z"
+  },
+  {
+    "id": "F-012",
+    "name": "Editor markdown + sub-tabs de configuracao",
+    "description": "Substituir placeholder tab Configuracao: sub-tabs verticais (Identidade=SOUL.md, Conversa=CONVERSATION.md, Heartbeat=HEARTBEAT.md). Criar components/shared/markdown-editor.tsx: textarea monospace, toggle preview (react-markdown), auto-save debounce 2s via PUT /agents/:id/files/*, indicador de estado salvo/salvando/erro.",
+    "status": "passing",
+    "priority": 12,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-011"
+    ],
+    "tests": [
+      "Sub-tabs Identidade, Conversa, Heartbeat renderizam",
+      "Sub-tab ativa persiste na URL via ?subtab=identity",
+      "Edicao de SOUL.md salva automaticamente apos 2s",
+      "Indicador mostra Salvo/Salvando/Erro",
+      "Preview markdown renderiza headers, listas, codigo, links",
+      "Toggle preview funciona"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-1/worktree/sprints/sprint-1/3-prps/PRP-03-gestao-agentes.md",
+    "completed_at": "2026-03-07T06:40:00Z"
+  },
+  {
+    "id": "F-013",
+    "name": "Configuracao visual de heartbeat",
+    "description": "Criar components/agents/heartbeat-config.tsx: campos visuais para heartbeat enabled (switch), intervalo (slider + input, 10-3600s), horario ativo inicio/fim (time inputs), dias da semana (checkbox group). Fetch GET /agents/:id/heartbeat, save via PATCH. Preview legivel da configuracao. Botao Salvar explicito.",
+    "status": "passing",
+    "priority": 13,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-012"
+    ],
+    "tests": [
+      "Campos visuais de heartbeat renderizam com valores atuais",
+      "Preview mostra descricao legivel da configuracao",
+      "Alterar intervalo e salvar atualiza config no backbone",
+      "Slider e input numerico estao sincronizados",
+      "Dias da semana selecionaveis via checkboxes"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-1/worktree/sprints/sprint-1/3-prps/PRP-03-gestao-agentes.md",
+    "completed_at": "2026-03-07T06:50:00Z"
+  },
+  {
+    "id": "F-014",
+    "name": "Gestao de skills e tools",
+    "description": "Adicionar sub-tabs Skills e Tools na Configuracao. Criar components/shared/resource-assigner.tsx: lista de items com toggle de atribuicao, agrupamento por escopo (shared/system/agent), nome, descricao, badge de escopo. Fetch skills disponiveis e atribuidas, assign/unassign via POST.",
+    "status": "passing",
+    "priority": 14,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-012"
+    ],
+    "tests": [
+      "Sub-tab Skills lista skills disponiveis e atribuidas",
+      "Toggle atribui/remove skill do agente",
+      "Agrupamento por escopo funciona",
+      "Cada item mostra nome, descricao e badge de escopo"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-1/worktree/sprints/sprint-1/3-prps/PRP-03-gestao-agentes.md",
+    "completed_at": "2026-03-07T07:00:00Z"
+  },
+  {
+    "id": "F-015",
+    "name": "Acoes avancadas (duplicar, excluir agente)",
+    "description": "Adicionar sub-tab Avancado na Configuracao: secao Zona Perigosa com botao Duplicar Agente (POST /agents/:id/duplicate, navega para novo) e botao Excluir Agente (ConfirmDialog com input de confirmacao do slug, DELETE /agents/:id, navega para /agents).",
+    "status": "passing",
+    "priority": 15,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-012"
+    ],
+    "tests": [
+      "Sub-tab Avancado exibe zona perigosa",
+      "Duplicar agente cria novo e redireciona para detalhe",
+      "Excluir pede confirmacao com digitacao do slug",
+      "Excluir remove agente e redireciona para /agents"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-1/worktree/sprints/sprint-1/3-prps/PRP-03-gestao-agentes.md",
+    "completed_at": "2026-03-07T07:10:00Z"
+  },
+  {
+    "id": "F-016",
+    "name": "Lista de conversas",
+    "description": "Substituir placeholder /conversations: fetch sessoes, lista vertical com badge agente, titulo, preview ultima msg, timestamp relativo. Busca por titulo, filtro por agente (select). Botao Nova Conversa (dialog escolher agente, POST /conversations, navega para chat).",
+    "status": "passing",
+    "priority": 16,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-006"
+    ],
+    "tests": [
+      "Pagina /conversations lista sessoes do backbone",
+      "Cada item mostra agente, titulo, preview, timestamp",
+      "Busca por titulo filtra conversas",
+      "Filtro por agente funciona",
+      "Nova Conversa cria sessao e navega para /conversations/:id"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-1/worktree/sprints/sprint-1/3-prps/PRP-04-chat-conversas.md",
+    "completed_at": "2026-03-07T07:20:00Z"
+  },
+  {
+    "id": "F-017",
+    "name": "Chat view com streaming",
+    "description": "Criar routes/_authenticated/conversations.$id.tsx: fetch sessao e historico, MessageList com auto-scroll, MessageBubble (assistant esquerda/user direita, markdown via react-markdown com syntax highlight), streaming via streamMessage() de chat-stream.ts (concatenar text events, result substitui), StreamingIndicator com cursor piscante, AbortController.",
+    "status": "passing",
+    "priority": 17,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-016"
+    ],
+    "tests": [
+      "Historico de mensagens carrega ao abrir conversa",
+      "Mensagens exibem bubbles (assistant esquerda, user direita)",
+      "Markdown renderiza corretamente (headers, listas, codigo)",
+      "Resposta do agente aparece em streaming caracter a caracter",
+      "Cursor piscante durante streaming",
+      "Auto-scroll funciona durante streaming",
+      "Botao scroll-to-bottom aparece quando usuario scrollou para cima"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-1/worktree/sprints/sprint-1/3-prps/PRP-04-chat-conversas.md",
+    "completed_at": "2026-03-07T07:30:00Z"
+  },
+  {
+    "id": "F-018",
+    "name": "Input de mensagem + abort",
+    "description": "Criar components/chat/message-input.tsx: textarea expansivel (1-5 linhas, auto-resize), Enter envia / Shift+Enter nova linha, botao enviar (desabilitado se vazio ou streaming), durante streaming botao muda para Parar (chama onAbort), focus automatico, placeholder pt-BR.",
+    "status": "passing",
+    "priority": 18,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-017"
+    ],
+    "tests": [
+      "Mensagem enviada aparece como bubble do usuario imediatamente",
+      "Enter envia, Shift+Enter insere nova linha",
+      "Botao enviar desabilitado quando vazio ou streaming",
+      "Botao abort cancela streaming em andamento",
+      "Textarea expande ate 5 linhas",
+      "Focus automatico ao abrir chat"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-1/worktree/sprints/sprint-1/3-prps/PRP-04-chat-conversas.md",
+    "completed_at": "2026-03-07T08:00:00Z"
+  },
+  {
+    "id": "F-019",
+    "name": "Gerenciamento de sessoes",
+    "description": "Menu dropdown no header do chat: Renomear (dialog + PATCH), Exportar (GET /export + download), Excluir (ConfirmDialog + DELETE, navega para /conversations). Substituir placeholder tab Conversas em agents.$id.tsx com lista filtrada por agente.",
+    "status": "passing",
+    "priority": 19,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-017"
+    ],
+    "tests": [
+      "Renomear conversa atualiza titulo na UI",
+      "Exportar conversa baixa arquivo",
+      "Excluir conversa pede confirmacao e redireciona para lista",
+      "Tab Conversas no agente mostra conversas filtradas pelo agente"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-1/worktree/sprints/sprint-1/3-prps/PRP-04-chat-conversas.md",
+    "completed_at": "2026-03-07T08:30:00Z"
+  },
+  {
+    "id": "F-020",
+    "name": "Lista de canais + ChannelCard",
+    "description": "Substituir placeholder /channels: fetch canais, grid de ChannelCards com nome, tipo (badge com icone), owner, listeners, status conexao (StatusBadge). Filtro por tipo. Botao Novo Canal. Click navega para /channels/:slug.",
+    "status": "passing",
+    "priority": 20,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-006"
+    ],
+    "tests": [
+      "Pagina /channels lista canais do backbone",
+      "Cards mostram tipo com icone diferenciado (chat, whatsapp, voice)",
+      "Status de conexao exibido com badge colorido",
+      "Filtro por tipo funciona",
+      "Click no card navega para /channels/:slug"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-1/worktree/sprints/sprint-1/3-prps/PRP-05-canais-whatsapp.md",
+    "completed_at": "2026-03-07T09:00:00Z"
+  },
+  {
+    "id": "F-021",
+    "name": "Detalhe do canal + status + config",
+    "description": "Criar routes/_authenticated/channels.$slug.tsx: fetch canal, tabs (Status, Configuracao, Mensagens). Tab Status: info adapter, status conexao, botoes reconectar/desconectar, atribuicao a agente. Tab Configuracao: form edicao + botao excluir com ConfirmDialog. Tab ativa via ?tab=.",
+    "status": "passing",
+    "priority": 21,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-020"
+    ],
+    "tests": [
+      "Pagina /channels/:slug exibe detalhe com tabs",
+      "Tab Status mostra info do adapter e status conexao",
+      "Tab Configuracao permite editar canal",
+      "Excluir canal pede confirmacao",
+      "Tab ativa persiste na URL"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-1/worktree/sprints/sprint-1/3-prps/PRP-05-canais-whatsapp.md",
+    "completed_at": "2026-03-07T09:30:00Z"
+  },
+  {
+    "id": "F-022",
+    "name": "Setup WhatsApp (wizard QR Code)",
+    "description": "Criar components/channels/whatsapp-setup.tsx: wizard 3 passos. Passo 1: input nome instancia, POST /adapters com connector evolution. Passo 2: renderizar QR code (qrcode.react), polling condicional 5s para status, auto-refresh QR 30s. Passo 3: exibir numero pareado e status conectado, botao Concluir.",
+    "status": "passing",
+    "priority": 22,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-021"
+    ],
+    "tests": [
+      "Wizard exibe 3 passos sequenciais",
+      "Passo 1 cria instancia Evolution via POST /adapters",
+      "Passo 2 renderiza QR Code",
+      "QR Code atualiza automaticamente a cada 30s",
+      "Apos parear, avanca para passo 3 com status Conectado",
+      "Botao Concluir fecha wizard e invalida queries"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-1/worktree/sprints/sprint-1/3-prps/PRP-05-canais-whatsapp.md",
+    "completed_at": "2026-03-07T10:00:00Z"
+  },
+  {
+    "id": "F-023",
+    "name": "Feed de mensagens do canal",
+    "description": "Substituir placeholder tab Mensagens. Criar components/channels/channel-message-feed.tsx: conecta SSE /channels/:slug/events, timeline vertical com mensagens inbound/outbound, icone de direcao, remetente, conteudo, timestamp. Auto-scroll com novas mensagens.",
+    "status": "passing",
+    "priority": 23,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-021"
+    ],
+    "tests": [
+      "Feed conecta ao SSE do canal",
+      "Mensagens exibem direcao (inbound/outbound) com icone",
+      "Cada mensagem mostra remetente, conteudo, timestamp",
+      "Auto-scroll funciona com mensagens novas",
+      "ScrollArea do shadcn com scroll interno"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-1/worktree/sprints/sprint-1/3-prps/PRP-05-canais-whatsapp.md",
+    "completed_at": "2026-03-07T10:30:00Z"
+  },
+  {
+    "id": "F-024",
+    "name": "Status da memoria + MEMORY.md viewer",
+    "description": "Substituir placeholder tab Memoria em agents.$id.tsx. Secao Status: 2 cards numericos (arquivos indexados, chunks), timestamp ultima sync. Secao Fatos: fetch MEMORY.md via GET /agents/:id/files/MEMORY.md, renderizar markdown somente-leitura, empty state se vazio. Criar components/agents/memory-status-panel.tsx.",
+    "status": "passing",
+    "priority": 24,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-008"
+    ],
+    "tests": [
+      "Tab Memoria exibe contagem de arquivos e chunks",
+      "MEMORY.md renderiza em markdown",
+      "MEMORY.md vazio exibe empty state orientativo",
+      "Cards numericos formatados corretamente"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-1/worktree/sprints/sprint-1/3-prps/PRP-06-memoria-semantica.md",
+    "completed_at": "2026-03-07T11:00:00Z"
+  },
+  {
+    "id": "F-025",
+    "name": "Busca semantica",
+    "description": "Secao Busca Semantica na tab Memoria. Criar components/agents/memory-search-box.tsx: input com debounce 500ms, POST /agents/:id/memory/search com { query, limit: 10 }. Criar components/agents/memory-search-result.tsx: lista com arquivo (badge), snippet (expandivel), score (barra visual), fonte (badge vetor/texto). Loading e empty states.",
+    "status": "passing",
+    "priority": 25,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-024"
+    ],
+    "tests": [
+      "Input de busca com placeholder pt-BR",
+      "Debounce de 500ms evita requests excessivos",
+      "Resultados mostram snippet, arquivo, score e fonte",
+      "Barra de score visual (width percentage)",
+      "Empty state quando nenhum resultado",
+      "Loading state durante busca"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-1/worktree/sprints/sprint-1/3-prps/PRP-06-memoria-semantica.md",
+    "completed_at": "2026-03-07T11:30:00Z"
+  },
+  {
+    "id": "F-026",
+    "name": "Controles de sincronizacao e reset",
+    "description": "Botao Sincronizar no MemoryStatusPanel: POST /agents/:id/memory/sync, loading state, toast sucesso, invalida query status. Botao Limpar Memoria: ConfirmDialog com mensagem destrutiva, POST /agents/:id/memory/reset, invalida queries, toast sucesso. Botao variante destructive.",
+    "status": "passing",
+    "priority": 26,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-024"
+    ],
+    "tests": [
+      "Botao Sincronizar reindexar base e atualiza contagem",
+      "Loading state durante sincronizacao",
+      "Botao Limpar Memoria pede confirmacao",
+      "Reset limpa memoria e atualiza UI",
+      "Toast de sucesso/erro exibido apos operacao"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-1/worktree/sprints/sprint-1/3-prps/PRP-06-memoria-semantica.md",
+    "completed_at": "2026-03-07T12:00:00Z"
+  },
+  {
+    "id": "F-027",
+    "name": "Lista de cron jobs",
+    "description": "Substituir placeholder /cron: fetch jobs, tabela com colunas agente (badge), nome, agenda legivel (cronstrue pt-BR), status (badge), proxima execucao (cron-parser), ultima execucao. Filtro por agente e ativo/inativo. Botao play por linha para executar manualmente. Botao Novo Job.",
+    "status": "passing",
+    "priority": 27,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-006"
+    ],
+    "tests": [
+      "Pagina /cron lista todos os cron jobs",
+      "Tabela mostra agenda legivel (nao cron expression crua)",
+      "Filtro por agente funciona",
+      "Filtro ativo/inativo funciona",
+      "Botao play executa job manualmente",
+      "Proxima execucao calculada e exibida"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-1/worktree/sprints/sprint-1/3-prps/PRP-07-agendamento-cron.md",
+    "completed_at": "2026-03-07T12:30:00Z"
+  },
+  {
+    "id": "F-028",
+    "name": "Builder visual de agenda (CronScheduleBuilder)",
+    "description": "Criar components/cron/cron-schedule-builder.tsx: RadioGroup para tipo (Intervalo, Diario, Semanal, Mensal, Personalizado), campos condicionais por tipo, gera cron expression internamente. Preview legivel via cronstrue, preview de proximas 5 execucoes via cron-parser. Validacao de cron expression no tipo Personalizado.",
+    "status": "passing",
+    "priority": 28,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-027"
+    ],
+    "tests": [
+      "RadioGroup com 5 tipos de agenda renderiza",
+      "Tipo Intervalo: input N + select minutos/horas gera cron correto",
+      "Tipo Diario: time picker gera cron correto (ex: 0 9 * * *)",
+      "Tipo Semanal: checkbox dias + time picker gera cron correto",
+      "Preview legivel em pt-BR",
+      "Preview de proximas 5 execucoes no fuso do usuario",
+      "Tipo Personalizado aceita cron manual com validacao"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-1/worktree/sprints/sprint-1/3-prps/PRP-07-agendamento-cron.md",
+    "completed_at": "2026-03-07T13:00:00Z"
+  },
+  {
+    "id": "F-029",
+    "name": "Formulario de criacao/edicao de cron job",
+    "description": "Criar components/cron/cron-job-form.tsx: dialog/drawer com campos agente (select, pre-selecionado se vindo do agente), nome slug (kebab-case), instrucoes (textarea), agenda (CronScheduleBuilder), ativo (switch). Criacao via POST /cron/jobs, edicao via PATCH. Validacao completa.",
+    "status": "passing",
+    "priority": 29,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-028"
+    ],
+    "tests": [
+      "Dialog de criacao abre com Novo Job",
+      "Select de agente lista agentes disponiveis",
+      "Slug invalido mostra erro de validacao",
+      "Instrucoes obrigatorias",
+      "Criar job com agenda diario as 09:00 gera 0 9 * * *",
+      "Edicao carrega valores existentes",
+      "Sucesso fecha dialog e invalida queries"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-1/worktree/sprints/sprint-1/3-prps/PRP-07-agendamento-cron.md",
+    "completed_at": "2026-03-07T13:30:00Z"
+  },
+  {
+    "id": "F-030",
+    "name": "Historico de execucoes + tab Agenda no agente",
+    "description": "Criar components/cron/cron-run-history.tsx: tabela paginada (20/pag) com data/hora, status badge, duracao, tokens, custo, preview expandivel. Detalhe do job com resumo e acoes (executar, editar, ativar/desativar, excluir com confirmacao). Substituir placeholder tab Agenda em agents.$id.tsx: mesma tabela filtrada por agente, botao Novo Job pre-seleciona agente.",
+    "status": "passing",
+    "priority": 30,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-029"
+    ],
+    "tests": [
+      "Historico mostra status, duracao, tokens, custo e preview",
+      "Preview expandivel com click",
+      "Paginacao com 20 items por pagina",
+      "Executar manualmente dispara execucao e aparece no historico",
+      "Toggle ativo/inativo funciona sem recarregar",
+      "Excluir job pede confirmacao",
+      "Tab Agenda no agente filtra jobs do agente",
+      "Botao Novo Job na tab pre-seleciona agente"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab-hub/wave-1/worktree/sprints/sprint-1/3-prps/PRP-07-agendamento-cron.md",
+    "completed_at": "2026-03-07T14:00:00Z"
+  }
+]

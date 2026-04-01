@@ -159,6 +159,26 @@ class MemoryManager implements MemorySearchManager {
     return result.changes;
   }
 
+  countFileChunks(filePath: string): number {
+    if (!this.db) return 0;
+    const row = this.db
+      .prepare(`SELECT COUNT(*) as c FROM chunks WHERE path = ?`)
+      .get(filePath) as { c: number };
+    return row.c;
+  }
+
+  removeFile(filePath: string): void {
+    if (!this.db) return;
+    const tx = this.db.transaction(() => {
+      this.db!.prepare(
+        `DELETE FROM chunks_vec WHERE chunk_id IN (SELECT id FROM chunks WHERE path = ?)`
+      ).run(filePath);
+      this.db!.prepare(`DELETE FROM chunks WHERE path = ?`).run(filePath);
+      this.db!.prepare(`DELETE FROM files WHERE path = ?`).run(filePath);
+    });
+    tx();
+  }
+
   resetMemory(): void {
     if (!this.db) return;
     this.db.exec(`DELETE FROM chunks`);

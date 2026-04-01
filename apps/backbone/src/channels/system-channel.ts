@@ -1,18 +1,28 @@
 import { eventBus } from "../events/index.js";
+import { getChannel } from "./registry.js";
+import { channelAdapterRegistry } from "./delivery/index.js";
 
-export function deliverToChannel(
+export async function deliverToChannel(
   channelId: string,
   agentId: string,
   content: string,
-  options?: { role?: "assistant" | "user" | "system"; sessionId?: string }
-): void {
-  eventBus.emit("channel:message", {
-    ts: Date.now(),
+  options?: {
+    role?: "assistant" | "user" | "system";
+    sessionId?: string;
+    metadata?: Record<string, unknown>;
+  }
+): Promise<void> {
+  const channel = getChannel(channelId);
+  const adapterSlug = channel?.["channel-adapter"] ?? "sse";
+  const config = channel?.metadata ?? {};
+  const adapter = await channelAdapterRegistry.resolve(adapterSlug, config);
+  await adapter.send({
     channelId,
     agentId,
-    role: options?.role ?? "assistant",
     content,
+    role: options?.role ?? "assistant",
     sessionId: options?.sessionId,
+    metadata: options?.metadata,
   });
 }
 

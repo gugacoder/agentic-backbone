@@ -1,0 +1,42 @@
+:{$PUBLIC_PORT} {
+
+    # Backbone API
+    handle /api/* {
+        reverse_proxy {$BACKBONE_HOST}:{$BACKBONE_PORT}
+    }
+
+    # Hub (admin UI)
+    handle /hub {
+        redir * /hub/ 301
+    }
+    handle /hub/* {
+        reverse_proxy {$HUB_HOST}:{$HUB_PORT}
+    }
+
+    # Chat (standalone chat UI)
+    handle /chat {
+        redir * /chat/ 301
+    }
+    handle /chat/* {
+        reverse_proxy {$CHAT_HOST}:{$CHAT_PORT}
+    }
+
+    # Adminer (database GUI)
+    handle /adminer {
+        redir * /adminer/ 301
+    }
+    handle /adminer/* {
+        reverse_proxy {$ADMINER_HOST}:{$ADMINER_PORT}
+    }
+
+    # Redirect raiz para hub
+    handle / {
+        redir * /hub/ 301
+    }
+
+    # Health check
+    handle /health {
+        respond "OK" 200
+    }
+
+}

@@ -6,14 +6,14 @@ import { test, expect } from "@playwright/test";
  */
 
 const API = "http://localhost:7700/api";
-const SYSUSER = "cia";
-const SYSPASS = "[Cia@2026]";
+const TEST_USER = process.env.TEST_USER ?? "admin@mail.com";
+const TEST_PASS = process.env.TEST_PASS ?? "12345678";
 
 let authToken: string;
 
 test.beforeAll(async ({ request }) => {
   const res = await request.post(`${API}/auth/login`, {
-    data: { username: SYSUSER, password: SYSPASS },
+    data: { username: TEST_USER, password: TEST_PASS },
   });
   expect(res.ok()).toBeTruthy();
   const body = await res.json();
@@ -76,11 +76,9 @@ test.describe("Agent enabled toggle — UI", () => {
     await page.goto("/login");
     await page.evaluate(
       ({ token, user }) => {
-        localStorage.setItem("hub-auth-token", token);
-        localStorage.setItem("hub-auth-user", user);
-        localStorage.setItem("hub-auth-role", "sysuser");
+        localStorage.setItem("auth_token", token);
       },
-      { token: authToken, user: SYSUSER }
+      { token: authToken, user: TEST_USER }
     );
     await page.goto("/agents");
     // Wait for agents to load
