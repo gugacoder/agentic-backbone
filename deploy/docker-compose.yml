@@ -104,7 +104,7 @@ services:
         aliases:
           - backbone.internal
     healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:${BACKBONE_PORT}/api/v1/ai/health"]
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:${BACKBONE_PORT}/api/v1/ai/health').then(r=>{if(!r.ok)throw 1})"]
       interval: 10s
       timeout: 5s
       retries: 5
