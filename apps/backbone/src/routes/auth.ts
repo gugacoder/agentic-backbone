@@ -3,8 +3,15 @@ import { sign } from "hono/jwt";
 import { getUser, getUserByEmail, getUserCredential, getUserByIdentifier, updateUserCredentialPassword } from "../users/manager.js";
 import { verifyPassword, hashPassword } from "../users/password.js";
 import { rateLimit } from "../middleware/rate-limit.js";
-import { sendOtp } from "../otp/sender.js";
+import { sendOtp, verifyOtp } from "../otp/sender.js";
 import { isOtpEnabled } from "../settings/otp.js";
+
+// Shared helper: generate JWT for authenticated user
+async function createAuthToken(slug: string, configRole: string): Promise<string> {
+  const role: "sysuser" | "user" = configRole === "sysadmin" ? "sysuser" : "user";
+  const now = Math.floor(Date.now() / 1000);
+  return sign({ sub: slug, role, iat: now, exp: now + 60 * 60 * 24 }, process.env.JWT_SECRET!);
+}
 
 export const authPublicRoutes = new Hono();
 export const authProtectedRoutes = new Hono();
@@ -37,18 +44,7 @@ authPublicRoutes.post("/auth/login", rateLimit(), async (c) => {
     updateUserCredentialPassword(record.slug, hashed);
   }
 
-  const role: "sysuser" | "user" = record.config.role === "sysadmin" ? "sysuser" : "user";
-  const sub = record.slug;
-
-  const now = Math.floor(Date.now() / 1000);
-  const payload = {
-    sub,
-    role,
-    iat: now,
-    exp: now + 60 * 60 * 24, // 24h
-  };
-
-  const token = await sign(payload, process.env.JWT_SECRET!);
+  const token = await createAuthToken(record.slug, record.config.role ?? "user");
   return c.json({ token });
 });
 
@@ -152,9 +148,27 @@ authPublicRoutes.post("/auth/otp-send", rateLimit(), async (c) => {
   return c.json({ success: true });
 });
 
-// POST /auth/otp-verify — public (rate limited; full implementation in F-355)
+// POST /auth/otp-verify — public (rate limited)
 authPublicRoutes.post("/auth/otp-verify", rateLimit(), async (c) => {
-  return c.json({ error: "Not implemented" }, 501);
+  const body = await c.req.json<{ username?: string; code?: string }>().catch(() => ({ username: undefined, code: undefined }));
+  const { username, code } = body;
+
+  if (!username || !code || !/^\d{6}$/.test(code)) {
+    return c.json({ error: "Código inválido" }, 400);
+  }
+
+  const resolved = getUserByIdentifier(username);
+  if (!resolved) {
+    return c.json({ error: "Credenciais inválidas" }, 401);
+  }
+
+  const valid = verifyOtp(resolved.slug, code);
+  if (!valid) {
+    return c.json({ error: "Código inválido ou expirado" }, 401);
+  }
+
+  const token = await createAuthToken(resolved.slug, resolved.config.role ?? "user");
+  return c.json({ token });
 });
 
 // GET /auth/me — protected (mounted after JWT middleware)
