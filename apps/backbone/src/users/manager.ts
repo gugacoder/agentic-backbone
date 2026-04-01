@@ -47,6 +47,7 @@ function parseUserConfig(slug: string): UserConfig | null {
       maxAgents: u.maxAgents,
     },
     address: u.address,
+    auth: u.auth,
   };
 }
 
@@ -123,6 +124,33 @@ export function getUserByEmail(
 
     return { slug, config: record.config, password: record.password };
   }
+
+  return null;
+}
+
+export function getUserByIdentifier(
+  identifier: string
+): { slug: string; config: UserConfig } | null {
+  const dir = usersDir();
+  if (existsSync(dir)) {
+    for (const slug of readdirSync(dir)) {
+      const mdPath = userMdPath(slug);
+      if (!existsSync(mdPath)) continue;
+      let data: ReturnType<typeof UserMdSchema.parse>;
+      try {
+        data = readMarkdownAs(mdPath, UserMdSchema).metadata;
+      } catch {
+        continue;
+      }
+      if (data.email === identifier) {
+        const config = parseUserConfig(slug);
+        if (config) return { slug, config };
+      }
+    }
+  }
+
+  const config = parseUserConfig(identifier);
+  if (config) return { slug: identifier, config };
 
   return null;
 }

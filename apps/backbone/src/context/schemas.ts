@@ -43,6 +43,11 @@ export const AddressSchema = z.object({
 
 export type Address = z.infer<typeof AddressSchema>;
 
+export const UserAuthSchema = z.object({
+  otp: z.boolean().optional(),
+  password: z.boolean().optional(),
+});
+
 export const UserMdSchema = z.object({
   slug: z.string().optional(),
   displayName: z.string().optional(),
@@ -53,6 +58,7 @@ export const UserMdSchema = z.object({
   canCreateChannels: z.boolean().default(true),
   maxAgents: z.number().int().positive().default(5),
   address: AddressSchema.optional(),
+  auth: UserAuthSchema.optional(),
 });
 
 export type UserMd = z.infer<typeof UserMdSchema>;

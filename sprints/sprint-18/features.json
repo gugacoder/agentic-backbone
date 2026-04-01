@@ -3,7 +3,8 @@
     "id": "F-350",
     "name": "Endpoint /auth/identify + campo auth no UserConfig",
     "description": "Adicionar interface UserAuth e campo auth?: { otp?: boolean; password?: boolean } ao UserConfig em users/types.ts. Atualizar schema Zod de USER.md (UserMdSchema) para aceitar o campo auth. Criar endpoint POST /auth/identify em routes/auth.ts: recebe { username }, resolve user por email ou slug, lê campo auth e retorna { method: 'otp' | 'password' | 'choice', default?, phoneSuffix? }. User sem auth ou inexistente → 401 (mesma mensagem, anti-enumeração). Endpoint público (sem JWT). Adicionar auth.password: true ao USER.md do user system. Não enviar OTP real — apenas preparar ponto de integração (TODO).",
-    "status": "pending",
+    "status": "passing",
+    "completed_at": "2026-04-01T00:00:00.000Z",
     "priority": 1,
     "agent": "coder",
     "task": "vibe-code",
@@ -86,11 +87,14 @@
     "id": "F-354",
     "name": "Integrar OTP no /auth/identify + endpoint /auth/otp-send",
     "description": "No handler de POST /auth/identify (routes/auth.ts), substituir o TODO por chamada real a sendOtp() quando method === 'otp' e isOtpEnabled(). Implementar fallback: se envio falhar e user tem auth.password, usar method 'password'. Criar endpoint POST /auth/otp-send para reenvio de código (protegido por rate limit, público sem JWT). Anti-enumeração: mesma mensagem 401 para user inexistente e user sem OTP.",
-    "status": "pending",
+    "status": "blocked",
     "priority": 5,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-350", "F-353"],
+    "dependencies": [
+      "F-350",
+      "F-353"
+    ],
     "tests": [
       "/auth/identify envia OTP automaticamente quando method === 'otp' e OTP habilitado",
       "Fallback para senha se envio de OTP falhar e user tem auth.password: true",
@@ -106,11 +110,14 @@
     "id": "F-355",
     "name": "Endpoint /auth/otp-verify",
     "description": "Criar endpoint POST /auth/otp-verify em routes/auth.ts. Recebe { username, code }. Validar input: código deve ser exatamente 6 dígitos numéricos (400 se inválido). Resolver user, verificar OTP via verifyOtp(). Se válido, gerar JWT via createAuthToken() (helper compartilhado extraído do login). Se inválido → 401. Rota pública sem JWT, protegida por rate limiting. Extrair createAuthToken() como helper compartilhado usado tanto em /auth/login quanto em /auth/otp-verify.",
-    "status": "pending",
+    "status": "blocked",
     "priority": 6,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-350", "F-353"],
+    "dependencies": [
+      "F-350",
+      "F-353"
+    ],
     "tests": [
       "POST /auth/otp-verify aceita { username, code } e retorna JWT se válido",
       "Código inválido → 401",
@@ -125,11 +132,14 @@
     "id": "F-356",
     "name": "JWT via cookie + logout endpoint",
     "description": "Modificar POST /auth/login em routes/auth.ts para responder com Set-Cookie (HttpOnly, Secure condicional, SameSite=Strict, Path=/api, maxAge 24h) em vez de token no body. Body retorna { success, user } sem campo token. Aplicar mesmo padrão em POST /auth/otp-verify. Criar POST /auth/logout que apaga o cookie (deleteCookie). Logout é público. Extrair helper setCookieToken se necessário para evitar duplicação.",
-    "status": "pending",
+    "status": "blocked",
     "priority": 7,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-351", "F-355"],
+    "dependencies": [
+      "F-351",
+      "F-355"
+    ],
     "tests": [
       "POST /auth/login responde com Set-Cookie: token=...; HttpOnly; Secure; SameSite=Strict; Path=/api",
       "POST /auth/login retorna { success, user } no body (sem campo token)",
@@ -145,11 +155,13 @@
     "id": "F-357",
     "name": "Auth middleware cookie-first",
     "description": "Atualizar middleware JWT em routes/index.ts para checar token na ordem: (1) cookie 'token' via getCookie, (2) Authorization: Bearer header, (3) query param ?token=. API keys (sk_...) via Bearer continuam funcionando. EventSource via ?token= continua funcionando. Adicionar /auth/identify, /auth/otp-verify, /auth/otp-send e /auth/logout à lista de rotas públicas de auth que bypassam o middleware.",
-    "status": "pending",
+    "status": "blocked",
     "priority": 8,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-356"],
+    "dependencies": [
+      "F-356"
+    ],
     "tests": [
       "Middleware JWT aceita token de: cookie → header Bearer → query param (nesta ordem)",
       "API keys (sk_...) via header Bearer continuam funcionando",
@@ -185,11 +197,13 @@
     "id": "F-358",
     "name": "Hub auth store migration — remover localStorage token",
     "description": "Reescrever apps/hub/src/lib/auth.ts: remover token do state e do partialize do Zustand persist. Adicionar métodos identify(), loginWithPassword(), loginWithOtp(), resendOtp(), logout() (chama POST /auth/logout), checkAuth() (via GET /auth/me). credentials: 'include' em todos os fetch. Criar classe ApiError com status e retryAfter. Atualizar apps/hub/src/lib/api.ts para usar credentials: 'include' e remover injeção de Authorization: Bearer para chamadas que usam cookie. Atualizar route guard para usar checkAuth() em vez de verificar token.",
-    "status": "pending",
+    "status": "blocked",
     "priority": 10,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-357"],
+    "dependencies": [
+      "F-357"
+    ],
     "tests": [
       "Token removido do localStorage e do Zustand state",
       "Store persist mantém apenas user (sem token)",
@@ -209,11 +223,14 @@
     "id": "F-360",
     "name": "Hub login wizard 2 etapas com Framer Motion",
     "description": "Instalar framer-motion no workspace hub. Reescrever apps/hub/src/routes/login.tsx como wizard de 2 etapas com AnimatePresence mode='wait'. Etapa 1: input email/username + botão Continuar → chama identify(). Etapa 2 varia por method: 'password' (input senha + toggle visibilidade + Entrar), 'otp' (OtpInput 6 dígitos + Verificar + Reenviar código com countdown 60s), 'choice' (dois botões: Código WhatsApp default + Senha). Botão Voltar na etapa 2. Transições slide: enter { x: +30, opacity: 0 } → { x: 0, opacity: 1 }, exit { x: -30, opacity: 0 }, 250ms easeInOut. Feedback de rate limit (429): desabilitar form com countdown. Layout mobile-first, thumb zone, touch targets >= 44x44px. Usar shadcn components. Interface pt-BR.",
-    "status": "pending",
+    "status": "blocked",
     "priority": 11,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-358", "F-359"],
+    "dependencies": [
+      "F-358",
+      "F-359"
+    ],
     "tests": [
       "Login é wizard de 2 etapas com transição slide (Framer Motion)",
       "Etapa 1: input de email/slug → chama /auth/identify",
@@ -233,11 +250,13 @@
     "id": "F-361",
     "name": "Chat auth client — migrar de better-auth para Backbone",
     "description": "Remover dependência better-auth do package.json do app chat. Reescrever apps/chat/src/lib/auth-client.ts com funções standalone (não store Zustand): identify(), loginWithPassword(), loginWithOtp(), resendOtp(), logout(), getSession(). Helper apiPost com credentials: 'include'. Classe ApiError com retryAfter. Atualizar route guard para usar getSession() nativo. Verificar que vite.config.ts do Chat proxeia /api para Backbone. Remover todos os imports de better-auth.",
-    "status": "pending",
+    "status": "blocked",
     "priority": 12,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-357"],
+    "dependencies": [
+      "F-357"
+    ],
     "tests": [
       "better-auth removido do package.json do Chat",
       "auth-client.ts reescrito com funções nativas (identify, loginWithPassword, loginWithOtp, etc.)",
@@ -253,11 +272,14 @@
     "id": "F-362",
     "name": "Chat login wizard 2 etapas",
     "description": "Reescrever apps/chat/src/routes/login.tsx como wizard de 2 etapas com Framer Motion (já instalado). Mesmo padrão do Hub: Etapa 1 (identificação) → Etapa 2 (senha/OTP/escolha). Diferenças do Hub: logo diferente (SVG do Chat), visual existente preservado (gradiente, card translúcido), verificação de role de equipe após login (admin/manager/attendant), returnUrl no search params. Copiar ou importar OtpInput. Reenvio OTP com countdown 60s. Rate limit feedback com countdown. Interface pt-BR.",
-    "status": "pending",
+    "status": "blocked",
     "priority": 13,
     "agent": "coder",
     "task": "vibe-code",
-    "dependencies": ["F-361", "F-359"],
+    "dependencies": [
+      "F-361",
+      "F-359"
+    ],
     "tests": [
       "Login do Chat é wizard de 2 etapas com transição Framer Motion",
       "OTP input funciona com auto-advance e auto-submit",
