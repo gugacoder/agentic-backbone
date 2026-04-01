@@ -226,6 +226,10 @@ Usuário de teste: `system` (user em `context/users/system/`), senha `12345678`.
 - Features added to the agent must work in conversation, heartbeat, cron — equally.
 - Never add mode-specific code paths unless there's a hard technical reason.
 
+## Password Policy
+
+Política definida em `users/password.ts` (`validatePasswordPolicy`): mínimo 12 chars, pelo menos uma letra e um dígito. Usar sempre que houver criação ou troca de senha.
+
 ## Specification Workflow
 
 - User stories → requirements → PRPs (Product Requirement Prompts) → implementation milestones
