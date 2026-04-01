@@ -3,6 +3,8 @@ import { sign } from "hono/jwt";
 import { getUser, getUserByEmail, getUserCredential, getUserByIdentifier, updateUserCredentialPassword } from "../users/manager.js";
 import { verifyPassword, hashPassword } from "../users/password.js";
 import { rateLimit } from "../middleware/rate-limit.js";
+import { sendOtp } from "../otp/sender.js";
+import { isOtpEnabled } from "../settings/otp.js";
 
 export const authPublicRoutes = new Hono();
 export const authProtectedRoutes = new Hono();
@@ -87,7 +89,20 @@ authPublicRoutes.post("/auth/identify", rateLimit(), async (c) => {
 
   if (method === "otp" || method === "choice") {
     phoneSuffix = config.phoneNumber!.slice(-2);
-    // TODO: integrate sendOtp() when PRP-24B is implemented
+  }
+
+  // Auto-send OTP for method === 'otp' when OTP is globally enabled
+  if (method === "otp" && isOtpEnabled()) {
+    try {
+      await sendOtp(resolved.slug, config.phoneNumber!);
+    } catch {
+      // Fallback: if send fails and user has password, downgrade to password auth
+      if (hasPassword) {
+        method = "password";
+        phoneSuffix = undefined;
+      }
+      // If no password fallback, continue with otp method (client can use /auth/otp-send to retry)
+    }
   }
 
   const response: Record<string, unknown> = { method };
@@ -99,6 +114,42 @@ authPublicRoutes.post("/auth/identify", rateLimit(), async (c) => {
   }
 
   return c.json(response);
+});
+
+// POST /auth/otp-send — public (rate limited) — resend OTP code
+authPublicRoutes.post("/auth/otp-send", rateLimit(), async (c) => {
+  const body = await c.req.json<{ username?: string }>().catch(() => ({ username: undefined }));
+  const { username } = body;
+
+  const GENERIC_401 = "Credenciais inválidas";
+
+  if (!username) {
+    return c.json({ error: GENERIC_401 }, 401);
+  }
+
+  // Anti-enumeration: same 401 for inexistent user or user without OTP
+  if (!isOtpEnabled()) {
+    return c.json({ error: GENERIC_401 }, 401);
+  }
+
+  const resolved = getUserByIdentifier(username);
+  if (!resolved) {
+    return c.json({ error: GENERIC_401 }, 401);
+  }
+
+  const { config } = resolved;
+  const hasOtp = config.auth?.otp === true && !!config.phoneNumber;
+  if (!hasOtp) {
+    return c.json({ error: GENERIC_401 }, 401);
+  }
+
+  try {
+    await sendOtp(resolved.slug, config.phoneNumber!);
+  } catch {
+    return c.json({ error: "Falha ao enviar código. Tente novamente." }, 500);
+  }
+
+  return c.json({ success: true });
 });
 
 // POST /auth/otp-verify — public (rate limited; full implementation in F-355)
