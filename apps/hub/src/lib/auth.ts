@@ -7,54 +7,126 @@ export interface AuthUser {
   displayName: string;
 }
 
+export type AuthMethod = "password" | "otp" | "choice";
+
+export interface IdentifyResult {
+  method: AuthMethod;
+  default?: "otp";
+  phoneSuffix?: string;
+}
+
+export class ApiError extends Error {
+  public body: unknown;
+  constructor(
+    public status: number,
+    message: string,
+    public retryAfter?: number,
+  ) {
+    super(message);
+    this.name = "ApiError";
+    this.body = { error: message };
+  }
+}
+
 interface AuthState {
-  token: string | null;
   user: AuthUser | null;
-  login: (username: string, password: string) => Promise<void>;
-  logout: () => void;
+  identify: (username: string) => Promise<IdentifyResult>;
+  loginWithPassword: (username: string, password: string) => Promise<void>;
+  loginWithOtp: (username: string, code: string) => Promise<void>;
+  resendOtp: (username: string) => Promise<void>;
+  logout: () => Promise<void>;
+  checkAuth: () => Promise<boolean>;
 }
 
 export const useAuthStore = create<AuthState>()(
   persist(
-    (set, get) => ({
-      token: null,
+    (set) => ({
       user: null,
 
-      login: async (username, password) => {
+      identify: async (username) => {
+        const res = await fetch("/api/v1/ai/auth/identify", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username }),
+          credentials: "include",
+        });
+        if (!res.ok) {
+          const body = await res.json().catch(() => ({}));
+          throw new ApiError(res.status, body.error ?? "Erro desconhecido", body.retryAfter);
+        }
+        return res.json() as Promise<IdentifyResult>;
+      },
+
+      loginWithPassword: async (username, password) => {
         const res = await fetch("/api/v1/ai/auth/login", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ username, password }),
+          credentials: "include",
         });
-
         if (!res.ok) {
-          const body = await res.json().catch(() => ({ error: "Erro desconhecido" }));
-          throw new Error(body.error ?? "Erro desconhecido");
+          const body = await res.json().catch(() => ({}));
+          throw new ApiError(res.status, body.error ?? "Erro desconhecido", body.retryAfter);
         }
+        const { user } = await res.json();
+        set({ user });
+      },
 
-        const { token } = (await res.json()) as { token: string };
-        set({ token });
-
-        // Fetch user info after login
-        const meRes = await fetch("/api/v1/ai/auth/me", {
-          headers: { Authorization: `Bearer ${token}` },
+      loginWithOtp: async (username, code) => {
+        const res = await fetch("/api/v1/ai/auth/otp-verify", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username, code }),
+          credentials: "include",
         });
-        if (meRes.ok) {
-          const me = (await meRes.json()) as { user: string; role: string; displayName: string };
-          set({ user: { id: me.user, role: me.role, displayName: me.displayName } });
+        if (!res.ok) {
+          const body = await res.json().catch(() => ({}));
+          throw new ApiError(res.status, body.error ?? "Erro desconhecido", body.retryAfter);
+        }
+        const { user } = await res.json();
+        set({ user });
+      },
+
+      resendOtp: async (username) => {
+        const res = await fetch("/api/v1/ai/auth/otp-send", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username }),
+          credentials: "include",
+        });
+        if (!res.ok) {
+          const body = await res.json().catch(() => ({}));
+          throw new ApiError(res.status, body.error ?? "Erro desconhecido", body.retryAfter);
         }
       },
 
-      logout: () => {
-        set({ token: null, user: null });
+      logout: async () => {
+        await fetch("/api/v1/ai/auth/logout", {
+          method: "POST",
+          credentials: "include",
+        }).catch(() => {});
+        set({ user: null });
         if (window.location.pathname !== "/login") {
           window.location.href = "/login";
         }
       },
+
+      checkAuth: async () => {
+        const res = await fetch("/api/v1/ai/auth/me", {
+          credentials: "include",
+        });
+        if (res.ok) {
+          const me = await res.json();
+          set({ user: { id: me.user, role: me.role, displayName: me.displayName } });
+          return true;
+        }
+        set({ user: null });
+        return false;
+      },
     }),
     {
       name: "ab-hub-auth",
-      partialize: (state) => ({ token: state.token, user: state.user }),
+      partialize: (state) => ({ user: state.user }), // SEM token
     },
   ),
 );

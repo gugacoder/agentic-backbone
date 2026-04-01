@@ -1,0 +1,119 @@
+[
+  {
+    "id": "D-001",
+    "type": "feature",
+    "description": "Criar endpoint `POST /auth/identify` em `routes/auth.ts`. Recebe `{ username }`, resolve o user por email ou slug, lê o campo `auth` do UserConfig e retorna `{ method: 'otp' | 'password' | 'choice', default?: 'otp' }`. Se `auth.otp === true`, já envia o código OTP (chama Evolution). User sem `auth` configurado → 401. User inexistente → 401 com mesma mensagem (sem enumeração). Adicionalmente, adicionar campo `auth?: { otp?: boolean; password?: boolean }` a `UserConfig` em `users/types.ts` e ao schema `UserMdSchema` em `context/schemas.ts`.",
+    "score": 10,
+    "justification": "Desbloqueador absoluto. Toda a lógica do wizard de 2 etapas parte deste endpoint. Também introduz o campo `auth` ao UserConfig, sem o qual nenhuma outra discovery pode determinar o método de autenticação do user.",
+    "sprint": 18,
+    "implemented": false
+  },
+  {
+    "id": "D-002",
+    "type": "feature",
+    "description": "Migrar `users/password.ts`: substituir `verifyPassword` por comparação bcrypt (`bcrypt.compare`). Adicionar `hashPassword` com custo >= 12. Detectar formato antigo: se o valor em `credential.yml` não começa com `$2b$`, tratar como senha encriptada (AES-256-GCM) e fazer comparação plaintext na primeira vez, depois re-hashear e salvar. Atualizar `createUser` e `updateUser` em `manager.ts` para hashear antes de gravar.",
+    "score": 9,
+    "justification": "Segurança crítica. A implementação atual compara strings em `timingSafeEqual` — senhas são reversíveis. bcrypt com cost 12 torna brute-force computacionalmente inviável. A detecção de formato garante compatibilidade com users existentes sem reset forçado de senha.",
+    "sprint": 18,
+    "implemented": false
+  },
+  {
+    "id": "D-003",
+    "type": "feature",
+    "description": "Adicionar middleware de rate limiting em `routes/index.ts` antes das rotas públicas de auth. Implementação in-memory: `Map<ip, { count: number, resetAt: number }>`. Limite: 5 tentativas por IP a cada 15 minutos. Aplicar aos paths `/auth/identify`, `/auth/login`, `/auth/otp-verify`. Resposta ao exceder: `429 { error: 'Muitas tentativas. Tente novamente em X minutos.', retryAfter: segundos }`. Limpar entradas expiradas periodicamente.",
+    "score": 9,
+    "justification": "Elimina o vetor de brute-force nos endpoints de autenticação. Sem rate limiting, um atacante pode testar senhas e códigos OTP indefinidamente. Implementação in-memory é suficiente — sem dependência de Redis para o escopo atual.",
+    "sprint": 18,
+    "implemented": false
+  },
+  {
+    "id": "D-004",
+    "type": "feature",
+    "description": "Criar módulo `settings/otp.ts` que lê a seção `otp` de `context/settings.yml` (ou do arquivo de settings do backbone). Schema: `{ enabled: boolean, evolution: { host: string, 'api-key': string, instance: string } }`. Campos sensíveis (`api-key`) são auto-encriptados pelo sistema existente. Exportar `getOtpConfig()`. Adicionar seção `otp` ao `settings.yml` de exemplo com `enabled: false` como padrão seguro.",
+    "score": 8,
+    "justification": "Pré-requisito para D-005. Sem ele, não há como ler a configuração da instância Evolution para envio de OTP. O padrão `enabled: false` garante que ambientes sem configuração (dev local) continuem funcionando com senha apenas.",
+    "sprint": 18,
+    "implemented": false
+  },
+  {
+    "id": "D-005",
+    "type": "feature",
+    "description": "Implementar envio de OTP via Evolution (WhatsApp) em um módulo dedicado `otp/sender.ts`. Gerar código numérico de 6 dígitos, armazenar in-memory com TTL de 10 minutos (`Map<username, { code: string, expiresAt: number }>`), enviar mensagem via `POST {host}/message/sendText/{instance}` da Evolution API com `{ number: phoneNumber, text: 'Seu código de acesso: XXXXXX' }`. Exportar `sendOtp(username, phoneNumber)` e `verifyOtp(username, code): boolean`.",
+    "score": 8,
+    "justification": "Core da funcionalidade OTP. Sem envio real, a etapa `method: 'otp'` não pode ser completada. O armazenamento in-memory com TTL é simples e suficiente — sem dependência de banco de dados para o escopo atual.",
+    "sprint": 18,
+    "implemented": false
+  },
+  {
+    "id": "D-006",
+    "type": "feature",
+    "description": "Criar endpoint `POST /auth/otp-verify` em `routes/auth.ts`. Recebe `{ username, code }`. Chama `verifyOtp(username, code)` de D-005. Se válido, gera JWT e responde com `Set-Cookie: token=...; HttpOnly; Secure; SameSite=Strict; Path=/api`. Se inválido → 401. Código expirado → 401 com mensagem específica. Rate limiting de D-003 já aplicado.",
+    "score": 8,
+    "justification": "Fecha o fluxo OTP. Depende de D-005 para verificação do código e de D-007 para entrega do JWT via cookie. Sem esse endpoint, o método `otp` nunca autentica o user.",
+    "sprint": 18,
+    "implemented": false
+  },
+  {
+    "id": "D-007",
+    "type": "feature",
+    "description": "Modificar `POST /auth/login` em `routes/auth.ts` para responder com `Set-Cookie: token=...; HttpOnly; Secure; SameSite=Strict; Path=/api` em vez de `c.json({ token })`. Atualizar o middleware JWT em `routes/index.ts` para checar cookie `token` primeiro (`getCookie(c, 'token')`), depois `Authorization: Bearer`, depois `?token=` query param. Manter fallback Bearer para API keys (`sk_...`) e uso programático. Adicionar `POST /auth/logout` que apaga o cookie.",
+    "score": 8,
+    "justification": "Elimina XSS como vetor de roubo de token. Cookie HttpOnly não é acessível por JavaScript. SameSite=Strict previne CSRF. A ordem de verificação (cookie → header → query) garante compatibilidade com API keys programáticas e EventSource.",
+    "sprint": 18,
+    "implemented": false
+  },
+  {
+    "id": "D-008",
+    "type": "feature",
+    "description": "Reescrever `hub/src/routes/login.tsx` como wizard de 2 etapas usando Framer Motion (`AnimatePresence mode='wait'`). Etapa 1: input de email/usuário + botão Continuar (chama `/auth/identify`). Etapa 2: varia por `method` — `password` (input senha + Entrar), `otp` (OTP input 6 dígitos + Verificar), `choice` (dois botões de escolha). Transição slide: entrada `{ x: +30, opacity: 0 }` → `{ x: 0, opacity: 1 }`, saída `{ x: -30, opacity: 0 }`, 250ms easeInOut. Layout mobile-first: logo no topo, campos e ações na metade inferior (thumb zone).",
+    "score": 7,
+    "justification": "Experiência do usuário — é o ponto de contato mais crítico do produto. O conceito de tela está validado no TASK.md. Framer Motion com AnimatePresence já está referenciado no guia `guides/ux/framer-motion.md`.",
+    "sprint": 18,
+    "implemented": false
+  },
+  {
+    "id": "D-009",
+    "type": "feature",
+    "description": "Atualizar `hub/src/lib/auth.ts`: remover `persist` do Zustand (ou remover `token` do `partialize`). Substituir a chamada `fetch('/auth/login')` por chamada a `/auth/identify` seguida de `/auth/login` ou `/auth/otp-verify`. O cookie é enviado automaticamente pelo browser nas requisições subsequentes — o frontend não precisa mais armazenar ou injetar o token. Atualizar `logout` para chamar `POST /auth/logout` (apaga o cookie). Remover `Authorization: Bearer` das chamadas de API que usam cookie.",
+    "score": 7,
+    "justification": "Complemento obrigatório de D-007. Sem essa mudança, o frontend continua tentando colocar token em localStorage mesmo com cookie funcionando. Também remove a superfície de ataque XSS do localStorage.",
+    "sprint": 18,
+    "implemented": false
+  },
+  {
+    "id": "D-010",
+    "type": "feature",
+    "description": "Criar componente `OtpInput` (6 dígitos, auto-advance) em `hub/src/components/otp-input.tsx` ou em `packages/ui`. Cada dígito é um `<input type='text' maxLength={1}>`. Ao digitar, move foco para o próximo. Ao apagar, volta ao anterior. Suporta paste de 6 dígitos completos. Auto-submit ao completar via callback `onComplete(code: string)`. Touch target >= 44x44px.",
+    "score": 6,
+    "justification": "UX crítica para o fluxo OTP. Um input único de 6 dígitos é confuso — os slots visuais separados são o padrão esperado. O auto-advance elimina fricção. O TASK.md menciona 'OTP auto-advance' explicitamente.",
+    "sprint": 18,
+    "implemented": false
+  },
+  {
+    "id": "D-011",
+    "type": "feature",
+    "description": "Migrar `chat/src/lib/auth-client.ts` de `better-auth` para o fluxo do backbone. Substituir `createAuthClient` por funções nativas que chamam `/auth/identify`, `/auth/login`, `/auth/otp-verify`. Replicar o wizard de 2 etapas de D-008 em `chat/src/routes/login.tsx` (ou equivalente). Remover dependência `better-auth` do `package.json` do app chat.",
+    "score": 6,
+    "justification": "O app chat está usando uma biblioteca externa (`better-auth`) que não integra com o backend backbone. Isso cria dois sistemas de auth divergentes. A migração alinha o chat ao padrão do backbone e elimina uma dependência desnecessária.",
+    "sprint": 18,
+    "implemented": false
+  },
+  {
+    "id": "D-012",
+    "type": "feature",
+    "description": "Adicionar botão 'Reenviar código' na etapa OTP do wizard (D-008). Desabilitado por 60 segundos após envio inicial (countdown visível: '0:45'). Ao acionar, chama `POST /auth/identify` novamente para reenviar o OTP. Resetar o timer e o input de 6 dígitos.",
+    "score": 5,
+    "justification": "Caso de uso real: WhatsApp às vezes tem delay. O reenvio com cooldown evita spam para a Evolution e é explicitamente referenciado no conceito de tela do TASK.md.",
+    "sprint": 18,
+    "implemented": false
+  },
+  {
+    "id": "D-013",
+    "type": "feature",
+    "description": "Tratar resposta 429 nos forms de auth (hub e chat). Ao receber 429, ler `retryAfter` do body, desabilitar o formulário e exibir contador regressivo: 'Muitas tentativas. Tente novamente em X:XX'. Após o cooldown, reabilitar o formulário automaticamente.",
+    "score": 5,
+    "justification": "Feedback obrigatório de usabilidade para o rate limiting de D-003. Sem ele, o user recebe um erro genérico e não sabe o que fazer. O TASK.md menciona explicitamente 'Rate limit feedback — após 5 tentativas: Tente novamente em X minutos'.",
+    "sprint": 18,
+    "implemented": false
+  }
+]

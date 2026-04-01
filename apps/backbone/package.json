@@ -21,6 +21,7 @@
     "@opentelemetry/semantic-conventions": "^1.40.0",
     "@slack/web-api": "^7.14.1",
     "ai": "^4",
+    "bcryptjs": "^3.0.3",
     "better-sqlite3": "^11",
     "chokidar": "^5.0.0",
     "croner": "^10.0.1",
@@ -40,6 +41,7 @@
     "zod": "^3"
   },
   "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
     "@types/better-sqlite3": "^7",
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^22",

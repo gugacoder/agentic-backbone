@@ -4,6 +4,12 @@
   "private": true,
   "type": "module",
   "exports": {
-    "./*": "./src/*.ts"
+    "./globals.css": "./src/globals.css",
+    "./lib/*": "./src/lib/*.ts",
+    "./components/*": [
+      "./src/components/*.tsx",
+      "./src/components/*"
+    ],
+    "./hooks/*": "./src/hooks/*.ts"
   }
 }

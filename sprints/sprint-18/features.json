@@ -1,0 +1,331 @@
+[
+  {
+    "id": "F-350",
+    "name": "Endpoint /auth/identify + campo auth no UserConfig",
+    "description": "Adicionar interface UserAuth e campo auth?: { otp?: boolean; password?: boolean } ao UserConfig em users/types.ts. Atualizar schema Zod de USER.md (UserMdSchema) para aceitar o campo auth. Criar endpoint POST /auth/identify em routes/auth.ts: recebe { username }, resolve user por email ou slug, lê campo auth e retorna { method: 'otp' | 'password' | 'choice', default?, phoneSuffix? }. User sem auth ou inexistente → 401 (mesma mensagem, anti-enumeração). Endpoint público (sem JWT). Adicionar auth.password: true ao USER.md do user system. Não enviar OTP real — apenas preparar ponto de integração (TODO).",
+    "status": "passing",
+    "completed_at": "2026-04-01T00:00:00.000Z",
+    "priority": 1,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [],
+    "tests": [
+      "UserConfig em types.ts tem campo auth?: { otp?: boolean; password?: boolean }",
+      "Schema Zod de USER.md aceita o campo auth",
+      "POST /auth/identify retorna method correto conforme auth do user",
+      "POST /auth/identify retorna 401 para user inexistente (mesma mensagem genérica)",
+      "POST /auth/identify retorna 401 para user sem auth configurado (mesma mensagem)",
+      "Endpoint /auth/identify é público (não requer JWT)",
+      "User system tem auth.password: true no USER.md",
+      "Campo phoneSuffix retorna apenas os 2 últimos dígitos do telefone",
+      "Build compila sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-18/worktree/sprints/sprint-18/3-prps/PRP-24A-backend-auth-foundation.md"
+  },
+  {
+    "id": "F-351",
+    "name": "Migração de senhas para bcrypt",
+    "description": "Instalar bcrypt (ou bcryptjs) no workspace backbone. Reescrever users/password.ts: substituir verifyPassword por versão async que retorna { valid: boolean; needsRehash: boolean }. Detectar formato antigo (não começa com $2b$) — comparar plaintext via timingSafeEqual e sinalizar needsRehash. hashPassword com cost >= 12. Atualizar todos os call sites de verifyPassword para async/await. No login (routes/auth.ts), se valid && needsRehash, re-hashear e salvar via updateUserCredentialPassword. Atualizar createUser/updateUser em manager.ts para hashear antes de gravar.",
+    "status": "passing",
+    "completed_at": "2026-04-01T00:00:00.000Z",
+    "priority": 2,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [],
+    "tests": [
+      "verifyPassword é async e retorna { valid, needsRehash }",
+      "Senhas novas (createUser, updateUser) são hasheadas com bcrypt cost >= 12",
+      "Login com senha no formato antigo funciona e re-hasheia automaticamente",
+      "Todos os call sites de verifyPassword atualizados para async",
+      "Detecção de formato: $2b$ = bcrypt, outro = plaintext encriptado",
+      "Comparação plaintext usa timingSafeEqual",
+      "Build compila sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-18/worktree/sprints/sprint-18/3-prps/PRP-24A-backend-auth-foundation.md"
+  },
+  {
+    "id": "F-352",
+    "name": "Rate limiting middleware para endpoints de auth",
+    "description": "Criar middleware/rate-limit.ts com implementação in-memory (Map<ip, { count, resetAt }>). Limite: 5 tentativas por IP a cada 15 minutos. Limpar entradas expiradas periodicamente (setInterval com .unref()). Aplicar middleware nos endpoints POST /auth/identify, POST /auth/login, POST /auth/otp-verify. Resposta 429 com { error: 'Muitas tentativas...', retryAfter: segundos }. Não aplicar em GET /auth/me.",
+    "status": "passing",
+    "completed_at": "2026-04-01T00:00:00.000Z",
+    "priority": 3,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [],
+    "tests": [
+      "Middleware rateLimit() criado em middleware/rate-limit.ts",
+      "Aplicado em POST /auth/identify, POST /auth/login, POST /auth/otp-verify",
+      "Após 5 tentativas do mesmo IP em 15 min → resposta 429 com retryAfter",
+      "GET /auth/me não é afetado pelo rate limit",
+      "Entradas expiradas são limpas periodicamente",
+      "Rate limit por IP, não por username",
+      "Build compila sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-18/worktree/sprints/sprint-18/3-prps/PRP-24A-backend-auth-foundation.md"
+  },
+  {
+    "id": "F-353",
+    "name": "Módulo OTP — config + sender + store",
+    "description": "Adicionar seção otp ao settings.yml (enabled: false como padrão). Criar settings/otp.ts com schema Zod (OtpConfigSchema), getOtpConfig() e isOtpEnabled(). Criar otp/sender.ts: gerar código de 6 dígitos via crypto.randomInt, armazenar in-memory com TTL de 10 min, enviar via POST {host}/message/sendText/{instance} da Evolution API. Exportar sendOtp(username, phoneNumber) e verifyOtp(username, code). Comparação do código com timingSafeEqual. Código one-time use (consumido na verificação). Limpar entradas expiradas periodicamente.",
+    "status": "passing",
+    "completed_at": "2026-04-01T00:00:00.000Z",
+    "priority": 4,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [],
+    "tests": [
+      "Seção otp adicionada ao settings.yml com enabled: false",
+      "getOtpConfig() lê e valida a config de settings.yml",
+      "isOtpEnabled() retorna false quando otp.enabled: false ou seção ausente",
+      "sendOtp() gera código de 6 dígitos e envia via Evolution API",
+      "verifyOtp() valida código com timing-safe comparison e consome (one-time)",
+      "Códigos expiram após 10 minutos",
+      "Entradas expiradas do store são limpas periodicamente",
+      "Build compila sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-18/worktree/sprints/sprint-18/3-prps/PRP-24B-otp-pipeline.md"
+  },
+  {
+    "id": "F-354",
+    "name": "Integrar OTP no /auth/identify + endpoint /auth/otp-send",
+    "description": "No handler de POST /auth/identify (routes/auth.ts), substituir o TODO por chamada real a sendOtp() quando method === 'otp' e isOtpEnabled(). Implementar fallback: se envio falhar e user tem auth.password, usar method 'password'. Criar endpoint POST /auth/otp-send para reenvio de código (protegido por rate limit, público sem JWT). Anti-enumeração: mesma mensagem 401 para user inexistente e user sem OTP.",
+    "status": "passing",
+    "completed_at": "2026-04-01T00:00:00.000Z",
+    "priority": 5,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-350",
+      "F-353"
+    ],
+    "tests": [
+      "/auth/identify envia OTP automaticamente quando method === 'otp' e OTP habilitado",
+      "Fallback para senha se envio de OTP falhar e user tem auth.password: true",
+      "POST /auth/otp-send permite reenvio (protegido por rate limit)",
+      "/auth/otp-send retorna 401 para user inexistente ou sem OTP (mesma mensagem)",
+      "/auth/otp-send é público (sem JWT)",
+      "Se otp.enabled: false e user tem auth.otp: true, tratar como sem OTP",
+      "Build compila sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-18/worktree/sprints/sprint-18/3-prps/PRP-24B-otp-pipeline.md"
+  },
+  {
+    "id": "F-355",
+    "name": "Endpoint /auth/otp-verify",
+    "description": "Criar endpoint POST /auth/otp-verify em routes/auth.ts. Recebe { username, code }. Validar input: código deve ser exatamente 6 dígitos numéricos (400 se inválido). Resolver user, verificar OTP via verifyOtp(). Se válido, gerar JWT via createAuthToken() (helper compartilhado extraído do login). Se inválido → 401. Rota pública sem JWT, protegida por rate limiting. Extrair createAuthToken() como helper compartilhado usado tanto em /auth/login quanto em /auth/otp-verify.",
+    "status": "passing",
+    "completed_at": "2026-04-01T00:00:00.000Z",
+    "priority": 6,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-350",
+      "F-353"
+    ],
+    "tests": [
+      "POST /auth/otp-verify aceita { username, code } e retorna JWT se válido",
+      "Código inválido → 401",
+      "Input inválido (não 6 dígitos) → 400",
+      "createAuthToken() extraída e compartilhada com /auth/login",
+      "Endpoint é público (sem JWT), protegido por rate limiting",
+      "Build compila sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-18/worktree/sprints/sprint-18/3-prps/PRP-24B-otp-pipeline.md"
+  },
+  {
+    "id": "F-356",
+    "name": "JWT via cookie + logout endpoint",
+    "description": "Modificar POST /auth/login em routes/auth.ts para responder com Set-Cookie (HttpOnly, Secure condicional, SameSite=Strict, Path=/api, maxAge 24h) em vez de token no body. Body retorna { success, user } sem campo token. Aplicar mesmo padrão em POST /auth/otp-verify. Criar POST /auth/logout que apaga o cookie (deleteCookie). Logout é público. Extrair helper setCookieToken se necessário para evitar duplicação.",
+    "status": "passing",
+    "completed_at": "2026-04-01T00:00:00.000Z",
+    "priority": 7,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-351",
+      "F-355"
+    ],
+    "tests": [
+      "POST /auth/login responde com Set-Cookie: token=...; HttpOnly; Secure; SameSite=Strict; Path=/api",
+      "POST /auth/login retorna { success, user } no body (sem campo token)",
+      "POST /auth/otp-verify responde com o mesmo padrão de cookie",
+      "POST /auth/logout apaga o cookie e retorna { success: true }",
+      "Flag Secure é condicional ao ambiente (produção vs dev)",
+      "maxAge do cookie é 24 horas",
+      "Build compila sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-18/worktree/sprints/sprint-18/3-prps/PRP-24C-jwt-cookie-delivery.md"
+  },
+  {
+    "id": "F-357",
+    "name": "Auth middleware cookie-first",
+    "description": "Atualizar middleware JWT em routes/index.ts para checar token na ordem: (1) cookie 'token' via getCookie, (2) Authorization: Bearer header, (3) query param ?token=. API keys (sk_...) via Bearer continuam funcionando. EventSource via ?token= continua funcionando. Adicionar /auth/identify, /auth/otp-verify, /auth/otp-send e /auth/logout à lista de rotas públicas de auth que bypassam o middleware.",
+    "status": "passing",
+    "completed_at": "2026-04-01T00:00:00.000Z",
+    "priority": 8,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-356"
+    ],
+    "tests": [
+      "Middleware JWT aceita token de: cookie → header Bearer → query param (nesta ordem)",
+      "API keys (sk_...) via header Bearer continuam funcionando",
+      "EventSource via ?token= continua funcionando",
+      "Rotas públicas de auth não são bloqueadas pelo middleware (incluindo novos endpoints)",
+      "Build compila sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-18/worktree/sprints/sprint-18/3-prps/PRP-24C-jwt-cookie-delivery.md"
+  },
+  {
+    "id": "F-359",
+    "name": "Componente OTP input (Hub)",
+    "description": "Criar componente OtpInput em apps/hub/src/components/otp-input.tsx. 6 inputs separados (type=text, inputMode=numeric, maxLength=1). Auto-advance ao digitar (move foco para próximo). Backspace em campo vazio volta ao anterior. Suporte a paste de 6 dígitos. Auto-submit via callback onComplete(code) ao completar. Touch targets >= 44x44px. Aceita apenas dígitos numéricos. aria-label para acessibilidade. Props: length (default 6), onComplete, disabled.",
+    "status": "passing",
+    "completed_at": "2026-04-01T00:00:00.000Z",
+    "priority": 9,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [],
+    "tests": [
+      "Componente renderiza 6 inputs separados",
+      "Auto-advance: ao digitar dígito, foco move para próximo input",
+      "Backspace em campo vazio volta foco ao input anterior",
+      "Paste de 6 dígitos preenche todos os campos",
+      "Auto-submit: ao completar 6 dígitos, chama onComplete(code)",
+      "Touch targets >= 44x44px",
+      "Aceita apenas dígitos numéricos",
+      "aria-label presente em cada input",
+      "Build compila sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-18/worktree/sprints/sprint-18/3-prps/PRP-24D-hub-login-wizard.md"
+  },
+  {
+    "id": "F-358",
+    "name": "Hub auth store migration — remover localStorage token",
+    "description": "Reescrever apps/hub/src/lib/auth.ts: remover token do state e do partialize do Zustand persist. Adicionar métodos identify(), loginWithPassword(), loginWithOtp(), resendOtp(), logout() (chama POST /auth/logout), checkAuth() (via GET /auth/me). credentials: 'include' em todos os fetch. Criar classe ApiError com status e retryAfter. Atualizar apps/hub/src/lib/api.ts para usar credentials: 'include' e remover injeção de Authorization: Bearer para chamadas que usam cookie. Atualizar route guard para usar checkAuth() em vez de verificar token.",
+    "status": "passing",
+    "completed_at": "2026-04-01T00:00:00.000Z",
+    "priority": 10,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-357"
+    ],
+    "tests": [
+      "Token removido do localStorage e do Zustand state",
+      "Store persist mantém apenas user (sem token)",
+      "credentials: 'include' em todos os fetch de auth e no wrapper de API",
+      "identify() chama /auth/identify e retorna IdentifyResult",
+      "loginWithPassword() chama /auth/login e seta user no state",
+      "loginWithOtp() chama /auth/otp-verify e seta user no state",
+      "logout() chama POST /auth/logout e limpa user",
+      "checkAuth() verifica via GET /auth/me",
+      "Route guard usa checkAuth() em vez de verificar token",
+      "ApiError inclui retryAfter para rate limit",
+      "Build compila sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-18/worktree/sprints/sprint-18/3-prps/PRP-24D-hub-login-wizard.md"
+  },
+  {
+    "id": "F-360",
+    "name": "Hub login wizard 2 etapas com Framer Motion",
+    "description": "Instalar framer-motion no workspace hub. Reescrever apps/hub/src/routes/login.tsx como wizard de 2 etapas com AnimatePresence mode='wait'. Etapa 1: input email/username + botão Continuar → chama identify(). Etapa 2 varia por method: 'password' (input senha + toggle visibilidade + Entrar), 'otp' (OtpInput 6 dígitos + Verificar + Reenviar código com countdown 60s), 'choice' (dois botões: Código WhatsApp default + Senha). Botão Voltar na etapa 2. Transições slide: enter { x: +30, opacity: 0 } → { x: 0, opacity: 1 }, exit { x: -30, opacity: 0 }, 250ms easeInOut. Feedback de rate limit (429): desabilitar form com countdown. Layout mobile-first, thumb zone, touch targets >= 44x44px. Usar shadcn components. Interface pt-BR.",
+    "status": "passing",
+    "completed_at": "2026-04-01T00:00:00.000Z",
+    "priority": 11,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-358",
+      "F-359"
+    ],
+    "tests": [
+      "Login é wizard de 2 etapas com transição slide (Framer Motion)",
+      "Etapa 1: input de email/slug → chama /auth/identify",
+      "Etapa 2 varia por método: senha, OTP (6 dígitos), ou escolha",
+      "OTP: auto-submit ao completar 6 dígitos",
+      "Botão Reenviar código com countdown de 60s",
+      "Rate limit (429) desabilita formulário com countdown",
+      "Transições 250ms easeInOut entre etapas",
+      "Touch targets >= 44x44px",
+      "Toggle de visibilidade na senha",
+      "Interface em pt-BR",
+      "Build compila sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-18/worktree/sprints/sprint-18/3-prps/PRP-24D-hub-login-wizard.md"
+  },
+  {
+    "id": "F-361",
+    "name": "Chat auth client — migrar de better-auth para Backbone",
+    "description": "Remover dependência better-auth do package.json do app chat. Reescrever apps/chat/src/lib/auth-client.ts com funções standalone (não store Zustand): identify(), loginWithPassword(), loginWithOtp(), resendOtp(), logout(), getSession(). Helper apiPost com credentials: 'include'. Classe ApiError com retryAfter. Atualizar route guard para usar getSession() nativo. Verificar que vite.config.ts do Chat proxeia /api para Backbone. Remover todos os imports de better-auth.",
+    "status": "passing",
+    "completed_at": "2026-04-01T00:00:00.000Z",
+    "priority": 12,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-357"
+    ],
+    "tests": [
+      "better-auth removido do package.json do Chat",
+      "auth-client.ts reescrito com funções nativas (identify, loginWithPassword, loginWithOtp, etc.)",
+      "credentials: 'include' em todos os fetch",
+      "Route guard usa getSession() nativo",
+      "ApiError inclui retryAfter para rate limit",
+      "Nenhum import de better-auth restante no app Chat",
+      "Build do Chat compila sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-18/worktree/sprints/sprint-18/3-prps/PRP-24E-chat-login-alignment.md"
+  },
+  {
+    "id": "F-363",
+    "name": "Hub settings OTP — configurar instância Evolution dedicada para OTP",
+    "description": "Criar interface de configuração OTP no Hub settings. Backbone: adicionar GET /settings/otp e PUT /settings/otp em routes/settings.ts que lê/grava a seção 'otp' de settings.yml via readYaml/patchYamlAs. Hub: criar componente OtpSettings em apps/hub/src/components/settings/otp-settings.tsx com campos: toggle 'Habilitado', 'Host' (URL), 'API Key' (password input), 'Instância' (nome da instância). Registrar em settings.tsx como nova aba 'OTP' no grupo 'Infraestrutura'. A config de Evolution para OTP é dedicada (independente do conector Evolution global) pois uma instância separada é utilizada exclusivamente para envio de OTPs.",
+    "status": "passing",
+    "priority": 14,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-353"
+    ],
+    "tests": [
+      "GET /settings/otp retorna a seção otp atual de settings.yml",
+      "PUT /settings/otp persiste host, api-key, instance e enabled via patchYamlAs",
+      "Componente OtpSettings renderiza toggle enabled + campos host/api-key/instance",
+      "API Key exibida como campo password (com toggle visibilidade)",
+      "Aba 'OTP' presente no grupo Infraestrutura no Hub settings",
+      "Salvar configuração exibe toast de sucesso",
+      "Build compila sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-18/worktree/sprints/sprint-18/3-prps/PRP-24B-otp-pipeline.md",
+    "completed_at": "2026-04-01T00:00:00Z"
+  },
+  {
+    "id": "F-362",
+    "name": "Chat login wizard 2 etapas",
+    "description": "Reescrever apps/chat/src/routes/login.tsx como wizard de 2 etapas com Framer Motion (já instalado). Mesmo padrão do Hub: Etapa 1 (identificação) → Etapa 2 (senha/OTP/escolha). Diferenças do Hub: logo diferente (SVG do Chat), visual existente preservado (gradiente, card translúcido), verificação de role de equipe após login (admin/manager/attendant), returnUrl no search params. Copiar ou importar OtpInput. Reenvio OTP com countdown 60s. Rate limit feedback com countdown. Interface pt-BR.",
+    "status": "passing",
+    "completed_at": "2026-04-01T05:20:00.000Z",
+    "priority": 13,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [
+      "F-361",
+      "F-359"
+    ],
+    "tests": [
+      "Login do Chat é wizard de 2 etapas com transição Framer Motion",
+      "OTP input funciona com auto-advance e auto-submit",
+      "Reenvio OTP com countdown de 60s",
+      "Rate limit (429) exibe feedback com countdown",
+      "Verificação de role de equipe mantida após login (admin/manager/attendant)",
+      "Visual existente do Chat preservado (gradiente, card, logo)",
+      "returnUrl funciona para redirect após login",
+      "Interface em pt-BR",
+      "Build do Chat compila sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-18/worktree/sprints/sprint-18/3-prps/PRP-24E-chat-login-alignment.md"
+  }
+]

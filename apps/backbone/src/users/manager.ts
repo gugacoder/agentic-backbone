@@ -21,6 +21,7 @@ import {
   DEFAULT_PERMISSIONS,
   SYSTEM_USER,
 } from "./types.js";
+import { hashPassword } from "./password.js";
 
 function parseUserConfig(slug: string): UserConfig | null {
   const mdPath = userMdPath(slug);
@@ -47,6 +48,7 @@ function parseUserConfig(slug: string): UserConfig | null {
       maxAgents: u.maxAgents,
     },
     address: u.address,
+    auth: u.auth,
   };
 }
 
@@ -84,7 +86,7 @@ export function getUserCredential(
   const credPath = userCredentialPath(slug);
   if (!existsSync(credPath)) return null;
 
-  let cred: ReturnType<typeof UserCredentialYmlSchema.parse>;
+  let cred: { type?: "user-password"; password?: string };
   try {
     cred = readYamlAs(credPath, UserCredentialYmlSchema);
   } catch {
@@ -109,7 +111,7 @@ export function getUserByEmail(
     const mdPath = userMdPath(slug);
     if (!existsSync(mdPath)) continue;
 
-    let data: ReturnType<typeof UserMdSchema.parse>;
+    let data: { email?: string; [key: string]: unknown };
     try {
       data = readMarkdownAs(mdPath, UserMdSchema).metadata;
     } catch {
@@ -127,7 +129,43 @@ export function getUserByEmail(
   return null;
 }
 
-export function createUser(
+export function getUserByIdentifier(
+  identifier: string
+): { slug: string; config: UserConfig } | null {
+  const dir = usersDir();
+  if (existsSync(dir)) {
+    for (const slug of readdirSync(dir)) {
+      const mdPath = userMdPath(slug);
+      if (!existsSync(mdPath)) continue;
+      let data: { email?: string; [key: string]: unknown };
+      try {
+        data = readMarkdownAs(mdPath, UserMdSchema).metadata;
+      } catch {
+        continue;
+      }
+      if (data.email === identifier) {
+        const config = parseUserConfig(slug);
+        if (config) return { slug, config };
+      }
+    }
+  }
+
+  const config = parseUserConfig(identifier);
+  if (config) return { slug: identifier, config };
+
+  return null;
+}
+
+export function updateUserCredentialPassword(slug: string, hashedPassword: string): void {
+  const credPath = userCredentialPath(slug);
+  if (existsSync(credPath)) {
+    patchYamlAs(credPath, { password: hashedPassword }, UserCredentialYmlSchema);
+  } else {
+    writeYamlAs(credPath, { type: "user-password", password: hashedPassword }, UserCredentialYmlSchema);
+  }
+}
+
+export async function createUser(
   slug: string,
   displayName: string,
   password: string,
@@ -135,7 +173,7 @@ export function createUser(
   email?: string,
   phoneNumber?: string,
   address?: UserAddress
-): UserConfig {
+): Promise<UserConfig> {
   const dir = userDir(slug);
   mkdirSync(dir, { recursive: true });
   mkdirSync(join(dir, "channels"), { recursive: true });
@@ -155,15 +193,16 @@ export function createUser(
     address: address ?? undefined,
   }, `# ${displayName}\n`, UserMdSchema);
 
+  const hashed = await hashPassword(password);
   writeYamlAs(userCredentialPath(slug), {
     type: "user-password",
-    password,
+    password: hashed,
   }, UserCredentialYmlSchema);
 
   return { slug, displayName, email: userEmail, phoneNumber, permissions: perms, address };
 }
 
-export function updateUser(
+export async function updateUser(
   slug: string,
   updates: {
     displayName?: string;
@@ -174,7 +213,7 @@ export function updateUser(
     address?: UserAddress;
     permissions?: Partial<UserPermissions>;
   }
-): UserConfig | null {
+): Promise<UserConfig | null> {
   if (!userExists(slug)) return null;
 
   const profilePatch: Record<string, unknown> = {};
@@ -196,24 +235,20 @@ export function updateUser(
   const { metadata: updated } = patchMarkdownAs(userMdPath(slug), profilePatch, UserMdSchema);
 
   if (updates.password) {
-    const credPath = userCredentialPath(slug);
-    if (existsSync(credPath)) {
-      patchYamlAs(credPath, { password: updates.password }, UserCredentialYmlSchema);
-    } else {
-      writeYamlAs(credPath, { type: "user-password", password: updates.password }, UserCredentialYmlSchema);
-    }
+    const hashed = await hashPassword(updates.password);
+    updateUserCredentialPassword(slug, hashed);
   }
 
   return {
     slug: updated.slug ?? slug,
     displayName: updated.displayName ?? slug,
-    email: updated.email,
+    email: updated.email ?? "",
     phoneNumber: updated.phoneNumber,
     role: updated.role,
     permissions: {
-      canCreateAgents: updated.canCreateAgents,
-      canCreateChannels: updated.canCreateChannels,
-      maxAgents: updated.maxAgents,
+      canCreateAgents: updated.canCreateAgents ?? DEFAULT_PERMISSIONS.canCreateAgents,
+      canCreateChannels: updated.canCreateChannels ?? DEFAULT_PERMISSIONS.canCreateChannels,
+      maxAgents: updated.maxAgents ?? DEFAULT_PERMISSIONS.maxAgents,
     },
     address: updated.address,
   };

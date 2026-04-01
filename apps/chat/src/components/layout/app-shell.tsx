@@ -28,7 +28,7 @@ import { ShortcutBar } from "@workspace/ui/components/shortcut-bar"
 import type { ShortcutSlot } from "@workspace/ui/components/shortcut-bar"
 import { ShortcutEditor, type ShortcutItem } from "@workspace/ui/components/shortcut-editor"
 import type { Tier } from "@workspace/ui/components/app-menu/types"
-import { useSession, signOut } from "@/lib/auth-client"
+import { useSession, logout } from "@/lib/auth-client"
 import { queryClient } from "@/lib/query-client"
 import { useTheme } from "@/components/theme-provider"
 import { usePresenceContext } from "@/components/presence-provider"
@@ -109,11 +109,10 @@ function AppShellInner({ children }: { children: ReactNode }) {
   const currentPath = matches[matches.length - 1]?.fullPath ?? "/"
   const { override: breadcrumbOverride } = useBreadcrumbOverride()
 
-  const user = session?.user
-  const userName = (user as Record<string, unknown>)?.name as string ?? "Usuário"
-  const userEmail = (user as Record<string, unknown>)?.email as string ?? ""
-  const userRole = (user as Record<string, unknown>)?.role as string ?? "attendant"
-  const userImage = (user as Record<string, unknown>)?.image as string | undefined
+  const userName = session?.displayName ?? "Usuário"
+  const userEmail = ""
+  const userRole = session?.role ?? "attendant"
+  const userImage = undefined as string | undefined
 
   const ROLE_LABELS: Record<string, string> = {
     admin: "Administrador",
@@ -133,7 +132,7 @@ function AppShellInner({ children }: { children: ReactNode }) {
     : "attendant") as Tier
 
   async function handleLogout() {
-    await signOut()
+    await logout()
     queryClient.clear()
     void router.navigate({ to: "/login" })
   }

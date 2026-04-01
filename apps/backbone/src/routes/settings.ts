@@ -7,6 +7,10 @@ import { loadProvidersConfig, saveProvidersConfig } from "../settings/providers.
 import { loadNgrokConfig, saveNgrokConfig, startNgrok, stopNgrok, getNgrokStatus } from "../ngrok/index.js";
 import { loadMenuConfig, saveMenuConfig } from "../settings/menu.js";
 import { loadWhisperConfig, saveWhisperConfig } from "../settings/whisper.js";
+import { getOtpConfig } from "../settings/otp.js";
+import { existsSync } from "node:fs";
+import { settingsPath } from "../context/paths.js";
+import { readYaml, writeYaml } from "../context/readers.js";
 
 export const settingsRoutes = new Hono();
 
@@ -333,5 +337,56 @@ settingsRoutes.post("/settings/infrastructure/ngrok/stop", async (c) => {
   if (denied) return denied;
 
   await stopNgrok();
+  return c.json({ ok: true });
+});
+
+// --- GET /settings/otp ---
+
+settingsRoutes.get("/settings/otp", (c) => {
+  const denied = requireSysuser(c);
+  if (denied) return denied;
+
+  const config = getOtpConfig();
+  return c.json({
+    enabled: config.enabled,
+    host: config.evolution?.host ?? "",
+    "api-key": config.evolution?.["api-key"] ? "***" : "",
+    instance: config.evolution?.instance ?? "",
+    hasApiKey: !!config.evolution?.["api-key"],
+  });
+});
+
+// --- PUT /settings/otp ---
+
+settingsRoutes.put("/settings/otp", async (c) => {
+  const denied = requireSysuser(c);
+  if (denied) return denied;
+
+  const body = await c.req.json<{
+    enabled?: boolean;
+    host?: string;
+    "api-key"?: string;
+    instance?: string;
+  }>();
+
+  const settings = existsSync(settingsPath())
+    ? (readYaml(settingsPath()) as Record<string, unknown>)
+    : {};
+
+  const currentOtp = (settings["otp"] as Record<string, unknown> | undefined) ?? {};
+  const currentEvolution = (currentOtp["evolution"] as Record<string, unknown> | undefined) ?? {};
+
+  const updatedEvolution: Record<string, unknown> = { ...currentEvolution };
+  if (body.host !== undefined) updatedEvolution["host"] = body.host;
+  if (body["api-key"] !== undefined && body["api-key"] !== "***") updatedEvolution["api-key"] = body["api-key"];
+  if (body.instance !== undefined) updatedEvolution["instance"] = body.instance;
+
+  const updatedOtp: Record<string, unknown> = { ...currentOtp };
+  if (body.enabled !== undefined) updatedOtp["enabled"] = body.enabled;
+  updatedOtp["evolution"] = updatedEvolution;
+
+  settings["otp"] = updatedOtp;
+  writeYaml(settingsPath(), settings);
+
   return c.json({ ok: true });
 });

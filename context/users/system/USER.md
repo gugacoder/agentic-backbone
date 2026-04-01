@@ -6,6 +6,8 @@ role: sysadmin
 canCreateAgents: true
 canCreateChannels: true
 maxAgents: 5
+auth:
+  password: true
 ---
 # System User
 

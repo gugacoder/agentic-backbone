@@ -1,4 +1,10 @@
 active-plan: free
+otp:
+  enabled: false
+  evolution:
+    host: https://evo.example.com
+    api-key: ${EVOLUTION_OTP_API_KEY}
+    instance: otp-instance
 security:
   message-filter: false
 web-search:

@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { createFileRoute, Outlet, Navigate } from "@tanstack/react-router";
+import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { useAuthStore } from "@/lib/auth";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/app-sidebar";
@@ -11,6 +11,12 @@ import { RouteError } from "@/components/layout/route-error";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated")({
+  beforeLoad: async () => {
+    const isAuthenticated = await useAuthStore.getState().checkAuth();
+    if (!isAuthenticated) {
+      throw redirect({ to: "/login" });
+    }
+  },
   component: AuthenticatedLayout,
   errorComponent: AuthenticatedError,
 });
@@ -31,8 +37,8 @@ function AuthenticatedError({ error, reset }: { error: unknown; reset: () => voi
 }
 
 function AuthenticatedLayout() {
-  const token = useAuthStore((s) => s.token);
-  useSSE({ enabled: !!token });
+  const user = useAuthStore((s) => s.user);
+  useSSE({ enabled: !!user });
 
   useSSEEvent(
     "agent:quota-exceeded",
@@ -55,10 +61,6 @@ function AuthenticatedLayout() {
       });
     }, []),
   );
-
-  if (!token) {
-    return <Navigate to="/login" />;
-  }
 
   return (
     <SidebarProvider>

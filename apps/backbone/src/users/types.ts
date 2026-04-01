@@ -14,6 +14,11 @@ export interface UserAddress {
   timezone?: string;
 }
 
+export interface UserAuth {
+  otp?: boolean;
+  password?: boolean;
+}
+
 export interface UserConfig {
   slug: string;
   displayName: string;
@@ -22,6 +27,7 @@ export interface UserConfig {
   role?: string;
   permissions: UserPermissions;
   address?: UserAddress;
+  auth?: UserAuth;
 }
 
 export const DEFAULT_PERMISSIONS: UserPermissions = {

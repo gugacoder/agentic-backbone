@@ -68,7 +68,7 @@ userRoutes.post("/users", async (c) => {
     return c.json({ error: "user already exists" }, 409);
   }
 
-  const user = createUser(slug, displayName, password, permissions, email, phoneNumber, address);
+  const user = await createUser(slug, displayName, password, permissions, email, phoneNumber, address);
   return c.json(user, 201);
 });
 
@@ -112,12 +112,12 @@ userRoutes.patch("/users/:slug", async (c) => {
     if (body.phoneNumber !== undefined) updates.phoneNumber = body.phoneNumber;
     if (body.password) updates.password = body.password;
     if (body.address !== undefined) updates.address = body.address;
-    const updated = updateUser(slug, updates);
+    const updated = await updateUser(slug, updates);
     if (!updated) return c.json({ error: "not found" }, 404);
     return c.json(updated);
   }
 
-  const updated = updateUser(slug, body);
+  const updated = await updateUser(slug, body);
   if (!updated) return c.json({ error: "not found" }, 404);
   return c.json(updated);
 });

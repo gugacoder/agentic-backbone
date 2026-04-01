@@ -4,21 +4,20 @@ import { useQueryClient } from "@tanstack/react-query"
 import { AppShell } from "@/components/layout/app-shell"
 import { PresenceProvider } from "@/components/presence-provider"
 import { sseManager } from "@/lib/sse-manager"
-import { getSession, signOut } from "@/lib/auth-client"
+import { getSession, logout } from "@/lib/auth-client"
 
 const TEAM_ROLES = ["admin", "manager", "attendant"] as const
 
 export const Route = createFileRoute("/_authenticated")({
   component: AuthenticatedLayout,
   beforeLoad: async ({ location }) => {
-    const session = await getSession()
-    if (!session?.data?.user) {
+    const user = await getSession()
+    if (!user) {
       throw redirect({ to: "/login", search: { returnUrl: location.href } })
     }
-    const role = (session.data.user as { role?: string }).role
-    const isTeam = TEAM_ROLES.includes(role as (typeof TEAM_ROLES)[number])
+    const isTeam = TEAM_ROLES.includes(user.role as (typeof TEAM_ROLES)[number])
     if (!isTeam) {
-      await signOut()
+      await logout()
       throw redirect({ to: "/login" })
     }
   },

@@ -1,26 +1,13 @@
-const BASE_PATH = "/api/v1/ai";
+export { ApiError } from "./auth.js";
+import { ApiError, useAuthStore } from "./auth.js";
 
-export class ApiError extends Error {
-  constructor(
-    public status: number,
-    public body: unknown,
-  ) {
-    super(`API ${status}`);
-    this.name = "ApiError";
-  }
-}
+const BASE_PATH = "/api/v1/ai";
 
 export async function request<T>(
   path: string,
   options?: RequestInit,
 ): Promise<T> {
-  const { useAuthStore } = await import("./auth.js");
-  const token = useAuthStore.getState().token;
-
   const headers = new Headers(options?.headers);
-  if (token) {
-    headers.set("Authorization", `Bearer ${token}`);
-  }
   if (
     !headers.has("Content-Type") &&
     options?.body &&
@@ -29,16 +16,20 @@ export async function request<T>(
     headers.set("Content-Type", "application/json");
   }
 
-  const res = await fetch(`${BASE_PATH}${path}`, { ...options, headers });
+  const res = await fetch(`${BASE_PATH}${path}`, {
+    ...options,
+    headers,
+    credentials: "include",
+  });
 
   if (res.status === 401) {
     useAuthStore.getState().logout();
-    throw new ApiError(401, { error: "unauthorized" });
+    throw new ApiError(401, "unauthorized");
   }
 
   if (!res.ok) {
     const body = await res.json().catch(() => ({ error: res.statusText }));
-    throw new ApiError(res.status, body);
+    throw new ApiError(res.status, body.error ?? res.statusText, body.retryAfter);
   }
 
   return res.json() as Promise<T>;
