@@ -47,8 +47,8 @@ export const useAuthStore = create<AuthState>()(
 
       logout: () => {
         set({ token: null, user: null });
-        if (window.location.pathname !== "/login") {
-          window.location.href = "/login";
+        if (window.location.pathname !== "/hub/login") {
+          window.location.href = "/hub/login";
         }
       },
     }),

@@ -9,6 +9,7 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, "../../", "");
 
   return {
+    base: "/hub/",
     plugins: [
       TanStackRouterVite(),
       react(),
@@ -22,7 +23,7 @@ export default defineConfig(({ mode }) => {
           theme_color: "#0a0a0a",
           background_color: "#0a0a0a",
           display: "standalone",
-          start_url: "/",
+          start_url: "/hub/",
           icons: [
             {
               src: "/pwa-192x192.png",

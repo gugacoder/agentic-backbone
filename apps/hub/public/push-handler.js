@@ -16,7 +16,7 @@ self.addEventListener("push", (event) => {
     body: data.body || "",
     icon: "/pwa-192x192.png",
     badge: "/pwa-192x192.png",
-    data: { url: data.url || "/" },
+    data: { url: data.url || "/hub/" },
   };
 
   event.waitUntil(self.registration.showNotification(title, options));
@@ -25,7 +25,7 @@ self.addEventListener("push", (event) => {
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
 
-  const url = event.notification.data?.url || "/";
+  const url = event.notification.data?.url || "/hub/";
 
   event.waitUntil(
     self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clients) => {

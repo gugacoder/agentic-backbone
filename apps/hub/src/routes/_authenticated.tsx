@@ -47,7 +47,7 @@ function AuthenticatedLayout() {
           ? {
               label: "Ver quotas",
               onClick: () => {
-                window.location.href = `/agents/${encodeURIComponent(agentId)}?tab=quotas`;
+                window.location.href = `/hub/agents/${encodeURIComponent(agentId)}?tab=quotas`;
               },
             }
           : undefined,
