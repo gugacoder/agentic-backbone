@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import { verify } from "hono/jwt";
+import { getCookie } from "hono/cookie";
 import { validateApiKey } from "../auth/api-keys.js";
 import { authPublicRoutes, authProtectedRoutes } from "./auth.js";
 import { systemRoutes } from "./system.js";
@@ -74,7 +75,7 @@ routes.get("/health", (c) =>
 routes.route("/", authPublicRoutes);
 
 // ── JWT middleware barrier ──────────────────────────────────
-// Supports both Authorization header and ?token= query param (for EventSource)
+// Token order: cookie → Authorization: Bearer → ?token= (for EventSource)
 // Hybrid auth: accepts both Laravel JWT (role_id + unidades) and Backbone JWT (role)
 
 routes.use("*", async (c, next) => {
@@ -86,15 +87,21 @@ routes.use("*", async (c, next) => {
 
   const secret = process.env.JWT_SECRET!;
 
-  // Try Authorization header first
-  const authHeader = c.req.header("Authorization");
+  // Token extraction order: (1) cookie, (2) Authorization: Bearer, (3) ?token= query param
   let token: string | undefined;
 
-  if (authHeader?.startsWith("Bearer ")) {
-    token = authHeader.slice(7);
+  // 1. Cookie (HttpOnly cookie set by login/otp-verify)
+  token = getCookie(c, "token");
+
+  // 2. Authorization: Bearer header (API keys sk_... and programmatic use)
+  if (!token) {
+    const authHeader = c.req.header("Authorization");
+    if (authHeader?.startsWith("Bearer ")) {
+      token = authHeader.slice(7);
+    }
   }
 
-  // Fall back to ?token= query param (EventSource cannot send headers)
+  // 3. ?token= query param (EventSource cannot send headers)
   if (!token) {
     token = c.req.query("token") ?? undefined;
   }
