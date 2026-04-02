@@ -1,0 +1,200 @@
+[
+  {
+    "id": "F-364",
+    "name": "Primitivos shadcn — Input, DropdownMenu, Skeleton",
+    "description": "Adicionar 3 primitivos shadcn ao @codrstudio/agentic-chat em src/ui/: input.tsx (input HTML puro com cn()), dropdown-menu.tsx (baseado em @radix-ui/react-dropdown-menu com exports DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator), skeleton.tsx (div com animate-pulse). Adicionar @radix-ui/react-dropdown-menu: ^2 ao package.json. Seguir padrao shadcn ja adotado no pacote.",
+    "status": "pending",
+    "priority": 1,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [],
+    "tests": [
+      "src/ui/input.tsx criado com padrao shadcn (cn(), forwardRef)",
+      "src/ui/dropdown-menu.tsx criado com Radix DropdownMenu, exports: DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator",
+      "src/ui/skeleton.tsx criado com animate-pulse e cn()",
+      "@radix-ui/react-dropdown-menu adicionado ao package.json",
+      "Build compila sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-21/worktree/sprints/sprint-19/3-prps/PRP-25A-fundamentos-primitivos-tipos-utils.md"
+  },
+  {
+    "id": "F-365",
+    "name": "Tipos, utilitarios e useIsMobile",
+    "description": "Criar src/conversations/types.ts com interfaces Conversation (id, title?, agentId, updatedAt, starred, metadata?) e BackendMessage (id?, role, content, _meta?, timestamp?, metadata?). Criar src/conversations/utils.ts com funcoes puras: formatRelativeTime(dateStr) retornando strings em ingles ('now', '5m ago', '2h ago', '3d ago'), buildInitialMessages(messages: BackendMessage[]): Message[] transformando mensagens backend em formato ai-sdk com parts de tool-invocation, groupConversations(conversations) split por starred. Criar src/hooks/useIsMobile.ts com hook usando window.matchMedia e breakpoint configuravel (default 768px).",
+    "status": "pending",
+    "priority": 2,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": [],
+    "tests": [
+      "Conversation e BackendMessage definidos em src/conversations/types.ts",
+      "formatRelativeTime retorna strings relativas corretas ('now', '5m ago', '2h ago', '3d ago')",
+      "buildInitialMessages transforma mensagens backend para formato ai-sdk com tool-invocation parts",
+      "groupConversations separa por starred corretamente",
+      "useIsMobile detecta viewport e limpa listener no cleanup",
+      "Build compila sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-21/worktree/sprints/sprint-19/3-prps/PRP-25A-fundamentos-primitivos-tipos-utils.md"
+  },
+  {
+    "id": "F-366",
+    "name": "Hook useConversations standalone",
+    "description": "Criar src/conversations/useConversations.ts: hook standalone (sem TanStack Query) com UseConversationsOptions (endpoint, token, fetcher, autoFetch) e UseConversationsReturn (conversations, isLoading, error, refresh, create, rename, star com optimistic update, remove, exportUrl). Usa useState + useCallback + fetch. Paths /api/v1/ai/conversations/*. star() faz update otimista com rollback em erro. remove() remove do estado local apos DELETE bem-sucedido. create() adiciona ao estado local apos POST bem-sucedido. exportUrl() retorna URL com ?token= para download direto.",
+    "status": "pending",
+    "priority": 3,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": ["F-365"],
+    "tests": [
+      "useConversations hook exportado de src/conversations/useConversations.ts",
+      "fetch lista de conversas no mount quando autoFetch=true",
+      "create() adiciona conversa ao estado local apos POST bem-sucedido",
+      "rename() atualiza titulo via PATCH",
+      "star() faz update otimista com rollback em erro",
+      "remove() remove do estado local apos DELETE bem-sucedido",
+      "exportUrl() retorna URL com ?token= para download direto",
+      "Zero dependencias externas — apenas React hooks + fetch nativo",
+      "Build compila sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-21/worktree/sprints/sprint-19/3-prps/PRP-25A-fundamentos-primitivos-tipos-utils.md"
+  },
+  {
+    "id": "F-367",
+    "name": "Componentes internos — CollapsibleGroup, ConversationListItem, RenameDialog, DeleteDialog",
+    "description": "Criar 4 componentes internos em src/conversations/ (nao exportados publicamente). CollapsibleGroup: label, icon, open, onToggle, children — chevron rotaciona 90deg quando aberto, label em text-xs font-medium text-muted-foreground. ConversationListItem: conversation, agentLabel, isActive, isRenaming, renameValue, callbacks, badgesExtra slot — star icon a esquerda (amarelo quando starred), area clicavel central com badges + timestamp + titulo, pencil icon a direita no hover, inline rename input. RenameDialog: dialog modal com Enter confirma, botao desabilitado quando vazio ou isPending, labels customizaveis. DeleteDialog: dialog de confirmacao com botao variant=destructive, labels customizaveis.",
+    "status": "pending",
+    "priority": 4,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": ["F-364", "F-365"],
+    "tests": [
+      "CollapsibleGroup renderiza label + chevron, colapsa/expande ao clicar",
+      "ConversationListItem renderiza star, badges, titulo, timestamp, pencil no hover",
+      "ConversationListItem inline rename: Enter confirma, Escape cancela",
+      "ConversationListItem star toggle dispara onToggleStar",
+      "ConversationListItem slot badgesExtra renderiza conteudo extra",
+      "RenameDialog abre, Enter confirma, botao desabilitado quando vazio ou isPending",
+      "DeleteDialog abre, botao destructive, confirmacao dispara callback",
+      "Todos usam tokens shadcn (bg-background, text-foreground, etc.)",
+      "Build compila sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-21/worktree/sprints/sprint-19/3-prps/PRP-25B-componentes-conversas.md"
+  },
+  {
+    "id": "F-368",
+    "name": "ConversationList — sidebar principal",
+    "description": "Criar src/conversations/ConversationList.tsx: componente controlado principal da sidebar. Props: conversations, activeId, isLoading, search/onSearchChange, favorites/history override, labels i18n (searchPlaceholder, favoritesLabel, historyLabel, loadMoreLabel), hasMore/onLoadMore/remainingCount, callbacks (onSelect, onRename, onStar, onCreateRequest), getAgentLabel resolver, slots (headerExtra, filterExtra, itemBadgesExtra como funcao), emptyIcon/emptyTitle/emptyDescription. Estado interno: renamingId/renameValue, favoritesOpen/historyOpen. Loading: 8 Skeletons h-16. Empty state: icone centralizado + titulo + descricao. Se favorites/history nao fornecidos, deriva de conversations via groupConversations. ScrollArea para overflow.",
+    "status": "pending",
+    "priority": 5,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": ["F-367"],
+    "tests": [
+      "ConversationList renderiza com dados mockados (favorites + history)",
+      "Input de busca visivel e dispara onSearchChange",
+      "Grupos Favoritos/Historico colapsam independentemente",
+      "Star toggle dispara callback onStar",
+      "Inline rename funciona (pencil click → input → Enter/Escape)",
+      "Botao + dispara onCreateRequest",
+      "Load more visivel quando hasMore=true, dispara onLoadMore, mostra remainingCount",
+      "Loading state com 8 Skeletons h-16 w-full rounded-lg",
+      "Empty state com icone + titulo + descricao quando conversations vazio e isLoading=false",
+      "Slots headerExtra, filterExtra, itemBadgesExtra renderizam conteudo",
+      "Totalmente controlado: zero fetch, zero navegacao",
+      "Build compila sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-21/worktree/sprints/sprint-19/3-prps/PRP-25B-componentes-conversas.md"
+  },
+  {
+    "id": "F-369",
+    "name": "ConversationBar — barra de contexto",
+    "description": "Criar src/conversations/ConversationBar.tsx: componente controlado para barra de contexto no topo do chat. Props: title, agentLabel, isLoading, onRename/onExport/onDelete/onBack, controlled/uncontrolled dialog states (renameOpen/onRenameOpenChange, deleteOpen/onDeleteOpenChange), isPendingRename/isPendingDelete, labels i18n (renameLabel, exportLabel, deleteLabel, untitledLabel), slots (actionsExtra antes do dropdown, menuItemsExtra dentro do dropdown, afterBar abaixo da barra). Dropdown com DropdownMenu: Renomear (Pencil), Exportar (Download), menuItemsExtra, Separator, Excluir (Trash2, text-destructive). Se renameOpen/onRenameOpenChange nao fornecidos, gerencia dialogs internamente (uncontrolled mode). Loading: Skeleton no titulo.",
+    "status": "pending",
+    "priority": 6,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": ["F-367"],
+    "tests": [
+      "ConversationBar mostra titulo + agent badge",
+      "Dropdown menu: Renomear abre RenameDialog, Exportar dispara callback, Excluir abre DeleteDialog",
+      "Seta voltar visivel quando onBack fornecido",
+      "Loading state com Skeleton no titulo",
+      "Slots actionsExtra, menuItemsExtra, afterBar renderizam conteudo",
+      "Modo uncontrolled: gerencia dialogs internamente quando renameOpen/deleteOpen nao fornecidos",
+      "Modo controlled: consumidor controla dialog states quando fornecidos",
+      "RenameDialog.onConfirm chama onRename(newTitle) e fecha dialog",
+      "DeleteDialog.onConfirm chama onDelete() e fecha dialog",
+      "Totalmente controlado: zero fetch, zero navegacao",
+      "Build compila sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-21/worktree/sprints/sprint-19/3-prps/PRP-25B-componentes-conversas.md"
+  },
+  {
+    "id": "F-370",
+    "name": "Barrel exports — API publica do pacote",
+    "description": "Criar src/conversations/index.ts com barrel exports: ConversationList, ConversationListProps, ConversationBar, ConversationBarProps, useConversations, UseConversationsOptions, UseConversationsReturn, useIsMobile, formatRelativeTime, buildInitialMessages, groupConversations, Conversation, BackendMessage. Atualizar src/index.ts adicionando re-exports de ./conversations/index.js. Componentes internos (CollapsibleGroup, ConversationListItem, RenameDialog, DeleteDialog) NAO sao exportados. Extensoes .js nos imports (ESM). Manter exports existentes do pacote intactos.",
+    "status": "pending",
+    "priority": 7,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": ["F-366", "F-368", "F-369"],
+    "tests": [
+      "src/conversations/index.ts criado com todos os exports publicos",
+      "src/index.ts atualizado com re-exports de conversations",
+      "Componentes internos NAO exportados na API publica",
+      "import { ConversationList, ConversationBar, useConversations, ... } from '@codrstudio/agentic-chat' funciona",
+      "Exports existentes do pacote permanecem intactos",
+      "Build compila sem erros"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-21/worktree/sprints/sprint-19/3-prps/PRP-25C-integracao-exports-hub-refactor.md"
+  },
+  {
+    "id": "F-371",
+    "name": "Hub conversations-layout refactor",
+    "description": "Refatorar apps/hub/src/components/conversations/conversations-layout.tsx de ~565 para ~120 linhas: importar ConversationList e groupConversations de @codrstudio/agentic-chat. Remover CollapsibleGroup, ConversationListItem, formatRelativeTime locais, toda logica de renderizacao de items e grupos, estado de rename inline. Manter TanStack Query (useQuery, mutations com optimistic update), filtering hub-specific (agentFilter, operatorFilter, search), dialog de nova conversa (agent selector), layout flex com sidebar + Outlet. Passar features hub-specific via slots: headerExtra (operator filter button), filterExtra (agent Select), itemBadgesExtra (badge de operador). Labels em pt-BR.",
+    "status": "pending",
+    "priority": 8,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": ["F-370"],
+    "tests": [
+      "Sidebar de conversas funciona identico ao atual",
+      "Busca por titulo funciona",
+      "Filtro por agente funciona",
+      "Filtro por operador funciona",
+      "Star/unstar com optimistic update funciona",
+      "Inline rename na sidebar funciona",
+      "Nova conversa (dialog com agent selector) funciona",
+      "Mobile: sidebar esconde quando chat ativo",
+      "Labels em pt-BR: Buscar, Favoritos, Historico, Carregar mais, Nenhuma conversa",
+      "npm run build compila sem erro",
+      "npm run dev:all funciona sem regressao"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-21/worktree/sprints/sprint-19/3-prps/PRP-25C-integracao-exports-hub-refactor.md"
+  },
+  {
+    "id": "F-372",
+    "name": "Hub conversation-chat refactor + mapper",
+    "description": "Refatorar apps/hub/src/components/conversations/conversation-chat.tsx de ~460 para ~100 linhas: importar ConversationBar e buildInitialMessages de @codrstudio/agentic-chat. Remover buildInitialMessages local, RenameDialog/DeleteDialog inline, header bar manual, dropdown menu manual. Manter TanStack Query, mutations, TakeoverButton/TakeoverBanner/ApprovalInlineActions, OrchestrationSidebar. Passar via slots: actionsExtra (TakeoverButton), afterBar (TakeoverBanner + ApprovalInlineActions). Labels em pt-BR. Atualizar apps/hub/src/api/conversations.ts: sessionToConversation inclui metadata: { takeover_by, takeover_at } mantendo campos diretos para compatibilidade.",
+    "status": "pending",
+    "priority": 9,
+    "agent": "coder",
+    "task": "vibe-code",
+    "dependencies": ["F-370"],
+    "tests": [
+      "Barra de contexto mostra titulo + agente",
+      "Menu: Renomear, Exportar, Excluir funcionam",
+      "TakeoverButton aparece no slot actionsExtra",
+      "TakeoverBanner aparece no slot afterBar",
+      "ApprovalInlineActions aparece no slot afterBar",
+      "Orchestration sidebar continua funcionando",
+      "Mobile: seta voltar funciona",
+      "buildInitialMessages importado do agentic-chat (implementacao local removida)",
+      "sessionToConversation inclui campo metadata com takeover_by/takeover_at",
+      "Labels em pt-BR: Renomear, Exportar, Excluir, Sem titulo",
+      "npm run build compila sem erro",
+      "npm run dev:all funciona sem regressao"
+    ],
+    "prp_path": "D:/sources/_unowned/agentic-workflow/context/workspaces/ab/wave-21/worktree/sprints/sprint-19/3-prps/PRP-25C-integracao-exports-hub-refactor.md"
+  }
+]
