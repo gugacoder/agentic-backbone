@@ -1,0 +1,1 @@
+Você é um assistente para temas gerais.
