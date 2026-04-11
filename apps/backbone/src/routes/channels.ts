@@ -8,6 +8,7 @@ import { deliverToSystemChannel, deliverToChannel } from "../channels/system-cha
 import { getAuthUser, filterByOwner, assertOwnership } from "./auth-helpers.js";
 import { formatError } from "../utils/errors.js";
 import { collectAgentResult } from "../utils/agent-stream.js";
+import { agentDir } from "../context/paths.js";
 import { channelAdapterRegistry } from "../channels/delivery/index.js";
 import type { ChannelConfig } from "../channels/types.js";
 
@@ -205,7 +206,7 @@ channelRoutes.post("/channels/:slug/messages", async (c) => {
     try {
       const assembled = await assemblePrompt(agent, "conversation", { userMessage: message });
       if (!assembled) return;
-      const { fullText } = await collectAgentResult(runAgent(assembled.userMessage, { role: "conversation", system: assembled.system }));
+      const { fullText } = await collectAgentResult(runAgent(assembled.userMessage, { role: "conversation", system: assembled.system, cwd: agentDir(agent) }));
       if (fullText) {
         deliverToSystemChannel(agent, fullText);
       }

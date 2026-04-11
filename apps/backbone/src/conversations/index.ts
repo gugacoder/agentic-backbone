@@ -454,6 +454,7 @@ export async function* sendMessage(
     tools: conversationTools,
     system: assembled.system,
     disableDisplayTools: !(opts?.rich ?? false),
+    cwd: agentDir(effectiveAgentId),
     ...(contentPartsArg ? { contentParts: contentPartsArg } : {}),
   })) {
     if (event.type === "text" && event.content) {

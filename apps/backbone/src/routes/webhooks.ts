@@ -5,6 +5,7 @@ import { runAgent } from "../agent/index.js";
 import { assemblePrompt } from "../context/index.js";
 import { getAgent } from "../agents/registry.js";
 import { circuitBreaker } from "../circuit-breaker/index.js";
+import { agentDir } from "../context/paths.js";
 
 export const webhookRoutes = new Hono();
 
@@ -213,7 +214,7 @@ async function executeWebhookAsync(eventId: string, agentId: string, payload: un
       : { role: "webhook" as const };
 
     // Consume the async generator to drive execution to completion
-    for await (const _event of runAgent(assembled ? assembled.userMessage : prompt, runOptions)) {
+    for await (const _event of runAgent(assembled ? assembled.userMessage : prompt, { ...runOptions, cwd: agentDir(agentId) })) {
       // fire-and-forget: consume events but do nothing with them
     }
 

@@ -23,6 +23,7 @@ import { loadAllSkills } from "../skills/loader.js";
 import { loadAgentServices, findService } from "../services/loader.js";
 import { executeServiceDirect } from "../services/executor.js";
 import { assemblePrompt } from "../context/index.js";
+import { agentDir } from "../context/paths.js";
 import { runAgent } from "../agent/index.js";
 import { getAuthUser, filterByOwner, assertOwnership } from "./auth-helpers.js";
 import { composeAgentTools } from "../agent/tools.js";
@@ -393,7 +394,7 @@ agentRoutes.post("/agents/:id/request", async (c) => {
 
   if (wantsSSE) {
     return streamSSE(c, async (stream) => {
-      for await (const event of runAgent(assembled.userMessage, { role: "request", system: assembled.system })) {
+      for await (const event of runAgent(assembled.userMessage, { role: "request", system: assembled.system, cwd: agentDir(agentId) })) {
         await stream.writeSSE({ data: JSON.stringify(event) });
       }
     });
@@ -401,7 +402,7 @@ agentRoutes.post("/agents/:id/request", async (c) => {
 
   // JSON synchronous response
   const startMs = Date.now();
-  const { fullText: result, usage } = await collectAgentResult(runAgent(assembled.userMessage, { role: "request", system: assembled.system }));
+  const { fullText: result, usage } = await collectAgentResult(runAgent(assembled.userMessage, { role: "request", system: assembled.system, cwd: agentDir(agentId) }));
   return c.json({ result, usage, durationMs: Date.now() - startMs });
 });
 
@@ -442,13 +443,13 @@ agentRoutes.post("/agents/:id/services/:slug", async (c) => {
 
   if (wantsSSE) {
     return streamSSE(c, async (stream) => {
-      for await (const event of runAgent(assembled.userMessage, { role: "request", system: assembled.system })) {
+      for await (const event of runAgent(assembled.userMessage, { role: "request", system: assembled.system, cwd: agentDir(agentId) })) {
         await stream.writeSSE({ data: JSON.stringify(event) });
       }
     });
   }
 
   const startMs = Date.now();
-  const { fullText: result, usage } = await collectAgentResult(runAgent(assembled.userMessage, { role: "request", system: assembled.system }));
+  const { fullText: result, usage } = await collectAgentResult(runAgent(assembled.userMessage, { role: "request", system: assembled.system, cwd: agentDir(agentId) }));
   return c.json({ result, usage, durationMs: Date.now() - startMs });
 });

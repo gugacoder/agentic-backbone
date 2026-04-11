@@ -250,7 +250,7 @@ draftRoutes.post("/agents/:agentId/drafts/:draftId/chat", async (c) => {
   const system = assembleDraftPrompt(agentId, draftId);
 
   return streamSSE(c, async (stream) => {
-    for await (const event of runAgent(message, { role: "conversation", system })) {
+    for await (const event of runAgent(message, { role: "conversation", system, cwd: agentDir(agentId) })) {
       await stream.writeSSE({
         data: JSON.stringify(event),
         event: event.type,
@@ -292,8 +292,8 @@ draftRoutes.post("/agents/:agentId/drafts/:draftId/compare", async (c) => {
 
   try {
     const [prod, draft] = await Promise.all([
-      collectAgentResult(runAgent(message, { role: "conversation", system: prodSystem })),
-      collectAgentResult(runAgent(message, { role: "conversation", system: draftSystem })),
+      collectAgentResult(runAgent(message, { role: "conversation", system: prodSystem, cwd: agentDir(agentId) })),
+      collectAgentResult(runAgent(message, { role: "conversation", system: draftSystem, cwd: agentDir(agentId) })),
     ]);
 
     return c.json({

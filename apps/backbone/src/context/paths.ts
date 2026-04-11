@@ -19,6 +19,14 @@ export const DATA_DIR = resolve(REPO_ROOT, "data");
 
 export type ResourceKind = "skills" | "adapters" | "services";
 
+export function templatesDir(): string {
+  return join(CONTEXT_DIR, "templates");
+}
+
+export function agentTemplateDir(): string {
+  return join(templatesDir(), "agent");
+}
+
 // --- Top-level directories ---
 
 export function sharedDir(): string {

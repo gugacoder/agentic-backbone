@@ -1,4 +1,5 @@
 import { assemblePrompt } from "../context/index.js";
+import { agentDir } from "../context/paths.js";
 import { type RoutingContext, type RoutingRule, type ModelResult } from "../agent/index.js";
 import { instrumentedRunAgent } from "../telemetry/instrumentor.js";
 import { eventBus } from "../events/index.js";
@@ -198,6 +199,7 @@ async function tick(agentId: string): Promise<void> {
         routingContext: routingCtx,
         agentRoutingRules: agentRules,
         onRoutingResolved: (r) => { routingResult = r; },
+        cwd: agentDir(agentId),
       })
     );
 

@@ -3,6 +3,7 @@ import { instrumentedRunAgent } from "../telemetry/instrumentor.js";
 import { triggerManualHeartbeat } from "../heartbeat/index.js";
 import { deliverToSystemChannel } from "../channels/system-channel.js";
 import { assemblePrompt } from "../context/index.js";
+import { agentDir } from "../context/paths.js";
 import { composeAgentTools } from "../agent/tools.js";
 import { logCronRun } from "./log.js";
 import { collectAgentResult } from "../utils/agent-stream.js";
@@ -144,6 +145,7 @@ async function executeMessagePayload(
         onRoutingResolved: (r) => { routingResult = r; },
         cronJobId: job.slug,
         cronSchedule: JSON.stringify(job.def.schedule),
+        cwd: agentDir(job.agentId),
       })
     );
     fullText = result.fullText;

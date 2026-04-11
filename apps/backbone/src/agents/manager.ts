@@ -6,9 +6,10 @@ import {
   cpSync,
   readdirSync,
 } from "node:fs";
+import { execSync } from "node:child_process";
 import { join } from "node:path";
-import { agentDir, agentsDir, agentConfigPath } from "../context/paths.js";
-import { readYaml, readYamlAs, writeYamlAs, readContextFile } from "../context/readers.js";
+import { agentDir, agentConfigPath, agentTemplateDir } from "../context/paths.js";
+import { readYamlAs, writeYamlAs, readContextFile } from "../context/readers.js";
 import { AgentYmlSchema } from "../context/schemas.js";
 import { refreshAgentRegistry, getAgent } from "./registry.js";
 import type { AgentConfig } from "./types.js";
@@ -34,6 +35,34 @@ export interface UpdateAgentInput {
   adapters?: string[];
 }
 
+// --- CRUD ---
+
+/**
+ * TODO: redesign as a migration process.
+ *
+ * The old updateAgent mutated AGENT.yml in place. Now that new agents are
+ * created by cloning context/templates/agent, updating an agent means
+ * reconciling the existing agent dir against an evolving template — i.e. a
+ * migration, not a field patch. We don't yet have a plan for how to version
+ * and apply those migrations, so this is intentionally a no-op: it returns
+ * the current config unchanged and logs a warning. Callers still work but
+ * their changes are not persisted until this is implemented.
+ */
+export function updateAgent(agentId: string, _updates: UpdateAgentInput): AgentConfig {
+  const configPath = agentConfigPath(agentId);
+  if (!existsSync(configPath)) {
+    throw new Error(`Agent ${agentId} not found`);
+  }
+  console.warn(
+    `[agents] updateAgent(${agentId}) is a no-op — migration-based update not yet implemented`
+  );
+  const current = getAgent(agentId);
+  if (!current) {
+    throw new Error(`Agent ${agentId} not found in registry`);
+  }
+  return current;
+}
+
 export function createAgent(input: CreateAgentInput): AgentConfig {
   const agentId = `${input.owner}.${input.slug}`;
   const dir = agentDir(agentId);
@@ -42,7 +71,16 @@ export function createAgent(input: CreateAgentInput): AgentConfig {
     throw new Error(`Agent ${agentId} already exists`);
   }
 
-  mkdirSync(dir, { recursive: true });
+  // Clone the agent template (context/templates/agent) into the new agent dir.
+  // This provides SOUL.md, HEARTBEAT.md, CONVERSATION.md, REQUEST.md, MEMORY.md,
+  // KNOWLEDGE_BASE.md, README.md, AGENTS.md, kb/, .claude/, .systems/, etc.
+  const tpl = agentTemplateDir();
+  if (!existsSync(tpl)) {
+    throw new Error(`Agent template not found: ${tpl}`);
+  }
+  cpSync(tpl, dir, { recursive: true });
+
+  // Runtime-only dirs not part of the template.
   mkdirSync(join(dir, "conversations"), { recursive: true });
   mkdirSync(join(dir, "tasks"), { recursive: true });
   mkdirSync(join(dir, "skills"), { recursive: true });
@@ -62,37 +100,19 @@ export function createAgent(input: CreateAgentInput): AgentConfig {
 
   writeYamlAs(agentConfigPath(agentId), config, AgentYmlSchema);
 
-  // Create default markdown files
-  writeFileSync(join(dir, "SOUL.md"), `# ${input.slug} Soul\n\nDescribe this agent's identity and behavior.\n`);
-  writeFileSync(join(dir, "HEARTBEAT.md"), `# Heartbeat Instructions\n\n- [ ] Add heartbeat tasks here\n`);
-  writeFileSync(join(dir, "CONVERSATION.md"), `# Conversation Instructions\n`);
-  writeFileSync(join(dir, "REQUEST.md"), `# Request Instructions\n`);
-
-  refreshAgentRegistry();
-  return getAgent(agentId)!;
-}
-
-export function updateAgent(agentId: string, updates: UpdateAgentInput): AgentConfig {
-  const configPath = agentConfigPath(agentId);
-  if (!existsSync(configPath)) {
-    throw new Error(`Agent ${agentId} not found`);
-  }
-
-  const config = readYamlAs(configPath, AgentYmlSchema) as Record<string, unknown>;
-
-  if (updates.delivery !== undefined) config.delivery = updates.delivery;
-  if (updates.enabled !== undefined) config.enabled = updates.enabled;
-  if (updates.heartbeatEnabled !== undefined) config["heartbeat-enabled"] = updates.heartbeatEnabled;
-  if (updates.heartbeatInterval !== undefined) config["heartbeat-interval"] = updates.heartbeatInterval;
-  if (updates.description !== undefined) config.description = updates.description;
-  if (updates.adapters !== undefined) config.adapters = updates.adapters;
-  if (updates.metadata) {
-    for (const [key, value] of Object.entries(updates.metadata)) {
-      config[key] = value;
+  // Prepare the agent system: install npm deps under .systems/.
+  const systemsDir = join(dir, ".systems");
+  if (existsSync(join(systemsDir, "package.json"))) {
+    try {
+      console.log(`[agents] ${agentId}: running npm install in .systems/`);
+      execSync("npm install", {
+        cwd: systemsDir,
+        stdio: "inherit",
+      });
+    } catch (err) {
+      console.warn(`[agents] ${agentId}: npm install in .systems/ failed:`, err);
     }
   }
-
-  writeYamlAs(configPath, config, AgentYmlSchema);
 
   refreshAgentRegistry();
   return getAgent(agentId)!;
