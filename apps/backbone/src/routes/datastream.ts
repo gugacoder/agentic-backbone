@@ -1,63 +1,77 @@
 import type { AgentEvent } from "../agent/types.js";
 
 /**
- * Traduz AgentEvent para o protocolo Vercel AI SDK DataStream.
- * Retorna string formatada com prefixo ou null se o evento nao tem representacao.
+ * AI SDK Data Stream Protocol encoder.
  *
- * Prefixos DataStream:
- *   0: — text delta
- *   9: — tool call
- *   a: — tool result
- *   e: — step finish (finish reason)
- *   d: — done (usage + finish reason)
- *   g: — reasoning
+ * Format: `${code}:${JSON.stringify(value)}\n`
+ *
+ * Codes:
+ *   0 = text (string)
+ *   2 = data (array of JSON values)
+ *   3 = error (string)
+ *   9 = tool_call ({ toolCallId, toolName, args })
+ *   a = tool_result ({ toolCallId, result })
+ *   d = finish_message ({ finishReason, usage? })
+ *   e = finish_step ({ finishReason, usage?, isContinued? })
+ *   f = start_step ({ messageId })
  */
-/**
- * Codifica uma mensagem de erro no protocolo DataStream (prefixo 3:).
- * O @ai-sdk/react useChat interpreta isso como erro e popula o state `error`.
- */
-export function encodeDataStreamError(message: string): string {
-  return `3:${JSON.stringify(message)}`;
+
+function fmt(code: string, value: unknown): string {
+  return `${code}:${JSON.stringify(value)}\n`;
 }
 
 export function encodeDataStreamEvent(event: AgentEvent): string | null {
-  try {
-    switch (event.type) {
-      case "text":
-        return `0:${JSON.stringify(event.content)}`;
-      case "reasoning":
-        return `g:${JSON.stringify(event.content)}`;
-      case "tool-call":
-        return `9:${JSON.stringify({
-          toolCallId: event.toolCallId,
-          toolName: event.toolName,
-          args: event.args ?? {},
-        })}`;
-      case "tool-result":
-        return `a:${JSON.stringify({
-          toolCallId: event.toolCallId,
-          toolName: event.toolName,
-          result: event.result ?? null,
-        })}`;
-      case "step_finish":
-        return `e:${JSON.stringify({ finishReason: "stop" })}`;
-      case "usage":
-        return `d:${JSON.stringify({
-          finishReason: "stop",
-          usage: {
-            promptTokens: event.usage.inputTokens,
-            completionTokens: event.usage.outputTokens,
-          },
-        })}`;
-      case "init":
-        return null;
-      case "result":
-        return null;
-      default:
-        return null;
-    }
-  } catch (err) {
-    console.error(`[datastream] failed to encode event type="${(event as any)?.type}":`, err);
-    return null;
+  switch (event.type) {
+    case "init":
+      // Emit as data array so the client can read sessionId metadata
+      return fmt("2", [{ type: "init", sessionId: event.sessionId }]);
+
+    case "text":
+      return fmt("0", event.content);
+
+    case "reasoning":
+      // AI SDK uses code "g" for reasoning, but not all versions support it.
+      // Emit as data for broad compat.
+      return fmt("2", [{ type: "reasoning", content: event.content }]);
+
+    case "tool-call":
+      return fmt("9", {
+        toolCallId: event.toolCallId,
+        toolName: event.toolName,
+        args: event.args ?? {},
+      });
+
+    case "tool-result":
+      return fmt("a", {
+        toolCallId: event.toolCallId,
+        result: event.result ?? null,
+      });
+
+    case "assistant-complete":
+      return fmt("e", { finishReason: "stop", isContinued: false });
+
+    case "usage":
+      // Emit as data so usage info is available to the client
+      return fmt("2", [{
+        type: "usage",
+        inputTokens: event.usage.inputTokens,
+        outputTokens: event.usage.outputTokens,
+        totalCostUsd: event.usage.totalCostUsd,
+        durationMs: event.usage.durationMs,
+      }]);
+
+    case "result":
+      // Final finish_message with stop reason
+      return fmt("d", { finishReason: "stop" });
+
+    default:
+      return null;
   }
+}
+
+/**
+ * Encodes an error for the Data Stream Protocol.
+ */
+export function encodeDataStreamError(message: string): string {
+  return fmt("3", message);
 }

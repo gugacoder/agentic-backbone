@@ -11,7 +11,7 @@ interface StreamDispatcherOptions {
 
 /**
  * Wraps an AgentEvent async generator and dispatches accumulated text
- * to the channel at each step_finish boundary (and on final result).
+ * to the channel at each assistant-complete boundary (and on final result).
  *
  * This gives channel users (e.g. WhatsApp) intermediate messages
  * instead of waiting for the full response.
@@ -27,7 +27,7 @@ export async function* createStreamDispatcher(
       buffer += event.content;
     }
 
-    if (event.type === "step_finish" || event.type === "result") {
+    if (event.type === "assistant-complete" || event.type === "result") {
       let text = buffer.trim();
       buffer = "";
 
