@@ -9,61 +9,19 @@ export declare const UsageDataSchema: z.ZodObject<{
     durationMs: z.ZodDefault<z.ZodNumber>;
     durationApiMs: z.ZodDefault<z.ZodNumber>;
     stopReason: z.ZodDefault<z.ZodString>;
-}, "strip", z.ZodTypeAny, {
-    inputTokens: number;
-    outputTokens: number;
-    cacheReadInputTokens: number;
-    cacheCreationInputTokens: number;
-    totalCostUsd: number;
-    numTurns: number;
-    durationMs: number;
-    durationApiMs: number;
-    stopReason: string;
-}, {
-    inputTokens: number;
-    outputTokens: number;
-    cacheReadInputTokens?: number | undefined;
-    cacheCreationInputTokens?: number | undefined;
-    totalCostUsd?: number | undefined;
-    numTurns?: number | undefined;
-    durationMs?: number | undefined;
-    durationApiMs?: number | undefined;
-    stopReason?: string | undefined;
-}>;
-export declare const AgentEventSchema: z.ZodDiscriminatedUnion<"type", [z.ZodObject<{
+}, z.core.$strip>;
+export declare const AgentEventSchema: z.ZodDiscriminatedUnion<[z.ZodObject<{
     type: z.ZodLiteral<"init">;
     sessionId: z.ZodOptional<z.ZodString>;
-}, "strip", z.ZodTypeAny, {
-    type: "init";
-    sessionId?: string | undefined;
-}, {
-    type: "init";
-    sessionId?: string | undefined;
-}>, z.ZodObject<{
+}, z.core.$strip>, z.ZodObject<{
     type: z.ZodLiteral<"text">;
     content: z.ZodString;
-}, "strip", z.ZodTypeAny, {
-    type: "text";
-    content: string;
-}, {
-    type: "text";
-    content: string;
-}>, z.ZodObject<{
+}, z.core.$strip>, z.ZodObject<{
     type: z.ZodLiteral<"step_finish">;
-}, "strip", z.ZodTypeAny, {
-    type: "step_finish";
-}, {
-    type: "step_finish";
-}>, z.ZodObject<{
+}, z.core.$strip>, z.ZodObject<{
     type: z.ZodLiteral<"result">;
     content: z.ZodString;
-}, "strip", z.ZodTypeAny, {
-    type: "result";
-    content: string;
-}, {
-    type: "result";
-    content: string;
-}>, z.ZodObject<{
+}, z.core.$strip>, z.ZodObject<{
     type: z.ZodLiteral<"usage">;
     usage: z.ZodObject<{
         inputTokens: z.ZodNumber;
@@ -75,93 +33,21 @@ export declare const AgentEventSchema: z.ZodDiscriminatedUnion<"type", [z.ZodObj
         durationMs: z.ZodDefault<z.ZodNumber>;
         durationApiMs: z.ZodDefault<z.ZodNumber>;
         stopReason: z.ZodDefault<z.ZodString>;
-    }, "strip", z.ZodTypeAny, {
-        inputTokens: number;
-        outputTokens: number;
-        cacheReadInputTokens: number;
-        cacheCreationInputTokens: number;
-        totalCostUsd: number;
-        numTurns: number;
-        durationMs: number;
-        durationApiMs: number;
-        stopReason: string;
-    }, {
-        inputTokens: number;
-        outputTokens: number;
-        cacheReadInputTokens?: number | undefined;
-        cacheCreationInputTokens?: number | undefined;
-        totalCostUsd?: number | undefined;
-        numTurns?: number | undefined;
-        durationMs?: number | undefined;
-        durationApiMs?: number | undefined;
-        stopReason?: string | undefined;
-    }>;
-}, "strip", z.ZodTypeAny, {
-    type: "usage";
-    usage: {
-        inputTokens: number;
-        outputTokens: number;
-        cacheReadInputTokens: number;
-        cacheCreationInputTokens: number;
-        totalCostUsd: number;
-        numTurns: number;
-        durationMs: number;
-        durationApiMs: number;
-        stopReason: string;
-    };
-}, {
-    type: "usage";
-    usage: {
-        inputTokens: number;
-        outputTokens: number;
-        cacheReadInputTokens?: number | undefined;
-        cacheCreationInputTokens?: number | undefined;
-        totalCostUsd?: number | undefined;
-        numTurns?: number | undefined;
-        durationMs?: number | undefined;
-        durationApiMs?: number | undefined;
-        stopReason?: string | undefined;
-    };
-}>, z.ZodObject<{
+    }, z.core.$strip>;
+}, z.core.$strip>, z.ZodObject<{
     type: z.ZodLiteral<"reasoning">;
     content: z.ZodString;
-}, "strip", z.ZodTypeAny, {
-    type: "reasoning";
-    content: string;
-}, {
-    type: "reasoning";
-    content: string;
-}>, z.ZodObject<{
+}, z.core.$strip>, z.ZodObject<{
     type: z.ZodLiteral<"tool-call">;
     toolCallId: z.ZodString;
     toolName: z.ZodString;
-    args: z.ZodRecord<z.ZodString, z.ZodUnknown>;
-}, "strip", z.ZodTypeAny, {
-    type: "tool-call";
-    args: Record<string, unknown>;
-    toolCallId: string;
-    toolName: string;
-}, {
-    type: "tool-call";
-    args: Record<string, unknown>;
-    toolCallId: string;
-    toolName: string;
-}>, z.ZodObject<{
+    args: z.ZodRecord<z.core.$ZodRecordKey, z.core.SomeType>;
+}, z.core.$strip>, z.ZodObject<{
     type: z.ZodLiteral<"tool-result">;
     toolCallId: z.ZodString;
     toolName: z.ZodString;
     result: z.ZodUnknown;
-}, "strip", z.ZodTypeAny, {
-    type: "tool-result";
-    toolCallId: string;
-    toolName: string;
-    result?: unknown;
-}, {
-    type: "tool-result";
-    toolCallId: string;
-    toolName: string;
-    result?: unknown;
-}>]>;
+}, z.core.$strip>], "type">;
 export declare const AgentRunOptionsSchema: z.ZodObject<{
     model: z.ZodString;
     apiKey: z.ZodString;
@@ -169,51 +55,15 @@ export declare const AgentRunOptionsSchema: z.ZodObject<{
     sessionId: z.ZodOptional<z.ZodString>;
     sessionDir: z.ZodOptional<z.ZodString>;
     role: z.ZodOptional<z.ZodString>;
-    tools: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodAny>>;
+    tools: z.ZodOptional<z.ZodRecord<z.ZodAny, z.core.SomeType>>;
     maxTurns: z.ZodOptional<z.ZodNumber>;
-    providerConfig: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodAny>>;
+    providerConfig: z.ZodOptional<z.ZodRecord<z.ZodAny, z.core.SomeType>>;
     system: z.ZodOptional<z.ZodString>;
-    messageMeta: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodUnknown>>;
+    messageMeta: z.ZodOptional<z.ZodRecord<z.core.$ZodRecordKey, z.core.SomeType>>;
     provider: z.ZodOptional<z.ZodString>;
-    providers: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodObject<{
-        baseURL: z.ZodString;
-        apiKey: z.ZodString;
-    }, "strip", z.ZodTypeAny, {
-        baseURL: string;
-        apiKey: string;
-    }, {
-        baseURL: string;
-        apiKey: string;
-    }>>>;
-}, "strip", z.ZodTypeAny, {
-    prompt: string;
-    model: string;
-    apiKey: string;
-    system?: string | undefined;
-    tools?: Record<string, any> | undefined;
-    sessionId?: string | undefined;
-    sessionDir?: string | undefined;
-    role?: string | undefined;
-    maxTurns?: number | undefined;
-    providerConfig?: Record<string, any> | undefined;
-    messageMeta?: Record<string, unknown> | undefined;
-    provider?: string | undefined;
-    providers?: Record<string, { baseURL: string; apiKey: string }> | undefined;
-}, {
-    prompt: string;
-    model: string;
-    apiKey: string;
-    system?: string | undefined;
-    tools?: Record<string, any> | undefined;
-    sessionId?: string | undefined;
-    sessionDir?: string | undefined;
-    role?: string | undefined;
-    maxTurns?: number | undefined;
-    providerConfig?: Record<string, any> | undefined;
-    messageMeta?: Record<string, unknown> | undefined;
-    provider?: string | undefined;
-    providers?: Record<string, { baseURL: string; apiKey: string }> | undefined;
-}>;
+    providers: z.ZodOptional<z.ZodRecord<z.core.$ZodRecordKey, z.core.SomeType>>;
+    contentParts: z.ZodOptional<z.ZodArray<z.ZodAny>>;
+}, z.core.$strip>;
 export type AgentEvent = z.infer<typeof AgentEventSchema>;
 export type UsageData = z.infer<typeof UsageDataSchema>;
 export type AgentRunOptions = z.infer<typeof AgentRunOptionsSchema>;

@@ -10,15 +10,8 @@ export interface JobToolCallbacks {
     getAgentId: () => string | undefined;
 }
 export declare function createJobTools(callbacks: JobToolCallbacks): {
-    submit_job: import("ai").Tool<{
-        command: string;
-        timeout?: number | undefined;
-    }, string>;
-    list_jobs: import("ai").Tool<{}, string>;
-    get_job: import("ai").Tool<{
-        jobId: string;
-    }, string>;
-    kill_job: import("ai").Tool<{
-        jobId: string;
-    }, "Job killed successfully" | "Job not found or already finished">;
+    submit_job: any;
+    list_jobs: any;
+    get_job: any;
+    kill_job: any;
 };

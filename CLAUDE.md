@@ -13,9 +13,8 @@ npm run dev:backbone          # backbone only (from root)
 npm run dev:hub               # hub only (from root)
 npm run dev:chat              # chat only (from root)
 
-# Build (sequential: ai-sdk → backbone → hub)
+# Build
 npm run build                 # all packages
-npm run build:packages        # ai-sdk only
 
 # Start production
 npm run start --workspace=apps/backbone
@@ -84,17 +83,16 @@ All env vars are in the root `.env` file — single source of truth. **Never use
 
 | Package | Path | Purpose |
 |---|---|---|
-| `@agentic-backbone/backbone` | `apps/backbone` | Autonomous multi-agent runtime (Node.js, Hono, Vercel AI SDK) |
+| `@agentic-backbone/backbone` | `apps/backbone` | Autonomous multi-agent runtime (Node.js, Hono, OpenClaude SDK) |
 | `@agentic-backbone/hub` | `apps/hub` | React admin UI (Vite + TanStack Router) |
 | `@agentic-backbone/chat` | `apps/chat` | Standalone chat UI |
-| `@agentic-backbone/ai-sdk` | `apps/packages/ai-sdk` | Agent runtime via Vercel AI SDK + OpenRouter |
-| `@agentic-backbone/ai-chat` | `apps/packages/ai-chat` | Shared chat UI components |
+| `@codrstudio/openclaude-sdk` | external | Claude Code CLI wrapper — agent runtime |
 | `@agentic-backbone/ui` | `apps/packages/ui` | Shared UI component library (shadcn) |
 
 ### Core Flow
 
 ```
-HTTP (Hono, :6002) → Routes (/api/v1/ai) → Conversations → Agent Runner → AI SDK (OpenRouter)
+HTTP (Hono, :6002) → Routes (/api/v1/ai) → Conversations → Agent Runner → OpenClaude SDK (query())
                           │                                      ↓
                           │                                SSE streaming → client
                           │
@@ -111,7 +109,7 @@ HTTP (Hono, :6002) → Routes (/api/v1/ai) → Conversations → Agent Runner �
 | **heartbeat** | Fixed-interval timer (default 30s) | Autonomous — active-hours gating, dedup, skip-if-empty |
 | **cron** | Cron schedule expression | Scheduled — defined in agent `cron/*.yml` files |
 
-All three modes call `runAgent()` via the AI SDK through OpenRouter.
+All three modes call `runAgent()` via OpenClaude SDK `query()`. Model/provider resolved from plan YAML files (`context/plans/`).
 
 ### Source Modules (`apps/backbone/src/`)
 
@@ -119,7 +117,7 @@ All three modes call `runAgent()` via the AI SDK through OpenRouter.
 |---|---|
 | `index.ts` | Hono server entry; mounts routes, bootstraps subsystems |
 | `routes/` | REST + SSE endpoints (health, conversations, channels, users, agents, cron, jobs, settings, services, system events) |
-| `agent/` | `runAgent()` async generator — calls ai-sdk with model/role/tools |
+| `agent/` | `runAgent()` async generator — wraps openclaude-sdk `query()`, maps SDKMessage → AgentEvent |
 | `agents/` | Agent registry — discovers `AGENT.yml` files, parses YAML config. Agent IDs = `owner.slug` |
 | `conversations/` | Session lifecycle. SQLite for session index, filesystem for message history (JSONL) |
 | `channels/` | Channel registry + delivery subsystem (SSE, connector adapters) |
@@ -135,7 +133,7 @@ All three modes call `runAgent()` via the AI SDK through OpenRouter.
 | `watchers/` | chokidar hot-reload for `AGENT.yml`, `CHANNEL.yml`, `ADAPTER.yml`. 300ms debounce. Auto-encrypts `.yml` sensitive fields |
 | `users/` | User CRUD — `USER.md` (profile) + `credential.yml` (secrets, auto-encrypted) |
 | `context/` | Path resolution (`paths.ts`), resource resolver (`resolver.ts`), readers (`readers.ts` — readMarkdown/readYaml), encryptor (`encryptor.ts`) |
-| `settings/` | `llm.ts` — runtime LLM config read/write, model resolution |
+| `settings/` | `llm.ts` — plan-based LLM resolution: `resolve(role)` → `{model, provider, parameters}` from YAML plans |
 | `db/` | Backbone SQLite database (sessions, heartbeat_log, cron_run_log). WAL mode |
 | `utils/` | Shared utilities — `sensitive.ts` (field masking), `encryption.ts` (AES-256-GCM for `.yml` secrets) |
 
@@ -153,9 +151,15 @@ Structure and file types defined in `context/.skeleton.md` (single source of tru
 
 - **Heartbeat prompt pattern** — Responses matching `HEARTBEAT_OK` or ≤300 chars are treated as acknowledgments and skipped. Deduplication within 24h.
 
-- **Session persistence** — SQLite stores session index (`data/backbone.sqlite`). Per-session: `SESSION.yml` (metadata) + `messages.jsonl` (history).
+- **CLAUDE_CONFIG_DIR per agent** — Each agent gets `context/agents/{id}/.claude-config/` with `.credentials.json`, `settings.json`, and `skills/`. Passed to query() via `env.CLAUDE_CONFIG_DIR`. CLI stores history in `{configDir}/projects/`.
 
-- **Memory pipeline** — Every 20 messages, a background agent extracts facts into `MEMORY.md`. All `.md` files in agent scope are chunked (400 tokens, 80 overlap), embedded, and indexed into per-agent SQLite databases with sqlite-vec + FTS5. Hybrid scoring: 0.7 vector + 0.3 text.
+- **Session persistence** — SQLite stores session index (`data/backbone.sqlite`). History read from CLI JSONL in `{CLAUDE_CONFIG_DIR}/projects/`. Stats (cost, tokens, duration) stored in SQLite.
+
+- **MCP tools** — Internal tools (jobs, memory, cron, messages, emit, sysinfo) exposed via builtin MCP server (`src/mcp-server/builtin.ts`). External adapters also MCP. All passed to query() via `options.mcpServers`.
+
+- **Plan-based model routing** — Plans (free, economic, standard, premium, max) in `context/plans/*.yml`. Each plan maps roles (conversation, heartbeat, cron, memory) to slugs ({class}.{effort}) that resolve to `{provider, model, parameters}`. No routing rules — plan is the single source of truth.
+
+- **Memory pipeline** — Agent manages memory via LYT model in workspace. All `.md` files in agent scope are chunked (400 tokens, 80 overlap), embedded, and indexed into per-agent SQLite databases with sqlite-vec + FTS5. Hybrid scoring: 0.7 vector + 0.3 text.
 
 - **`enabled` flag** — Agent/resource activation controlled by `enabled: true|false` in YAML config. Heartbeat requires both `enabled` and `heartbeat-enabled` to be `true`.
 
@@ -165,13 +169,14 @@ Structure and file types defined in `context/.skeleton.md` (single source of tru
 
 - **Sensitive field masking** — `utils/sensitive.ts` masks secrets in API responses. Use `maskSensitiveFields()` instead of inline masking.
 
-### ai-sdk Package (`apps/packages/ai-sdk/`)
+### OpenClaude SDK (`@codrstudio/openclaude-sdk`)
 
-- `runAiAgent()` — async generator using `streamText()`, same `AgentEvent` output
-- Exports `dist/index.js` (compiled) — `tsc` build may OOM on constrained machines; edit `dist/` directly as workaround
-- Context compaction: auto-compacts when context window threshold exceeded
-- MCP support: stdio and http transports
-- Built-in tools: `Read`, `Glob`, `Grep`, `Bash`, `Write`, `Edit`, `MultiEdit`, `ApplyPatch`, `AskUser`, `WebSearch`, `WebFetch`, `CodeSearch`, `Task`, `Batch`, `ListDir`
+- `query()` — spawns Claude Code CLI, returns `AsyncGenerator<SDKMessage>` with control methods
+- Backbone wraps `query()` in `runAgent()` (`src/agent/index.ts`), mapping SDKMessage → AgentEvent
+- Session management: `sessionId`/`resume` for conversation continuity, `persistSession: false` for ephemeral modes
+- MCP support: stdio, SSE, HTTP transports. Backbone passes builtin + adapter MCP servers
+- Built-in tools provided by CLI: Read, Glob, Grep, Bash, Write, Edit, etc.
+- Provider registry: `createOpenRouterRegistry()` for model routing via OpenRouter
 
 ### Connector Pattern (`src/connectors/`)
 

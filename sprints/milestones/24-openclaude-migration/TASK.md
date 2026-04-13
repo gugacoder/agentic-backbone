@@ -34,7 +34,7 @@ npm link @codrstudio/openclaude-sdk   # linka no backbone
 
 ### Fase 1 — Fundacao (sem dependencias entre si, podem ser paralelas)
 
-- [ ] **Plan resolver** (D-07)
+- [x] **Plan resolver** (D-07)
   - Criar Zod schema que valida planos YAML (context/plans/*.yml)
   - Loader que le e valida os 5 planos (free, economic, standard, premium, max)
   - `resolve(role, plan)` → slug → `{ provider, model, parameters }`
@@ -43,14 +43,14 @@ npm link @codrstudio/openclaude-sdk   # linka no backbone
   - Remover: RoutingRule, RoutingContext, resolveModelResult, todo codigo legado de routing em `src/settings/llm.ts`
   - Manter: PROVIDER_CONFIGS (baseURL, apiKeyEnv) — ainda necessario pra montar ProviderRegistry
 
-- [ ] **MCP server builtin** (D-05, D-19)
+- [x] **MCP server builtin** (D-05, D-19)
   - Criar script Node.js: MCP server stdio com @modelcontextprotocol/sdk
   - Expor tools internas: jobs (submit, list, get, kill), memory (search, save), cron (list, create, delete), messages (send), emit, sysinfo
   - Cada tool: name, description, inputSchema (Zod), handler → CallToolResult
   - Testar: passar pro query() como `{ type: "stdio", command: "node", args: ["caminho/do/server.mjs"] }`
   - Referencia: `.tmp/mcp-stdio-server.mjs` (teste funcional criado durante decisoes)
 
-- [ ] **CLAUDE_CONFIG_DIR por agente** (D-13)
+- [x] **CLAUDE_CONFIG_DIR por agente** (D-13)
   - Criar `context/agents/{agentId}/.claude-config/` na inicializacao do agente
   - Copiar `~/.claude/.credentials.json` pra la (se nao existir)
   - Skills do agente em `.claude-config/skills/{slug}/SKILL.md`
@@ -58,7 +58,7 @@ npm link @codrstudio/openclaude-sdk   # linka no backbone
 
 ### Fase 2 — Core (depende da Fase 1)
 
-- [ ] **Reescrever src/agent/index.ts** (D-01, D-06, D-13, D-20)
+- [x] **Reescrever src/agent/index.ts** (D-01, D-06, D-13, D-20)
   - Importar `query` de `@codrstudio/openclaude-sdk`
   - Montar options por modo de execucao:
     - **Todos os modos:** env.CLAUDE_CONFIG_DIR, systemPrompt, mcpServers (builtin + adapters filtrados), model (do plan resolver)
@@ -69,17 +69,17 @@ npm link @codrstudio/openclaude-sdk   # linka no backbone
   - Mapear SDKMessage → tipo backbone enxuto (text, tool-call, tool-result, usage, result)
   - O mapeamento fica num unico ponto — consumidores do backbone nao conhecem SDKMessage
 
-- [ ] **Adaptar stream-dispatcher.ts** (D-06)
+- [x] **Adaptar stream-dispatcher.ts** (D-06)
   - Substituir `step_finish` por boundary na chegada de SDKAssistantMessage completa
   - Logica: quando chega SDKAssistantMessage com content blocks, flush buffer pro canal
 
-- [ ] **Remover datastream.ts** (D-06)
+- [x] **Remover datastream.ts** (D-06)
   - Protocolo Vercel AI SDK DataStream descartado
   - Remover arquivo ou reescrever pra SSE de SDKMessage
 
 ### Fase 3 — Rotas (depende da Fase 2)
 
-- [ ] **GET /conversations/:id/messages** (D-12, D-13)
+- [x] **GET /conversations/:id/messages** (D-12, D-13)
   - Ler do JSONL do CLI em `{CLAUDE_CONFIG_DIR}/projects/<sanitized-cwd>/<sessionId>.jsonl`
   - Filtrar: retornar apenas type "user" e "assistant" (ignorar queue-operation, attachment, last-prompt)
   - Converter formato CLI → formato que o chat espera
@@ -87,25 +87,25 @@ npm link @codrstudio/openclaude-sdk   # linka no backbone
   - Conversas legacy (formato antigo {role, content, _meta}) convertidas on-the-fly
   - Spec de historico: `CHAT-HISTORY.md`
 
-- [ ] **POST /conversations/:id/messages** (D-06, D-11, D-13)
+- [x] **POST /conversations/:id/messages** (D-06, D-11, D-13)
   - Usar query() com resume + config do agente
   - Stream SSE de SDKMessage pro chat (todos os tipos relevantes — ver CHAT-RICH-MESSAGES.md)
   - Capturar `result` event do stream e gravar stats em SQLite (custo, tokens, duracao)
   - Repassar richOutput do request pro query()
   - Attachments: salvar no workspace do agente, passar caminho absoluto no prompt
 
-- [ ] **Multi-agent** (D-14)
+- [x] **Multi-agent** (D-14)
   - POST messages aceita `agentId` no body
   - Se fornecido, backbone resolve o agente e passa systemPrompt + mcpServers + model daquele agente pro query()
   - POST /conversations aceita `multiAgent?: boolean`
   - GET /agents retorna lista de agentes do usuario
 
-- [ ] **Normalizar respostas** (D-10)
+- [x] **Normalizar respostas** (D-10)
   - `starred` retorna boolean (nao 0/1) em GET /conversations
 
 ### Fase 4 — Swap e cleanup
 
-- [ ] **Trocar dependencias** (D-15, D-18)
+- [x] **Trocar dependencias** (D-15, D-18)
   - backbone: `@agentic-backbone/ai-sdk` → `@codrstudio/openclaude-sdk`
   - hub: `@agentic-backbone/ai-chat` → `@codrstudio/openclaude-chat`
   - apps/chat: `@agentic-backbone/ai-chat` → `@codrstudio/openclaude-chat`
@@ -113,12 +113,12 @@ npm link @codrstudio/openclaude-sdk   # linka no backbone
   - Remover `memory/flush.ts` (D-02)
   - **Manter** pacote `ai` (Vercel) — 60+ tools ainda usam `import { tool } from "ai"` (D-18)
 
-- [ ] **Remover pacotes antigos**
+- [ ] **Remover pacotes antigos** (adiado — ai-chat ainda depende de ai-sdk, removido no milestone do openclaude-chat)
   - Remover `apps/packages/ai-sdk/`
   - Remover `apps/packages/ai-chat/`
   - Remover deps orfas (@ai-sdk/react, etc.)
 
-- [ ] **Atualizar CLAUDE.md**
+- [x] **Atualizar CLAUDE.md**
   - Refletir nova arquitetura (openclaude-sdk, planos, MCP, CLAUDE_CONFIG_DIR)
 
 ### Validacao

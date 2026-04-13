@@ -123,7 +123,7 @@ export async function* runAiAgent(prompt, options) {
             MultiEdit: createMultiEditTool(),
             ApplyPatch: createApplyPatchTool(),
         };
-        const displayTools = createDisplayTools();
+        const displayTools = options.disableDisplayTools ? {} : createDisplayTools();
         let tools = { ...mcpTools, ...codingTools, ...displayTools, ...dangerousTools };
         if (options.tools) {
             tools = { ...tools, ...options.tools };

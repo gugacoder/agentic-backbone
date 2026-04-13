@@ -16,7 +16,4 @@ export type WebSearchProvider = (query: string, numResults: number) => Promise<W
  * Factory that creates the WebSearch tool with an injected search provider.
  * If no provider is given, returns a tool that explains no provider is configured.
  */
-export declare function createWebSearchTool(searchProvider?: WebSearchProvider): import("ai").Tool<{
-    query: string;
-    numResults: number;
-}, string>;
+export declare function createWebSearchTool(searchProvider?: WebSearchProvider): any;

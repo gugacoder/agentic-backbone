@@ -1,4 +1,1 @@
-export declare const webFetchTool: import("ai").Tool<{
-    url: string;
-    prompt?: string | undefined;
-}, string>;
+export declare const webFetchTool: any;
