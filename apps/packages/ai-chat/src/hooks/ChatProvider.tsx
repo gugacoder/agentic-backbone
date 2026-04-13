@@ -10,8 +10,8 @@ export interface ChatProviderProps extends Omit<UseBackboneChatOptions, "initial
   children: React.ReactNode;
 }
 
-export function ChatProvider({ endpoint, token, sessionId, initialMessages, children }: ChatProviderProps) {
-  const chat = useBackboneChat({ endpoint, token, sessionId, initialMessages });
+export function ChatProvider({ endpoint, token, sessionId, initialMessages, enableRichContent, children }: ChatProviderProps) {
+  const chat = useBackboneChat({ endpoint, token, sessionId, initialMessages, enableRichContent });
   return <ChatContext.Provider value={chat}>{children}</ChatContext.Provider>;
 }
 

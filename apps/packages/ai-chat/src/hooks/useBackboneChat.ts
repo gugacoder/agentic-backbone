@@ -30,10 +30,14 @@ export function useBackboneChat(options: UseBackboneChatOptions) {
   }, []);
 
   const rich = options.enableRichContent !== false;
+  const authHeaders: Record<string, string> = options.token
+    ? { Authorization: `Bearer ${options.token}` }
+    : {};
   const chat = useChat({
     api: `${options.endpoint}/api/v1/ai/conversations/${options.sessionId}/messages?format=datastream${rich ? "&rich=true" : ""}`,
-    headers: { Authorization: `Bearer ${options.token}` },
+    headers: authHeaders,
     initialMessages: options.initialMessages,
+    credentials: "include",
     fetch: async (url: string | URL | Request, init?: RequestInit) => {
       if (pendingFilesRef.current.length > 0) {
         const files = pendingFilesRef.current;
@@ -57,6 +61,7 @@ export function useBackboneChat(options: UseBackboneChatOptions) {
           method: "POST",
           headers: initHeaders,
           body: formData,
+          credentials: "include",
         });
 
         if (!res.ok) {

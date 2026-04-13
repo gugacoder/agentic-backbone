@@ -18,6 +18,8 @@ export interface ChatProps {
   className?: string;
   enableAttachments?: boolean;
   enableVoice?: boolean;
+  /** Ativa rich content (display tools) no stream. Default: true */
+  enableRichContent?: boolean;
 }
 
 interface ChatContentProps {
@@ -62,9 +64,10 @@ export function Chat({
   className,
   enableAttachments,
   enableVoice,
+  enableRichContent,
 }: ChatProps) {
   return (
-    <ChatProvider key={sessionId} endpoint={endpoint} token={token} sessionId={sessionId} initialMessages={initialMessages as any}>
+    <ChatProvider key={sessionId} endpoint={endpoint} token={token} sessionId={sessionId} initialMessages={initialMessages as any} enableRichContent={enableRichContent}>
       <div className={cn("flex flex-col h-full bg-background text-foreground", className)}>
         {header}
         <ChatContent
