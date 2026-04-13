@@ -3,7 +3,7 @@ import { db } from "../db/index.js";
 import { eventBus } from "../events/index.js";
 import { getAgent } from "../agents/registry.js";
 import { runAgent } from "../agent/index.js";
-import { resolveModelResult, getProviderConfig } from "../settings/llm.js";
+import { resolve, getProviderConfig } from "../settings/llm.js";
 import { emitNotification } from "../notifications/index.js";
 
 // ── Benchmark config from AGENT.yml frontmatter ──────────────────────────────
@@ -74,7 +74,7 @@ async function judgeResponse(
   actual: string
 ): Promise<{ score: number; reasoning: string }> {
   try {
-    const { model, provider } = resolveModelResult("conversation");
+    const { model, provider } = resolve("conversation");
     const conf = getProviderConfig(provider);
     const apiKey = process.env[conf.apiKeyEnv]!;
     const resp = await fetch(`${conf.baseURL}/chat/completions`, {

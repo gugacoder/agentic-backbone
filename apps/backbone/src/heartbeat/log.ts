@@ -10,7 +10,6 @@ export interface HeartbeatLogParams {
   reason?: string;
   preview?: string;
   modelUsed?: string;
-  routingRule?: string;
 }
 
 export interface HeartbeatLogEntry {
@@ -113,7 +112,7 @@ export function logHeartbeat(params: HeartbeatLogParams): void {
     reason: params.reason ?? null,
     preview: params.preview ?? null,
     modelUsed: params.modelUsed ?? null,
-    routingRule: params.routingRule ?? null,
+    routingRule: null,
   });
 }
 

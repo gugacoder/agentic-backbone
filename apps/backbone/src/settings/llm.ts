@@ -4,38 +4,6 @@ import { z } from "zod";
 import { plansDir, settingsPath } from "../context/paths.js";
 import { readYaml, writeYaml } from "../context/readers.js";
 
-// --- Routing Types ---
-
-export interface RoutingContext {
-  mode: "heartbeat" | "conversation" | "cron" | "webhook";
-  estimatedPromptTokens?: number;
-  toolsCount?: number;
-  channelType?: string;
-  tags?: string[];
-}
-
-export interface RoutingRule {
-  id: string;
-  description?: string;
-  conditions: {
-    mode?: string;
-    prompt_tokens_lte?: number;
-    prompt_tokens_gte?: number;
-    tools_count_gte?: number;
-    tools_count_lte?: number;
-    tags_any?: string[];
-    channel_type?: string;
-  };
-  model: string;
-  priority: number;
-}
-
-export interface ModelResult {
-  model: string;
-  provider: LlmProvider;
-  ruleName: string | null;
-}
-
 // --- Provider ---
 
 export type LlmProvider = "openrouter" | "groq";
@@ -84,7 +52,7 @@ const ALL_SLUGS: SlugName[] = SLUG_CLASSES.flatMap((c) =>
 
 // --- Zod Schema ---
 
-const llmProviderSchema = z.enum(["openrouter", "groq"]).default("openrouter");
+const llmProviderSchema = z.enum(["openrouter", "groq"]);
 
 const slugDefRawSchema = z.object({
   class: z.enum(["small", "medium", "large"]),
@@ -198,12 +166,17 @@ export function setActivePlan(name: string): void {
 
 const DEFAULT_SLUG: SlugName = "medium.low";
 
+export interface ResolvedLlm {
+  model: string;
+  provider: LlmProvider;
+  parameters: Record<string, unknown>;
+}
+
 export function resolveSlug(role: string): SlugDef {
   const plan = getActivePlan();
   const slugName = plan.roles[role] ?? DEFAULT_SLUG;
   const slug = plan.slugs[slugName];
   if (!slug) {
-    // Fallback to default slug
     const fallback = plan.slugs[DEFAULT_SLUG];
     if (!fallback) {
       throw new Error(`[llm] no slug "${slugName}" and no fallback "${DEFAULT_SLUG}" in plan "${plan.name}"`);
@@ -213,95 +186,23 @@ export function resolveSlug(role: string): SlugDef {
   return slug;
 }
 
-// --- Routing ---
-
-export function estimateTokens(text: string): number {
-  return Math.ceil(text.length / 4);
-}
-
-function matchesRule(rule: RoutingRule, ctx: RoutingContext): boolean {
-  const c = rule.conditions;
-  if (c.mode !== undefined && c.mode !== ctx.mode) return false;
-  if (c.prompt_tokens_lte !== undefined && (ctx.estimatedPromptTokens ?? 0) > c.prompt_tokens_lte) return false;
-  if (c.prompt_tokens_gte !== undefined && (ctx.estimatedPromptTokens ?? 0) < c.prompt_tokens_gte) return false;
-  if (c.tools_count_gte !== undefined && (ctx.toolsCount ?? 0) < c.tools_count_gte) return false;
-  if (c.tools_count_lte !== undefined && (ctx.toolsCount ?? 0) > c.tools_count_lte) return false;
-  if (c.channel_type !== undefined && c.channel_type !== ctx.channelType) return false;
-  if (c.tags_any !== undefined && !c.tags_any.some((t) => ctx.tags?.includes(t))) return false;
-  return true;
-}
-
-function loadGlobalRoutingRules(): RoutingRule[] {
-  if (!existsSync(settingsPath())) return [];
-  const settings = readYaml(settingsPath()) as Record<string, unknown>;
-  const routing = settings["routing"] as { enabled?: boolean; rules?: RoutingRule[] } | undefined;
-  if (!routing?.enabled || !routing.rules) return [];
-  return routing.rules;
-}
-
-export interface RoutingConfig {
-  enabled: boolean;
-  rules: RoutingRule[];
-}
-
-export function getRoutingConfig(): RoutingConfig {
-  if (!existsSync(settingsPath())) return { enabled: false, rules: [] };
-  const settings = readYaml(settingsPath()) as Record<string, unknown>;
-  const routing = settings["routing"] as { enabled?: boolean; rules?: RoutingRule[] } | undefined;
-  return {
-    enabled: routing?.enabled ?? false,
-    rules: routing?.rules ?? [],
-  };
-}
-
-export function setRoutingConfig(config: RoutingConfig): void {
-  const settings = existsSync(settingsPath())
-    ? (readYaml(settingsPath()) as Record<string, unknown>)
-    : {};
-  settings["routing"] = config;
-  writeYaml(settingsPath(), settings);
-}
-
-export function resolveModelResult(
-  role: string,
-  context?: RoutingContext,
-  agentRoutingRules?: RoutingRule[]
-): ModelResult {
+/** Resolve by role name (conversation, heartbeat, cron, memory). */
+export function resolve(role: string): ResolvedLlm {
   const slug = resolveSlug(role);
-  const fallbackModel = slug.llm.model;
-  const fallbackProvider = slug.llm.provider;
-
-  if (!context) {
-    return { model: fallbackModel, provider: fallbackProvider, ruleName: null };
-  }
-
-  // Agent rules take priority over global rules — check them first (sorted by priority desc)
-  const sortedAgentRules = [...(agentRoutingRules ?? [])].sort((a, b) => b.priority - a.priority);
-  for (const rule of sortedAgentRules) {
-    if (matchesRule(rule, context)) {
-      return { model: rule.model, provider: fallbackProvider, ruleName: rule.id };
-    }
-  }
-
-  // Then global rules
-  const sortedGlobalRules = loadGlobalRoutingRules().sort((a, b) => b.priority - a.priority);
-  for (const rule of sortedGlobalRules) {
-    if (matchesRule(rule, context)) {
-      return { model: rule.model, provider: fallbackProvider, ruleName: rule.id };
-    }
-  }
-
-  return { model: fallbackModel, provider: fallbackProvider, ruleName: null };
+  return { model: slug.llm.model, provider: slug.llm.provider, parameters: slug.llm.parameters };
 }
 
-export function resolveModel(
-  role: string,
-  context?: RoutingContext,
-  agentRoutingRules?: RoutingRule[]
-): string {
-  return resolveModelResult(role, context, agentRoutingRules).model;
+/** Resolve by slug name directly (e.g. "medium.mid", "small.low"). */
+export function resolveBySlug(slugName: SlugName): ResolvedLlm {
+  const plan = getActivePlan();
+  const slug = plan.slugs[slugName];
+  if (!slug) {
+    throw new Error(`[llm] slug "${slugName}" not found in plan "${plan.name}"`);
+  }
+  return { model: slug.llm.model, provider: slug.llm.provider, parameters: slug.llm.parameters };
 }
 
+/** @deprecated Use resolve(role) instead. Will be removed after migration. */
 export function resolveParameters(role: string): Record<string, unknown> {
   return resolveSlug(role).llm.parameters;
 }

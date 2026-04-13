@@ -12,7 +12,6 @@ export interface CronRunLogParams {
   outputTokens?: number;
   costUsd?: number;
   modelUsed?: string;
-  routingRule?: string;
 }
 
 export interface CronRunLogEntry {
@@ -57,7 +56,7 @@ export function logCronRun(params: CronRunLogParams): void {
     outputTokens: params.outputTokens ?? 0,
     costUsd: params.costUsd ?? 0,
     modelUsed: params.modelUsed ?? null,
-    routingRule: params.routingRule ?? null,
+    routingRule: null,
   });
 }
 

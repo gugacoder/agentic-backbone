@@ -3,7 +3,7 @@ import type { Context } from "hono";
 import { db } from "../db/index.js";
 import { parseBody } from "./helpers.js";
 import { runAgent } from "../agent/index.js";
-import { resolveModelResult, getProviderConfig } from "../settings/llm.js";
+import { resolve, getProviderConfig } from "../settings/llm.js";
 
 export const evaluationRoutes = new Hono();
 
@@ -192,7 +192,7 @@ async function runEvalPipeline(runId: number, agentId: string, cases: Array<{ id
       let score = 0;
       let reasoning = "";
       try {
-        const { model, provider } = resolveModelResult("conversation");
+        const { model, provider } = resolve("conversation");
         const conf = getProviderConfig(provider);
         const apiKey = process.env[conf.apiKeyEnv]!;
         const resp = await fetch(`${conf.baseURL}/chat/completions`, {

@@ -1,6 +1,6 @@
 import { assemblePrompt } from "../context/index.js";
 import { agentDir } from "../context/paths.js";
-import { type RoutingContext, type RoutingRule, type ModelResult } from "../agent/index.js";
+import { type ResolvedLlm } from "../agent/index.js";
 import { instrumentedRunAgent } from "../telemetry/instrumentor.js";
 import { eventBus } from "../events/index.js";
 import { deliverToSystemChannel, deliverToChannel } from "../channels/system-channel.js";
@@ -17,7 +17,6 @@ import { emitNotification } from "../notifications/index.js";
 import { trackCost } from "../db/costs.js";
 import { trackHeartbeat } from "../db/analytics.js";
 import { checkExceeded, getQuotas, recordUsage, pauseAgent } from "../quotas/quota-manager.js";
-import { estimateTokens } from "../settings/llm.js";
 import { circuitBreaker } from "../circuit-breaker/index.js";
 
 const HEARTBEAT_OK = "HEARTBEAT_OK";
@@ -182,23 +181,15 @@ async function tick(agentId: string): Promise<void> {
     });
 
     const tools = composeAgentTools(agentId, "heartbeat");
-    const routingCtx: RoutingContext = {
-      mode: "heartbeat",
-      estimatedPromptTokens: estimateTokens((assembled.system ?? "") + assembled.userMessage),
-      toolsCount: tools ? Object.keys(tools).length : 0,
-    };
-    const agentRules = ((agentConfig.metadata as Record<string, unknown>)?.["routing"] as { rules?: RoutingRule[] } | undefined)?.rules;
 
-    let routingResult: ModelResult | undefined;
+    let resolved: ResolvedLlm | undefined;
 
     const { fullText, usage: usageData } = await collectAgentResult(
       instrumentedRunAgent(agentId, "heartbeat", assembled.userMessage, {
         role: "heartbeat",
         tools,
         system: assembled.system,
-        routingContext: routingCtx,
-        agentRoutingRules: agentRules,
-        onRoutingResolved: (r) => { routingResult = r; },
+        onResolved: (r) => { resolved = r; },
         cwd: agentDir(agentId),
       })
     );
@@ -228,13 +219,12 @@ async function tick(agentId: string): Promise<void> {
     const { shouldSkip, cleanText } = normalizeReply(fullText);
     const durationMs = Date.now() - startMs;
 
-    const modelUsed = routingResult?.model;
-    const routingRule = routingResult?.ruleName ?? undefined;
+    const modelUsed = resolved?.model;
 
     if (shouldSkip) {
       state.lastStatus = "ok";
       console.log(`[heartbeat:${agentId}] ok (${durationMs}ms)`);
-      emitHeartbeatResult(agentId, "ok-token", { durationMs, usage: usageData, modelUsed, routingRule });
+      emitHeartbeatResult(agentId, "ok-token", { durationMs, usage: usageData, modelUsed });
       trackHeartbeat({ agentId, status: "ok", durationMs });
       return;
     }
@@ -243,7 +233,7 @@ async function tick(agentId: string): Promise<void> {
       state.lastStatus = "skipped";
       state.lastSkipReason = "duplicate";
       console.log(`[heartbeat:${agentId}] suppressed duplicate (${durationMs}ms)`);
-      emitHeartbeatResult(agentId, "skipped", { durationMs, usage: usageData, reason: "duplicate", modelUsed, routingRule });
+      emitHeartbeatResult(agentId, "skipped", { durationMs, usage: usageData, reason: "duplicate", modelUsed });
       trackHeartbeat({ agentId, status: "skipped", durationMs });
       return;
     }
@@ -256,7 +246,7 @@ async function tick(agentId: string): Promise<void> {
     console.log(
       `[heartbeat:${agentId}] delivered (${durationMs}ms): ${preview}`
     );
-    emitHeartbeatResult(agentId, "sent", { preview, durationMs, usage: usageData, modelUsed, routingRule });
+    emitHeartbeatResult(agentId, "sent", { preview, durationMs, usage: usageData, modelUsed });
     trackHeartbeat({ agentId, status: "ok", durationMs });
     const deliveryMode = agentConfig?.delivery;
     if (deliveryMode === "last-active") {

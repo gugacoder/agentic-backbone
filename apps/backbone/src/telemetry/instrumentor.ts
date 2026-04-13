@@ -143,7 +143,7 @@ export async function* instrumentedRunAgent(
 ): AsyncGenerator<AgentEvent> {
   // Fast path: telemetry disabled or sampled out
   if (!shouldSample(mode, agentId)) {
-    yield* runAgent(prompt, options);
+    yield* runAgent(prompt, { ...options, agentId });
     return;
   }
 
@@ -165,7 +165,7 @@ export async function* instrumentedRunAgent(
     span = getTracer().startSpan(spanName, { kind: SpanKind.CLIENT, attributes: attrs });
   } catch {
     // OTel failure — fall back to plain runAgent
-    yield* runAgent(prompt, options);
+    yield* runAgent(prompt, { ...options, agentId });
     return;
   }
 
@@ -175,16 +175,17 @@ export async function* instrumentedRunAgent(
     ? wrapToolsWithOTel(originalTools, span, options?.knownAdapterSlugs ?? [])
     : undefined;
 
-  // Intercept onRoutingResolved to capture the resolved model
-  const originalOnRoutingResolved = options?.onRoutingResolved;
+  // Intercept onResolved to capture the resolved model
+  const originalOnResolved = options?.onResolved;
   const instrumentedOptions: Parameters<typeof runAgent>[1] = {
     ...options,
+    agentId,
     tools: wrappedTools,
-    onRoutingResolved: (result) => {
+    onResolved: (result) => {
       try {
         span?.setAttribute("gen_ai.request.model", result.model);
       } catch {}
-      originalOnRoutingResolved?.(result);
+      originalOnResolved?.(result);
     },
   };
 

@@ -8,6 +8,7 @@ slugs:
     class: small
     effort: low
     llm:
+      provider: openrouter
       model: anthropic/claude-haiku-4-5
       parameters: {}
     tags: [triagem, classificacao, anthropic]
@@ -18,6 +19,7 @@ slugs:
     class: small
     effort: mid
     llm:
+      provider: openrouter
       model: anthropic/claude-haiku-4-5
       parameters:
         thinking: adaptive
@@ -29,6 +31,7 @@ slugs:
     class: small
     effort: high
     llm:
+      provider: openrouter
       model: anthropic/claude-haiku-4-5
       parameters:
         thinking: adaptive
@@ -40,6 +43,7 @@ slugs:
     class: medium
     effort: low
     llm:
+      provider: openrouter
       model: anthropic/claude-sonnet-4-6
       parameters: {}
     tags: [conversacao, tool-calling, sonnet]
@@ -50,6 +54,7 @@ slugs:
     class: medium
     effort: mid
     llm:
+      provider: openrouter
       model: anthropic/claude-sonnet-4-6
       parameters:
         thinking: adaptive
@@ -61,6 +66,7 @@ slugs:
     class: medium
     effort: high
     llm:
+      provider: openrouter
       model: anthropic/claude-sonnet-4-6
       parameters:
         thinking: adaptive
@@ -72,6 +78,7 @@ slugs:
     class: large
     effort: low
     llm:
+      provider: openrouter
       model: anthropic/claude-sonnet-4-6
       parameters: {}
     tags: [analise, sintese, sonnet]
@@ -82,6 +89,7 @@ slugs:
     class: large
     effort: mid
     llm:
+      provider: openrouter
       model: anthropic/claude-sonnet-4-6
       parameters:
         thinking: adaptive
@@ -93,6 +101,7 @@ slugs:
     class: large
     effort: high
     llm:
+      provider: openrouter
       model: anthropic/claude-sonnet-4-6
       parameters:
         thinking: adaptive

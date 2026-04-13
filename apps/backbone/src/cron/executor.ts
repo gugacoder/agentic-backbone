@@ -1,4 +1,4 @@
-import { type UsageData, type RoutingContext, type RoutingRule, type ModelResult } from "../agent/index.js";
+import { type UsageData, type ResolvedLlm } from "../agent/index.js";
 import { instrumentedRunAgent } from "../telemetry/instrumentor.js";
 import { triggerManualHeartbeat } from "../heartbeat/index.js";
 import { deliverToSystemChannel } from "../channels/system-channel.js";
@@ -12,8 +12,6 @@ import { formatError } from "../utils/errors.js";
 import { emitNotification } from "../notifications/index.js";
 import { trackCost } from "../db/costs.js";
 import { trackCron } from "../db/analytics.js";
-import { estimateTokens } from "../settings/llm.js";
-import { getAgent } from "../agents/registry.js";
 import { circuitBreaker } from "../circuit-breaker/index.js";
 
 const EXECUTION_TIMEOUT_MS = 10 * 60 * 1000;
@@ -123,15 +121,8 @@ async function executeMessagePayload(
   });
 
   const tools = composeAgentTools(job.agentId, "cron");
-  const routingCtx: RoutingContext = {
-    mode: "cron",
-    estimatedPromptTokens: estimateTokens((assembled.system ?? "") + assembled.userMessage),
-    toolsCount: tools ? Object.keys(tools).length : 0,
-  };
-  const agentConfig = getAgent(job.agentId);
-  const agentRules = ((agentConfig?.metadata as Record<string, unknown> | undefined)?.["routing"] as { rules?: RoutingRule[] } | undefined)?.rules;
 
-  let routingResult: ModelResult | undefined;
+  let resolved: ResolvedLlm | undefined;
 
   process.env.AGENT_ID = job.agentId;
   const execution = (async () => {
@@ -140,9 +131,7 @@ async function executeMessagePayload(
         role: "cron",
         tools,
         system: assembled.system,
-        routingContext: routingCtx,
-        agentRoutingRules: agentRules,
-        onRoutingResolved: (r) => { routingResult = r; },
+        onResolved: (r) => { resolved = r; },
         cronJobId: job.slug,
         cronSchedule: JSON.stringify(job.def.schedule),
         cwd: agentDir(job.agentId),
@@ -170,8 +159,7 @@ async function executeMessagePayload(
     inputTokens: usageData?.inputTokens,
     outputTokens: usageData?.outputTokens,
     costUsd: usageData?.totalCostUsd,
-    modelUsed: routingResult?.model,
-    routingRule: routingResult?.ruleName ?? undefined,
+    modelUsed: resolved?.model,
   });
 
   if (usageData) {
