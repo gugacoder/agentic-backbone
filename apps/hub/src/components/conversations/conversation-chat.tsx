@@ -1,64 +1,32 @@
-import { useState, useEffect } from "react";
-import { Link, useNavigate, useSearch } from "@tanstack/react-router";
+import { useEffect } from "react";
+import { Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
-import {
-  ArrowLeft,
-  Bot,
-  MoreVertical,
-  Pencil,
-  Download,
-  Trash2,
-  GitMerge,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { GitMerge } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Input } from "@/components/ui/input";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import {
   conversationQueryOptions,
   conversationMessagesQueryOptions,
   sessionQueryOptions,
-  renameConversation,
-  deleteConversation,
   takeoverConversation,
   releaseConversation,
 } from "@/api/conversations";
-import { agentsQueryOptions } from "@/api/agents";
-import { Chat } from "@agentic-backbone/ai-chat";
-import { useAuthStore } from "@/lib/auth";
+import { Chat, defaultDisplayRenderers } from "@agentic-backbone/ai-chat";
 import { TakeoverButton } from "@/components/conversations/takeover-button";
 import { TakeoverBanner } from "@/components/conversations/takeover-banner";
 import { ApprovalInlineActions } from "@/components/approvals/approval-inline-actions";
-import { useIsMobile } from "@/hooks/use-mobile";
 
 type BackendMessage = import("@/api/conversations").ConversationMessage;
 
 function buildInitialMessages(messages?: BackendMessage[]) {
-  if (!messages) return undefined;
+  if (!messages || !Array.isArray(messages) || messages.length === 0) return undefined;
 
   type Part = { type?: string; text?: string; toolCallId?: string; toolName?: string; input?: Record<string, unknown>; output?: unknown };
 
-  // Index tool results by toolCallId
   const toolResults = new Map<string, { toolName: string; result: unknown }>();
   for (const m of messages) {
     if (m.role === "tool" && Array.isArray(m.content)) {
       for (const part of m.content as Part[]) {
         if (part.type === "tool-result" && part.toolCallId) {
-          // output can be {type:"json", value:{...}} or direct value
           const raw = part.output as { type?: string; value?: unknown } | unknown;
           const value = (typeof raw === "object" && raw !== null && "type" in (raw as Record<string, unknown>) && (raw as Record<string, unknown>).type === "json")
             ? (raw as { value: unknown }).value
@@ -69,14 +37,12 @@ function buildInitialMessages(messages?: BackendMessage[]) {
     }
   }
 
-  // Aggregate consecutive assistant+tool+assistant into single Messages
   const result: { id: string; role: "user" | "assistant"; content: string; parts?: unknown[] }[] = [];
   let i = 0;
 
   while (i < messages.length) {
     const m = messages[i]!;
 
-    // User message — emit with attachment parts if present
     if (m.role === "user") {
       let content = "";
       const parts: unknown[] = [];
@@ -86,12 +52,10 @@ function buildInitialMessages(messages?: BackendMessage[]) {
       } else if (Array.isArray(m.content)) {
         for (const p of m.content as Record<string, unknown>[]) {
           if (p["type"] === "text") {
-            // Regular text (not pre-processed attachment) becomes the message content
             const text = String(p["text"] ?? "");
             if (!text.startsWith("[📎") && !content) content = text;
             parts.push(p);
           } else if (p["type"] === "image" || p["type"] === "file") {
-            // Binary parts — keep _ref and mimeType for URL-based rendering
             parts.push({ type: p["type"], _ref: p["_ref"], mimeType: p["mimeType"] });
           } else {
             parts.push(p);
@@ -109,29 +73,24 @@ function buildInitialMessages(messages?: BackendMessage[]) {
       continue;
     }
 
-    // Tool message — skip (consumed by assistant aggregation)
     if (m.role === "tool") {
       i++;
       continue;
     }
 
-    // Assistant message — aggregate with following tool+assistant messages
     if (m.role === "assistant") {
       const parts: unknown[] = [];
       let textContent = "";
       const id = m._meta?.id ?? m.id ?? `msg-${i}`;
 
-      // Consume consecutive assistant and tool messages
       while (i < messages.length && (messages[i]!.role === "assistant" || messages[i]!.role === "tool")) {
         const cur = messages[i]!;
 
         if (cur.role === "tool") {
-          // tool messages are consumed via toolResults map, skip
           i++;
           continue;
         }
 
-        // assistant message — extract parts from content
         if (typeof cur.content === "string") {
           if (cur.content) {
             parts.push({ type: "text", text: cur.content });
@@ -164,24 +123,10 @@ function buildInitialMessages(messages?: BackendMessage[]) {
       continue;
     }
 
-    // Unknown role — skip
     i++;
   }
 
   return result;
-}
-
-function getCurrentUserSlug(): string | null {
-  const token = useAuthStore.getState().token;
-  if (!token) return null;
-  try {
-    const parts = token.split(".");
-    if (parts.length < 2) return null;
-    const payload = JSON.parse(atob(parts[1]!)) as { sub?: string };
-    return payload.sub ?? null;
-  } catch {
-    return null;
-  }
 }
 
 interface ConversationChatPageProps {
@@ -190,44 +135,15 @@ interface ConversationChatPageProps {
 }
 
 export function ConversationChatPage({ id, basePath }: ConversationChatPageProps) {
-  const { action } = useSearch({ strict: false }) as { action?: "rename" | "delete" };
-  const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const isMobile = useIsMobile();
 
   const { data: conversation, isLoading: convLoading } = useQuery(
     conversationQueryOptions(id),
   );
-  const { data: agents } = useQuery(agentsQueryOptions());
   const { data: session } = useQuery(sessionQueryOptions(id));
   const { data: existingMessages, isLoading: msgsLoading } = useQuery(
     conversationMessagesQueryOptions(id),
   );
-
-  const [renameValue, setRenameValue] = useState("");
-
-  useEffect(() => {
-    if (action === "rename") {
-      setRenameValue(conversation?.title ?? "");
-    }
-  }, [action, conversation?.title]);
-
-  const renameMutation = useMutation({
-    mutationFn: (title: string) => renameConversation(id, title),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["conversations", id] });
-      queryClient.invalidateQueries({ queryKey: ["conversations"] });
-      navigate({ search: {} });
-    },
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: () => deleteConversation(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["conversations"] });
-      navigate({ to: basePath as string });
-    },
-  });
 
   const takeoverMutation = useMutation({
     mutationFn: () => takeoverConversation(id),
@@ -243,24 +159,8 @@ export function ConversationChatPage({ id, basePath }: ConversationChatPageProps
     },
   });
 
-  const currentUserSlug = getCurrentUserSlug();
   const isUnderTakeover = session?.takeover_by != null;
-
-  function handleExport() {
-    const token = useAuthStore.getState().token;
-    const url = `/api/v1/ai/conversations/${id}/export${token ? `?token=${encodeURIComponent(token)}` : ""}`;
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `conversation-${id}.json`;
-    a.click();
-  }
-
-  const agentLabel =
-    agents?.find((a) => a.id === conversation?.agentId)?.slug ??
-    conversation?.agentId ??
-    "";
-
-  const token = useAuthStore.getState().token ?? "";
+  const token = ""; // auth via HttpOnly cookie — no token needed in header
 
   if (convLoading || msgsLoading) {
     return (
@@ -275,7 +175,7 @@ export function ConversationChatPage({ id, basePath }: ConversationChatPageProps
     return (
       <div className="flex h-full items-center justify-center">
         <div className="space-y-4 text-center">
-          <p className="text-muted-foreground">Conversa nao encontrada.</p>
+          <p className="text-muted-foreground">Conversa não encontrada.</p>
           <Link
             to={basePath as string}
             className="text-sm text-primary underline"
@@ -298,119 +198,18 @@ export function ConversationChatPage({ id, basePath }: ConversationChatPageProps
   })();
 
   return (
-    <div className="chat-active flex h-full gap-3">
+    <div className="flex h-full gap-3">
       <div className="flex flex-1 flex-col overflow-hidden">
-        {/* Header */}
-        <div className="flex items-center gap-3 border-b px-4 py-3">
-          {isMobile && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="size-8 shrink-0"
-              onClick={() => navigate({ to: basePath as string })}
-            >
-              <ArrowLeft className="size-4" />
-            </Button>
-          )}
-
-          <span className="truncate text-sm font-medium">
-            {conversation.title || "Sem titulo"}
-          </span>
-
-          <Badge variant="outline" className="ml-auto shrink-0 text-xs">
-            <Bot className="mr-1 size-3" />
-            {agentLabel}
-          </Badge>
-
-          {!isUnderTakeover && (
+        {/* Takeover controls (thin bar, only when relevant) */}
+        {!isUnderTakeover && (
+          <div className="flex items-center justify-end border-b px-3 py-1.5">
             <TakeoverButton
               sessionId={id}
               onTakeover={() => takeoverMutation.mutate()}
               isPending={takeoverMutation.isPending}
             />
-          )}
-
-          <DropdownMenu>
-            <DropdownMenuTrigger
-              render={
-                <Button variant="ghost" size="icon" className="size-8 shrink-0">
-                  <MoreVertical className="size-4" />
-                </Button>
-              }
-            />
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => navigate({ search: { action: "rename" } })}>
-                <Pencil className="mr-2 size-4" />
-                Renomear
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={handleExport}>
-                <Download className="mr-2 size-4" />
-                Exportar
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => navigate({ search: { action: "delete" } })}
-                className="text-destructive focus:text-destructive"
-              >
-                <Trash2 className="mr-2 size-4" />
-                Excluir
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-
-        {/* Rename dialog */}
-        <Dialog open={action === "rename"} onOpenChange={(open) => { if (!open) navigate({ search: {} }); }}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Renomear conversa</DialogTitle>
-            </DialogHeader>
-            <Input
-              value={renameValue}
-              onChange={(e) => setRenameValue(e.target.value)}
-              placeholder="Titulo da conversa"
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && renameValue.trim()) {
-                  renameMutation.mutate(renameValue.trim());
-                }
-              }}
-            />
-            <DialogFooter>
-              <Button variant="outline" onClick={() => navigate({ search: {} })}>
-                Cancelar
-              </Button>
-              <Button
-                onClick={() => renameMutation.mutate(renameValue.trim())}
-                disabled={!renameValue.trim() || renameMutation.isPending}
-              >
-                Salvar
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-
-        {/* Delete confirmation dialog */}
-        <Dialog open={action === "delete"} onOpenChange={(open) => { if (!open) navigate({ search: {} }); }}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Excluir conversa</DialogTitle>
-              <DialogDescription>
-                Esta conversa sera removida permanentemente.
-              </DialogDescription>
-            </DialogHeader>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => navigate({ search: {} })}>
-                Cancelar
-              </Button>
-              <Button
-                variant="destructive"
-                onClick={() => deleteMutation.mutate()}
-                disabled={deleteMutation.isPending}
-              >
-                Excluir
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+          </div>
+        )}
 
         {/* Takeover banner */}
         {isUnderTakeover && session?.takeover_by && session?.takeover_at && (
@@ -422,15 +221,17 @@ export function ConversationChatPage({ id, basePath }: ConversationChatPageProps
           />
         )}
 
-        {/* Inline approval requests for this session */}
+        {/* Inline approval requests */}
         <ApprovalInlineActions sessionId={id} />
 
-        {/* Chat area — delegates message list + input to ai-chat */}
+        {/* Chat — rich content enabled */}
         <Chat
           endpoint=""
           token={token}
           sessionId={id}
           initialMessages={buildInitialMessages(existingMessages)}
+          displayRenderers={defaultDisplayRenderers}
+          enableRichContent
           className="flex-1 flex flex-col overflow-hidden"
         />
       </div>
@@ -440,7 +241,7 @@ export function ConversationChatPage({ id, basePath }: ConversationChatPageProps
         <div className="hidden w-56 shrink-0 overflow-y-auto rounded-lg border bg-muted/30 p-3 lg:block">
           <div className="mb-3 flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
             <GitMerge className="size-3.5" />
-            Caminho de delegacao
+            Caminho de delegação
           </div>
           <ol className="space-y-2">
             {orchestrationPath.map((agentId, idx) => (
