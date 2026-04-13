@@ -127,6 +127,10 @@ export function agentWorkspaceDir(agentId: string): string {
   return join(agentDir(agentId), "workspace");
 }
 
+export function agentClaudeConfigDir(agentId: string): string {
+  return join(agentDir(agentId), ".claude-config");
+}
+
 export function agentUserMemoryPath(agentId: string, userSlug: string): string {
   return join(agentDir(agentId), "users", userSlug, "USER.md");
 }

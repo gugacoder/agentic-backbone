@@ -1,19 +1,38 @@
-import { runAgent as runProxyAgent, type AgentEvent, type UsageData } from "@agentic-backbone/ai-sdk";
-import {
-  resolveModelResult,
-  resolveParameters,
-  getProviderConfig,
-  type RoutingContext,
-  type RoutingRule,
-  type ModelResult,
-} from "../settings/llm.js";
-import { loadWebSearchConfig } from "../settings/web-search.js";
-import { readFileSync, appendFileSync, mkdirSync } from "node:fs";
-import { join } from "node:path";
-import { DATA_DIR } from "../context/paths.js";
+/**
+ * Agent runner — wraps openclaude-sdk query() with backbone configuration.
+ *
+ * The backbone doesn't implement its own agent — it configures the Claude Code
+ * agent (via openclaude-sdk) for each execution context. Skills, history,
+ * settings live in CLAUDE_CONFIG_DIR. Tools come via MCP servers.
+ *
+ * SDKMessage → AgentEvent mapping happens here and ONLY here.
+ * Consumers never import from @codrstudio/openclaude-sdk.
+ */
 
-export type { AgentEvent, UsageData };
-export type { RoutingContext, RoutingRule, ModelResult };
+import { query } from "@codrstudio/openclaude-sdk";
+import type { ProviderRegistry } from "@codrstudio/openclaude-sdk";
+import type {
+  SDKMessage,
+  SDKAssistantMessage,
+  SDKUserMessage,
+  SDKResultMessage,
+  ContentBlock,
+  ToolResultBlock,
+} from "@codrstudio/openclaude-sdk";
+import {
+  resolve,
+  getProviderConfig,
+  type ResolvedLlm,
+} from "../settings/llm.js";
+import { ensureClaudeConfigDir } from "../agents/claude-config.js";
+import { buildBuiltinMcpConfig } from "../mcp-server/builtin-config.js";
+import { appendFileSync, mkdirSync } from "node:fs";
+import { join } from "node:path";
+import { DATA_DIR, agentDir } from "../context/paths.js";
+import type { AgentEvent, UsageData } from "./types.js";
+
+export type { AgentEvent, UsageData } from "./types.js";
+export type { ResolvedLlm };
 
 const LOG_PATH = join(DATA_DIR, "agent-runs.jsonl");
 
@@ -26,49 +45,104 @@ function logAgentRun(entry: Record<string, unknown>): void {
   }
 }
 
+// --- Execution mode ---
+
+export type AgentMode = "conversation" | "heartbeat" | "cron" | "request" | "webhook";
+
+export interface RunAgentOptions {
+  agentId: string;
+  role?: string;
+  mode?: AgentMode;
+  system?: string;
+  cwd?: string;
+  onResolved?: (result: ResolvedLlm) => void;
+
+  // Conversation mode
+  sessionId?: string;
+  resume?: string;
+
+  // MCP
+  mcpServers?: Record<string, unknown>;
+
+  // Rich output (forwarded from chat)
+  richOutput?: boolean;
+
+  // Legacy compat — these are passed through but unused by openclaude-sdk
+  messageMeta?: Record<string, unknown>;
+  contentParts?: unknown[];
+  disableDisplayTools?: boolean;
+
+  // Telemetry hooks
+  cronJobId?: string;
+  cronSchedule?: string;
+  heartbeatResult?: string;
+  knownAdapterSlugs?: string[];
+  tools?: Record<string, any>;
+}
+
 export async function* runAgent(
   prompt: string,
-  options?: {
-    sessionId?: string;
-    sessionDir?: string;
-    messageMeta?: Record<string, unknown>;
-    role?: string;
-    tools?: Record<string, any>;
-    system?: string;
-    routingContext?: RoutingContext;
-    agentRoutingRules?: RoutingRule[];
-    onRoutingResolved?: (result: ModelResult) => void;
-    contentParts?: unknown[];
-    disableDisplayTools?: boolean;
-    cwd?: string;
-  }
+  options?: RunAgentOptions
 ): AsyncGenerator<AgentEvent> {
+  const agentId = options?.agentId ?? process.env.AGENT_ID ?? "system.main";
   const role = options?.role ?? "conversation";
-  const routingResult = resolveModelResult(role, options?.routingContext, options?.agentRoutingRules);
-  const model = routingResult.model;
-  const provider = routingResult.provider;
-  options?.onRoutingResolved?.(routingResult);
-  const params = resolveParameters(role);
-  const webSearch = loadWebSearchConfig();
+  const mode = options?.mode ?? (role as AgentMode);
+  const resolved = resolve(role);
+  options?.onResolved?.(resolved);
 
-  const providerConf = getProviderConfig(provider);
-  const apiKey = process.env[providerConf.apiKeyEnv]!;
+  // CLAUDE_CONFIG_DIR per agent
+  const configDir = ensureClaudeConfigDir(agentId);
 
-  const tools = options?.tools;
-  if (providerConf.maxTools !== undefined && tools && Object.keys(tools).length > providerConf.maxTools) {
-    console.warn(`[agent] ${Object.keys(tools).length} tools exceeds provider limit of ${providerConf.maxTools} for provider "${provider}"`);
+  // Build provider registry from plan resolution
+  const providerConf = getProviderConfig(resolved.provider);
+  const apiKey = process.env[providerConf.apiKeyEnv] ?? "";
+  const registry: ProviderRegistry = {
+    providers: [{
+      id: resolved.provider,
+      name: resolved.provider,
+      type: resolved.provider === "groq" ? "openai" : "openai",
+      baseUrl: providerConf.baseURL,
+      apiKey,
+    }],
+    models: [{
+      id: resolved.model,
+      label: resolved.model,
+      provider: resolved.provider,
+      contextWindow: 128000,
+    }],
+    defaultModel: resolved.model,
+  };
+
+  // Build MCP servers
+  const mcpServers: Record<string, unknown> = {};
+
+  // Builtin MCP server (jobs, memory, cron, messages, emit, sysinfo)
+  const builtinConfig = buildBuiltinMcpConfig(agentId);
+  if (builtinConfig) {
+    mcpServers["backbone-builtin"] = builtinConfig;
   }
+
+  // Additional MCP servers from caller (adapters, etc.)
+  if (options?.mcpServers) {
+    Object.assign(mcpServers, options.mcpServers);
+  }
+
+  // Mode-specific options
+  const isConversation = mode === "conversation";
+  const persistSession = isConversation;
+  const agentCwd = options?.cwd ?? agentDir(agentId);
 
   const systemLen = options?.system?.length ?? 0;
   const promptPreview = prompt.slice(0, 120).replace(/\n/g, "\\n");
-  console.log(`[agent] role=${role} provider=${provider} model=${model} system=${systemLen}ch prompt="${promptPreview}"`);
+  console.log(`[agent] agentId=${agentId} role=${role} mode=${mode} model=${resolved.model} system=${systemLen}ch prompt="${promptPreview}"`);
 
   logAgentRun({
     ts: new Date().toISOString(),
+    agentId,
     role,
-    provider,
-    model,
-    routingRule: routingResult.ruleName,
+    mode,
+    provider: resolved.provider,
+    model: resolved.model,
     systemChars: systemLen,
     promptChars: prompt.length,
     hasIdentity: options?.system?.includes("<identity>") ?? false,
@@ -76,43 +150,137 @@ export async function* runAgent(
     promptPreview: prompt.slice(0, 200),
   });
 
-  // Read BRAVE_API_KEY: prefer process.env, fallback to reading .env file directly
-  let braveApiKey = process.env.BRAVE_API_KEY;
-  if (!braveApiKey) {
-    try {
-      const envContent = readFileSync(join(process.cwd(), ".env"), "utf-8");
-      const match = envContent.match(/^BRAVE_API_KEY=(.+)$/m);
-      if (match) braveApiKey = match[1].trim();
-    } catch (err) {
-      console.debug("[agent] .env read failed (BRAVE_API_KEY):", err);
+  // Build query options
+  const queryOptions: Record<string, unknown> = {
+    cwd: agentCwd,
+    model: resolved.model,
+    permissionMode: "bypassPermissions",
+    maxTurns: 100,
+    locale: "pt-BR",
+    ...(options?.system ? { systemPrompt: options.system } : {}),
+    ...(Object.keys(mcpServers).length > 0 ? { mcpServers } : {}),
+    ...(options?.richOutput !== undefined ? { richOutput: options.richOutput } : {}),
+    env: {
+      CLAUDE_CONFIG_DIR: configDir,
+    },
+  };
+
+  // Session management
+  if (isConversation) {
+    if (options?.resume) {
+      queryOptions.resume = options.resume;
+    } else if (options?.sessionId) {
+      queryOptions.sessionId = options.sessionId;
     }
   }
-  // Build extra providers map for non-openrouter providers
-  const extraProviders: Record<string, { baseURL: string; apiKey: string }> = {};
-  if (provider !== "openrouter") {
-    extraProviders[provider] = { baseURL: providerConf.baseURL, apiKey };
+
+  // persistSession: false for non-conversation modes (D-16)
+  if (!persistSession) {
+    queryOptions.persistSession = false;
   }
 
-  yield* runProxyAgent({
-    model,
-    apiKey: process.env.OPENROUTER_API_KEY ?? apiKey,
-    provider,
-    ...(Object.keys(extraProviders).length > 0 ? { providers: extraProviders } : {}),
+  const q = query({
     prompt,
-    sessionId: options?.sessionId,
-    sessionDir: options?.sessionDir,
-    messageMeta: options?.messageMeta,
-    role,
-    tools: options?.tools,
-    maxTurns: 100,
-    ...(options?.system ? { system: options.system } : {}),
-    ...(options?.contentParts ? { contentParts: options.contentParts } : {}),
-    ...(options?.disableDisplayTools !== undefined ? { disableDisplayTools: options.disableDisplayTools } : {}),
-    ...(options?.cwd ? { cwd: options.cwd } : {}),
-    providerConfig: {
-      ...params,
-      webSearch: webSearch.provider,
-      ...(braveApiKey ? { braveApiKey } : {}),
-    },
+    model: resolved.model,
+    registry,
+    options: queryOptions as any,
   });
+
+  // Map SDKMessage → AgentEvent
+  for await (const msg of q) {
+    yield* mapSdkMessage(msg as SDKMessage);
+  }
+}
+
+// --- SDKMessage → AgentEvent mapping ---
+// This is the ONLY place SDKMessage is consumed. All downstream code uses AgentEvent.
+
+function* mapSdkMessage(msg: SDKMessage): Generator<AgentEvent> {
+  switch (msg.type) {
+    case "assistant": {
+      const assistantMsg = msg as SDKAssistantMessage;
+      for (const block of assistantMsg.message.content) {
+        if (block.type === "text") {
+          yield { type: "text", content: block.text };
+        } else if (block.type === "tool_use") {
+          yield {
+            type: "tool-call",
+            toolCallId: block.id,
+            toolName: block.name,
+            args: block.input,
+          };
+        }
+      }
+      // SDKAssistantMessage boundary replaces step_finish (D-06)
+      yield { type: "assistant-complete" };
+      break;
+    }
+
+    case "user": {
+      const userMsg = msg as SDKUserMessage;
+      if (Array.isArray(userMsg.message.content)) {
+        for (const block of userMsg.message.content as ToolResultBlock[]) {
+          if (block.type === "tool_result") {
+            yield {
+              type: "tool-result",
+              toolCallId: block.tool_use_id,
+              result: block.content,
+            };
+          }
+        }
+      }
+      break;
+    }
+
+    case "result": {
+      const resultMsg = msg as SDKResultMessage;
+
+      // Emit usage data
+      const usage: UsageData = {
+        inputTokens: resultMsg.usage.input_tokens,
+        outputTokens: resultMsg.usage.output_tokens,
+        cacheReadInputTokens: resultMsg.usage.cache_read_input_tokens,
+        cacheCreationInputTokens: resultMsg.usage.cache_creation_input_tokens,
+        totalCostUsd: resultMsg.total_cost_usd,
+        numTurns: resultMsg.num_turns,
+        durationMs: resultMsg.duration_ms,
+        durationApiMs: resultMsg.duration_api_ms,
+        stopReason: resultMsg.stop_reason ?? "end_turn",
+      };
+      yield { type: "usage", usage };
+
+      // Emit result text
+      if (resultMsg.subtype === "success") {
+        yield { type: "result", content: resultMsg.result };
+      } else {
+        const errors = "errors" in resultMsg ? resultMsg.errors : [];
+        yield { type: "result", content: errors.join("\n") || `Error: ${resultMsg.subtype}` };
+      }
+      break;
+    }
+
+    case "system": {
+      const systemMsg = msg as { type: "system"; subtype: string; session_id?: string };
+      if (systemMsg.subtype === "init" && systemMsg.session_id) {
+        yield { type: "init", sessionId: systemMsg.session_id };
+      }
+      // Other system messages (compact_boundary, status, hooks, tasks) are ignored at backbone level
+      break;
+    }
+
+    // stream_event contains raw API events (text deltas, etc.)
+    // These are lower-level streaming events — ignored for now as
+    // the assistant message has the full content blocks
+    case "stream_event":
+      break;
+
+    // Tool progress, rate limits, suggestions — not consumed by backbone logic
+    case "tool_progress":
+    case "rate_limit_event":
+    case "tool_use_summary":
+    case "prompt_suggestion":
+    case "auth_status":
+    case "presence":
+      break;
+  }
 }
