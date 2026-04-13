@@ -12,6 +12,7 @@ import {
   setTakeover,
   releaseTakeover,
 } from "../conversations/index.js";
+import { readMessagesPaginated } from "../conversations/cli-history.js";
 import { eventBus } from "../events/index.js";
 import { emitNotification } from "../notifications/index.js";
 import { getAuthUser, assertAgentAccess } from "./auth-helpers.js";
@@ -50,6 +51,11 @@ const ATTACHMENT_MIME_MAP: Record<string, string> = {
 
 export const conversationRoutes = new Hono();
 
+/** Normalize session for API response — starred as boolean */
+function normalizeSession(s: Record<string, unknown>): Record<string, unknown> {
+  return { ...s, starred: Boolean(s.starred) };
+}
+
 function assertSessionOwnership(
   c: Parameters<typeof getAuthUser>[0],
   session: { user_id: string }
@@ -69,16 +75,16 @@ conversationRoutes.get("/conversations", (c) => {
   const agentId = c.req.query("agentId") ?? undefined;
   if (auth.role === "sysuser") {
     const userId = c.req.query("userId") ?? undefined;
-    return c.json(listSessions(userId, agentId));
+    return c.json(listSessions(userId, agentId).map(normalizeSession));
   }
-  return c.json(listSessions(auth.user, agentId));
+  return c.json(listSessions(auth.user, agentId).map(normalizeSession));
 });
 
 // --- Create Conversation ---
 
 conversationRoutes.post("/conversations", async (c) => {
   const auth = getAuthUser(c);
-  const body = await parseBody<{ agentId?: string }>(c);
+  const body = await parseBody<{ agentId?: string; multiAgent?: boolean }>(c);
   if (body instanceof Response) return body;
   const agentId = body.agentId ?? "system.main";
 
@@ -88,8 +94,8 @@ conversationRoutes.post("/conversations", async (c) => {
   const agentDenied = assertAgentAccess(c, agentId);
   if (agentDenied) return agentDenied;
 
-  const session = createSession(auth.user, agentId);
-  return c.json(session, 201);
+  const session = createSession(auth.user, agentId, { multiAgent: body.multiAgent });
+  return c.json(normalizeSession(session as unknown as Record<string, unknown>), 201);
 });
 
 // --- Get Conversation ---
@@ -99,10 +105,10 @@ conversationRoutes.get("/conversations/:sessionId", (c) => {
   if (!session) return c.json({ error: "not found" }, 404);
   const denied = assertSessionOwnership(c, session);
   if (denied) return denied;
-  return c.json(session);
+  return c.json(normalizeSession(session as unknown as Record<string, unknown>));
 });
 
-// --- Get Messages ---
+// --- Get Messages (paginated, cursor-based reverse) ---
 
 conversationRoutes.get("/conversations/:sessionId/messages", (c) => {
   const sessionId = c.req.param("sessionId");
@@ -110,25 +116,13 @@ conversationRoutes.get("/conversations/:sessionId/messages", (c) => {
   if (!session) return c.json({ error: "not found" }, 404);
   const denied = assertSessionOwnership(c, session);
   if (denied) return denied;
-  const messages = readMessages(session.agent_id, sessionId);
 
-  // Load feedback for this session and attach to messages
-  const feedbackRows = db
-    .prepare(
-      `SELECT message_id, rating, reason FROM message_feedback WHERE session_id = ?`
-    )
-    .all(sessionId) as { message_id: string; rating: string; reason: string | null }[];
-  const feedbackByMessageId = new Map(feedbackRows.map((r) => [r.message_id, { rating: r.rating, reason: r.reason }]));
+  const limit = Math.min(parseInt(c.req.query("limit") ?? "50", 10) || 50, 200);
+  const before = c.req.query("before") ?? undefined;
 
-  const messagesWithFeedback = messages.map((m) => {
-    const id = m._meta?.id;
-    if (id && feedbackByMessageId.has(id)) {
-      return { ...m, feedback: feedbackByMessageId.get(id) };
-    }
-    return m;
-  });
+  const result = readMessagesPaginated(session.agent_id, sessionId, limit, before);
 
-  return c.json(messagesWithFeedback);
+  return c.json(result);
 });
 
 // --- Update Conversation ---
@@ -142,7 +136,7 @@ conversationRoutes.patch("/conversations/:sessionId", async (c) => {
   const body = await c.req.json<{ title?: string; starred?: boolean }>();
   const updated = updateSession(sessionId, body);
   if (!updated) return c.json({ error: "not found" }, 404);
-  return c.json(updated);
+  return c.json(normalizeSession(updated as unknown as Record<string, unknown>));
 });
 
 // --- Delete Conversation ---
@@ -233,9 +227,16 @@ conversationRoutes.post("/conversations/:sessionId/messages", async (c) => {
   const ct = c.req.header("content-type") ?? "";
 
   let message: string | undefined;
+  let overrideAgentId: string | undefined;
 
   if (ct.includes("multipart/form-data")) {
     const body = await c.req.parseBody({ all: true });
+
+    // Extract per-message agent override
+    const rawAgentId = body["agentId"];
+    if (typeof rawAgentId === "string" && rawAgentId.trim().length > 0) {
+      overrideAgentId = rawAgentId.trim();
+    }
 
     // Extract text message
     const rawMessage = body["message"];
@@ -316,10 +317,15 @@ conversationRoutes.post("/conversations/:sessionId/messages", async (c) => {
     if (!message) message = "";
   } else {
     // JSON path — retrocompatible
-    const body = await c.req.json<{ message?: string; messages?: Array<{ role: string; content: string }> }>();
+    const body = await c.req.json<{
+      message?: string;
+      messages?: Array<{ role: string; content: string }>;
+      agentId?: string;
+    }>();
 
     // Support both legacy { message } and @ai-sdk/react { messages } formats
     message = body.message ?? body.messages?.filter((m) => m.role === "user").pop()?.content;
+    overrideAgentId = body.agentId;
 
     if (!message) {
       return c.json({ error: "message is required" }, 400);
@@ -328,6 +334,16 @@ conversationRoutes.post("/conversations/:sessionId/messages", async (c) => {
 
   // At this point message is always a string (both branches either assign or return early)
   const effectiveMessage = message as string;
+
+  // Validate override agent exists
+  if (overrideAgentId) {
+    const overrideAgent = getAgent(overrideAgentId);
+    if (!overrideAgent) {
+      return c.json({ error: `Agent '${overrideAgentId}' not found` }, 404);
+    }
+    const agentDenied = assertAgentAccess(c, overrideAgentId);
+    if (agentDenied) return agentDenied;
+  }
 
   const rich = c.req.query("rich") === "true";
   const format = c.req.query("format");
@@ -340,7 +356,7 @@ conversationRoutes.post("/conversations/:sessionId/messages", async (c) => {
       async start(controller) {
         let hasContent = false;
         try {
-          for await (const event of sendMessage(auth.user, sessionId, effectiveMessage, { rich })) {
+          for await (const event of sendMessage(auth.user, sessionId, effectiveMessage, { rich, agentId: overrideAgentId })) {
             try {
               const encoded = encodeDataStreamEvent(event);
               if (encoded !== null) {
@@ -372,7 +388,7 @@ conversationRoutes.post("/conversations/:sessionId/messages", async (c) => {
   }
 
   return streamSSE(c, async (stream) => {
-    for await (const event of sendMessage(auth.user, sessionId, effectiveMessage, { rich })) {
+    for await (const event of sendMessage(auth.user, sessionId, effectiveMessage, { rich, agentId: overrideAgentId })) {
       await stream.writeSSE({ data: JSON.stringify(event) });
     }
   });

@@ -11,7 +11,7 @@ import {
   updateSessionMetadata,
   readMessages,
 } from "./persistence.js";
-import { flushMemory } from "../memory/flush.js";
+// memory/flush.ts removed (D-02) — memory managed by agent via LYT model
 import { composeAgentTools } from "../agent/tools.js";
 import { getAgent } from "../agents/registry.js";
 import { triggerHook } from "../hooks/index.js";
@@ -135,7 +135,8 @@ const FLUSH_EVERY = 20;
 
 // --- API ---
 
-export function createSession(userId: string, agentId = "system.main", channelId?: string): Session {
+export function createSession(userId: string, agentId = "system.main", opts?: { channelId?: string; multiAgent?: boolean }): Session {
+  const channelId = opts?.channelId;
   const sessionId = randomUUID();
   insertSession.run(sessionId, userId, agentId, channelId ?? null);
 
@@ -213,7 +214,7 @@ export function releaseTakeover(sessionId: string): Session | null {
 export function findOrCreateSession(agentId: string, userId: string, channelId: string): Session {
   const existing = findSessionByChannelKey.get(agentId, userId, channelId) as Session | undefined;
   if (existing) return existing;
-  return createSession(userId, agentId, channelId);
+  return createSession(userId, agentId, { channelId });
 }
 
 export function resolveLastActiveChannel(agentId: string, userId: string): string | null {
@@ -267,7 +268,7 @@ export async function* sendMessage(
   userId: string,
   sessionId: string,
   content: string | ContentPart[],
-  opts?: { rich?: boolean }
+  opts?: { rich?: boolean; agentId?: string }
 ): AsyncGenerator<AgentEvent> {
   // Extract text portion for hooks, logging, security checks, and memory search
   const message = typeof content === "string"
@@ -282,7 +283,8 @@ export async function* sendMessage(
     throw new Error("Session not found");
   }
 
-  const agentId = session.agent_id;
+  // Allow per-message agent override (multi-agent sessions)
+  const agentId = opts?.agentId ?? session.agent_id;
 
   const agent = getAgent(agentId);
   if (!agent) {
@@ -518,13 +520,4 @@ export async function* sendMessage(
     "last-activity": new Date().toISOString(),
   });
 
-  // Periodic memory flush (non-blocking)
-  if (count % FLUSH_EVERY === 0) {
-    flushMemory({
-      agentId,
-      sessionId,
-    }).catch((err) => {
-      console.warn("[memory-flush] background flush failed:", err);
-    });
-  }
 }
