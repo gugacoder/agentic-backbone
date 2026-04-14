@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { db } from "../db/index.js";
 import { assemblePrompt } from "../context/index.js";
-import { runAgent, type AgentEvent } from "../agent/index.js";
+import { runAgent, type SDKMessage, type SDKAssistantMessage, type SDKResultMessage } from "../agent/index.js";
 import type { ContentPart } from "./attachments.js";
 import { instrumentedRunAgent } from "../telemetry/instrumentor.js";
 import {
@@ -250,9 +250,17 @@ Responda APENAS com JSON: {"action": "delegate", "to": "agent_id"} ou {"action":
 Mensagem do usuario: ${message}`;
 
   let result = "";
-  for await (const event of runAgent(routingPrompt, { role: "conversation" })) {
-    if (event.type === "text" && event.content) result += event.content;
-    if (event.type === "result" && event.content) result = event.content;
+  for await (const msg of runAgent(routingPrompt, { role: "conversation" })) {
+    if (msg.type === "assistant") {
+      const aMsg = msg as SDKAssistantMessage;
+      for (const b of aMsg.message.content) {
+        if (b.type === "text") result += (b as { text: string }).text;
+      }
+    }
+    if (msg.type === "result") {
+      const rMsg = msg as SDKResultMessage;
+      if (rMsg.subtype === "success" && rMsg.result) result = rMsg.result;
+    }
   }
 
   const match = result.match(/\{[^{}]+\}/s);
@@ -269,7 +277,7 @@ export async function* sendMessage(
   sessionId: string,
   content: string | ContentPart[],
   opts?: { rich?: boolean; agentId?: string }
-): AsyncGenerator<AgentEvent> {
+): AsyncGenerator<SDKMessage> {
   // Extract text portion for hooks, logging, security checks, and memory search
   const message = typeof content === "string"
     ? content
@@ -449,7 +457,7 @@ export async function* sendMessage(
   const conversationDir = join(agentDir(agentId), "conversations", sessionId);
   const conversationTools = composeAgentTools(effectiveAgentId, "conversation", { sessionId, userId });
   const contentPartsArg = Array.isArray(content) ? (content as unknown[]) : undefined;
-  for await (const event of instrumentedRunAgent(effectiveAgentId, "chat", assembled.userMessage, {
+  for await (const msg of instrumentedRunAgent(effectiveAgentId, "chat", assembled.userMessage, {
     sessionDir: conversationDir,
     messageMeta: { id: generateMessageId(), userId },
     role: "conversation",
@@ -459,17 +467,29 @@ export async function* sendMessage(
     cwd: agentDir(effectiveAgentId),
     ...(contentPartsArg ? { contentParts: contentPartsArg } : {}),
   })) {
-    if (event.type === "text" && event.content) {
-      fullText += event.content;
+    if (msg.type === "assistant") {
+      const aMsg = msg as SDKAssistantMessage;
+      for (const b of aMsg.message.content) {
+        if (b.type === "text") fullText += (b as { text: string }).text;
+      }
     }
-    if (event.type === "result" && event.content) {
-      fullText = event.content;
-    }
-    if (event.type === "usage" && event.usage) {
-      usageData = event.usage as UsageData;
+    if (msg.type === "result") {
+      const rMsg = msg as SDKResultMessage;
+      if (rMsg.subtype === "success" && rMsg.result) fullText = rMsg.result;
+      usageData = {
+        inputTokens: rMsg.usage.input_tokens,
+        outputTokens: rMsg.usage.output_tokens,
+        cacheReadInputTokens: rMsg.usage.cache_read_input_tokens,
+        cacheCreationInputTokens: rMsg.usage.cache_creation_input_tokens,
+        totalCostUsd: rMsg.total_cost_usd,
+        numTurns: rMsg.num_turns,
+        durationMs: rMsg.duration_ms,
+        durationApiMs: rMsg.duration_api_ms,
+        stopReason: rMsg.stop_reason ?? "end_turn",
+      };
     }
 
-    yield event;
+    yield msg;
   }
 
   await triggerHook({

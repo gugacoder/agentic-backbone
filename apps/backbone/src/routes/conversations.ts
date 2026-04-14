@@ -1,6 +1,5 @@
 import { Hono } from "hono";
 import { streamSSE } from "hono/streaming";
-import { encodeDataStreamEvent, encodeDataStreamError } from "./datastream.js";
 import {
   sendMessage,
   createSession,
@@ -346,51 +345,13 @@ conversationRoutes.post("/conversations/:sessionId/messages", async (c) => {
   }
 
   const rich = c.req.query("rich") === "true";
-  const format = c.req.query("format");
 
-  if (format === "datastream") {
-    // @ai-sdk/react useChat reads the raw body stream (no SSE framing).
-    // Each line must be a bare data-stream-protocol line: "0:\"text\"\n"
-    const encoder = new TextEncoder();
-    const readable = new ReadableStream({
-      async start(controller) {
-        let hasContent = false;
-        try {
-          for await (const event of sendMessage(auth.user, sessionId, effectiveMessage, { rich, agentId: overrideAgentId })) {
-            try {
-              const encoded = encodeDataStreamEvent(event);
-              if (encoded !== null) {
-                controller.enqueue(encoder.encode(encoded + "\n"));
-                hasContent = true;
-              }
-            } catch (encodeErr) {
-              console.error(`[datastream] error encoding event:`, encodeErr);
-            }
-          }
-          if (!hasContent) {
-            controller.enqueue(encoder.encode(encodeDataStreamError("Nenhuma resposta gerada pelo agente.") + "\n"));
-          }
-        } catch (err) {
-          console.error(`[datastream] stream error:`, err);
-          controller.enqueue(encoder.encode(encodeDataStreamError("Erro interno ao processar mensagem.") + "\n"));
-        } finally {
-          controller.close();
-        }
-      },
-    });
-    return new Response(readable, {
-      headers: {
-        "Content-Type": "text/plain; charset=utf-8",
-        "Cache-Control": "no-cache",
-        "Connection": "keep-alive",
-      },
-    });
-  }
-
+  // SSE nativo com SDKMessage — formato compatível com useOpenClaudeChat (milestone 25, D-01)
   return streamSSE(c, async (stream) => {
-    for await (const event of sendMessage(auth.user, sessionId, effectiveMessage, { rich, agentId: overrideAgentId })) {
-      await stream.writeSSE({ data: JSON.stringify(event) });
+    for await (const msg of sendMessage(auth.user, sessionId, effectiveMessage, { rich, agentId: overrideAgentId })) {
+      await stream.writeSSE({ event: "message", data: JSON.stringify(msg) });
     }
+    await stream.writeSSE({ event: "done", data: JSON.stringify({}) });
   });
 });
 

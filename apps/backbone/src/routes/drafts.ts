@@ -250,12 +250,10 @@ draftRoutes.post("/agents/:agentId/drafts/:draftId/chat", async (c) => {
   const system = assembleDraftPrompt(agentId, draftId);
 
   return streamSSE(c, async (stream) => {
-    for await (const event of runAgent(message, { role: "conversation", system, cwd: agentDir(agentId) })) {
-      await stream.writeSSE({
-        data: JSON.stringify(event),
-        event: event.type,
-      });
+    for await (const msg of runAgent(message, { role: "conversation", system, cwd: agentDir(agentId) })) {
+      await stream.writeSSE({ event: "message", data: JSON.stringify(msg) });
     }
+    await stream.writeSSE({ event: "done", data: JSON.stringify({}) });
   });
 });
 

@@ -59,11 +59,16 @@ Avalie a qualidade da resposta real em relacao a esperada numa escala de 0.0 a 1
 Responda APENAS com JSON no formato: {"score": 0.85, "reasoning": "..."}`;
 
 async function collectAgentText(
-  gen: AsyncGenerator<import("../agent/index.js").AgentEvent>
+  gen: AsyncGenerator<import("../agent/index.js").SDKMessage>
 ): Promise<string> {
   const parts: string[] = [];
-  for await (const event of gen) {
-    if (event.type === "text") parts.push(event.content);
+  for await (const msg of gen) {
+    if (msg.type === "assistant") {
+      const aMsg = msg as import("../agent/index.js").SDKAssistantMessage;
+      for (const b of aMsg.message.content) {
+        if (b.type === "text") parts.push((b as { text: string }).text);
+      }
+    }
   }
   return parts.join("");
 }

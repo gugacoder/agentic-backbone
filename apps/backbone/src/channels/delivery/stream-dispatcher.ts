@@ -1,5 +1,5 @@
 import { deliverToChannel } from "../system-channel.js";
-import type { AgentEvent } from "../../agent/types.js";
+import type { SDKMessage, SDKAssistantMessage } from "../../agent/index.js";
 
 interface StreamDispatcherOptions {
   channelId: string;
@@ -10,35 +10,39 @@ interface StreamDispatcherOptions {
 }
 
 /**
- * Wraps an AgentEvent async generator and dispatches accumulated text
- * to the channel at each assistant-complete boundary (and on final result).
+ * Wraps an SDKMessage async generator and dispatches text to the channel
+ * at each SDKAssistantMessage boundary (and on final result).
  *
- * This gives channel users (e.g. WhatsApp) intermediate messages
- * instead of waiting for the full response.
+ * Each SDKAssistantMessage contains the complete text of a turn — no
+ * accumulation needed. We extract text blocks and deliver immediately.
+ *
+ * Ignores: stream_event (deltas), user (tool results), tool_progress,
+ * presence, system. Only reacts to assistant and result.
+ *
+ * See milestone 25, RISKS.md#R-01 for full rationale.
  */
 export async function* createStreamDispatcher(
-  events: AsyncGenerator<AgentEvent>,
+  messages: AsyncGenerator<SDKMessage>,
   options: StreamDispatcherOptions
-): AsyncGenerator<AgentEvent> {
-  let buffer = "";
+): AsyncGenerator<SDKMessage> {
+  for await (const msg of messages) {
+    if (msg.type === "assistant") {
+      const assistantMsg = msg as SDKAssistantMessage;
+      const text = assistantMsg.message.content
+        .filter((b) => b.type === "text")
+        .map((b) => (b as { type: "text"; text: string }).text)
+        .join("");
 
-  for await (const event of events) {
-    if (event.type === "text" && event.content) {
-      buffer += event.content;
-    }
-
-    if (event.type === "assistant-complete" || event.type === "result") {
-      let text = buffer.trim();
-      buffer = "";
+      let cleaned = text.trim();
 
       // Strip channel prefix if the model echoed it back
       const prefixPattern = new RegExp(
         `^\\[canal:\\s*${options.adapterSlug}\\]\\s*`
       );
-      text = text.replace(prefixPattern, "").trim();
+      cleaned = cleaned.replace(prefixPattern, "").trim();
 
-      if (text) {
-        await deliverToChannel(options.channelId, options.agentId, text, {
+      if (cleaned) {
+        await deliverToChannel(options.channelId, options.agentId, cleaned, {
           metadata: {
             recipientId: options.recipientId,
             ...options.metadata,
@@ -47,6 +51,6 @@ export async function* createStreamDispatcher(
       }
     }
 
-    yield event;
+    yield msg;
   }
 }

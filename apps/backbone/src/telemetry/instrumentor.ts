@@ -1,7 +1,8 @@
 import { trace, SpanStatusCode, SpanKind, context } from "@opentelemetry/api";
 import type { Span } from "@opentelemetry/api";
 import { getTracer, isTelemetryEnabled, getOTelConfig } from "./index.js";
-import { runAgent, type AgentEvent } from "../agent/index.js";
+import { runAgent, type SDKMessage, type SDKResultMessage } from "../agent/index.js";
+import { extractUsage } from "../utils/agent-stream.js";
 
 export type OperationMode = "chat" | "heartbeat" | "cron";
 
@@ -140,7 +141,7 @@ export async function* instrumentedRunAgent(
   mode: OperationMode,
   prompt: string,
   options?: InstrumentedRunAgentOptions
-): AsyncGenerator<AgentEvent> {
+): AsyncGenerator<SDKMessage> {
   // Fast path: telemetry disabled or sampled out
   if (!shouldSample(mode, agentId)) {
     yield* runAgent(prompt, { ...options, agentId });
@@ -190,18 +191,19 @@ export async function* instrumentedRunAgent(
   };
 
   try {
-    for await (const event of runAgent(prompt, instrumentedOptions)) {
-      if (event.type === "usage" && event.usage) {
+    for await (const msg of runAgent(prompt, instrumentedOptions)) {
+      if (msg.type === "result") {
         try {
-          span.setAttribute("gen_ai.usage.input_tokens", event.usage.inputTokens);
-          span.setAttribute("gen_ai.usage.output_tokens", event.usage.outputTokens);
-          span.setAttribute("gen_ai.response.finish_reason", event.usage.stopReason);
+          const usage = extractUsage(msg as SDKResultMessage);
+          span.setAttribute("gen_ai.usage.input_tokens", usage.inputTokens);
+          span.setAttribute("gen_ai.usage.output_tokens", usage.outputTokens);
+          span.setAttribute("gen_ai.response.finish_reason", usage.stopReason);
           if (mode === "heartbeat" && options?.heartbeatResult) {
             span.setAttribute("gen_ai.heartbeat.result", options.heartbeatResult);
           }
         } catch {}
       }
-      yield event;
+      yield msg;
     }
     try {
       span.setStatus({ code: SpanStatusCode.OK });

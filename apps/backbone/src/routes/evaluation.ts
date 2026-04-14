@@ -149,10 +149,15 @@ evaluationRoutes.delete("/agents/:id/eval-sets/:setId/cases/:caseId", (c: Contex
 
 // ── Eval Runs ───────────────────────────────────────────────
 
-async function collectAgentText(gen: AsyncGenerator<import("../agent/index.js").AgentEvent>): Promise<string> {
+async function collectAgentText(gen: AsyncGenerator<import("../agent/index.js").SDKMessage>): Promise<string> {
   const parts: string[] = [];
-  for await (const event of gen) {
-    if (event.type === "text") parts.push(event.content ?? "");
+  for await (const msg of gen) {
+    if (msg.type === "assistant") {
+      const aMsg = msg as import("../agent/index.js").SDKAssistantMessage;
+      for (const b of aMsg.message.content) {
+        if (b.type === "text") parts.push((b as { text: string }).text);
+      }
+    }
   }
   return parts.join("");
 }

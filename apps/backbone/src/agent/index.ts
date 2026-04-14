@@ -5,20 +5,22 @@
  * agent (via openclaude-sdk) for each execution context. Skills, history,
  * settings live in CLAUDE_CONFIG_DIR. Tools come via MCP servers.
  *
- * SDKMessage → AgentEvent mapping happens here and ONLY here.
- * Consumers never import from @codrstudio/openclaude-sdk.
+ * runAgent() yields SDKMessage directly — no intermediate mapping layer.
+ * Consumers import SDKMessage types from @codrstudio/openclaude-sdk.
  */
 
 import { query } from "@codrstudio/openclaude-sdk";
 import type { ProviderRegistry } from "@codrstudio/openclaude-sdk";
-import type {
+export type {
   SDKMessage,
   SDKAssistantMessage,
   SDKUserMessage,
   SDKResultMessage,
+  SDKSystemMessage,
   ContentBlock,
   ToolResultBlock,
 } from "@codrstudio/openclaude-sdk";
+import type { SDKMessage } from "@codrstudio/openclaude-sdk";
 import {
   resolve,
   getProviderConfig,
@@ -29,9 +31,9 @@ import { buildBuiltinMcpConfig } from "../mcp-server/builtin-config.js";
 import { appendFileSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
 import { DATA_DIR, agentDir } from "../context/paths.js";
-import type { AgentEvent, UsageData } from "./types.js";
+import type { UsageData } from "./types.js";
 
-export type { AgentEvent, UsageData } from "./types.js";
+export type { UsageData } from "./types.js";
 export type { ResolvedLlm };
 
 const LOG_PATH = join(DATA_DIR, "agent-runs.jsonl");
@@ -83,7 +85,7 @@ export interface RunAgentOptions {
 export async function* runAgent(
   prompt: string,
   options?: RunAgentOptions
-): AsyncGenerator<AgentEvent> {
+): AsyncGenerator<SDKMessage> {
   const agentId = options?.agentId ?? process.env.AGENT_ID ?? "system.main";
   const role = options?.role ?? "conversation";
   const mode = options?.mode ?? (role as AgentMode);
@@ -186,101 +188,8 @@ export async function* runAgent(
     options: queryOptions as any,
   });
 
-  // Map SDKMessage → AgentEvent
+  // Yield SDKMessage directly — no mapping layer (milestone 25, D-01)
   for await (const msg of q) {
-    yield* mapSdkMessage(msg as SDKMessage);
-  }
-}
-
-// --- SDKMessage → AgentEvent mapping ---
-// This is the ONLY place SDKMessage is consumed. All downstream code uses AgentEvent.
-
-function* mapSdkMessage(msg: SDKMessage): Generator<AgentEvent> {
-  switch (msg.type) {
-    case "assistant": {
-      const assistantMsg = msg as SDKAssistantMessage;
-      for (const block of assistantMsg.message.content) {
-        if (block.type === "text") {
-          yield { type: "text", content: block.text };
-        } else if (block.type === "tool_use") {
-          yield {
-            type: "tool-call",
-            toolCallId: block.id,
-            toolName: block.name,
-            args: block.input,
-          };
-        }
-      }
-      // SDKAssistantMessage boundary replaces step_finish (D-06)
-      yield { type: "assistant-complete" };
-      break;
-    }
-
-    case "user": {
-      const userMsg = msg as SDKUserMessage;
-      if (Array.isArray(userMsg.message.content)) {
-        for (const block of userMsg.message.content as ToolResultBlock[]) {
-          if (block.type === "tool_result") {
-            yield {
-              type: "tool-result",
-              toolCallId: block.tool_use_id,
-              result: block.content,
-            };
-          }
-        }
-      }
-      break;
-    }
-
-    case "result": {
-      const resultMsg = msg as SDKResultMessage;
-
-      // Emit usage data
-      const usage: UsageData = {
-        inputTokens: resultMsg.usage.input_tokens,
-        outputTokens: resultMsg.usage.output_tokens,
-        cacheReadInputTokens: resultMsg.usage.cache_read_input_tokens,
-        cacheCreationInputTokens: resultMsg.usage.cache_creation_input_tokens,
-        totalCostUsd: resultMsg.total_cost_usd,
-        numTurns: resultMsg.num_turns,
-        durationMs: resultMsg.duration_ms,
-        durationApiMs: resultMsg.duration_api_ms,
-        stopReason: resultMsg.stop_reason ?? "end_turn",
-      };
-      yield { type: "usage", usage };
-
-      // Emit result text
-      if (resultMsg.subtype === "success") {
-        yield { type: "result", content: resultMsg.result };
-      } else {
-        const errors = "errors" in resultMsg ? resultMsg.errors : [];
-        yield { type: "result", content: errors.join("\n") || `Error: ${resultMsg.subtype}` };
-      }
-      break;
-    }
-
-    case "system": {
-      const systemMsg = msg as { type: "system"; subtype: string; session_id?: string };
-      if (systemMsg.subtype === "init" && systemMsg.session_id) {
-        yield { type: "init", sessionId: systemMsg.session_id };
-      }
-      // Other system messages (compact_boundary, status, hooks, tasks) are ignored at backbone level
-      break;
-    }
-
-    // stream_event contains raw API events (text deltas, etc.)
-    // These are lower-level streaming events — ignored for now as
-    // the assistant message has the full content blocks
-    case "stream_event":
-      break;
-
-    // Tool progress, rate limits, suggestions — not consumed by backbone logic
-    case "tool_progress":
-    case "rate_limit_event":
-    case "tool_use_summary":
-    case "prompt_suggestion":
-    case "auth_status":
-    case "presence":
-      break;
+    yield msg as SDKMessage;
   }
 }

@@ -395,7 +395,7 @@ agentRoutes.post("/agents/:id/request", async (c) => {
   if (wantsSSE) {
     return streamSSE(c, async (stream) => {
       for await (const event of runAgent(assembled.userMessage, { role: "request", system: assembled.system, cwd: agentDir(agentId) })) {
-        await stream.writeSSE({ data: JSON.stringify(event) });
+        await stream.writeSSE({ event: "message", data: JSON.stringify(event) });
       }
     });
   }
@@ -444,7 +444,7 @@ agentRoutes.post("/agents/:id/services/:slug", async (c) => {
   if (wantsSSE) {
     return streamSSE(c, async (stream) => {
       for await (const event of runAgent(assembled.userMessage, { role: "request", system: assembled.system, cwd: agentDir(agentId) })) {
-        await stream.writeSSE({ data: JSON.stringify(event) });
+        await stream.writeSSE({ event: "message", data: JSON.stringify(event) });
       }
     });
   }

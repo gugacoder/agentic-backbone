@@ -1,8 +1,8 @@
 /**
- * Backbone agent event types.
+ * Backbone agent utility types.
  *
- * Consumers use these types only — they never touch SDKMessage directly.
- * The mapping from SDKMessage → AgentEvent happens in agent/index.ts.
+ * UsageData is extracted from SDKResultMessage by consumers that need
+ * cost/token tracking (conversations, heartbeat, cron, telemetry).
  */
 
 export interface UsageData {
@@ -16,13 +16,3 @@ export interface UsageData {
   durationApiMs: number;
   stopReason: string;
 }
-
-export type AgentEvent =
-  | { type: "text"; content: string }
-  | { type: "tool-call"; toolCallId: string; toolName: string; args: unknown }
-  | { type: "tool-result"; toolCallId: string; result: unknown }
-  | { type: "usage"; usage: UsageData }
-  | { type: "result"; content: string }
-  | { type: "assistant-complete" }
-  | { type: "reasoning"; content: string }
-  | { type: "init"; sessionId: string };
