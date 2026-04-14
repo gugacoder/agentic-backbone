@@ -3,17 +3,14 @@
   "private": true,
   "workspaces": [
     "apps/*",
-    "apps/packages/*",
-    "apps/packages/gitlab/v4"
+    "packages/*"
   ],
   "scripts": {
     "printenv": "dotenv -o -e .env -- printenv",
     "killports": "node scripts/killports.mjs",
-    "dev:all": "concurrently -n hub,backbone,chat -c blue,green,magenta \"npm run dev:hub\" \"npm run dev:backbone\" \"npm run dev:chat\" 2>&1 | tee .tmp/-run.log",
+    "dev:all": "concurrently -n hub,backbone -c blue,magenta \"npm run dev:hub\" \"npm run dev:backbone\" 2>&1 | tee .tmp/-run.log",
     "dev:backbone": "dotenv -o -e .env -- npm run dev --workspace=apps/backbone",
     "dev:hub": "dotenv -o -e .env -- npm run dev --workspace=apps/hub",
-    "dev:chat": "dotenv -o -e .env -- npm run dev --workspace=apps/chat",
-    "dev:web": "dotenv -o -e .env -- npm run dev --workspace=apps/web",
     "platform:up": "node scripts/platform.mjs up -d",
     "platform:down": "node scripts/platform.mjs down",
     "platform:ps": "node scripts/platform.mjs ps",
@@ -23,10 +20,10 @@
     "docker:down": "dotenv -o -e .env -- docker compose down",
     "docker:ps": "dotenv -o -e .env -- docker compose ps",
     "docker:logs": "dotenv -o -e .env -- docker compose logs -f",
-    "build": "npm run build --workspace=apps/packages/ai-sdk && npm run build --workspace=apps/packages/gitlab/v4 && npm run build --workspace=apps/backbone && npm run build --workspace=apps/hub && npm run build --workspace=apps/web",
-    "build:packages": "npm run build --workspace=apps/packages/ai-sdk && npm run build --workspace=apps/packages/gitlab/v4 && npm run build:css --workspace=apps/packages/ai-chat",
+    "build": "npm run build --workspace=apps/packages/ui && npm run build --workspace=apps/backbone && npm run build --workspace=apps/hub",
+    "build:packages": "npm run build --workspace=apps/packages/ui",
     "build:hub": "npm run build --workspace=apps/hub",
-    "build:web": "npm run build --workspace=apps/web",
+    "build:backbone": "npm run build --workspace=apps/backbone",
     "test:conversation": "dotenv -o -e .env -- node tests/test-conversations.mjs",
     "test:capabilities": "dotenv -o -e .env -- node tests/capabilities/run-all.mjs",
     "test:capabilities:hooks": "dotenv -o -e .env -- node tests/capabilities/test-conversation-hooks.mjs",
@@ -39,9 +36,7 @@
     "test:e2e:hub": "npx playwright test --project=hub",
     "secrets:decrypt": "node scripts/secrets.mjs decrypt",
     "secrets:encrypt": "node scripts/secrets.mjs encrypt",
-    "ngrok:up": "dotenv -o -e .env -- npx ngrok http 6002",
-    "version:packages": "npm version patch --workspace=apps/packages/ai-sdk && npm version patch --workspace=apps/packages/ai-chat",
-    "publish:packages": "npm publish --workspace=apps/packages/ai-sdk && npm publish --workspace=apps/packages/ai-chat"
+    "ngrok:up": "dotenv -o -e .env -- npx ngrok http 6002"
   },
   "devDependencies": {
     "@playwright/test": "^1.58.2",
@@ -49,7 +44,8 @@
     "dotenv-cli": "^11.0.0"
   },
   "dependencies": {
-    "@codrstudio/openclaude-sdk": "^0.1.0",
+    "@codrstudio/openclaude-sdk": "file:vendor/codrstudio-openclaude-sdk-0.4.0.tgz",
+    "@codrstudio/openclaude-chat": "file:vendor/codrstudio-openclaude-chat-0.4.0.tgz",
     "agentic-backbone": "file:"
   }
 }
