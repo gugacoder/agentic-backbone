@@ -7,7 +7,7 @@ import {
   createRepoTagsResource,
   createRepoCommitsResource,
   createRepoCompareResource,
-} from "@agentic-backbone/gitlab-v4";
+} from "../client.js";
 
 const commonParams = z.object({
   project: z.string().optional().describe("Projeto (path completo como owner/repo ou ID numérico). Usa default do adapter se omitido."),

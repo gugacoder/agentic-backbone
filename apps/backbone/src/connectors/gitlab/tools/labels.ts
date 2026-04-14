@@ -1,7 +1,7 @@
 import { tool } from "ai";
 import { z } from "zod";
 import { formatError } from "../../../utils/errors.js";
-import { createLabelsResource } from "@agentic-backbone/gitlab-v4";
+import { createLabelsResource } from "../client.js";
 
 const commonParams = z.object({
   project: z.string().optional().describe("Projeto (path completo como owner/repo ou ID numérico). Usa default do adapter se omitido."),

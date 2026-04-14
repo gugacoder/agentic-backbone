@@ -1,6 +1,6 @@
 import type { ConnectorDef } from "../types.js";
 import { credentialSchema, optionsSchema } from "./schemas.js";
-import { createGitLabClient } from "@agentic-backbone/gitlab-v4";
+import { createGitLabClient } from "./client.js";
 import { createGitLabIssuesTool } from "./tools/issues.js";
 import { createGitLabMrsTool } from "./tools/mrs.js";
 import { createGitLabRepoTool } from "./tools/repo.js";

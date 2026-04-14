@@ -1,7 +1,7 @@
 import { tool } from "ai";
 import { z } from "zod";
 import { formatError } from "../../../utils/errors.js";
-import { createUsersResource } from "@agentic-backbone/gitlab-v4";
+import { createUsersResource } from "../client.js";
 
 const meParams = z.object({ action: z.literal("me") });
 

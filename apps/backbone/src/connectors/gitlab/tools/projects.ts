@@ -1,7 +1,7 @@
 import { tool } from "ai";
 import { z } from "zod";
 import { formatError } from "../../../utils/errors.js";
-import { createProjectsResource } from "@agentic-backbone/gitlab-v4";
+import { createProjectsResource } from "../client.js";
 
 const WRITE_ACTIONS = new Set(["add_member", "update_member", "remove_member"]);
 
