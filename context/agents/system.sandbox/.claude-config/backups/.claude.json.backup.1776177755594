@@ -1,0 +1,32 @@
+{
+  "firstStartTime": "2026-04-14T12:54:20.730Z",
+  "opusProMigrationComplete": true,
+  "migrationVersion": 11,
+  "userID": "c42e5392be57cd85e613f41d1239fbccbd392a1f636cfea746fa8af3e90343ca",
+  "oauthAccount": {
+    "accountUuid": "6ef5b597-f227-4e77-abdb-e26c8dcf53b3",
+    "emailAddress": "guga@codr.studio",
+    "organizationUuid": "876786e4-5ca4-4f64-bb80-4ddc54792f8f",
+    "hasExtraUsageEnabled": false,
+    "billingType": "stripe_subscription",
+    "accountCreatedAt": "2025-10-23T14:14:16.934661Z",
+    "subscriptionCreatedAt": "2025-10-26T16:07:04.229924Z",
+    "displayName": "Guga"
+  },
+  "penguinModeOrgEnabled": false,
+  "clientDataCache": {
+    "quiet_salted_ember": "true",
+    "loud_sugary_rock": "true"
+  },
+  "additionalModelOptionsCache": [],
+  "claudeAiMcpEverConnected": [
+    "claude.ai Gmail"
+  ],
+  "groveConfigCache": {
+    "6ef5b597-f227-4e77-abdb-e26c8dcf53b3": {
+      "grove_enabled": true,
+      "timestamp": 1776173882579
+    }
+  },
+  "cachedExtraUsageDisabledReason": "org_level_disabled"
+}
