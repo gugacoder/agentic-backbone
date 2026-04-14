@@ -95,25 +95,28 @@ export async function* runAgent(
   // CLAUDE_CONFIG_DIR per agent
   const configDir = ensureClaudeConfigDir(agentId);
 
-  // Build provider registry from plan resolution
+  // Build provider registry from plan resolution (only for known providers)
   const providerConf = getProviderConfig(resolved.provider);
-  const apiKey = process.env[providerConf.apiKeyEnv] ?? "";
-  const registry: ProviderRegistry = {
-    providers: [{
-      id: resolved.provider,
-      name: resolved.provider,
-      type: resolved.provider === "groq" ? "openai" : "openai",
-      baseUrl: providerConf.baseURL,
-      apiKey,
-    }],
-    models: [{
-      id: resolved.model,
-      label: resolved.model,
-      provider: resolved.provider,
-      contextWindow: 128000,
-    }],
-    defaultModel: resolved.model,
-  };
+  let registry: ProviderRegistry | undefined;
+  if (providerConf && resolved.model) {
+    const apiKey = process.env[providerConf.apiKeyEnv] ?? "";
+    registry = {
+      providers: [{
+        id: resolved.provider,
+        name: resolved.provider,
+        type: "openai",
+        baseUrl: providerConf.baseURL,
+        apiKey,
+      }],
+      models: [{
+        id: resolved.model,
+        label: resolved.model,
+        provider: resolved.provider,
+        contextWindow: 128000,
+      }],
+      defaultModel: resolved.model,
+    };
+  }
 
   // Build MCP servers
   const mcpServers: Record<string, unknown> = {};
@@ -136,7 +139,7 @@ export async function* runAgent(
 
   const systemLen = options?.system?.length ?? 0;
   const promptPreview = prompt.slice(0, 120).replace(/\n/g, "\\n");
-  console.log(`[agent] agentId=${agentId} role=${role} mode=${mode} model=${resolved.model} system=${systemLen}ch prompt="${promptPreview}"`);
+  console.log(`[agent] agentId=${agentId} role=${role} mode=${mode} model=${resolved.model ?? "(native)"} provider=${resolved.provider} system=${systemLen}ch prompt="${promptPreview}"`);
 
   logAgentRun({
     ts: new Date().toISOString(),
@@ -155,7 +158,7 @@ export async function* runAgent(
   // Build query options
   const queryOptions: Record<string, unknown> = {
     cwd: agentCwd,
-    model: resolved.model,
+    ...(resolved.model ? { model: resolved.model } : {}),
     permissionMode: "bypassPermissions",
     maxTurns: 100,
     locale: "pt-BR",
@@ -183,8 +186,8 @@ export async function* runAgent(
 
   const q = query({
     prompt,
-    model: resolved.model,
-    registry,
+    ...(resolved.model ? { model: resolved.model } : {}),
+    ...(registry ? { registry } : {}),
     options: queryOptions as any,
   });
 

@@ -6,15 +6,16 @@ import { readYaml, writeYaml } from "../context/readers.js";
 
 // --- Provider ---
 
-export type LlmProvider = "openrouter" | "groq";
+export type LlmProvider = string;
 
-const PROVIDER_CONFIGS: Record<LlmProvider, { baseURL: string; apiKeyEnv: string; maxTools?: number }> = {
+/** Known providers with pre-configured base URLs and API key env vars. */
+const PROVIDER_CONFIGS: Record<string, { baseURL: string; apiKeyEnv: string; maxTools?: number }> = {
   openrouter: { baseURL: "https://openrouter.ai/api/v1", apiKeyEnv: "OPENROUTER_API_KEY" },
   groq:       { baseURL: "https://api.groq.com/openai/v1", apiKeyEnv: "GROQ_API_KEY", maxTools: 128 },
 };
 
-export function getProviderConfig(provider: LlmProvider): { baseURL: string; apiKeyEnv: string; maxTools?: number } {
-  return PROVIDER_CONFIGS[provider] ?? PROVIDER_CONFIGS.openrouter;
+export function getProviderConfig(provider: string): { baseURL: string; apiKeyEnv: string; maxTools?: number } | undefined {
+  return PROVIDER_CONFIGS[provider];
 }
 
 // --- Types ---
@@ -27,7 +28,7 @@ export interface SlugDef {
   slug: SlugName;
   class: SlugClass;
   effort: SlugEffort;
-  llm: { provider: LlmProvider; model: string; parameters: Record<string, unknown> };
+  llm: { provider: LlmProvider; model?: string; parameters: Record<string, unknown> };
   tags: string[];
   title: string;
   description: string;
@@ -52,14 +53,12 @@ const ALL_SLUGS: SlugName[] = SLUG_CLASSES.flatMap((c) =>
 
 // --- Zod Schema ---
 
-const llmProviderSchema = z.enum(["openrouter", "groq"]);
-
 const slugDefRawSchema = z.object({
   class: z.enum(["small", "medium", "large"]),
   effort: z.enum(["low", "mid", "high"]),
   llm: z.object({
-    provider: llmProviderSchema,
-    model: z.string().min(1, "llm.model is required"),
+    provider: z.string().min(1, "llm.provider is required"),
+    model: z.string().optional(),
     parameters: z.record(z.unknown()).default({}),
   }),
   tags: z.array(z.string()).default([]),
@@ -167,7 +166,7 @@ export function setActivePlan(name: string): void {
 const DEFAULT_SLUG: SlugName = "medium.low";
 
 export interface ResolvedLlm {
-  model: string;
+  model?: string;
   provider: LlmProvider;
   parameters: Record<string, unknown>;
 }

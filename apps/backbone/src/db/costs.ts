@@ -3,6 +3,7 @@ import { insertNotification } from "../routes/notifications.js";
 
 export interface TrackCostParams {
   agentId: string;
+  provider: string;
   operation: "heartbeat" | "conversation" | "cron";
   tokensIn: number;
   tokensOut: number;
@@ -10,9 +11,9 @@ export interface TrackCostParams {
 }
 
 const upsertStmt = db.prepare(`
-  INSERT INTO cost_daily (date, agent_id, operation, tokens_in, tokens_out, cost_usd, calls)
-  VALUES (date('now'), @agentId, @operation, @tokensIn, @tokensOut, @costUsd, 1)
-  ON CONFLICT(date, agent_id, operation) DO UPDATE SET
+  INSERT INTO cost_daily (date, agent_id, provider, operation, tokens_in, tokens_out, cost_usd, calls)
+  VALUES (date('now'), @agentId, @provider, @operation, @tokensIn, @tokensOut, @costUsd, 1)
+  ON CONFLICT(date, agent_id, provider, operation) DO UPDATE SET
     tokens_in  = tokens_in  + @tokensIn,
     tokens_out = tokens_out + @tokensOut,
     cost_usd   = cost_usd   + @costUsd,
@@ -22,6 +23,7 @@ const upsertStmt = db.prepare(`
 export function trackCost(params: TrackCostParams): void {
   upsertStmt.run({
     agentId: params.agentId,
+    provider: params.provider,
     operation: params.operation,
     tokensIn: params.tokensIn,
     tokensOut: params.tokensOut,

@@ -81,6 +81,7 @@ async function judgeResponse(
   try {
     const { model, provider } = resolve("conversation");
     const conf = getProviderConfig(provider);
+    if (!conf || !model) throw new Error(`Provider "${provider}" has no API config for direct calls`);
     const apiKey = process.env[conf.apiKeyEnv]!;
     const resp = await fetch(`${conf.baseURL}/chat/completions`, {
       method: "POST",

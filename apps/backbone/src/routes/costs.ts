@@ -9,10 +9,13 @@ costRoutes.get("/costs/summary", (c) => {
   const from = c.req.query("from") ?? new Date().toISOString().slice(0, 10);
   const to = c.req.query("to") ?? new Date().toISOString().slice(0, 10);
   const agentId = c.req.query("agent_id");
+  const provider = c.req.query("provider");
 
-  const agentFilter = agentId ? " AND agent_id = ?" : "";
+  const filters: string[] = [];
   const params: unknown[] = [from, to];
-  if (agentId) params.push(agentId);
+  if (agentId) { filters.push("agent_id = ?"); params.push(agentId); }
+  if (provider) { filters.push("provider = ?"); params.push(provider); }
+  const extraFilter = filters.length ? ` AND ${filters.join(" AND ")}` : "";
 
   const totals = db
     .prepare(
@@ -22,7 +25,7 @@ costRoutes.get("/costs/summary", (c) => {
          COALESCE(SUM(tokens_out), 0) AS totalTokensOut,
          COALESCE(SUM(calls), 0) AS totalCalls
        FROM cost_daily
-       WHERE date >= ? AND date <= ?${agentFilter}`,
+       WHERE date >= ? AND date <= ?${extraFilter}`,
     )
     .get(...params) as {
     totalCostUsd: number;
@@ -40,7 +43,7 @@ costRoutes.get("/costs/summary", (c) => {
          SUM(tokens_out) AS tokensOut,
          SUM(calls) AS calls
        FROM cost_daily
-       WHERE date >= ? AND date <= ?${agentFilter}
+       WHERE date >= ? AND date <= ?${extraFilter}
        GROUP BY agent_id
        ORDER BY costUsd DESC`,
     )
@@ -59,7 +62,7 @@ costRoutes.get("/costs/summary", (c) => {
          SUM(cost_usd) AS costUsd,
          SUM(calls) AS calls
        FROM cost_daily
-       WHERE date >= ? AND date <= ?${agentFilter}
+       WHERE date >= ? AND date <= ?${extraFilter}
        GROUP BY operation
        ORDER BY costUsd DESC`,
     )
@@ -69,7 +72,28 @@ costRoutes.get("/costs/summary", (c) => {
     calls: number;
   }>;
 
-  return c.json({ ...totals, byAgent, byOperation });
+  const byProvider = db
+    .prepare(
+      `SELECT
+         provider,
+         SUM(cost_usd) AS costUsd,
+         SUM(tokens_in) AS tokensIn,
+         SUM(tokens_out) AS tokensOut,
+         SUM(calls) AS calls
+       FROM cost_daily
+       WHERE date >= ? AND date <= ?${extraFilter}
+       GROUP BY provider
+       ORDER BY costUsd DESC`,
+    )
+    .all(...params) as Array<{
+    provider: string;
+    costUsd: number;
+    tokensIn: number;
+    tokensOut: number;
+    calls: number;
+  }>;
+
+  return c.json({ ...totals, byAgent, byOperation, byProvider });
 });
 
 // ── GET /costs/trend ───────────────────────────────────────
@@ -82,10 +106,41 @@ costRoutes.get("/costs/trend", (c) => {
   const from = c.req.query("from") ?? sevenDaysAgo;
   const to = c.req.query("to") ?? today;
   const agentId = c.req.query("agent_id");
+  const provider = c.req.query("provider");
+  const groupByProvider = c.req.query("group_by") === "provider";
 
-  const agentFilter = agentId ? " AND agent_id = ?" : "";
+  const filters: string[] = [];
   const params: unknown[] = [from, to];
-  if (agentId) params.push(agentId);
+  if (agentId) { filters.push("agent_id = ?"); params.push(agentId); }
+  if (provider) { filters.push("provider = ?"); params.push(provider); }
+  const extraFilter = filters.length ? ` AND ${filters.join(" AND ")}` : "";
+
+  if (groupByProvider) {
+    const points = db
+      .prepare(
+        `SELECT
+           date,
+           provider,
+           SUM(cost_usd) AS costUsd,
+           SUM(tokens_in) AS tokensIn,
+           SUM(tokens_out) AS tokensOut,
+           SUM(calls) AS calls
+         FROM cost_daily
+         WHERE date >= ? AND date <= ?${extraFilter}
+         GROUP BY date, provider
+         ORDER BY date ASC, provider ASC`,
+      )
+      .all(...params) as Array<{
+      date: string;
+      provider: string;
+      costUsd: number;
+      tokensIn: number;
+      tokensOut: number;
+      calls: number;
+    }>;
+
+    return c.json({ points });
+  }
 
   const points = db
     .prepare(
@@ -96,7 +151,7 @@ costRoutes.get("/costs/trend", (c) => {
          SUM(tokens_out) AS tokensOut,
          SUM(calls) AS calls
        FROM cost_daily
-       WHERE date >= ? AND date <= ?${agentFilter}
+       WHERE date >= ? AND date <= ?${extraFilter}
        GROUP BY date
        ORDER BY date ASC`,
     )

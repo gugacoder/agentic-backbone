@@ -9,6 +9,7 @@ export interface HeartbeatLogParams {
   usage?: UsageData;
   reason?: string;
   preview?: string;
+  provider?: string;
   modelUsed?: string;
 }
 
@@ -27,6 +28,7 @@ export interface HeartbeatLogEntry {
   stop_reason: string | null;
   reason: string | null;
   preview: string | null;
+  provider: string | null;
   model_used: string | null;
   routing_rule: string | null;
 }
@@ -46,11 +48,11 @@ const insertStmt = db.prepare(`
   INSERT INTO heartbeat_log
     (agent_id, status, duration_ms, input_tokens, output_tokens,
      cache_read_tokens, cache_creation_tokens, cost_usd, num_turns,
-     stop_reason, reason, preview, model_used, routing_rule)
+     stop_reason, reason, preview, provider, model_used, routing_rule)
   VALUES
     (@agentId, @status, @durationMs, @inputTokens, @outputTokens,
      @cacheReadTokens, @cacheCreationTokens, @costUsd, @numTurns,
-     @stopReason, @reason, @preview, @modelUsed, @routingRule)
+     @stopReason, @reason, @preview, @provider, @modelUsed, @routingRule)
 `);
 
 const { getHistory: getHeartbeatHistoryQuery } = createRunLogQueries<HeartbeatLogEntry>({
@@ -111,6 +113,7 @@ export function logHeartbeat(params: HeartbeatLogParams): void {
     stopReason: u?.stopReason ?? null,
     reason: params.reason ?? null,
     preview: params.preview ?? null,
+    provider: params.provider ?? null,
     modelUsed: params.modelUsed ?? null,
     routingRule: null,
   });

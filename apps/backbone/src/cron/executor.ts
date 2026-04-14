@@ -159,12 +159,14 @@ async function executeMessagePayload(
     inputTokens: usageData?.inputTokens,
     outputTokens: usageData?.outputTokens,
     costUsd: usageData?.totalCostUsd,
+    provider: resolved?.provider,
     modelUsed: resolved?.model,
   });
 
   if (usageData) {
     trackCost({
       agentId: job.agentId,
+      provider: resolved?.provider ?? "unknown",
       operation: "cron",
       tokensIn: usageData.inputTokens,
       tokensOut: usageData.outputTokens,

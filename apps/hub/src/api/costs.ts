@@ -18,6 +18,13 @@ export interface CostSummary {
     costUsd: number;
     calls: number;
   }>;
+  byProvider: Array<{
+    provider: string;
+    costUsd: number;
+    tokensIn: number;
+    tokensOut: number;
+    calls: number;
+  }>;
 }
 
 export interface CostTrendPoint {
@@ -45,9 +52,11 @@ export function costSummaryQueryOptions(params: {
   from: string;
   to: string;
   agentId?: string;
+  provider?: string;
 }) {
   const sp = new URLSearchParams({ from: params.from, to: params.to });
   if (params.agentId) sp.set("agent_id", params.agentId);
+  if (params.provider) sp.set("provider", params.provider);
 
   return queryOptions({
     queryKey: ["costs", "summary", params],
@@ -60,10 +69,12 @@ export function costTrendQueryOptions(params: {
   to: string;
   granularity?: string;
   agentId?: string;
+  provider?: string;
 }) {
   const sp = new URLSearchParams({ from: params.from, to: params.to });
   if (params.granularity) sp.set("granularity", params.granularity);
   if (params.agentId) sp.set("agent_id", params.agentId);
+  if (params.provider) sp.set("provider", params.provider);
 
   return queryOptions({
     queryKey: ["costs", "trend", params],

@@ -440,6 +440,7 @@ export async function* sendMessage(
 
   let fullText = "";
   let usageData: UsageData | undefined;
+  let resolvedProvider: string | undefined;
   const agentStartMs = Date.now();
 
   // Expose agent identity to tools (used by cron, job tools)
@@ -465,6 +466,7 @@ export async function* sendMessage(
     system: assembled.system,
     disableDisplayTools: !(opts?.rich ?? false),
     cwd: agentDir(effectiveAgentId),
+    onResolved: (r) => { resolvedProvider = r.provider; },
     ...(contentPartsArg ? { contentParts: contentPartsArg } : {}),
   })) {
     if (msg.type === "assistant") {
@@ -505,6 +507,7 @@ export async function* sendMessage(
   if (usageData) {
     trackCost({
       agentId: effectiveAgentId,
+      provider: resolvedProvider ?? "unknown",
       operation: "conversation",
       tokensIn: usageData.inputTokens,
       tokensOut: usageData.outputTokens,

@@ -10,6 +10,24 @@ const db: DatabaseType = new Database(join(DATA_DIR, "backbone.sqlite"));
 db.pragma("journal_mode = WAL");
 db.pragma("foreign_keys = ON");
 
+// Reset cost/log tables if they don't have the `provider` column (schema changed
+// to support per-provider cost accounting; test data only, no migration needed).
+{
+  const hasProviderInCostDaily = () => {
+    try {
+      const cols = db.prepare(`PRAGMA table_info(cost_daily)`).all() as Array<{ name: string }>;
+      return cols.some((c) => c.name === "provider");
+    } catch {
+      return true; // table doesn't exist yet
+    }
+  };
+  if (!hasProviderInCostDaily()) {
+    db.exec(`DROP TABLE IF EXISTS cost_daily`);
+    db.exec(`DROP TABLE IF EXISTS heartbeat_log`);
+    db.exec(`DROP TABLE IF EXISTS cron_run_log`);
+  }
+}
+
 db.exec(`
   CREATE TABLE IF NOT EXISTS sessions (
     session_id    TEXT PRIMARY KEY,
@@ -48,10 +66,15 @@ db.exec(`
     num_turns              INTEGER DEFAULT 0,
     stop_reason            TEXT,
     reason                 TEXT,
-    preview                TEXT
+    preview                TEXT,
+    provider               TEXT,
+    model_used             TEXT,
+    routing_rule           TEXT
   );
   CREATE INDEX IF NOT EXISTS idx_heartbeat_log_agent_ts
     ON heartbeat_log (agent_id, ts DESC);
+  CREATE INDEX IF NOT EXISTS idx_heartbeat_log_provider
+    ON heartbeat_log (provider);
 `);
 
 db.exec(`
@@ -66,10 +89,15 @@ db.exec(`
     summary       TEXT,
     input_tokens  INTEGER DEFAULT 0,
     output_tokens INTEGER DEFAULT 0,
-    cost_usd      REAL DEFAULT 0
+    cost_usd      REAL DEFAULT 0,
+    provider      TEXT,
+    model_used    TEXT,
+    routing_rule  TEXT
   );
   CREATE INDEX IF NOT EXISTS idx_cron_run_log_job_ts
     ON cron_run_log (job_slug, ts DESC);
+  CREATE INDEX IF NOT EXISTS idx_cron_run_log_provider
+    ON cron_run_log (provider);
 `);
 
 db.exec(`
@@ -105,15 +133,17 @@ db.exec(`
     id          INTEGER PRIMARY KEY AUTOINCREMENT,
     date        TEXT NOT NULL,
     agent_id    TEXT NOT NULL,
+    provider    TEXT NOT NULL,
     operation   TEXT NOT NULL,
     tokens_in   INTEGER NOT NULL DEFAULT 0,
     tokens_out  INTEGER NOT NULL DEFAULT 0,
     cost_usd    REAL NOT NULL DEFAULT 0,
     calls       INTEGER NOT NULL DEFAULT 0,
-    UNIQUE(date, agent_id, operation)
+    UNIQUE(date, agent_id, provider, operation)
   );
   CREATE INDEX IF NOT EXISTS idx_cost_daily_date ON cost_daily(date);
   CREATE INDEX IF NOT EXISTS idx_cost_daily_agent ON cost_daily(agent_id);
+  CREATE INDEX IF NOT EXISTS idx_cost_daily_provider ON cost_daily(provider);
 `);
 
 db.exec(`
@@ -491,14 +521,6 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_ratings_rating ON message_ratings(rating);
   CREATE INDEX IF NOT EXISTS idx_ratings_rated_at ON message_ratings(rated_at);
 `);
-
-// Idempotent migration: add model routing columns to heartbeat_log
-try { db.exec(`ALTER TABLE heartbeat_log ADD COLUMN model_used TEXT`); } catch {}
-try { db.exec(`ALTER TABLE heartbeat_log ADD COLUMN routing_rule TEXT`); } catch {}
-
-// Idempotent migration: add model routing columns to cron_run_log
-try { db.exec(`ALTER TABLE cron_run_log ADD COLUMN model_used TEXT`); } catch {}
-try { db.exec(`ALTER TABLE cron_run_log ADD COLUMN routing_rule TEXT`); } catch {}
 
 db.exec(`
   CREATE TABLE IF NOT EXISTS mcp_tool_calls (

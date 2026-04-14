@@ -206,6 +206,7 @@ async function tick(agentId: string): Promise<void> {
     if (usageData) {
       trackCost({
         agentId,
+        provider: resolved?.provider ?? "unknown",
         operation: "heartbeat",
         tokensIn: usageData.inputTokens,
         tokensOut: usageData.outputTokens,
@@ -220,11 +221,12 @@ async function tick(agentId: string): Promise<void> {
     const durationMs = Date.now() - startMs;
 
     const modelUsed = resolved?.model;
+    const provider = resolved?.provider;
 
     if (shouldSkip) {
       state.lastStatus = "ok";
       console.log(`[heartbeat:${agentId}] ok (${durationMs}ms)`);
-      emitHeartbeatResult(agentId, "ok-token", { durationMs, usage: usageData, modelUsed });
+      emitHeartbeatResult(agentId, "ok-token", { durationMs, usage: usageData, provider, modelUsed });
       trackHeartbeat({ agentId, status: "ok", durationMs });
       return;
     }
@@ -233,7 +235,7 @@ async function tick(agentId: string): Promise<void> {
       state.lastStatus = "skipped";
       state.lastSkipReason = "duplicate";
       console.log(`[heartbeat:${agentId}] suppressed duplicate (${durationMs}ms)`);
-      emitHeartbeatResult(agentId, "skipped", { durationMs, usage: usageData, reason: "duplicate", modelUsed });
+      emitHeartbeatResult(agentId, "skipped", { durationMs, usage: usageData, reason: "duplicate", provider, modelUsed });
       trackHeartbeat({ agentId, status: "skipped", durationMs });
       return;
     }
@@ -246,7 +248,7 @@ async function tick(agentId: string): Promise<void> {
     console.log(
       `[heartbeat:${agentId}] delivered (${durationMs}ms): ${preview}`
     );
-    emitHeartbeatResult(agentId, "sent", { preview, durationMs, usage: usageData, modelUsed });
+    emitHeartbeatResult(agentId, "sent", { preview, durationMs, usage: usageData, provider, modelUsed });
     trackHeartbeat({ agentId, status: "ok", durationMs });
     const deliveryMode = agentConfig?.delivery;
     if (deliveryMode === "last-active") {

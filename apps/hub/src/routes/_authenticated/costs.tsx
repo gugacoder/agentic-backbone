@@ -17,6 +17,7 @@ import { CostSummaryCards } from "@/components/costs/cost-summary-cards";
 import { CostTrendChart } from "@/components/costs/cost-trend-chart";
 import { CostByAgentChart } from "@/components/costs/cost-by-agent-chart";
 import { CostByOperationChart } from "@/components/costs/cost-by-operation-chart";
+import { CostByProviderChart } from "@/components/costs/cost-by-provider-chart";
 import { BudgetAlertList } from "@/components/costs/budget-alert-list";
 import { costSummaryQueryOptions, costTrendQueryOptions } from "@/api/costs";
 import { agentsQueryOptions } from "@/api/agents";
@@ -35,6 +36,7 @@ interface CostsSearch {
   from?: string;
   to?: string;
   agent?: string;
+  provider?: string;
 }
 
 export const Route = createFileRoute("/_authenticated/costs")({
@@ -43,6 +45,7 @@ export const Route = createFileRoute("/_authenticated/costs")({
     from: typeof search.from === "string" ? search.from : undefined,
     to: typeof search.to === "string" ? search.to : undefined,
     agent: typeof search.agent === "string" ? search.agent : undefined,
+    provider: typeof search.provider === "string" ? search.provider : undefined,
   }),
   component: CostsPage,
 });
@@ -54,19 +57,30 @@ function CostsPage() {
   const from = search.from ?? daysAgoISO(7);
   const to = search.to ?? todayISO();
   const agentFilter = search.agent ?? "all";
+  const providerFilter = search.provider ?? "all";
 
   const queryParams = useMemo(
     () => ({
       from,
       to,
       agentId: agentFilter !== "all" ? agentFilter : undefined,
+      provider: providerFilter !== "all" ? providerFilter : undefined,
     }),
-    [from, to, agentFilter],
+    [from, to, agentFilter, providerFilter],
   );
 
   const { data, isLoading } = useQuery(costSummaryQueryOptions(queryParams));
   const { data: trendData } = useQuery(costTrendQueryOptions(queryParams));
   const { data: agents } = useQuery(agentsQueryOptions());
+
+  // Unfiltered-by-provider summary just to populate the provider filter dropdown
+  const { data: providerList } = useQuery(
+    costSummaryQueryOptions({
+      from,
+      to,
+      agentId: agentFilter !== "all" ? agentFilter : undefined,
+    }),
+  );
 
   const agentNameMap = useMemo(() => {
     const map: Record<string, string> = {};
@@ -125,6 +139,25 @@ function CostsPage() {
             </SelectContent>
           </Select>
         </div>
+        <div className="grid gap-1.5">
+          <Label className="text-xs">Provedor</Label>
+          <Select
+            value={providerFilter}
+            onValueChange={(v) => v && updateSearch({ provider: v === "all" ? undefined : v })}
+          >
+            <SelectTrigger className="w-[200px]">
+              <SelectValue placeholder="Todos os provedores" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos os provedores</SelectItem>
+              {providerList?.byProvider.map((p) => (
+                <SelectItem key={p.provider} value={p.provider}>
+                  {p.provider}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       {/* Summary Cards */}
@@ -150,7 +183,13 @@ function CostsPage() {
               <CostTrendChart data={trendData.points} />
             )}
 
-            <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
+            <div className="grid gap-4 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
+              {data.byProvider.length > 0 && (
+                <CostByProviderChart
+                  data={data.byProvider}
+                  totalCostUsd={data.totalCostUsd}
+                />
+              )}
               {data.byAgent.length > 0 && (
                 <CostByAgentChart
                   data={data.byAgent}

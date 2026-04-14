@@ -184,7 +184,8 @@ export async function* instrumentedRunAgent(
     tools: wrappedTools,
     onResolved: (result) => {
       try {
-        span?.setAttribute("gen_ai.request.model", result.model);
+        if (result.model) span?.setAttribute("gen_ai.request.model", result.model);
+        span?.setAttribute("gen_ai.provider", result.provider);
       } catch {}
       originalOnResolved?.(result);
     },
