@@ -125,6 +125,11 @@ const clearTakeoverStmt = db.prepare(
    WHERE session_id = ?`
 );
 
+const bindSdkSessionStmt = db.prepare(
+  `UPDATE sessions SET sdk_session_id = ?, updated_at = datetime('now')
+   WHERE session_id = ? AND sdk_session_id IS NULL`
+);
+
 
 
 // --- Message counter for flush ---
@@ -467,8 +472,13 @@ export async function* sendMessage(
     disableDisplayTools: !(opts?.rich ?? false),
     cwd: agentDir(effectiveAgentId),
     onResolved: (r) => { resolvedProvider = r.provider; },
+    ...(session.sdk_session_id ? { resume: session.sdk_session_id } : {}),
     ...(contentPartsArg ? { contentParts: contentPartsArg } : {}),
   })) {
+    if (msg.type === "system" && (msg as { subtype?: string }).subtype === "init") {
+      const sdkSid = (msg as { session_id?: string }).session_id;
+      if (sdkSid) bindSdkSessionStmt.run(sdkSid, sessionId);
+    }
     if (msg.type === "assistant") {
       const aMsg = msg as SDKAssistantMessage;
       for (const b of aMsg.message.content) {
@@ -543,4 +553,52 @@ export async function* sendMessage(
     "last-activity": new Date().toISOString(),
   });
 
+  // Auto-title on first agent response (fire-and-forget)
+  if (fullText && !session.title) {
+    void autoTitleSession(sessionId, effectiveAgentId, message, fullText).catch((e) => {
+      console.warn(`[autoTitle] failed for ${sessionId}:`, e instanceof Error ? e.message : e);
+    });
+  }
+
+}
+
+async function autoTitleSession(
+  sessionId: string,
+  agentId: string,
+  userMsg: string,
+  assistantMsg: string
+): Promise<void> {
+  const prompt = `Gere um titulo curto (3 a 6 palavras) em pt-BR para esta conversa. Responda APENAS com o titulo, sem aspas, sem pontuacao final, sem prefixo.
+
+Usuario: ${userMsg.slice(0, 400)}
+Assistente: ${assistantMsg.slice(0, 400)}`;
+
+  let result = "";
+  for await (const msg of runAgent(prompt, { role: "heartbeat" })) {
+    if (msg.type === "assistant") {
+      const aMsg = msg as SDKAssistantMessage;
+      for (const b of aMsg.message.content) {
+        if (b.type === "text") result += (b as { text: string }).text;
+      }
+    }
+    if (msg.type === "result") {
+      const rMsg = msg as SDKResultMessage;
+      if (rMsg.subtype === "success" && rMsg.result) result = rMsg.result;
+    }
+  }
+
+  const title = result
+    .trim()
+    .replace(/^["'`]|["'`]$/g, "")
+    .replace(/[.!?]+$/g, "")
+    .slice(0, 80);
+  if (!title) return;
+
+  updateSessionTitle.run(title, sessionId);
+  eventBus.emit("session:titled", {
+    ts: Date.now(),
+    sessionId,
+    agentId,
+    title,
+  });
 }

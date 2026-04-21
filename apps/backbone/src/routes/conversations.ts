@@ -50,9 +50,25 @@ const ATTACHMENT_MIME_MAP: Record<string, string> = {
 
 export const conversationRoutes = new Hono();
 
-/** Normalize session for API response — starred as boolean */
+/**
+ * Normalize session for API response.
+ * Preserves snake_case fields (used by hub's own Session type) and adds
+ * the camelCase aliases expected by @codrstudio/openclaude-chat
+ * (id, sessionId, title, starred, messageCount, createdAt, updatedAt).
+ */
 function normalizeSession(s: Record<string, unknown>): Record<string, unknown> {
-  return { ...s, starred: Boolean(s.starred) };
+  const sessionId = (s.session_id ?? s.sessionId) as string | undefined;
+  return {
+    ...s,
+    starred: Boolean(s.starred),
+    // openclaude-chat aliases
+    id: sessionId,
+    sessionId,
+    title: (s.title as string | null) ?? "",
+    messageCount: typeof s.message_count === "number" ? s.message_count : 0,
+    createdAt: (s.created_at ?? s.createdAt) as string | undefined,
+    updatedAt: (s.updated_at ?? s.updatedAt) as string | undefined,
+  };
 }
 
 function assertSessionOwnership(
@@ -62,6 +78,7 @@ function assertSessionOwnership(
   const auth = getAuthUser(c);
   if (auth.role === "sysuser") return null;
   if (session.user_id !== auth.user) {
+    console.warn(`[DEBUG forbidden] assertSessionOwnership FAIL url=${c.req.url} sessionUserId=${session.user_id} authUser=${auth.user} role=${auth.role}`);
     return c.json({ error: "forbidden" }, 403);
   }
   return null;
@@ -119,7 +136,12 @@ conversationRoutes.get("/conversations/:sessionId/messages", (c) => {
   const limit = Math.min(parseInt(c.req.query("limit") ?? "50", 10) || 50, 200);
   const before = c.req.query("before") ?? undefined;
 
-  const result = readMessagesPaginated(session.agent_id, sessionId, limit, before);
+  const result = readMessagesPaginated(
+    session.agent_id,
+    session.sdk_session_id ?? sessionId,
+    limit,
+    before
+  );
 
   return c.json(result);
 });

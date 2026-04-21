@@ -1,4 +1,5 @@
 import { queryOptions } from "@tanstack/react-query";
+import { convertSDKMessages, type Message } from "@codrstudio/openclaude-chat";
 import { request } from "@/lib/api";
 
 // ── Types ────────────────────────────────────────────────────
@@ -68,6 +69,18 @@ export function sessionQueryOptions(sessionId: string) {
   return queryOptions({
     queryKey: ["conversations", sessionId, "session"],
     queryFn: () => request<Session>(`/conversations/${sessionId}`),
+  });
+}
+
+export function conversationMessagesQueryOptions(id: string) {
+  return queryOptions({
+    queryKey: ["conversations", id, "messages"],
+    queryFn: async (): Promise<Message[]> => {
+      const res = await request<{ messages: unknown[] }>(
+        `/conversations/${id}/messages?limit=200`,
+      );
+      return convertSDKMessages(res.messages as Parameters<typeof convertSDKMessages>[0]);
+    },
   });
 }
 

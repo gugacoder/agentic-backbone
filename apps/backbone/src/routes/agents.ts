@@ -56,6 +56,26 @@ agentRoutes.get("/agents", (c) => {
   return c.json(filterByOwner(listAgents(), auth));
 });
 
+// --- List Models (OpenAI-compat alias for agents) ---
+// Caller (ex: openclaude-chat ModelSelect) espera { data: [...], default_model }.
+// Se a api-key tiver allowed-agents, restringe a esse subconjunto; caso contrario
+// cai no filtro por owner padrao.
+agentRoutes.get("/models", (c) => {
+  const auth = getAuthUser(c);
+  const all = listAgents();
+  const scoped = auth.allowedAgents && auth.allowedAgents.length > 0
+    ? all.filter((a) => auth.allowedAgents!.includes(a.id))
+    : filterByOwner(all, auth);
+  return c.json({
+    data: scoped.map((a) => ({
+      id: a.id,
+      label: a.slug ?? a.id,
+      owned_by: a.owner,
+    })),
+    default_model: scoped[0]?.id ?? null,
+  });
+});
+
 // --- Get Agent ---
 
 agentRoutes.get("/agents/:id", (c) => {

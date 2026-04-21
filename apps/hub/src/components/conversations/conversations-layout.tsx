@@ -1,10 +1,11 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { useNavigate, Outlet, useRouterState } from "@tanstack/react-router";
 import {
   History,
   ChatHeader,
   HistoryProvider,
   HistoryTrigger,
+  LocaleProvider,
   createDefaultTransport,
   useIsMobile,
   useHistoryContext,
@@ -41,6 +42,19 @@ export function ConversationsLayout({ fixedAgentId, basePath }: ConversationsLay
     [],
   );
 
+  // Load activeConv when URL-driven activeId changes (e.g., refresh, direct link)
+  useEffect(() => {
+    if (!activeId) {
+      setActiveConv(null);
+      return;
+    }
+    let cancelled = false;
+    transport.getConversation(activeId)
+      .then((conv) => { if (!cancelled) setActiveConv(conv); })
+      .catch(() => { if (!cancelled) setActiveConv(null); });
+    return () => { cancelled = true; };
+  }, [activeId, transport]);
+
   const handleSelect = useCallback((id: string) => {
     Promise.all([
       transport.getMessages(id),
@@ -65,56 +79,83 @@ export function ConversationsLayout({ fixedAgentId, basePath }: ConversationsLay
     }
   }, [activeId, basePath, navigate]);
 
+  return (
+    <LocaleProvider locale="pt-BR">
+      <HistoryProvider
+        transport={transport}
+        agentId={fixedAgentId}
+        activeConversationId={activeId}
+        onActiveChange={(id) => {
+          if (id) navigate({ to: `${basePath}/${id}` as string });
+          else navigate({ to: basePath as string });
+        }}
+      >
+        <div className="flex h-[calc(100vh-theme(spacing.14)-2rem)] flex-col overflow-hidden">
+          <div className="flex flex-1 min-h-0">
+            {/* Desktop sidebar */}
+            {!isMobile && <DesktopSidebar onSelect={handleSelect} onNew={handleNew} onDelete={handleDelete} activeId={activeId} transport={transport} />}
+
+            {/* Mobile drawer */}
+            {isMobile && <MobileDrawer onSelect={handleSelect} onNew={handleNew} onDelete={handleDelete} activeId={activeId} transport={transport} />}
+
+            {/* Chat area */}
+            <div className="flex flex-1 flex-col min-h-0 overflow-hidden">
+              <ChatHeaderWithRefresh
+                activeId={activeId}
+                activeConv={activeConv}
+                setActiveConv={setActiveConv}
+                transport={transport}
+              />
+              <main className="flex-1 min-h-0 overflow-hidden">
+                <Outlet />
+              </main>
+            </div>
+          </div>
+        </div>
+      </HistoryProvider>
+    </LocaleProvider>
+  );
+}
+
+// ── Header wrapper that can trigger sidebar refresh via HistoryProvider ────
+
+interface ChatHeaderWithRefreshProps {
+  activeId: string | null;
+  activeConv: ChatConversation | null;
+  setActiveConv: React.Dispatch<React.SetStateAction<ChatConversation | null>>;
+  transport: ReturnType<typeof createDefaultTransport>;
+}
+
+function ChatHeaderWithRefresh({ activeId, activeConv, setActiveConv, transport }: ChatHeaderWithRefreshProps) {
+  const { refresh } = useHistoryContext();
+
   const handleToggleStar = useCallback(() => {
     if (!activeId || !activeConv) return;
     const newStarred = !activeConv.starred;
     transport.updateConversation(activeId, { starred: newStarred }).then(() => {
       setActiveConv((prev) => prev ? { ...prev, starred: newStarred } : prev);
+      void refresh();
     });
-  }, [activeId, activeConv, transport]);
+  }, [activeId, activeConv, transport, setActiveConv, refresh]);
 
   const handleRename = useCallback((newTitle: string) => {
     if (!activeId) return;
     transport.updateConversation(activeId, { title: newTitle }).then(() => {
       setActiveConv((prev) => prev ? { ...prev, title: newTitle } : prev);
+      void refresh();
     });
-  }, [activeId, transport]);
+  }, [activeId, transport, setActiveConv, refresh]);
 
   return (
-    <HistoryProvider
-      transport={transport}
-      agentId={fixedAgentId}
-      activeConversationId={activeId}
-      onActiveChange={(id) => {
-        if (id) navigate({ to: `${basePath}/${id}` as string });
-        else navigate({ to: basePath as string });
-      }}
-    >
-      <div className="flex h-[calc(100vh-theme(spacing.14)-2rem)] flex-col overflow-hidden">
-        <div className="flex flex-1 min-h-0">
-          {/* Desktop sidebar */}
-          {!isMobile && <DesktopSidebar onSelect={handleSelect} onNew={handleNew} onDelete={handleDelete} activeId={activeId} />}
-
-          {/* Mobile drawer */}
-          {isMobile && <MobileDrawer onSelect={handleSelect} onNew={handleNew} onDelete={handleDelete} activeId={activeId} />}
-
-          {/* Chat area */}
-          <div className="flex flex-1 flex-col min-h-0 overflow-hidden">
-            <ChatHeader
-              leftContent={<HistoryTrigger />}
-              title={activeConv?.title}
-              starred={activeConv?.starred}
-              onToggleStar={handleToggleStar}
-              onRename={handleRename}
-              enableLocaleSelect={false}
-            />
-            <main className="flex-1 min-h-0 overflow-hidden">
-              <Outlet />
-            </main>
-          </div>
-        </div>
-      </div>
-    </HistoryProvider>
+    <ChatHeader
+      leftContent={<HistoryTrigger />}
+      title={activeConv?.title}
+      starred={activeConv?.starred}
+      onToggleStar={handleToggleStar}
+      onRename={handleRename}
+      enableLocaleSelect={false}
+      locale="pt-BR"
+    />
   );
 }
 
@@ -125,13 +166,15 @@ interface SidebarCallbacks {
   onNew: (id: string) => void;
   onDelete: (id: string) => void;
   activeId: string | null;
+  transport: ReturnType<typeof createDefaultTransport>;
 }
 
-function DesktopSidebar({ onSelect, onNew, onDelete, activeId }: SidebarCallbacks) {
+function DesktopSidebar({ onSelect, onNew, onDelete, activeId, transport }: SidebarCallbacks) {
   const { sidebarOpen } = useHistoryContext();
   if (!sidebarOpen) return null;
   return (
     <History
+      transport={transport}
       activeConversationId={activeId}
       onSelectConversation={onSelect}
       onNewConversation={onNew}
@@ -141,13 +184,14 @@ function DesktopSidebar({ onSelect, onNew, onDelete, activeId }: SidebarCallback
   );
 }
 
-function MobileDrawer({ onSelect, onNew, onDelete, activeId }: SidebarCallbacks) {
+function MobileDrawer({ onSelect, onNew, onDelete, activeId, transport }: SidebarCallbacks) {
   const { sidebarOpen, setSidebarOpen } = useHistoryContext();
   return (
     <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
       <SheetContent side="left" className="w-[280px] p-0">
         <SheetTitle className="sr-only">Histórico de conversas</SheetTitle>
         <History
+          transport={transport}
           activeConversationId={activeId}
           onSelectConversation={(id) => {
             onSelect(id);

@@ -1,7 +1,7 @@
 import type { Context } from "hono";
 import { streamSSE } from "hono/streaming";
 import { eventBus } from "./index.js";
-import type { HeartbeatStatusEvent, ChannelMessageEvent, RegistryChangeEvent, CronJobEvent, JobStatusEvent, NotificationNewEvent, SessionTakeoverEvent, ApprovalPendingEvent, SecurityAlertEvent, FleetAgentStatusEvent, FleetAlertEvent } from "./index.js";
+import type { HeartbeatStatusEvent, ChannelMessageEvent, RegistryChangeEvent, CronJobEvent, JobStatusEvent, NotificationNewEvent, SessionTakeoverEvent, SessionTitledEvent, ApprovalPendingEvent, SecurityAlertEvent, FleetAgentStatusEvent, FleetAlertEvent } from "./index.js";
 
 // --- Types ---
 
@@ -104,6 +104,10 @@ class SSEHub {
 
     eventBus.on("session:takeover", (evt: SessionTakeoverEvent) => {
       this.broadcast("system", "session:takeover", evt);
+    });
+
+    eventBus.on("session:titled", (evt: SessionTitledEvent) => {
+      this.broadcast("system", "session:titled", evt);
     });
 
     eventBus.on("approval:pending", (evt: ApprovalPendingEvent) => {

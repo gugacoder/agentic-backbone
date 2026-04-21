@@ -8,6 +8,7 @@ import {
   sessionQueryOptions,
   takeoverConversation,
   releaseConversation,
+  conversationMessagesQueryOptions,
 } from "@/api/conversations";
 import { Chat, defaultDisplayRenderers } from "@codrstudio/openclaude-chat";
 import { TakeoverButton } from "@/components/conversations/takeover-button";
@@ -26,6 +27,9 @@ export function ConversationChatPage({ id, basePath }: ConversationChatPageProps
     conversationQueryOptions(id),
   );
   const { data: session } = useQuery(sessionQueryOptions(id));
+  const { data: initialMessages, isLoading: msgsLoading } = useQuery(
+    conversationMessagesQueryOptions(id),
+  );
 
   const takeoverMutation = useMutation({
     mutationFn: () => takeoverConversation(id),
@@ -43,7 +47,7 @@ export function ConversationChatPage({ id, basePath }: ConversationChatPageProps
 
   const isUnderTakeover = session?.takeover_by != null;
 
-  if (convLoading) {
+  if (convLoading || msgsLoading) {
     return (
       <div className="flex h-full flex-col gap-4 p-4">
         <Skeleton className="h-10 w-64" />
@@ -107,8 +111,10 @@ export function ConversationChatPage({ id, basePath }: ConversationChatPageProps
 
         {/* Chat — uses openclaude-chat with /conversations/* routes */}
         <Chat
+          key={id}
           endpoint="/api/v1/ai"
           sessionId={id}
+          initialMessages={initialMessages ?? []}
           displayRenderers={defaultDisplayRenderers}
           enableRichContent
           locale="pt-BR"

@@ -71,6 +71,13 @@ export interface SessionTakeoverEvent {
   takenOverBy: string | null;
 }
 
+export interface SessionTitledEvent {
+  ts: number;
+  sessionId: string;
+  agentId: string;
+  title: string;
+}
+
 export interface ApprovalPendingEvent {
   type: "approval:pending";
   approvalId: number;
@@ -155,6 +162,7 @@ export interface BackboneEventMap {
   "job:status": JobStatusEvent;
   "notification:new": NotificationNewEvent;
   "session:takeover": SessionTakeoverEvent;
+  "session:titled": SessionTitledEvent;
   "approval:pending": ApprovalPendingEvent;
   "security:alert": SecurityAlertEvent;
   "agent:quota-exceeded": AgentQuotaExceededEvent;

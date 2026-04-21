@@ -137,6 +137,15 @@ function invalidateByEvent(event: SystemEvent) {
       }
       break;
     }
+    case "session:titled": {
+      const sessionId = event.data?.sessionId as string | undefined;
+      queryClient.invalidateQueries({ queryKey: ["conversations"] });
+      if (sessionId) {
+        queryClient.invalidateQueries({ queryKey: ["conversations", sessionId] });
+        queryClient.invalidateQueries({ queryKey: ["conversations", sessionId, "session"] });
+      }
+      break;
+    }
     case "job:status":
       queryClient.invalidateQueries({ queryKey: ["jobs"] });
       queryClient.invalidateQueries({ queryKey: ["dashboard"] });
