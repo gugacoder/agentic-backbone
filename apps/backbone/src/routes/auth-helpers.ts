@@ -19,6 +19,7 @@ export function assertAgentAccess(c: Context, agentId: string): Response | null 
   const auth = getAuthUser(c);
   if (!auth.allowedAgents) return null;
   if (auth.allowedAgents.includes(agentId)) return null;
+  console.warn(`[DEBUG forbidden] assertAgentAccess FAIL url=${c.req.url} agentId=${agentId} allowed=${JSON.stringify(auth.allowedAgents)} user=${auth.user}`);
   return c.json({ error: "forbidden" }, 403);
 }
 
@@ -45,6 +46,7 @@ export function assertOwnership(
   const auth = getAuthUser(c);
   if (auth.role === "sysuser") return null;
   if (ownerId !== auth.user) {
+    console.warn(`[DEBUG forbidden] assertOwnership FAIL url=${c.req.url} ownerId=${ownerId} authUser=${auth.user} role=${auth.role}`);
     return c.json({ error: "forbidden" }, 403);
   }
   return null;
