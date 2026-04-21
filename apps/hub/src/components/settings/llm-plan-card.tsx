@@ -26,7 +26,8 @@ const roleLabels: Record<string, string> = {
 };
 
 
-function formatModelName(model: string) {
+function formatModelName(model: string | undefined) {
+  if (!model) return "—";
   const parts = model.split("/");
   return parts.length > 1 ? parts[1] : model;
 }
