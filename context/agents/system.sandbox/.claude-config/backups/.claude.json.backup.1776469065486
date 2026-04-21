@@ -14,7 +14,10 @@
     "displayName": "Guga"
   },
   "penguinModeOrgEnabled": false,
-  "clientDataCache": {},
+  "clientDataCache": {
+    "quiet_salted_ember": "true",
+    "loud_sugary_rock": "true"
+  },
   "additionalModelOptionsCache": [],
   "claudeAiMcpEverConnected": [
     "claude.ai Gmail"
@@ -22,7 +25,7 @@
   "groveConfigCache": {
     "6ef5b597-f227-4e77-abdb-e26c8dcf53b3": {
       "grove_enabled": true,
-      "timestamp": 1776469068627
+      "timestamp": 1776173882579
     }
   },
   "cachedExtraUsageDisabledReason": "org_level_disabled",
@@ -39,8 +42,7 @@
         "currency": "BRL"
       },
       "remaining_passes": 3,
-      "timestamp": 1776469065644
+      "timestamp": 1776177755584
     }
-  },
-  "additionalModelOptionsCacheScope": "firstParty"
+  }
 }
