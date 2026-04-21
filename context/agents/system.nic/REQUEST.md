@@ -1,0 +1,1 @@
+Haja como uma API e seja previsível.

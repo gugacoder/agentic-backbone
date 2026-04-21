@@ -1,0 +1,47 @@
+{
+  "firstStartTime": "2026-04-17T04:13:23.077Z",
+  "opusProMigrationComplete": true,
+  "sonnet1m45MigrationComplete": true,
+  "migrationVersion": 11,
+  "userID": "d7afc4d981673b04010eb810c300a54387a8f6e462279d6b1701c1ec9c9ede70",
+  "oauthAccount": {
+    "accountUuid": "6ef5b597-f227-4e77-abdb-e26c8dcf53b3",
+    "emailAddress": "guga@codr.studio",
+    "organizationUuid": "876786e4-5ca4-4f64-bb80-4ddc54792f8f",
+    "hasExtraUsageEnabled": false,
+    "billingType": "stripe_subscription",
+    "accountCreatedAt": "2025-10-23T14:14:16.934661Z",
+    "subscriptionCreatedAt": "2025-10-26T16:07:04.229924Z",
+    "displayName": "Guga"
+  },
+  "clientDataCache": {},
+  "additionalModelOptionsCache": [],
+  "additionalModelOptionsCacheScope": "firstParty",
+  "penguinModeOrgEnabled": false,
+  "claudeAiMcpEverConnected": [
+    "claude.ai Gmail"
+  ],
+  "groveConfigCache": {
+    "6ef5b597-f227-4e77-abdb-e26c8dcf53b3": {
+      "grove_enabled": true,
+      "timestamp": 1776640460769
+    }
+  },
+  "cachedExtraUsageDisabledReason": "org_level_disabled",
+  "passesEligibilityCache": {
+    "876786e4-5ca4-4f64-bb80-4ddc54792f8f": {
+      "eligible": true,
+      "referral_code_details": {
+        "code": "0i-aAd6fWg",
+        "campaign": "claude_code_guest_pass_a47c",
+        "referral_link": "https://claude.ai/referral/0i-aAd6fWg"
+      },
+      "referrer_reward": {
+        "amount_minor_units": 5500,
+        "currency": "BRL"
+      },
+      "remaining_passes": 3,
+      "timestamp": 1776640458777
+    }
+  }
+}

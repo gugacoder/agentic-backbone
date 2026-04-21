@@ -1,0 +1,8 @@
+id: system.nic
+owner: system
+slug: nic
+delivery: ""
+enabled: true
+heartbeat-enabled: false
+heartbeat-interval: 30000
+description: Assistente de pessoal da Processa SIstemas

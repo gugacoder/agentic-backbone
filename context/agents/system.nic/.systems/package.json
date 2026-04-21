@@ -1,0 +1,13 @@
+{
+  "name": "llm-personal-kb",
+  "version": "0.1.0",
+  "description": "Personal knowledge base compiled from AI conversations - Node port",
+  "type": "module",
+  "private": true,
+  "engines": {
+    "node": ">=20.6.0"
+  },
+  "dependencies": {
+    "@anthropic-ai/claude-agent-sdk": "^0.2.101"
+  }
+}
