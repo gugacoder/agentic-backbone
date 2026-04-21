@@ -1,12 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { MemoryStatusPanel } from "@/components/agents/memory-status-panel";
+import { KbExplorer } from "@/components/agents/kb/kb-explorer";
 
 export const Route = createFileRoute("/_authenticated/agents/$id/memory")({
-  staticData: { title: "Memória", description: "Memória semântica do agente" },
+  staticData: {
+    title: "Knowledge Base",
+    description: "Explorador da KB do agente (modelo LYT)",
+  },
   component: AgentMemoryPage,
 });
 
 function AgentMemoryPage() {
   const { id } = Route.useParams();
-  return <MemoryStatusPanel agentId={id} />;
+  return <KbExplorer agentId={id} />;
 }
