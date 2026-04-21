@@ -5,12 +5,12 @@
  *   context/agents/{agentId}/.claude-config/
  *
  * Contents:
- *   .credentials.json  — copied from ~/.claude/ (auth)
+ *   .credentials.json  — symlink to ~/.claude/.credentials.json so OAuth refresh propagates
  *   settings.json       — per-agent settings (initially empty)
  *   skills/{slug}/SKILL.md — agent skills (copied from context/agents/{id}/skills/)
  */
 
-import { existsSync, mkdirSync, copyFileSync, writeFileSync, readdirSync } from "node:fs";
+import { existsSync, mkdirSync, copyFileSync, writeFileSync, readdirSync, symlinkSync, unlinkSync, lstatSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { homedir } from "node:os";
 import { agentClaudeConfigDir, agentResourceDir } from "../context/paths.js";
@@ -30,16 +30,13 @@ export function ensureClaudeConfigDir(agentId: string): string {
   // Create directory structure
   mkdirSync(configDir, { recursive: true });
 
-  // Copy credentials if not present
+  // Link credentials to the global CLI file so auto-refresh propagates
   const credsDest = join(configDir, CREDENTIALS_FILE);
-  if (!existsSync(credsDest)) {
-    const credsSrc = join(USER_CLAUDE_DIR, CREDENTIALS_FILE);
-    if (existsSync(credsSrc)) {
-      copyFileSync(credsSrc, credsDest);
-      console.log(`[claude-config] copied credentials for ${agentId}`);
-    } else {
-      console.warn(`[claude-config] no credentials found at ${credsSrc}`);
-    }
+  const credsSrc = join(USER_CLAUDE_DIR, CREDENTIALS_FILE);
+  if (existsSync(credsSrc)) {
+    linkCredentials(credsSrc, credsDest, agentId);
+  } else if (!existsSync(credsDest)) {
+    console.warn(`[claude-config] no credentials found at ${credsSrc}`);
   }
 
   // Create empty settings.json if not present
@@ -52,6 +49,39 @@ export function ensureClaudeConfigDir(agentId: string): string {
   syncSkills(agentId, configDir);
 
   return configDir;
+}
+
+/**
+ * Ensures the agent's .credentials.json is a symlink to the global CLI file.
+ * When the global CLI refreshes the OAuth token, all agents see the new token.
+ * Falls back to copy if symlink is not permitted (e.g., Windows without dev mode).
+ */
+function linkCredentials(src: string, dest: string, agentId: string): void {
+  const existing = lstatIfExists(dest);
+  if (existing?.isSymbolicLink()) return;
+
+  if (existing) unlinkSync(dest);
+
+  try {
+    symlinkSync(src, dest, "file");
+    console.log(`[claude-config] linked credentials for ${agentId}`);
+    return;
+  } catch (err) {
+    const code = (err as NodeJS.ErrnoException).code;
+    console.warn(
+      `[claude-config] symlink failed for ${dest} (${code}), falling back to copy`,
+    );
+  }
+
+  copyFileSync(src, dest);
+}
+
+function lstatIfExists(path: string): ReturnType<typeof lstatSync> | null {
+  try {
+    return lstatSync(path);
+  } catch {
+    return null;
+  }
 }
 
 /**
