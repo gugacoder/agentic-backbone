@@ -8,6 +8,7 @@
   "scripts": {
     "printenv": "dotenv -o -e .env -- printenv",
     "killports": "node scripts/killports.mjs",
+    "dev": "concurrently -n hub,backbone -c blue,magenta \"npm run dev:hub\" \"npm run dev:backbone\" 2>&1 | tee .tmp/-run.log",
     "dev:all": "concurrently -n hub,backbone -c blue,magenta \"npm run dev:hub\" \"npm run dev:backbone\" 2>&1 | tee .tmp/-run.log",
     "dev:backbone": "dotenv -o -e .env -- npm run dev --workspace=apps/backbone",
     "dev:hub": "dotenv -o -e .env -- npm run dev --workspace=apps/hub",
