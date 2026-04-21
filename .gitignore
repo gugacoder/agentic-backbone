@@ -110,6 +110,8 @@ context/users/*/
 context/**/conversations/**
 context/**/journal/**
 context/**/sqlite*
+# Credenciais OAuth do Claude Code — nunca versionar
+context/**/.claude-config/.credentials.json
 
 # =============================================================================
 # Arquivos mantidos
